@@ -14,6 +14,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/admin"
 	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/question"
+	"github.com/roma007/OpenQuizGo/internal/quiz"
 )
 
 // Deps 是 HTTP 层依赖。
@@ -24,6 +25,7 @@ type Deps struct {
 	Identity  *identity.Service
 	Admin     *admin.Service
 	Questions *question.Service
+	Quiz      *quiz.Service
 	Version   string
 	Env       string
 }
@@ -75,6 +77,9 @@ func New(d Deps) http.Handler {
 		}
 		if d.Questions != nil && d.Admin != nil {
 			d.Questions.Routes(r, d.Admin)
+		}
+		if d.Quiz != nil && d.Admin != nil {
+			d.Quiz.Routes(r, d.Admin)
 		}
 	})
 

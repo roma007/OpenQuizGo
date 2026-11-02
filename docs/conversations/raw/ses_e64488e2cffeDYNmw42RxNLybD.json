@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 2022234,
-      "output": 149342,
-      "reasoning": 106258,
+      "input": 2387368,
+      "output": 165301,
+      "reasoning": 116497,
       "cache": {
-        "read": 43760896,
+        "read": 52321408,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793626011805,
-      "busy": 1793625400658,
-      "idle": 1793625075021,
-      "viewed": 1793625075021
+      "updated": 1793626569310,
+      "busy": 1793626051137,
+      "idle": 1793626033161,
+      "viewed": 1793626033161
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -24977,6 +24977,2450 @@
         "reasoning": 403,
         "cache": {
           "read": 310912,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c70eb8c0010I1rWoPa5bl3mL",
+      "time": {
+        "created": 1793626008464,
+        "streamed": 1793626014284,
+        "completed": 1793626023956
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Wait `make test` shows question test ran (0.856s) even without TEST env? Because .env includes TEST_DATABASE_URL/TEST_REDIS_URL and Makefile includes .env, exporting them. So make test runs integration too. That's fine locally. In CI env has them.\n\nBut `make test` now requires test DB; if absent, tests skip. Fine.\n\nNow archive + commit + push. Check status.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626011812,
+            "completed": 1793626014277
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_chllzyzxt549kak7ohhtegej",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -2 && git add -A && git commit -q -m \"feat(t4): 题库治理 API 与 RBAC\n\n- 管理端登录与 RBAC（super_admin/editor/reviewer/ops）\n- 题目 CRUD、四维检索、状态机与版本\n- JSON/CSV 批量导入（1000 题 0.13s）、整批校验回滚\n- 审计日志与查询、cmd/admin 账号管理 CLI\n- 集成测试 TestQuestionWorkflow\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git log --oneline -2",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   17ffd50..4e09406  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   17ffd50..4e09406  main -> master\n4e09406 feat(t4): 题库治理 API 与 RBAC\n17ffd50 feat(t3): 身份/家庭/设备与鉴权\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626012766,
+            "ran": 1793626014283,
+            "completed": 1793626023900
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "4393f41d804f702c4213b2fec21aa60fd34d2d4f",
+        "end": "d8778a6caf59729af9272e52baf730c0decc7d31",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1007,
+        "output": 234,
+        "reasoning": 91,
+        "cache": {
+          "read": 311680,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c712829001g9AF0Hu0gCfMLb",
+      "time": {
+        "created": 1793626023981,
+        "streamed": 1793626033138,
+        "completed": 1793626033157
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "T4 done and pushed. Provide final response. Next T5 (组卷 v0), then T6/T7/T8.\n\nSummarize:\n- Admin auth + RBAC roles.\n- Question CRUD/search/state machine/version.\n- Import JSON/CSV, 1000 in 0.13s, atomic validation.\n- Audit.\n- CLI admin.\n- Tests.\n- Deviations: sync import, 8h token permissions fixed, offline exclusion verified in T5.\n- Next T5.\n\nAlso mention T0 still pending device.\n\nKeep concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626027235,
+            "completed": 1793626033130
+          }
+        },
+        {
+          "type": "text",
+          "text": "**T4 完成并推送**（`4e09406`）。题库治理链路可用，导入 1000 题实测 **0.13s**。\n\n## 交付内容\n\n| 能力 | 实现 |\n| --- | --- |\n| 管理端登录 | 用户名 + bcrypt 密码 → JWT（8h）；失败 5 次锁 15 分钟 |\n| RBAC | `super_admin` / `editor` / `reviewer` / `ops`，权限在中间件逐接口校验 |\n| 题目 CRUD | 创建、详情、编辑、删除；编辑仅限 `draft`/`offline`，版本号 +1 |\n| 四维检索 | 学科 / 学段 / 难度 / 题型 + 类目、状态、关键词、题包、分页 |\n| 状态机 | `draft → review → trial → online → offline`；驳回回 draft、下线可重新提交；非法流转 409 |\n| 批量导入 | JSON 数组 / `{questions:[]}` / CSV；整批校验，任一行失败全部不落库 |\n| 审计 | 创建、编辑、删除、流转、导入全部写 `audit_log`，可查询 |\n| CLI | `cmd/admin create/passwd/list` 管理账号 |\n\n角色权限：`editor` 读写+导入，`reviewer` 查看+审核，`ops` 查看+上下线+审计，`super_admin` 全部。\n\n## 验证证据\n\n- 集成测试 `TestQuestionWorkflow`：创建 → 非法发布 409 → 审核 → 上线 → 在线编辑 409 → 下线 → 导入 100 条 → 非法导入 422 → editor 越权 403 → 审计非空，全绿。\n- 真实接口冒烟：1000 题导入 0.13s；CSV 导入成功；状态机与 RBAC 行为符合预期。\n- `go vet`、`make test` 通过。\n\n## 两处偏差（已记录）\n\n1. 题库导入改为**同步**（上限 5000 条/10MB），原设计为异步任务；首期量级下同步更简单。\n2. 管理端权限固化在 8h 令牌内，权限变更需重新登录；后续如需即时生效，可改为每请求查权限或引入版本号。\n\n## 当前进度\n\n- ✅ T1 工程骨架\n- ✅ T2 数据模型\n- ✅ T3 身份/家庭/设备\n- ✅ T4 题库与治理 API\n- 🚧 T0 PoC APK 待实机\n- ⏳ **T5 组卷 v0**（学科权重分配、趣味上限、去重、断供兜底）\n\nT5 会把「下线题不被抽中」一并纳入自动化验证，补齐 T4 的验收尾项。继续的话我就开工。"
+        }
+      ],
+      "snapshot": {
+        "start": "d8778a6caf59729af9272e52baf730c0decc7d31",
+        "end": "d8778a6caf59729af9272e52baf730c0decc7d31",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 566,
+        "output": 632,
+        "reasoning": 116,
+        "cache": {
+          "read": 312576,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c714c09001Y3iS0entt4muOW",
+      "time": {
+        "created": 1793626033161
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_19c719204001RUpHHEw9uBklQ7",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793626051172
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_19c719288001HJWVamrbFimsww",
+      "time": {
+        "created": 1793626051214,
+        "streamed": 1793626090684,
+        "completed": 1793626090758
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Continue T5: 组卷 v0 (question selection). Scope:\n- Selector with stage pool, subject weight distribution, fun cap, dedupe (recent 30 days), difficulty targeting, supply shortage fallback.\n- API? Design has `POST /v1/quiz/sessions` in T6. T5 is service-layer selection; need a way to test. Could expose an internal admin endpoint `POST /admin/quiz/preview` (dry-run) to inspect composition, or implement selector package + tests. T6 will build sessions on top.\n\nPlan T5: \"选题器、权重倾向分配、趣味题占位、去重、断供兜底\" acceptance: 给定规则可复现组卷；权重分配误差 ≤1 题；断供有降级与告警.\n\nImplement:\n- `internal/quiz/selector.go`: selection algorithm.\n- Repo queries for candidate questions by stage/subject/difficulty, excluding recent answered, excluding offline, excluding fun cap.\n- Rule input: thresholds, subject_weight, fun cap/enabled, n calculation.\n- Output: selected question IDs (with question info?), distribution, warnings (fallback).\n- Tests: integration with seeded questions; deterministic with a fixed random seed? \"可复现\" means given rule and pool, distribution matches; not necessarily identical random draw. Use seeded RNG in service options for tests.\n- Expose admin preview endpoint? Could be under `/admin/quiz/preview` requiring auth. Useful for T5 demo and T7 rule dry-run. Let's add `POST /admin/quiz/preview` (question.read permission) with {child_id, rule overrides?} returning composition. But child rule not implemented yet (T7). T5 can take rule fields in request.\n\nDesign of selector:\n\nInputs:\n```go\ntype Rule struct {\n UnlockMinutes int\n PassThreshold float64\n SubjectWeight map[string]float64\n FunRatioCap int\n FunEnabled bool\n ScopeStage string? // from child\n}\ntype Request struct {\n ChildID string\n Stage string\n GradeTag string\n DifficultyTarget int (1-5) optional\n Rule Rule\n Seed int64 optional\n MaxQuestions int (default 12)\n}\ntype Result struct {\n Total int\n Quota map[string]int\n Selected []SelectedQuestion\n Warnings []string\n MaxScore float64\n}\n```\n\nAlgorithm per design 8.3.2:\n```\nenabled subjects = weight>0 (excluding fun)\nmaxWeight = max\nn_min = max(3, ceil(threshold / maxWeight))\nn = clamp(n_min + 2, 3, 12)\nfun_n = 0; if funEnabled: min(funRatioCap, max(1, n-1))\nn_subject = n - fun_n\nquota = largest remainder allocation by weights over n_subject\nquota[fun]=fun_n\n```\nBut if enabled subjects fewer than quota? E.g., weights only math: n_subject all math. fine.\n\nPool per subject:\n- status='online'\n- stage_code = child stage\n- category/subject consistent via subject code\n- exclude recently answered by child (30 days) unless pool insufficient.\n- difficulty target: use child history accuracy? T5 v0: target difficulty based on grade_tag offset and stage default. Simpler: choose difficulty randomly around target 3 with weights [1,2,3,4,5]? Design: target 60-80% correctness, T5 lacks history. Use `difficulty_target` from recent accuracy: query answer_log for child last 30 days; if enough (≥10), target = clamp(round(avg difficulty?))... Better: compute accuracy per difficulty and pick target where accuracy 60-80%. Implement simple:\n  - Query per difficulty correct/total for child last 30 days.\n  - Choose difficulty with accuracy closest to 70% and attempts ≥5; else default = stage default (preschool 1, low 2, mid 3, high 3) + grade offset (g1..g3 -?).\n  - Keep v0 simple: difficulty target = stage default (preschool 1, low 2, mid 3, high 4), adjusted by grade_tag: g1-g3 -1 (min1), g7-g9 +1 (max5).\n- Order candidates by proximity to target then random. Use SQL `order by abs(difficulty - $target), random()`? Deterministic tests need seed; use Go shuffle with math/rand seeded.\n- Pull candidates for each subject (limit e.g. 200), then select quota avoiding duplicates across subjects. A question belongs to one subject; dedupe within.\n- Fallback if insufficient for a subject:\n  1. relax difficulty to adjacent (±1).\n  2. relax stage to adjacent (low↔preschool, mid↔high?) — design says adjacent stage/difficulty; implement stage fallback order: same stage, then nearest by stage rank.\n  3. relax 30-day exclusion.\n  4. if still insufficient, reduce quota? Then max score may fall below threshold → warn/reject.\n- Warnings recorded: `difficulty_fallback`, `stage_fallback`, `repeat_question`, `subject_shortage`.\n- If total selected < n_min or maxScore < threshold → error \"题库不足\" with details.\n- Fun selection: subject fun, stage derived bands (fun stage from child's stage: preschool/low→3-8, mid/high→9+; but fun questions are tagged stage codes; pool stage in (preschool,low) for 3-8, (mid,high) for 9+). Fun subject weight used for score; fun questions selected from either stage in band.\n- Fun weight: if fun weight 0 or !funEnabled → no fun.\n- MaxScore = sum selected weight by subject (assume all correct). Must ≥ threshold.\n\nAllocation largest remainder:\n- Given weights map (only enabled + subject has pool?) allocate n_subject proportional.\n- If a subject has no candidates, its allocated quota should be redistributed. Simpler: allocate, then selection fallback; if subject shortage, redistribute remaining quota to other subjects (up to n). Implement iterative: after allocation, fill quotas; unmet quota redistributed to subjects with spare pool. For v0, we can select fewer and warn, but acceptance expects composition. Let's implement redistribution during selection.\n\nSimpler approach:\n- Build quotas by weight over all enabled subjects (not knowing supply).\n- For each subject, select min(quota, available).\n- Track shortfall.\n- Redistribute shortfall to other subjects with available pool, round-robin by weight, until n_subject filled or no more.\n- If filled < n_subject, reduce total (warning).\n- Ensure maxScore ≥ threshold.\n\nPool queries:\nNeed repository methods:\n```go\nfunc (r *Repository) candidates(ctx, childID, subject string, stages []string, difficulties []int, excludeRecent bool, limit int) ([]Candidate, error)\n```\nSQL:\n```sql\nselect q.id, q.subject_code, q.difficulty, q.stage_code, q.type_code\nfrom question q\nwhere q.status='online' and q.subject_code=$1 and q.stage_code = any($2) and q.difficulty = any($3)\n  and ($4 = false or not exists (select 1 from answer_log a where a.child_id=$5 and a.question_id=q.id and a.answered_at > now()-interval '30 days'))\norder by q.id\n```\nReturn up to 500. Stage/difficulty arrays.\n\nFor fun, subject='fun', stages band.\n\nTo reduce round trips, fetch pool per subject for all stages/difficulties? Query:\n```sql\nwhere status online and subject_code=$1 and stage_code=any($2)\n```\nthen filter difficulty in Go with fallback. Fetch limit 1000 per subject; fine for MVP.\n\nRepository:\n- `childStage(ctx, childID)` and `childGrade`.\n- `pool(ctx, childID, subject, stages, excludeRecent, limit)`.\n- `recentDifficultyStats(ctx, childID)` optional. Implement accuracy stats:\n```sql\nselect difficulty, count(*), sum(case when is_correct then 1 else 0 end)\nfrom answer_log where child_id=$1 and answered_at > now()-interval '30 days'\ngroup by difficulty\n```\n- `ruleForChild` in T7 later; T5 preview passes rule.\n\nRepeated questions: exclusion 30 days. If fallback, mark repeated.\n\nRandomization: use `rand.New(rand.NewSource(seed))` and shuffle candidates. For production seed = time.Now UnixNano. For tests pass seed.\n\nDeterminism test: same seed + same pool → same result. Acceptance \"可复现\" can mean deterministic with seed.\n\nWhere to place: `internal/quiz` package with selector and repo + tests. T6 will add sessions/handlers in same package.\n\nPreview endpoint:\n`POST /admin/quiz/preview` body:\n```json\n{\n \"child_id\":\"...\",\n \"stage\":\"low\",\n \"grade_tag\":\"g2\",\n \"pass_threshold\":3,\n \"subject_weight\":{\"math\":2,\"science\":1,\"fun\":0.5},\n \"fun_ratio_cap\":2,\n \"fun_enabled\":true,\n \"seed\": 42\n}\n```\nReturns composition + warnings. But requiring child_id for dedupe; if empty, skip dedupe. For preview without real child, allow stage/grade only. Register under admin with question.read.\n\nT5 doesn't require sessions; T6 will call selector with real child.\n\nImplementation files:\n- internal/quiz/models.go\n- internal/quiz/repository.go\n- internal/quiz/selector.go\n- internal/quiz/handlers.go (preview)\n- internal/quiz/integration_test.go\n\nWiring: httpapi.Deps Quiz *quiz.Service; main constructs; router mounts preview.\n\nPotential package name conflict with future T6; use `internal/quiz`.\n\nSelector struct:\n```go\ntype Service struct { repo *repository; logger *slog.Logger }\n```\n`Select(ctx, req) (Result, error)`.\n\nValidation of request:\n- stage valid.\n- weights: non-empty, non-negative, max>0, fun weight validation.\n- threshold >0.\n- fun cap 0..10.\n- n computed.\n\nResult:\n```go\ntype Selected struct { QuestionID, Subject, Stage, Type string; Difficulty int; Repeated bool }\ntype Result struct { Total, N int; Quota map[string]int; Selected []Selected; MaxScore float64; Warnings []string; DifficultyTarget int }\n```\n\nSteps:\n1. Validate.\n2. Determine fun slots + subject quotas.\n3. For each subject, gather pool:\n   - stages: for fun: band stages; else primary stage + fallback stages ordered.\n   - difficulty order: target, target±1, then others. Query all candidates for stages (limit 2000) and filter by stage/difficulty priority.\n   - exclude recent unless fallback.\n4. Build candidate list per subject ordered by (difficulty distance, random).\n5. Select quota, tracking shortfall.\n6. Redistribute shortfall among subjects with remaining candidates, weighted round robin.\n7. If total < n (or < n_min) → error? If maxScore < threshold → error with warning.\n8. Sort selected by position? Random shuffle.\n\nAvoid selecting same question twice: pool per subject distinct.\n\nFallback warnings strings.\n\nStage adjacency:\norder := map[string][]string{\n \"preschool\": {\"preschool\",\"low\",\"mid\",\"high\"},\n \"low\": {\"low\",\"preschool\",\"mid\",\"high\"},\n \"mid\": {\"mid\",\"low\",\"high\",\"preschool\"},\n \"high\": {\"high\",\"mid\",\"low\",\"preschool\"},\n}\nFor fun: band := preschool/low if child stage in those; stages = {preschool, low} (or mid/high).\n\nDifficulty order: target, target-1, target+1, ... use abs sort.\n\nPool query returns candidates for all 4 stages; then sort by stage rank & difficulty distance & random. But querying all stages + 2000 limit may skew. Use SQL filter stage = any(ordered stages) and fetch up to 1000; then in Go sort.\n\n`excludeRecent` SQL param.\n\nIf fallback needed, re-query without exclusion (or include flags). Simpler: query once with `exclude_recent=true`; if insufficient, query again with false and merge. Implement two calls when needed.\n\nRecent accuracy target:\n```go\nfunc (s *Service) targetDifficulty(ctx, childID, stage, grade string) int\n```\n- if childID != \"\": stats; choose difficulty where rate between 0.6-0.8 and attempts>=5; else stage default + grade offset.\n- default per stage: preschool1, low2, mid3, high3.\n- grade offset: g1-3 -1? For low stage g1..g3 already. Keep simple: if grade g7-g9 +1, g1-g3 -1 (clamp).\n- score closeness to 0.7; tie lower difficulty.\n\nMaxScore: sum weight[subject] for selected. If fun selected but weight 0? skip.\n\nThreshold feasibility check before selection: n computed; max potential unknown. After selection, if maxScore < threshold, return error with details (`ErrInsufficientPool`).\n\nErrors: define `APIError` similar? Quiz package can return errors with code; handlers map. For T5 preview, return 409/422. Define `Error{Status,Code,Message,Warnings}`.\n\nQuota allocation largest remainder:\n```go\ntype alloc struct{ subject string; exact float64; count int }\ntotalW := sum\nfor each: exact = n * w/totalW; count=floor; remainder\ndistribute remaining by remainder desc, then weight desc, then name.\n```\nSubjects with weight >0 but no candidates still get quota; redistribution later.\n\nRedistribution: after selection, remaining slots; loop subjects sorted by weight desc; if candidates remain, add. Continue until no candidates.\n\nSelection count per subject includes fun.\n\nPotential issue: selected total might exceed n due to redistribution? Track slots.\n\nOrdering selected: shuffle all with rng.\n\nWarnings for:\n- `stage_fallback:<subject>`\n- `difficulty_fallback:<subject>`\n- `repeat_question:<n>`\n- `subject_shortage:<subject>`\n- `quota_redistributed`\n\nAcceptance \"权重分配误差 ≤1 题\": with largest remainder, quota differs from exact by <1. Test asserts.\n\nNow T5 \"下线题不再被抽中\": selector query status online; test inserts offline question and asserts not selected.\n\nTests integration:\n- Seed questions: for stage low, subjects math/chinese/science/fun, difficulty 1-5, N each (e.g., 20 each), status online. Insert directly via SQL.\n- Preview via service (not HTTP necessarily) with weights {math:2, chinese:1, science:1, fun:0.5}, threshold 3, fun cap 2, seed 1.\n- Assert total between 3 and 12; fun ≤2; maxScore ≥3; quotas approximate.\n- Insert offline math question with unique stem; run selection many times; assert never selected. Or directly call repo candidates. Better: query selector and check no offline.\n- Dedupe: insert answer_log for child for all math questions? Then selector should fallback with warning repeat. Setup a child + family to satisfy FK. Or test dedupe via child with answer logs for a specific question and assert not selected when alternatives exist.\n- Insufficient pool: stage high with no questions → error.\n\nNeed child/family fixtures. DB has parent/family/child; create directly:\n```sql\ninsert into parent_account(...) values...\ninsert into family(owner_id)...\ninsert into child_profile...\n```\nCould use identity service, but direct SQL easier.\n\nAlternatively selector accepts childID optional; for dedupe test use direct SQL insert into answer_log requires child. Create child.\n\nFor preview HTTP test maybe not necessary; service tests suffice. But T5 deliverable is selector, not API. Add preview endpoint and a small HTTP test? The integration test can call service directly, simpler and faster. Keep preview endpoint for manual demo; test service.\n\nWiring preview:\n- handler decodes request (child_id optional, stage, grade_tag, rule fields, seed).\n- Service.Select.\n- Guard permission question.read.\n- Return result.\nRegister in quiz.Routes(r, guard).\n\nNeed httpapi.Deps Quiz.\n\nLet's implement.\n\nRepository:\n\n```go\ntype Candidate struct { ID, Subject, Stage, Type string; Difficulty int }\nfunc (r *repository) pool(ctx, childID, subject string, stages []string, excludeRecent bool, limit int) ([]Candidate, error)\n```\nSQL:\n```sql\nselect q.id, q.subject_code, q.stage_code, q.type_code, q.difficulty\nfrom question q\nwhere q.status='online' and q.subject_code=$1 and q.stage_code = any($2)\nand ($3 = '' or not exists (select 1 from answer_log a where a.child_id=$3 and a.question_id=q.id and a.answered_at > now()-interval '30 days'))\nlimit $4\n```\nPassing empty childID with `$3 = ''` avoids uuid cast issue; but column child_id is uuid, comparing to text param may infer text and fail? `a.child_id = $3` where $3 is text; PG can cast text to uuid? Parameter type inferred uuid from comparison, passing \"\" fails. Instead pass nil *string: `($3::uuid is null or not exists (... a.child_id=$3::uuid ...))`. Use *string nil.\n`excludeRecent bool` <-> childID non-empty.\n\nStages array param: pgx handles []string with `= any($2)`.\n\nlimit.\n\nchildProfile:\n```go\nfunc (r *repository) childProfile(ctx, childID) (stage, grade string, err)\n```\nIf childID empty, request supplies stage.\n\nDifficulty stats.\n\nAlso `func (r *repository) countOnline(ctx)`? no.\n\nSelector random: use `math/rand` (not crypto) with mutex? Create per call `rand.New(rand.NewSource(seed))`.\n\nSeed from request; if 0 use time.Now().UnixNano().\n\nCompute n:\n```go\nmaxW := max weight among enabled (including fun? For n_min use max subject weight excluding fun? Design uses max(subject_weight). Use max of all >0.)\nnMin := max(3, ceil(threshold/maxW))\nn := clamp(nMin+2, 3, 12)\n```\nIf maxW=0 error.\n\nFun slots: if funEnabled && funWeight>0 && funCap>0: funN = min(cap, max(1, n-1)).\nnSubject = n - funN.\n\nQuotas over subject weights excluding fun (fun not in main allocation). If only fun enabled? weights must have non-fun? Validate: at least one non-fun weight >0.\n\nLargest remainder for nSubject.\n\nSelection:\nfor each subject quota:\n  candidates := pool(subject, stages)\n  if child != \"\" and len < quota: pool without exclusion, merge (dedupe by ID), record repeat warning.\n  sort by stage rank, difficulty distance, random.\n  take quota; if short, record.\nThen redistribute.\n\nFor fun: subject fun, stages band, weight used for score.\n\nStage fallback: we query all stages ordered, but sort by stage rank so primary first. Mark stage_fallback if selected stage != primary.\n\nDifficulty fallback: mark if abs(diff-target)>0.\n\nDedupe across subjects unnecessary (questions have one subject).\n\nAfter selection:\n- shuffle selected.\n- compute score.\n- if len(selected) == 0 or score < threshold → error `INSUFFICIENT_POOL` with warnings.\n- Should require len >= nMin? If score meets threshold, okay; but session size might be smaller. Accept.\n\nQuota output: actual counts.\n\nTest \"权重分配误差 ≤1\": compare actual subject counts to quota computed? Since redistribution/fallback may alter, test a well-supplied pool.\n\nImplement `Result.Quota` actual counts.\n\nWarnings dedupe.\n\nLet's write models.go, repository.go, selector.go.\n\nBe careful with `rand.Shuffle` signature.\n\nStage rank map; fun band.\n\nLet me write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626054551,
+            "completed": 1793626090664
+          }
+        },
+        {
+          "type": "text",
+          "text": "继续 T5：组卷 v0。实现加权配额、趣味题上限、难度/学段降级、去重与断供兜底，并提供管理端预览接口。"
+        },
+        {
+          "type": "tool",
+          "id": "call_00_amdieybc4ewgabt0crfx762u",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport \"time\"\n\n// Rule 是组卷所需的规则子集。\ntype Rule struct {\n\tUnlockMinutes  int                `json:\"unlock_minutes\"`\n\tPassThreshold  float64            `json:\"pass_threshold\"`\n\tSubjectWeight  map[string]float64 `json:\"subject_weight\"`\n\tFunRatioCap    int                `json:\"fun_ratio_cap\"`\n\tFunEnabled     bool               `json:\"fun_enabled\"`\n\tWeightPreset   string             `json:\"weight_preset,omitempty\"`\n}\n\n// SelectRequest 是组卷请求。\ntype SelectRequest struct {\n\tChildID      string `json:\"child_id\"`\n\tStage        string `json:\"stage\"`\n\tGradeTag     string `json:\"grade_tag\"`\n\tRule         Rule   `json:\"rule\"`\n\tSeed         int64  `json:\"seed\"`\n\tMaxQuestions int    `json:\"max_questions\"`\n}\n\n// Selected 是被选中的题目。\ntype Selected struct {\n\tQuestionID string `json:\"question_id\"`\n\tSubject    string `json:\"subject\"`\n\tStage      string `json:\"stage\"`\n\tType       string `json:\"type\"`\n\tDifficulty int    `json:\"difficulty\"`\n\tRepeated   bool   `json:\"repeated\"`\n}\n\n// Result 是组卷结果。\ntype Result struct {\n\tTotal           int            `json:\"total\"`\n\tQuota           map[string]int `json:\"quota\"`\n\tSelected        []Selected     `json:\"selected\"`\n\tMaxScore        float64        `json:\"max_score\"`\n\tDifficultyTarget int           `json:\"difficulty_target\"`\n\tWarnings        []string       `json:\"warnings,omitempty\"`\n\tSeed            int64          `json:\"seed\"`\n}\n\n// Error 是组卷业务错误。\ntype Error struct {\n\tStatus   int\n\tCode     string\n\tMessage  string\n\tWarnings []string\n}\n\nfunc (e *Error) Error() string { return e.Message }\n\nfunc newError(status int, code, message string) *Error {\n\treturn &Error{Status: status, Code: code, Message: message}\n}\n\n// PreviewResponse 便于管理端 dry-run 查看。\ntype PreviewResponse struct {\n\tResult\n\tGeneratedAt time.Time `json:\"generated_at\"`\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/models.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/models.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626083516,
+            "ran": 1793626090672,
+            "completed": 1793626090692
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_4bdmuwdcbpcxm8meleu56we7",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n)\n\ntype repository struct {\n\tpool *pgxpool.Pool\n}\n\nfunc newRepository(pool *pgxpool.Pool) *repository {\n\treturn &repository{pool: pool}\n}\n\n// Candidate 是候选题目。\ntype Candidate struct {\n\tID         string\n\tSubject    string\n\tStage      string\n\tType       string\n\tDifficulty int\n}\n\n// pool 返回某学科在给定学段的在线题目；excludeRecent 为 true 时排除孩子近 30 天做过的题。\nfunc (r *repository) pool(ctx context.Context, childID, subject string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) {\n\tvar childArg any\n\tif childID != \"\" && excludeRecent {\n\t\tchildArg = childID\n\t}\n\n\tconst query = `\n\t\tselect q.id, q.subject_code, q.stage_code, q.type_code, q.difficulty\n\t\tfrom question q\n\t\twhere q.status = 'online'\n\t\t  and q.subject_code = $1\n\t\t  and q.stage_code = any($2)\n\t\t  and ($3::uuid is null or not exists (\n\t\t      select 1 from answer_log a\n\t\t      where a.child_id = $3::uuid\n\t\t        and a.question_id = q.id\n\t\t        and a.answered_at > now() - interval '30 days'))\n\t\tlimit $4`\n\n\trows, err := r.pool.Query(ctx, query, subject, stages, childArg, limit)\n\tif err != nil {\n\t\treturn nil, fmt.Errorf(\"query pool: %w\", err)\n\t}\n\tdefer rows.Close()\n\n\titems := make([]Candidate, 0, limit)\n\tfor rows.Next() {\n\t\tvar c Candidate\n\t\tif err := rows.Scan(&c.ID, &c.Subject, &c.Stage, &c.Type, &c.Difficulty); err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\titems = append(items, c)\n\t}\n\treturn items, rows.Err()\n}\n\n// childStage 读取孩子学段；childID 为空时返回空。\nfunc (r *repository) childStage(ctx context.Context, childID string) (stage, grade string, err error) {\n\tif childID == \"\" {\n\t\treturn \"\", \"\", nil\n\t}\n\terr = r.pool.QueryRow(ctx, `\n\t\tselect stage_code, coalesce(grade_tag, '')\n\t\tfrom child_profile where id = $1`, childID).Scan(&stage, &grade)\n\treturn stage, grade, err\n}\n\n// difficultyStats 返回孩子近 30 天各难度的正确率。\nfunc (r *repository) difficultyStats(ctx context.Context, childID string) (map[int]float64, error) {\n\tif childID == \"\" {\n\t\treturn map[int]float64{}, nil\n\t}\n\trows, err := r.pool.Query(ctx, `\n\t\tselect difficulty, count(*) as attempts,\n\t\t       sum(case when a.is_correct then 1 else 0 end)::float / count(*) as rate\n\t\tfrom answer_log a\n\t\tjoin question q on q.id = a.question_id\n\t\twhere a.child_id = $1 and a.answered_at > now() - interval '30 days'\n\t\tgroup by difficulty`, childID)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tdefer rows.Close()\n\n\tstats := map[int]float64{}\n\tfor rows.Next() {\n\t\tvar difficulty, attempts int\n\t\tvar rate float64\n\t\tif err := rows.Scan(&difficulty, &attempts, &rate); err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\tif attempts >= 5 {\n\t\t\tstats[difficulty] = rate\n\t\t}\n\t}\n\treturn stats, rows.Err()\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/repository.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/repository.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626086255,
+            "ran": 1793626090677,
+            "completed": 1793626090690
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "d8778a6caf59729af9272e52baf730c0decc7d31",
+        "end": "617fc281be1ac8b0141dee82ed344836c04375c7",
+        "files": [
+          "internal/quiz/models.go",
+          "internal/quiz/repository.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 807,
+        "output": 1477,
+        "reasoning": 4349,
+        "cache": {
+          "read": 313088,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c722d1a0010WQGe3sUlSJTcZ",
+      "time": {
+        "created": 1793626090782,
+        "streamed": 1793626126747,
+        "completed": 1793626126798
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now selector.go.\n\nNeed math, sort, strings, time.\n\nConstants:\n- maxSessionQuestions = 12, defaultMax = 12.\n- stageRanks, stageOrder.\n- funBandStages.\n- difficulty target.\n\nError types and messages.\n\nService:\n```go\ntype Service struct { repo *repository; logger *slog.Logger }\nfunc New(pool, logger) *Service\n```\n\n`Select(ctx, req)`:\n- normalize stage/grade; if childID != \"\" retrieve stage/grade, verify matches request? Use child's stage authoritative; if req.Stage empty use child's.\n- validate rule.\n- resolve n.\n- seed default.\n- rng := rand.New(rand.NewSource(seed)).\n- quotas.\n- select per subject.\n- redistribute.\n- score/warnings.\n- deterministic ordering: shuffle selected with rng; sort? For preview, shuffle is fine. For tests, seed deterministic.\n\nPool fetching per subject:\n```go\nfunc (s *Service) selectSubject(ctx, req, subject string, quota int, stage string, stages []string, fun bool) ([]Selected, []string, bool)\n```\nNeed stage rank and primary.\n\nStages list for subject:\n- fun: band (2 stages)\n- else: ordered stage fallback (4).\n\nQuery pool with excludeRecent child non-empty. Sort candidates by:\n1. stage rank (0 primary, 1 adjacent...)\n2. difficulty distance to target\n3. random shuffle\nBut shuffling first then stable sort preserves random within groups:\n```go\nrng.Shuffle(len(cands), swap)\nsort.SliceStable(cands, func(i,j) bool { if rank != rank return rank<; return abs(diff-target)< })\n```\nThen take quota.\n\nIf candidates < quota and child != \"\":\n- query again without exclusion, merge unseen, mark repeated candidate IDs set.\n- warning repeat_question.\n- Then re-sort; but repeat candidates placed after? We want fresh first. We already took fresh; if short, add repeats. Implement:\n  - first pool fresh; sort; take fresh up to quota.\n  - if still short, fetch all (no exclusion), exclude already selected, sort; take remaining; mark repeated.\n- If still short, warning subject_shortage.\n\nStage fallback warning if selected stage != primary; difficulty fallback if abs(diff-target)>0? That's almost always; warning should be only when no exact target? Set warning if selected difficulty outside [target-1,target+1]? Better: per subject, if any selected difficulty != target, warning `difficulty_fallback` with detail. Could be noisy. Acceptance wants report. Use warning when any selected differs.\n\nRedistribution:\nAfter initial per-subject selection (quota may be unmet), count total; if < n:\n- pools for subjects already fetched? We can fetch again for subjects with remaining capacity. Simpler: loop subjects by weight desc; call `pool` again and choose additional candidates not selected, up to remaining slots. This re-queries; fine.\n- Stop when total == n or no additions.\n- Warning quota_redistributed.\n\nBut n may exceed available; final total may be < n. Then if maxScore < threshold → error. Else accept.\n\nAlso if nSubject quota allocation with fun: fun selection separate.\n\nFun quota:\n- funN = min(funCap, max(1, n-1)) if funEnabled && weight>0.\n- If no fun candidates, funN unmet and redistribute to subjects? Redistribution loop includes fun? We'll skip fun in redistribution and add slots to subjects. Adjust nSubjects? Simpler: attempt fun, if short, redistribute to non-fun.\n\nMaxScore: sum weights of selected subjects (fun weight included). If fun weight missing/0, fun questions shouldn't be selected (check weight >0).\n\nQuota allocation function:\n```go\nfunc allocate(weights map[string]float64, n int) (map[string]int, error)\n```\nLargest remainder over subjects (non-fun). If n=0.\n- total weight; if 0 error.\n- exact; floor; remainder; sort by remainder desc, weight desc, name.\n- distribute leftover.\n\nNote weights may include subjects not in tag dict; pool returns none → redistribution.\n\nDifficulty target:\n```go\nfunc targetDifficulty(stage, grade string, stats map[int]float64) int {\n  best := 0; bestDist := 2\n  for d, rate := range stats { if rate>=0.6 && rate<=0.8 { return d } }...\n  base := map[stage]int{preschool:1, low:2, mid:3, high:3}\n  offset := 0\n  if grade g7-g9 offset=1; if g1-g3 offset=-1\n  clamp\n}\n```\nIf stats available choose closest to 0.7 with rate 0.5-0.9?:\n```go\nfor d, rate := range stats { dist:=abs(rate-0.7); if dist<best { best... } }\nif bestDist <= 0.25 return best\n```\nThen default.\n\nFun stages:\n```go\nif stage==\"preschool\"||stage==\"low\" { {\"preschool\",\"low\"} } else { {\"mid\",\"high\"} }\n```\nFun primary stage: child stage if in band else band[0]. Stage fallback warning only if selected stage != child stage? For fun, both are acceptable; don't warn.\n\nn calculation: use maxWeight among all weights (including fun? fun weight 0.5 would lower max? max unaffected). Use max including fun for n_min? If fun weight is highest, n_min smaller; then subject questions maybe. Use max among non-fun to ensure subject capacity. If threshold 3, math 2 → n_min=2. Good.\n\nValidation:\n- stage valid.\n- threshold >0.\n- at least one non-fun subject weight >0.\n- weights >=0; fun weight < min non-fun weight? Enforce per design? For selector, fun weight can be low; validate fun weight < min(non-fun) if fun enabled. Return 422.\n- funCap >=0.\n- maxQuestions (if >0) clamp 3..20? Design max 12. Use 12.\n\nComposition counts: `Quota` actual.\n\nWarnings dedupe helper.\n\nLet's write.\n\nEdge: pool limit 2000 per subject.\n\n`sort.SliceStable` after shuffle.\n\nSelected struct needs Repeated.\n\nImplementation of per-subject selection:\n```go\nfunc (s *Service) pick(ctx, childID, subject string, stages []string, rank map[string]int, target, need int, rng) (picked []Candidate, repeated int, stageFallback bool, diffFallback bool, err error)\n```\n- pool fresh (exclude if child).\n- sort.\n- take need.\n- if len<need && child!=\"\": pool all; exclude picked IDs; sort; take rest; repeated count.\n- stageFallback if any picked stage != stages[0].\n- diffFallback if any picked difficulty != target.\n\nFor fun, stages band; stageFallback false.\n\nWarnings strings include subject.\n\nRedistribution: easier after initial selection:\n```go\nselectedIDs := set\ntotal := len(selected)\nif total < n {\n  for _, subj := range subjectsByWeightDesc {\n     if total>=n break\n     extra := n-total\n     picked := pick(... need=extra)\n     append not selected\n  }\n}\n```\nBut `pick` may re-pick selected IDs; pass exclude set? Add param `exclude map[string]bool`. Or pick then filter and try. Implement helper accepts exclude.\n\nSimpler: include selected IDs check after picking; filter out; if duplicate, lost slot but loop continues. Could loop until no progress. Fine.\n\nLet's write with `pickSubject` returning candidates for need+ maybe.\n\nTo keep manageable:\n- For each subject, call `pickSubject(need, exclude)`.\n- Redistribution loop 3 passes.\n\nAfter all, dedupe (should be unique).\n\nScore: weight[subject] sum.\n\nIf total < 3 or score < threshold → error with warnings.\n\nReturn.\n\nCSV etc not relevant.\n\nWrite selector.go.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626095872,
+            "completed": 1793626126742
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_j31js9khytacwhs9a2i80nvq",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"log/slog\"\n\t\"math\"\n\t\"math/rand\"\n\t\"sort\"\n\t\"strings\"\n\t\"time\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n)\n\nconst (\n\tmaxSessionQuestions = 12\n\tdefaultPoolLimit    = 2000\n)\n\nvar (\n\tstageRanks = map[string]int{\"preschool\": 0, \"low\": 1, \"mid\": 2, \"high\": 3}\n\tstageOrder = map[string][]string{\n\t\t\"preschool\": {\"preschool\", \"low\", \"mid\", \"high\"},\n\t\t\"low\":       {\"low\", \"preschool\", \"mid\", \"high\"},\n\t\t\"mid\":       {\"mid\", \"low\", \"high\", \"preschool\"},\n\t\t\"high\":      {\"high\", \"mid\", \"low\", \"preschool\"},\n\t}\n\tvalidStages = map[string]bool{\"preschool\": true, \"low\": true, \"mid\": true, \"high\": true}\n)\n\n// Service 是组卷服务。\ntype Service struct {\n\trepo   *repository\n\tlogger *slog.Logger\n}\n\n// New 构造组卷服务。\nfunc New(pool *pgxpool.Pool, logger *slog.Logger) *Service {\n\treturn &Service{repo: newRepository(pool), logger: logger}\n}\n\n// Select 按规则组卷。\nfunc (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error) {\n\tstage, grade := req.Stage, req.GradeTag\n\tif req.ChildID != \"\" {\n\t\tchildStage, childGrade, err := s.repo.childStage(ctx, req.ChildID)\n\t\tif err != nil {\n\t\t\treturn Result{}, newError(404, \"CHILD_NOT_FOUND\", \"孩子档案不存在\")\n\t\t}\n\t\tstage, grade = childStage, childGrade\n\t}\n\tstage = strings.TrimSpace(stage)\n\tif !validStages[stage] {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"学段不合法\")\n\t}\n\tif err := validateRule(req.Rule); err != nil {\n\t\treturn Result{}, err\n\t}\n\n\tseed := req.Seed\n\tif seed == 0 {\n\t\tseed = time.Now().UnixNano()\n\t}\n\trng := rand.New(rand.NewSource(seed))\n\n\tstats, err := s.repo.difficultyStats(ctx, req.ChildID)\n\tif err != nil {\n\t\treturn Result{}, err\n\t}\n\ttarget := targetDifficulty(stage, grade, stats)\n\n\tmaxQuestions := maxSessionQuestions\n\tif req.MaxQuestions > 0 && req.MaxQuestions < maxQuestions {\n\t\tmaxQuestions = req.MaxQuestions\n\t}\n\tn, err := sessionSize(req.Rule, maxQuestions)\n\tif err != nil {\n\t\treturn Result{}, err\n\t}\n\n\tsubjectWeights := make(map[string]float64)\n\tmaxWeight := 0.0\n\tfor subject, weight := range req.Rule.SubjectWeight {\n\t\tif subject == \"fun\" || weight <= 0 {\n\t\t\tcontinue\n\t\t}\n\t\tsubjectWeights[subject] = weight\n\t\tif weight > maxWeight {\n\t\t\tmaxWeight = weight\n\t\t}\n\t}\n\tif len(subjectWeights) == 0 {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"至少需要一个学科权重\")\n\t}\n\n\tfunSlots := 0\n\tif req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight[\"fun\"] > 0 {\n\t\tfunSlots = min(req.Rule.FunRatioCap, max(1, n-1))\n\t}\n\tsubjectSlots := n - funSlots\n\tquota := allocate(subjectWeights, subjectSlots)\n\n\tselected := make([]Selected, 0, n)\n\tchosen := map[string]bool{}\n\twarnings := make([]string, 0)\n\taddWarning := func(w string) {\n\t\tfor _, existing := range warnings {\n\t\t\tif existing == w {\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\twarnings = append(warnings, w)\n\t}\n\n\tstages := stageOrder[stage]\n\tprimaryRank := stageRanks[stage]\n\n\tfor subject, count := range quota {\n\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\ttarget, count, rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\tif funSlots > 0 {\n\t\tfunStages := []string{\"preschool\", \"low\"}\n\t\tif stage == \"mid\" || stage == \"high\" {\n\t\t\tfunStages = []string{\"mid\", \"high\"}\n\t\t}\n\t\tif err := s.fillSubject(ctx, req.ChildID, \"fun\", funStages, -1,\n\t\t\ttarget, funSlots, rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\t// 配额未满时，按权重从高到低再分配。\n\tif len(selected) < n {\n\t\tordered := subjectsByWeight(subjectWeights)\n\t\tfor pass := 0; pass < 2 && len(selected) < n; pass++ {\n\t\t\tprogress := false\n\t\t\tfor _, subject := range ordered {\n\t\t\t\tif len(selected) >= n {\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\tneed := n - len(selected)\n\t\t\t\tbefore := len(selected)\n\t\t\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\t\t\ttarget, need, rng, chosen, &selected, addWarning); err != nil {\n\t\t\t\t\treturn Result{}, err\n\t\t\t\t}\n\t\t\t\tif len(selected) > before {\n\t\t\t\t\tprogress = true\n\t\t\t\t}\n\t\t\t}\n\t\t\tif !progress {\n\t\t\t\tbreak\n\t\t\t}\n\t\t\taddWarning(\"quota_redistributed\")\n\t\t}\n\t}\n\n\trng.Shuffle(len(selected), func(i, j int) {\n\t\tselected[i], selected[j] = selected[j], selected[i]\n\t})\n\n\tscore := 0.0\n\tactual := map[string]int{}\n\tfor _, item := range selected {\n\t\tscore += req.Rule.SubjectWeight[item.Subject]\n\t\tactual[item.Subject]++\n\t}\n\n\tresult := Result{\n\t\tTotal:            len(selected),\n\t\tQuota:            actual,\n\t\tSelected:         selected,\n\t\tMaxScore:         round2(score),\n\t\tDifficultyTarget: target,\n\t\tWarnings:         warnings,\n\t\tSeed:             seed,\n\t}\n\tif len(selected) < 3 || score < req.Rule.PassThreshold {\n\t\tapiErr := newError(409, \"INSUFFICIENT_POOL\",\n\t\t\tfmt.Sprintf(\"题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f\", len(selected), score, req.Rule.PassThreshold))\n\t\tapiErr.Warnings = warnings\n\t\treturn result, apiErr\n\t}\n\treturn result, nil\n}\n\nfunc (s *Service) fillSubject(\n\tctx context.Context,\n\tchildID, subject string,\n\tstages []string,\n\tprimaryRank, target, need int,\n\trng *rand.Rand,\n\tchosen map[string]bool,\n\tselected *[]Selected,\n\taddWarning func(string),\n) error {\n\tif need <= 0 {\n\t\treturn nil\n\t}\n\n\tfresh, err := s.repo.pool(ctx, childID, subject, stages, true, defaultPoolLimit)\n\tif err != nil {\n\t\treturn err\n\t}\n\tsortCandidates(fresh, rng, primaryRank, target)\n\n\tpicked := 0\n\tfor _, candidate := range fresh {\n\t\tif picked >= need {\n\t\t\tbreak\n\t\t}\n\t\tif chosen[candidate.ID] {\n\t\t\tcontinue\n\t\t}\n\t\t*selected = append(*selected, toSelected(candidate, false))\n\t\tchosen[candidate.ID] = true\n\t\tpicked++\n\t\tif primaryRank >= 0 && stageRanks[candidate.Stage] != primaryRank {\n\t\t\taddWarning(\"stage_fallback:\" + subject)\n\t\t}\n\t\tif candidate.Difficulty != target {\n\t\t\taddWarning(\"difficulty_fallback:\" + subject)\n\t\t}\n\t}\n\n\tif picked >= need || childID == \"\" {\n\t\tif picked < need {\n\t\t\taddWarning(\"subject_shortage:\" + subject)\n\t\t}\n\t\treturn nil\n\t}\n\n\t// 去重导致不足时，退化为允许重复题。\n\tall, err := s.repo.pool(ctx, childID, subject, stages, false, defaultPoolLimit)\n\tif err != nil {\n\t\treturn err\n\t}\n\tsortCandidates(all, rng, primaryRank, target)\n\tfor _, candidate := range all {\n\t\tif picked >= need {\n\t\t\tbreak\n\t\t}\n\t\tif chosen[candidate.ID] {\n\t\t\tcontinue\n\t\t}\n\t\t*selected = append(*selected, toSelected(candidate, true))\n\t\tchosen[candidate.ID] = true\n\t\tpicked++\n\t\taddWarning(\"repeat_question:\" + subject)\n\t}\n\tif picked < need {\n\t\taddWarning(\"subject_shortage:\" + subject)\n\t}\n\treturn nil\n}\n\nfunc toSelected(c Candidate, repeated bool) Selected {\n\treturn Selected{\n\t\tQuestionID: c.ID,\n\t\tSubject:    c.Subject,\n\t\tStage:      c.Stage,\n\t\tType:       c.Type,\n\t\tDifficulty: c.Difficulty,\n\t\tRepeated:   repeated,\n\t}\n}\n\nfunc sortCandidates(items []Candidate, rng *rand.Rand, primaryRank, target int) {\n\trng.Shuffle(len(items), func(i, j int) {\n\t\titems[i], items[j] = items[j], items[i]\n\t})\n\tsort.SliceStable(items, func(i, j int) bool {\n\t\tri, rj := stageRanks[items[i].Stage], stageRanks[items[j].Stage]\n\t\tif primaryRank >= 0 {\n\t\t\tdi, dj := abs(ri-primaryRank), abs(rj-primaryRank)\n\t\t\tif di != dj {\n\t\t\t\treturn di < dj\n\t\t\t}\n\t\t}\n\t\tdi, dj := abs(items[i].Difficulty-target), abs(items[j].Difficulty-target)\n\t\tif di != dj {\n\t\t\treturn di < dj\n\t\t}\n\t\treturn false\n\t})\n}\n\nfunc validateRule(rule Rule) error {\n\tif rule.PassThreshold <= 0 {\n\t\treturn newError(422, \"VALIDATION_ERROR\", \"加权门槛必须大于 0\")\n\t}\n\tif len(rule.SubjectWeight) == 0 {\n\t\treturn newError(422, \"VALIDATION_ERROR\", \"学科权重不能为空\")\n\t}\n\tminSubjectWeight := math.MaxFloat64\n\thasSubject := false\n\tfor subject, weight := range rule.SubjectWeight {\n\t\tif weight < 0 {\n\t\t\treturn newError(422, \"VALIDATION_ERROR\", \"学科权重不能为负\")\n\t\t}\n\t\tif subject == \"fun\" {\n\t\t\tcontinue\n\t\t}\n\t\tif weight > 0 {\n\t\t\thasSubject = true\n\t\t\tif weight < minSubjectWeight {\n\t\t\t\tminSubjectWeight = weight\n\t\t\t}\n\t\t}\n\t}\n\tif !hasSubject {\n\t\treturn newError(422, \"VALIDATION_ERROR\", \"至少需要一个非趣味学科权重\")\n\t}\n\tif funWeight := rule.SubjectWeight[\"fun\"]; funWeight > 0 && funWeight >= minSubjectWeight {\n\t\treturn newError(422, \"VALIDATION_ERROR\", \"趣味题权重必须低于最低学科权重\")\n\t}\n\tif rule.FunRatioCap < 0 || rule.FunRatioCap > 10 {\n\t\treturn newError(422, \"VALIDATION_ERROR\", \"趣味题上限需在 0–10 之间\")\n\t}\n\treturn nil\n}\n\nfunc sessionSize(rule Rule, maxQuestions int) (int, error) {\n\tmaxWeight := 0.0\n\tfor subject, weight := range rule.SubjectWeight {\n\t\tif subject == \"fun\" {\n\t\t\tcontinue\n\t\t}\n\t\tif weight > maxWeight {\n\t\t\tmaxWeight = weight\n\t\t}\n\t}\n\tif maxWeight <= 0 {\n\t\treturn 0, newError(422, \"VALIDATION_ERROR\", \"至少需要一个非趣味学科权重\")\n\t}\n\tnMin := int(math.Ceil(rule.PassThreshold / maxWeight))\n\tif nMin < 3 {\n\t\tnMin = 3\n\t}\n\tn := nMin + 2\n\tif n > maxQuestions {\n\t\tn = maxQuestions\n\t}\n\tif n < 3 {\n\t\tn = 3\n\t}\n\treturn n, nil\n}\n\n// allocate 使用最大余数法分配题量。\nfunc allocate(weights map[string]float64, total int) map[string]int {\n\tquota := map[string]int{}\n\tif total <= 0 {\n\t\treturn quota\n\t}\n\tsubjects := subjectsByWeight(weights)\n\tsum := 0.0\n\tfor _, subject := range subjects {\n\t\tsum += weights[subject]\n\t}\n\ttype remainder struct {\n\t\tsubject string\n\t\tvalue   float64\n\t}\n\tremainders := make([]remainder, 0, len(subjects))\n\tallocated := 0\n\tfor _, subject := range subjects {\n\t\texact := float64(total) * weights[subject] / sum\n\t\tbase := int(math.Floor(exact))\n\t\tquota[subject] = base\n\t\tallocated += base\n\t\tremainders = append(remainders, remainder{subject, exact - float64(base)})\n\t}\n\tsort.SliceStable(remainders, func(i, j int) bool {\n\t\tif remainders[i].value != remainders[j].value {\n\t\t\treturn remainders[i].value > remainders[j].value\n\t\t}\n\t\treturn weights[remainders[i].subject] > weights[remainders[j].subject]\n\t})\n\tfor i := 0; allocated < total; i++ {\n\t\tquota[remainders[i%len(remainders)].subject]++\n\t\tallocated++\n\t}\n\treturn quota\n}\n\nfunc subjectsByWeight(weights map[string]float64) []string {\n\tsubjects := make([]string, 0, len(weights))\n\tfor subject, weight := range weights {\n\t\tif weight > 0 {\n\t\t\tsubjects = append(subjects, subject)\n\t\t}\n\t}\n\tsort.Slice(subjects, func(i, j int) bool {\n\t\tif weights[subjects[i]] != weights[subjects[j]] {\n\t\t\treturn weights[subjects[i]] > weights[subjects[j]]\n\t\t}\n\t\treturn subjects[i] < subjects[j]\n\t})\n\treturn subjects\n}\n\nfunc targetDifficulty(stage, grade string, stats map[int]float64) int {\n\tbest, bestDistance := 0, math.MaxFloat64\n\tfor difficulty, rate := range stats {\n\t\tdistance := math.Abs(rate - 0.7)\n\t\tif distance < bestDistance {\n\t\t\tbest, bestDistance = difficulty, distance\n\t\t}\n\t}\n\tif best > 0 && bestDistance <= 0.25 {\n\t\treturn best\n\t}\n\n\tbase := map[string]int{\"preschool\": 1, \"low\": 2, \"mid\": 3, \"high\": 3}[stage]\n\tif len(grade) == 2 && grade[0] == 'g' {\n\t\tswitch grade[1] {\n\t\tcase '1', '2', '3':\n\t\t\tbase--\n\t\tcase '7', '8', '9':\n\t\t\tbase++\n\t\t}\n\t}\n\treturn clamp(base, 1, 5)\n}\n\nfunc abs(n int) int {\n\tif n < 0 {\n\t\treturn -n\n\t}\n\treturn n\n}\n\nfunc clamp(value, low, high int) int {\n\tif value < low {\n\t\treturn low\n\t}\n\tif value > high {\n\t\treturn high\n\t}\n\treturn value\n}\n\nfunc round2(value float64) float64 {\n\treturn math.Round(value*100) / 100\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/selector.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626111286,
+            "ran": 1793626126746,
+            "completed": 1793626126751
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "617fc281be1ac8b0141dee82ed344836c04375c7",
+        "end": "5d1e9abfa305bc61a5cf35ba08c3b77a978ee1f1",
+        "files": [
+          "internal/quiz/selector.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 5904,
+        "output": 3519,
+        "reasoning": 1742,
+        "cache": {
+          "read": 313856,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c72b9e9001p3042egDuE3dh0",
+      "time": {
+        "created": 1793626126830,
+        "streamed": 1793626197425,
+        "completed": 1793626197515
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Issues:\n- Go 1.21+ builtin min/max exist; I used `min`/`max` in selector (fine, Go 1.25).\n- `maxWeight` computed in Select but unused! I compute maxWeight then don't use. Remove to avoid compile error (unused local is error). Yes, `maxWeight` assigned and used only in if? Let me check: \n```go\nmaxWeight := 0.0\nfor ... { if weight > maxWeight { maxWeight = weight } }\nif len(subjectWeights)==0 ...\n```\nmaxWeight never read after. Compile error. Remove variable and update.\n- `primaryRank` for fun -1; sortCandidates with primaryRank -1 skips stage rank; fine.\n- `fillSubject` picks fresh; if fresh contains selected IDs? chosen map handles.\n- When picked < need and childID != \"\", re-query all and may pick a fresh candidate that was not in first pool due to limit; fine.\n- Warnings for stage fallback only on selected.\n- `quota` map actual counts; fun included.\n- Redistribution may select from subjects not in quota.\n- `sessionSize`: if maxQuestions <3? set 3.\n- `allocate` division by zero if sum=0; subjectsByWeight only weight>0, validated at least one.\n- `sortCandidates` mutates slice.\n- `targetDifficulty` uses grade[1] byte; grade \"g10\" not valid.\n- `min` builtin with ints.\n- `selected` slice appended via pointer in fillSubject.\n- If funSlots>0 but no fun pool, warning shortage; then redistribution adds subjects, but n total includes fun slot; redistribution can fill it.\n- Score threshold: if selected fewer but score >= threshold, accepted. Fine.\n- `Result.Seed` returned.\n\nRemove maxWeight.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626157326,
+            "completed": 1793626197419
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-8b2552c468bbd0e5",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tsubjectWeights := make(map[string]float64)\n\tfor subject, weight := range req.Rule.SubjectWeight {\n\t\tif subject == \"fun\" || weight <= 0 {\n\t\t\tcontinue\n\t\t}\n\t\tsubjectWeights[subject] = weight\n\t}\n\tif len(subjectWeights) == 0 {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"至少需要一个学科权重\")\n\t}",
+              "oldString": "\tsubjectWeights := make(map[string]float64)\n\tmaxWeight := 0.0\n\tfor subject, weight := range req.Rule.SubjectWeight {\n\t\tif subject == \"fun\" || weight <= 0 {\n\t\t\tcontinue\n\t\t}\n\t\tsubjectWeights[subject] = weight\n\t\tif weight > maxWeight {\n\t\t\tmaxWeight = weight\n\t\t}\n\t}\n\tif len(subjectWeights) == 0 {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"至少需要一个学科权重\")\n\t}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector.go",
+                  "patch": "Index: internal/quiz/selector.go\n===================================================================\n--- internal/quiz/selector.go\n+++ internal/quiz/selector.go\n@@ -79,17 +79,13 @@\n \t\treturn Result{}, err\n \t}\n \n \tsubjectWeights := make(map[string]float64)\n-\tmaxWeight := 0.0\n \tfor subject, weight := range req.Rule.SubjectWeight {\n \t\tif subject == \"fun\" || weight <= 0 {\n \t\t\tcontinue\n \t\t}\n \t\tsubjectWeights[subject] = weight\n-\t\tif weight > maxWeight {\n-\t\t\tmaxWeight = weight\n-\t\t}\n \t}\n \tif len(subjectWeights) == 0 {\n \t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"至少需要一个学科权重\")\n \t}\n",
+                  "status": "modified",
+                  "additions": 0,
+                  "deletions": 4
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626188160,
+            "ran": 1793626197424,
+            "completed": 1793626197452
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "5d1e9abfa305bc61a5cf35ba08c3b77a978ee1f1",
+        "end": "40adf9227835e0fd0206f49ceea16a9bf8e0da6d",
+        "files": [
+          "internal/quiz/selector.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 323067,
+        "output": 291,
+        "reasoning": 399,
+        "cache": {
+          "read": 1920,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c73ce2b001bkmh0XjDMNGvch",
+      "time": {
+        "created": 1793626197553,
+        "streamed": 1793626207459,
+        "completed": 1793626207525
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now handlers.go preview endpoint.\n\n```go\nfunc (s *Service) Routes(r chi.Router, guard *admin.Service) {\n r.Group(func(r) {\n   r.Use(guard.Auth)\n   r.With(guard.Require(\"question.read\")).Post(\"/admin/quiz/preview\", s.handlePreview)\n })\n}\n```\nRequest body includes SelectRequest fields (child_id, stage, grade_tag, rule, seed, max_questions). Validate.\n\nResponse PreviewResponse.\n\nError write.\n\nRegister in router: Deps Quiz *quiz.Service; mount if non-nil.\n\nWrite handlers.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626204475,
+            "completed": 1793626207454
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_oz4sqnb6m610rofh15tu7ejs",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"encoding/json\"\n\t\"errors\"\n\t\"net/http\"\n\t\"time\"\n\n\t\"github.com/go-chi/chi/v5\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/admin\"\n)\n\n// Routes 注册组卷相关管理端接口。\nfunc (s *Service) Routes(r chi.Router, guard *admin.Service) {\n\tr.Group(func(r chi.Router) {\n\t\tr.Use(guard.Auth)\n\t\tr.With(guard.Require(\"question.read\")).Post(\"/admin/quiz/preview\", s.handlePreview)\n\t})\n}\n\nfunc (s *Service) handlePreview(w http.ResponseWriter, r *http.Request) {\n\tvar req SelectRequest\n\tr.Body = http.MaxBytesReader(w, r.Body, 1<<20)\n\tif err := json.NewDecoder(r.Body).Decode(&req); err != nil {\n\t\twriteError(w, http.StatusUnprocessableEntity, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\")\n\t\treturn\n\t}\n\tresult, err := s.Select(r.Context(), req)\n\tif err != nil {\n\t\tvar quizErr *Error\n\t\tif errors.As(err, &quizErr) {\n\t\t\tbody := map[string]any{\n\t\t\t\t\"code\":    quizErr.Code,\n\t\t\t\t\"message\": quizErr.Message,\n\t\t\t}\n\t\t\tif len(quizErr.Warnings) > 0 {\n\t\t\t\tbody[\"warnings\"] = quizErr.Warnings\n\t\t\t}\n\t\t\twriteJSON(w, quizErr.Status, body)\n\t\t\treturn\n\t\t}\n\t\ts.logger.Error(\"select questions\", \"error\", err)\n\t\twriteError(w, http.StatusInternalServerError, \"INTERNAL\", \"服务端错误\")\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, PreviewResponse{Result: result, GeneratedAt: time.Now()})\n}\n\nfunc writeJSON(w http.ResponseWriter, status int, body any) {\n\tw.Header().Set(\"Content-Type\", \"application/json; charset=utf-8\")\n\tw.WriteHeader(status)\n\t_ = json.NewEncoder(w).Encode(body)\n}\n\nfunc writeError(w http.ResponseWriter, status int, code, message string) {\n\twriteJSON(w, status, map[string]string{\"code\": code, \"message\": message})\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/handlers.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/handlers.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626205825,
+            "ran": 1793626207457,
+            "completed": 1793626207465
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "40adf9227835e0fd0206f49ceea16a9bf8e0da6d",
+        "end": "dd9b3fdb155f3f6532dc3ef224c8c1303ecd8c99",
+        "files": [
+          "internal/quiz/handlers.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 6010,
+        "output": 546,
+        "reasoning": 120,
+        "cache": {
+          "read": 319744,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c73f533001ty2B2wsJzt1hzf",
+      "time": {
+        "created": 1793626207543,
+        "streamed": 1793626217771,
+        "completed": 1793626217845
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Wire router/main:\n- Deps Quiz *quiz.Service\n- import alias conflict: package quiz.\n- Router after Questions: `if d.Quiz != nil && d.Admin != nil { d.Quiz.Routes(r, d.Admin) }`\n- main `quizService := quiz.New(pool, logger)` pass.\n\nEdit.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626215125,
+            "completed": 1793626217759
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_sy45yh82pjsutq14wcdggvp7",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\"github.com/roma007/OpenQuizGo/internal/admin\"\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n\t\"github.com/roma007/OpenQuizGo/internal/question\"\n\t\"github.com/roma007/OpenQuizGo/internal/quiz\"\n)\n\n// Deps 是 HTTP 层依赖。\ntype Deps struct {\n\tLogger    *slog.Logger\n\tDB        *pgxpool.Pool\n\tRedis     *redis.Client\n\tIdentity  *identity.Service\n\tAdmin     *admin.Service\n\tQuestions *question.Service\n\tQuiz      *quiz.Service\n\tVersion   string\n\tEnv       string\n}",
+              "oldString": "\t\"github.com/roma007/OpenQuizGo/internal/admin\"\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n\t\"github.com/roma007/OpenQuizGo/internal/question\"\n)\n\n// Deps 是 HTTP 层依赖。\ntype Deps struct {\n\tLogger    *slog.Logger\n\tDB        *pgxpool.Pool\n\tRedis     *redis.Client\n\tIdentity  *identity.Service\n\tAdmin     *admin.Service\n\tQuestions *question.Service\n\tVersion   string\n\tEnv       string\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/httpapi/router.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/httpapi/router.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/httpapi/router.go",
+                  "patch": "Index: internal/httpapi/router.go\n===================================================================\n--- internal/httpapi/router.go\n+++ internal/httpapi/router.go\n@@ -13,8 +13,9 @@\n \n \t\"github.com/roma007/OpenQuizGo/internal/admin\"\n \t\"github.com/roma007/OpenQuizGo/internal/identity\"\n \t\"github.com/roma007/OpenQuizGo/internal/question\"\n+\t\"github.com/roma007/OpenQuizGo/internal/quiz\"\n )\n \n // Deps 是 HTTP 层依赖。\n type Deps struct {\n@@ -23,8 +24,9 @@\n \tRedis     *redis.Client\n \tIdentity  *identity.Service\n \tAdmin     *admin.Service\n \tQuestions *question.Service\n+\tQuiz      *quiz.Service\n \tVersion   string\n \tEnv       string\n }\n \n",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626215417,
+            "ran": 1793626217762,
+            "completed": 1793626217777
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_q3cn0gvpru79dl2fitrglnnt",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\tif d.Questions != nil && d.Admin != nil {\n\t\t\td.Questions.Routes(r, d.Admin)\n\t\t}\n\t\tif d.Quiz != nil && d.Admin != nil {\n\t\t\td.Quiz.Routes(r, d.Admin)\n\t\t}\n\t})",
+              "oldString": "\t\tif d.Questions != nil && d.Admin != nil {\n\t\t\td.Questions.Routes(r, d.Admin)\n\t\t}\n\t})",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/httpapi/router.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/httpapi/router.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/httpapi/router.go",
+                  "patch": "Index: internal/httpapi/router.go\n===================================================================\n--- internal/httpapi/router.go\n+++ internal/httpapi/router.go\n@@ -77,8 +77,11 @@\n \t\t}\n \t\tif d.Questions != nil && d.Admin != nil {\n \t\t\td.Questions.Routes(r, d.Admin)\n \t\t}\n+\t\tif d.Quiz != nil && d.Admin != nil {\n+\t\t\td.Quiz.Routes(r, d.Admin)\n+\t\t}\n \t})\n \n \tr.NotFound(func(w http.ResponseWriter, req *http.Request) {\n \t\tWriteError(w, req, http.StatusNotFound, \"NOT_FOUND\", \"resource not found\")\n",
+                  "status": "modified",
+                  "additions": 3,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626216938,
+            "ran": 1793626217764,
+            "completed": 1793626217785
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_02_jldecj8uwwne6000zc6dsy89",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\"github.com/roma007/OpenQuizGo/internal/platform/logx\"\n\t\"github.com/roma007/OpenQuizGo/internal/question\"\n\t\"github.com/roma007/OpenQuizGo/internal/quiz\"\n)",
+              "oldString": "\t\"github.com/roma007/OpenQuizGo/internal/platform/logx\"\n\t\"github.com/roma007/OpenQuizGo/internal/question\"\n)",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/cmd/api/main.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited cmd/api/main.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "cmd/api/main.go",
+                  "patch": "Index: cmd/api/main.go\n===================================================================\n--- cmd/api/main.go\n+++ cmd/api/main.go\n@@ -18,8 +18,9 @@\n \t\"github.com/roma007/OpenQuizGo/internal/platform/cryptox\"\n \t\"github.com/roma007/OpenQuizGo/internal/platform/database\"\n \t\"github.com/roma007/OpenQuizGo/internal/platform/logx\"\n \t\"github.com/roma007/OpenQuizGo/internal/question\"\n+\t\"github.com/roma007/OpenQuizGo/internal/quiz\"\n )\n \n func main() {\n \tcfg, err := config.Load()\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626217233,
+            "ran": 1793626217770,
+            "completed": 1793626217781
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "dd9b3fdb155f3f6532dc3ef224c8c1303ecd8c99",
+        "end": "62d1f5b599a68b2110856f5a654d4c43885c67ed",
+        "files": [
+          "cmd/api/main.go",
+          "internal/httpapi/router.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 811,
+        "output": 645,
+        "reasoning": 69,
+        "cache": {
+          "read": 325632,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c741d840013l7NIJx06j32a0",
+      "time": {
+        "created": 1793626217865,
+        "streamed": 1793626226130,
+        "completed": 1793626226204
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_m29gnhls4wja7sm7r05l7ggt",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tadminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)\n\tquestionService := question.New(pool, logger)\n\tquizService := quiz.New(pool, logger)\n\n\thandler := httpapi.New(httpapi.Deps{\n\t\tLogger:    logger,\n\t\tDB:        pool,\n\t\tRedis:     rdb,\n\t\tIdentity:  identityService,\n\t\tAdmin:     adminService,\n\t\tQuestions: questionService,\n\t\tQuiz:      quizService,\n\t\tVersion:   cfg.Version,\n\t\tEnv:       cfg.Env,\n\t})",
+              "oldString": "\tadminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)\n\tquestionService := question.New(pool, logger)\n\n\thandler := httpapi.New(httpapi.Deps{\n\t\tLogger:    logger,\n\t\tDB:        pool,\n\t\tRedis:     rdb,\n\t\tIdentity:  identityService,\n\t\tAdmin:     adminService,\n\t\tQuestions: questionService,\n\t\tVersion:   cfg.Version,\n\t\tEnv:       cfg.Env,\n\t})",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/cmd/api/main.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited cmd/api/main.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "cmd/api/main.go",
+                  "patch": "Index: cmd/api/main.go\n===================================================================\n--- cmd/api/main.go\n+++ cmd/api/main.go\n@@ -67,16 +67,18 @@\n \t}, logger)\n \n \tadminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)\n \tquestionService := question.New(pool, logger)\n+\tquizService := quiz.New(pool, logger)\n \n \thandler := httpapi.New(httpapi.Deps{\n \t\tLogger:    logger,\n \t\tDB:        pool,\n \t\tRedis:     rdb,\n \t\tIdentity:  identityService,\n \t\tAdmin:     adminService,\n \t\tQuestions: questionService,\n+\t\tQuiz:      quizService,\n \t\tVersion:   cfg.Version,\n \t\tEnv:       cfg.Env,\n \t})\n \n",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626224909,
+            "ran": 1793626226127,
+            "completed": 1793626226138
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "62d1f5b599a68b2110856f5a654d4c43885c67ed",
+        "end": "2e663259bd92adb8cb059a94e426f784e8b7c597",
+        "files": [
+          "cmd/api/main.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 811,
+        "output": 334,
+        "reasoning": 0,
+        "cache": {
+          "read": 326400,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c743e2b001gjjxK5L0af9Gmd",
+      "time": {
+        "created": 1793626226223,
+        "streamed": 1793626233879,
+        "completed": 1793626235621
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626232842,
+            "completed": 1793626233871
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_f0e28cjtxktb8kh7gugu3gx4",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOTOOLCHAIN=local go build ./... 2>&1 | head -20",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# github.com/roma007/OpenQuizGo/internal/quiz\ninternal/quiz/repository.go:28:22: field and method with the same name pool\n\tinternal/quiz/repository.go:11:2: other declaration of pool\ninternal/quiz/repository.go:47:22: r.pool.Query undefined (type func(ctx context.Context, childID string, subject string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) has no field or method Query)\ninternal/quiz/repository.go:69:15: r.pool.QueryRow undefined (type func(ctx context.Context, childID string, subject string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) has no field or method QueryRow)\ninternal/quiz/repository.go:80:22: r.pool.Query undefined (type func(ctx context.Context, childID string, subject string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) has no field or method Query)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626232845,
+            "ran": 1793626233877,
+            "completed": 1793626235609
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2e663259bd92adb8cb059a94e426f784e8b7c597",
+        "end": "2e663259bd92adb8cb059a94e426f784e8b7c597",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 398,
+        "output": 89,
+        "reasoning": 2,
+        "cache": {
+          "read": 327168,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c7462fc001CTc9sN4J9dk0PM",
+      "time": {
+        "created": 1793626235650,
+        "streamed": 1793626244094,
+        "completed": 1793626245621
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Method name `pool` conflicts with field `pool`. Rename method to `candidates`. Update selector calls `s.repo.pool(` → `s.repo.candidates(`.\n\nEdit.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626242673,
+            "completed": 1793626244089
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_nvg9xxzeqoj4m5d1p5pd8hp6",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/quiz/repository.go'); s=p.read_text()\ns=s.replace('func (r *repository) pool(ctx context.Context,', 'func (r *repository) candidates(ctx context.Context,')\np.write_text(s)\np=Path('internal/quiz/selector.go'); s=p.read_text()\ns=s.replace('s.repo.pool(ctx,', 's.repo.candidates(ctx,')\np.write_text(s)\nprint('ok')\nPY\nGOTOOLCHAIN=local go build ./... 2>&1 | head -20",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "ok\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626243265,
+            "ran": 1793626244093,
+            "completed": 1793626245574
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2e663259bd92adb8cb059a94e426f784e8b7c597",
+        "end": "ad969dcd82b5196a6d22f56bb5de228cf99c0abd",
+        "files": [
+          "internal/quiz/repository.go",
+          "internal/quiz/selector.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 332,
+        "output": 200,
+        "reasoning": 40,
+        "cache": {
+          "read": 327552,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c748a0f001EqWCJHNACw2QkT",
+      "time": {
+        "created": 1793626245654,
+        "streamed": 1793626265533,
+        "completed": 1793626265607
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build passes.\n\nNow integration test for selector. Need seed data.\n\nTest setup:\n- prepare DB (goose up); truncate question, answer_log, child_profile, family_member, family, parent_account, audit_log, admin_user cascade (roles remain).\n- Create parent/family/child.\n- Insert questions directly for stage low: subjects math/chinese/science/fun, difficulties 1-5, 10 each, status online. Also offline math question with recognizable ID.\n- Call quiz.New(pool, logger).Select with childID, rule weights.\n- Assertions:\n  - total 4-12; maxScore >= 3; quota sum == total; fun <=2.\n  - deterministic: same seed → same question IDs.\n  - offline never selected (run 20 seeds).\n  - dedupe: mark all math questions answered recently by child? Then selection should pick repeats (warning repeat_question:math) but still works, or if we mark one math question, assert that ID not selected when alternatives exist. Do the latter: insert answer_log for one specific math q; run 20 seeds; assert ID not selected.\n  - insufficient: stage high (no questions) → error INSUFFICIENT_POOL.\n  - weight distribution: quota error ≤1: run with large pool and check actual count per subject vs expected? Actual may be affected by redistribution only if shortage; with 10 per subject enough. Compute expected n? We can assert math count > science count given weight 2 vs 1, and difference ≤? Exact expectation from allocate not exposed. We can call allocate directly? It's unexported; test package `quiz` (internal) can access. Use package quiz (not quiz_test) to test allocate/sessionSize directly. But integration needs DB and admin? No admin. Use package quiz for internal access.\n\nTest file `internal/quiz/selector_test.go` package quiz:\n- Unit tests for allocate, sessionSize, targetDifficulty, validateRule.\n- Integration test with env.\n\nallocate test: weights {math:2,chinese:1,science:1}, total 6 → exact 3,1.5,1.5 → base 3,1,1 =5; remainders chinese .5, science .5 → one extra to chinese (tie weight equal? math weight 2; remainders tie .5; sort by weight desc → chinese and science both 1; tie name? sort stable with weights equal; order from subjectsByWeight sorted math, chinese, science; remainders slice same order math(.0),chinese(.5),science(.5); stable sort keeps chinese before science; extra→chinese. Result 3,2,1. Largest remainder error <1. Good. Test sum=6, math=3, chinese=2, science=1.\n\nsessionSize: threshold3, max weight2 → nMin=2→3, n=5? Wait nMin = max(3, ceil(3/2)=2) =3; n=5. Design says clamp(n_min+2,3,12) → 5. Good.\n\ntargetDifficulty: stage low, grade g2 → base2-1=1; no stats.\n\nIntegration test:\n- Need parent/family/child creation. Use direct SQL.\n- Insert questions with unique UUIDs via gen_random_uuid and stems.\n- Insert offline question.\n- For dedupe answer_log requires question id + child; insert with answered_at now.\n- Run Select with child, stage low (child stage), rule.\n- Check.\n\nPotential issue: pool candidates limit 2000 and order undefined; shuffle handles.\n\nTest offline exclusion: query all selected; ensure offline ID not.\n\nInsufficient: request stage high with same weights and no high questions; child stage? If childID passed, stage overridden by child (low). For insufficient, pass no childID and stage high. Then answer_log stats skip.\n\nDeterminism: two Select calls same seed → compare IDs sequence. Since queries return arbitrary order (no ORDER BY), shuffle+sort may differ because initial DB order can vary; sort stable with random shuffle—random shuffle depends on input order, so results may differ across calls if query order differs. Add `order by q.id` to candidates query for deterministic input. Do that. Then same seed deterministic.\n\nAdd ORDER BY q.id.\n\nWarnings maybe.\n\nTest dedupe: create answer_log for math question; selector excludes; if enough other math, not selected. With 10 math per difficulty (50 total), fine.\n\nScore test: all subjects weight; maxScore = sum of selected subject weights. Assert >= threshold.\n\nFun cap: weights includes fun 0.5 (< min subject 1), fun cap2. Assert count fun <=2.\n\nNote validateRule requires fun weight < min subject weight. Use weights math2,chinese1,science1,fun0.5.\n\nn: threshold 3, max2 → 5. fun2, subject3 (quota 2 math,1 chinese maybe). Fine.\n\nTotal 5; maxScore 2*2+1+0.5*2=6.\n\nTest distribution: math count >=2? quota math 2, chinese1; science maybe 0. With fun 2. Actual quota might vary due to pool; all present. Assert math > 0, sum=5, fun<=2.\n\nDedupe assertion across 10 seeds.\n\nInsufficient: no child, stage high, weights math2, threshold3; pool no high → selected 0 → error 409 INSUFFICIENT_POOL.\n\nLet's add ORDER BY and test.\n\nAlso repository query `limit $4` with ORDER BY q.id.\n\nEdit.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626253656,
+            "completed": 1793626265525
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_25avblkc0l7nqa789ie2nah7",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\t  and ($3::uuid is null or not exists (\n\t\t      select 1 from answer_log a\n\t\t      where a.child_id = $3::uuid\n\t\t        and a.question_id = q.id\n\t\t        and a.answered_at > now() - interval '30 days'))\n\t\torder by q.id\n\t\tlimit $4`",
+              "oldString": "\t\t  and ($3::uuid is null or not exists (\n\t\t      select 1 from answer_log a\n\t\t      where a.child_id = $3::uuid\n\t\t        and a.question_id = q.id\n\t\t        and a.answered_at > now() - interval '30 days'))\n\t\tlimit $4`",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/repository.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/repository.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/repository.go",
+                  "patch": "Index: internal/quiz/repository.go\n===================================================================\n--- internal/quiz/repository.go\n+++ internal/quiz/repository.go\n@@ -41,8 +41,9 @@\n \t\t      select 1 from answer_log a\n \t\t      where a.child_id = $3::uuid\n \t\t        and a.question_id = q.id\n \t\t        and a.answered_at > now() - interval '30 days'))\n+\t\torder by q.id\n \t\tlimit $4`\n \n \trows, err := r.pool.Query(ctx, query, subject, stages, childArg, limit)\n \tif err != nil {\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626264689,
+            "ran": 1793626265530,
+            "completed": 1793626265545
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "ad969dcd82b5196a6d22f56bb5de228cf99c0abd",
+        "end": "8673ae9bc94a1bc4e3561066539dc8ce43bdb127",
+        "files": [
+          "internal/quiz/repository.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 330,
+        "output": 227,
+        "reasoning": 1200,
+        "cache": {
+          "read": 327808,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c74d8220014JNdEogaCTDdEy",
+      "time": {
+        "created": 1793626265638,
+        "streamed": 1793626285693,
+        "completed": 1793626285768
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now test file. Use package quiz (internal) to access allocate. Integration test can be same package; fine.\n\nSetup DB truncate: `truncate table answer_log, question, child_profile, family_member, family, parent_account cascade`. But question referenced by quiz_session_item (empty). Cascade.\n\nInsert parent/family/child:\n```sql\ninsert into parent_account (phone_cipher, phone_hash) values ('x', 'hash-<nano>') returning id\ninsert into family(owner_id)...\ninsert into family_member...\ninsert into child_profile(family_id,nickname,stage_code)...\n```\n`phone_hash` unique per test run; truncate ensures.\n\nQuestions insert loop:\n```sql\ninsert into question (subject_code,category_code,stage_code,difficulty,type_code,stem,options,answer,status,version,schema_ver)\nvalues ($1,$2,'low',$3,'choice',$4,'[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,'[\"a\"]'::jsonb,'online',1,1)\nreturning id\n```\nsubject/category mapping: math/chinese/core, science/literacy, fun/fun. Fun requires alias non-empty per constraint; add answer_alias '[\"x\"]' for fun and duration? No check on duration. Constraint question_alias_chk requires answer_alias length >0 for fun. Add `'[\"别称\"]'`.\n\nFor offline math, status offline.\n\nTest IDs:\n- offlineID.\n- answeredID.\n\nInsert answer_log for answeredID with child_id, question_id, device_id, is_correct true, answered_at now.\n\nRule:\n```go\nRule{UnlockMinutes:20, PassThreshold:3, SubjectWeight: map[string]float64{\"math\":2,\"chinese\":1,\"science\":1,\"fun\":0.5}, FunRatioCap:2, FunEnabled:true}\n```\n\nSelect:\n```go\nres, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 42})\n```\nAssertions.\n\nDeterminism: call twice seed 42, compare IDs.\n\nOffline: run seeds 1..20, collect; ensure offline not.\n\nDedupe: run seeds, ensure answeredID not.\n\nScore: res.MaxScore >=3.\n\nQuota sum equals Total.\n\nFun count <=2.\n\nFor \"weight distribution error ≤1\": unit test allocate.\n\nInsufficient: `SelectRequest{Stage:\"high\", Rule: rule, Seed:1}` no child. But fun band high; no pools. Error expected *Error code INSUFFICIENT_POOL. Note validate passes.\n\nPotential issue: Result.Quota actual map; total.\n\nAlso test `validateRule` fun weight >= min → error; add unit.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626272458,
+            "completed": 1793626285687
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_u35hv7ofuv15jl7b98t86eqi",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"context\"\n\t\"database/sql\"\n\t\"io\"\n\t\"log/slog\"\n\t\"os\"\n\t\"testing\"\n\n\t_ \"github.com/jackc/pgx/v5/stdlib\"\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n\t\"github.com/pressly/goose/v3\"\n\n\t\"github.com/roma007/OpenQuizGo/migrations\"\n)\n\nfunc TestAllocate(t *testing.T) {\n\tquota := allocate(map[string]float64{\"math\": 2, \"chinese\": 1, \"science\": 1}, 6)\n\tif quota[\"math\"] != 3 || quota[\"chinese\"] != 2 || quota[\"science\"] != 1 {\n\t\tt.Fatalf(\"unexpected quota: %+v\", quota)\n\t}\n\ttotal := 0\n\tfor _, count := range quota {\n\t\ttotal += count\n\t}\n\tif total != 6 {\n\t\tt.Fatalf(\"total = %d, want 6\", total)\n\t}\n}\n\nfunc TestSessionSize(t *testing.T) {\n\trule := Rule{PassThreshold: 3, SubjectWeight: map[string]float64{\"math\": 2, \"chinese\": 1}}\n\tn, err := sessionSize(rule, 12)\n\tif err != nil {\n\t\tt.Fatal(err)\n\t}\n\tif n != 5 {\n\t\tt.Fatalf(\"n = %d, want 5\", n)\n\t}\n}\n\nfunc TestTargetDifficulty(t *testing.T) {\n\tif got := targetDifficulty(\"low\", \"g2\", nil); got != 1 {\n\t\tt.Fatalf(\"low/g2 = %d, want 1\", got)\n\t}\n\tif got := targetDifficulty(\"high\", \"g8\", nil); got != 4 {\n\t\tt.Fatalf(\"high/g8 = %d, want 4\", got)\n\t}\n\tif got := targetDifficulty(\"mid\", \"\", map[int]float64{4: 0.7}); got != 4 {\n\t\tt.Fatalf(\"stats target = %d, want 4\", got)\n\t}\n}\n\nfunc TestValidateRuleRejectsFunWeight(t *testing.T) {\n\terr := validateRule(Rule{\n\t\tPassThreshold: 3,\n\t\tSubjectWeight: map[string]float64{\"math\": 1, \"fun\": 1},\n\t})\n\tif err == nil {\n\t\tt.Fatal(\"expected error when fun weight >= subject weight\")\n\t}\n}\n\nfunc TestSelectWithRealPool(t *testing.T) {\n\tdbURL := os.Getenv(\"TEST_DATABASE_URL\")\n\tif dbURL == \"\" {\n\t\tt.Skip(\"TEST_DATABASE_URL not set\")\n\t}\n\tctx := context.Background()\n\tprepareQuizDB(t, dbURL)\n\n\tpool, err := pgxpool.New(ctx, dbURL)\n\tif err != nil {\n\t\tt.Fatalf(\"pool: %v\", err)\n\t}\n\tdefer pool.Close()\n\n\tchildID := seedChild(t, pool)\n\tofflineID := seedQuestions(t, pool, childID)\n\n\tsvc := New(pool, slog.New(slog.NewTextHandler(io.Discard, nil)))\n\trule := Rule{\n\t\tUnlockMinutes: 20,\n\t\tPassThreshold: 3,\n\t\tSubjectWeight: map[string]float64{\n\t\t\t\"math\": 2, \"chinese\": 1, \"science\": 1, \"fun\": 0.5,\n\t\t},\n\t\tFunRatioCap: 2,\n\t\tFunEnabled:  true,\n\t}\n\n\tfirst, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 42})\n\tif err != nil {\n\t\tt.Fatalf(\"select: %v\", err)\n\t}\n\tsecond, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 42})\n\tif err != nil {\n\t\tt.Fatalf(\"select again: %v\", err)\n\t}\n\tif len(first.Selected) != len(second.Selected) {\n\t\tt.Fatalf(\"non-deterministic: %d vs %d\", len(first.Selected), len(second.Selected))\n\t}\n\tfor i := range first.Selected {\n\t\tif first.Selected[i].QuestionID != second.Selected[i].QuestionID {\n\t\t\tt.Fatal(\"same seed produced different question order\")\n\t\t}\n\t}\n\n\tif first.Total < 3 || first.Total > 12 {\n\t\tt.Fatalf(\"total = %d, want 3..12\", first.Total)\n\t}\n\tif first.MaxScore < rule.PassThreshold {\n\t\tt.Fatalf(\"max score = %.1f < threshold\", first.MaxScore)\n\t}\n\tfunCount := 0\n\tfor _, item := range first.Selected {\n\t\tif item.Subject == \"fun\" {\n\t\t\tfunCount++\n\t\t}\n\t\tif item.QuestionID == offlineID {\n\t\t\tt.Fatal(\"offline question was selected\")\n\t\t}\n\t}\n\tif funCount > rule.FunRatioCap {\n\t\tt.Fatalf(\"fun count = %d, cap = %d\", funCount, rule.FunRatioCap)\n\t}\n\n\tfor seed := int64(1); seed <= 20; seed++ {\n\t\tresult, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: seed})\n\t\tif err != nil {\n\t\t\tt.Fatalf(\"seed %d: %v\", seed, err)\n\t\t}\n\t\tfor _, item := range result.Selected {\n\t\t\tif item.QuestionID == offlineID {\n\t\t\t\tt.Fatalf(\"seed %d selected offline question\", seed)\n\t\t\t}\n\t\t\tif item.Repeated {\n\t\t\t\tt.Fatalf(\"seed %d unexpectedly used repeated question\", seed)\n\t\t\t}\n\t\t}\n\t}\n\n\t_, err = svc.Select(ctx, SelectRequest{Stage: \"high\", Rule: rule, Seed: 1})\n\tquizErr, ok := err.(*Error)\n\tif !ok || quizErr.Code != \"INSUFFICIENT_POOL\" {\n\t\tt.Fatalf(\"expected INSUFFICIENT_POOL, got %v\", err)\n\t}\n}\n\nfunc prepareQuizDB(t *testing.T, url string) {\n\tt.Helper()\n\tdb, err := sql.Open(\"pgx\", url)\n\tif err != nil {\n\t\tt.Fatalf(\"open: %v\", err)\n\t}\n\tdefer func() { _ = db.Close() }()\n\n\tgoose.SetBaseFS(migrations.FS)\n\tif err := goose.SetDialect(\"postgres\"); err != nil {\n\t\tt.Fatalf(\"dialect: %v\", err)\n\t}\n\tif err := goose.Up(db, \".\"); err != nil {\n\t\tt.Fatalf(\"migrate: %v\", err)\n\t}\n\tif _, err := db.Exec(`truncate table\n\t\tanswer_log, quiz_session_item, quiz_session, watch_log, watch_grant,\n\t\tchild_profile, family_member, family, parent_account\n\t\tcascade`); err != nil {\n\t\tt.Fatalf(\"truncate: %v\", err)\n\t}\n}\n\nfunc seedChild(t *testing.T, pool *pgxpool.Pool) string {\n\tt.Helper()\n\tctx := context.Background()\n\tvar accountID, familyID, childID string\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into parent_account (phone_cipher, phone_hash) values ('cipher', 'hash-quiz-test')\n\t\treturning id`).Scan(&accountID); err != nil {\n\t\tt.Fatalf(\"account: %v\", err)\n\t}\n\tif err := pool.QueryRow(ctx,\n\t\t`insert into family (owner_id) values ($1) returning id`, accountID).Scan(&familyID); err != nil {\n\t\tt.Fatalf(\"family: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tinsert into family_member (family_id, account_id, role, second_factor_verified)\n\t\tvalues ($1, $2, 'owner', true)`, familyID, accountID); err != nil {\n\t\tt.Fatalf(\"member: %v\", err)\n\t}\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into child_profile (family_id, nickname, stage_code, grade_tag)\n\t\tvalues ($1, '测试孩子', 'low', 'g2') returning id`, familyID).Scan(&childID); err != nil {\n\t\tt.Fatalf(\"child: %v\", err)\n\t}\n\treturn childID\n}\n\nfunc seedQuestions(t *testing.T, pool *pgxpool.Pool, childID string) string {\n\tt.Helper()\n\tctx := context.Background()\n\tspecs := []struct {\n\t\tsubject  string\n\t\tcategory string\n\t}{\n\t\t{\"math\", \"core\"},\n\t\t{\"chinese\", \"core\"},\n\t\t{\"science\", \"literacy\"},\n\t\t{\"fun\", \"fun\"},\n\t}\n\tfor _, spec := range specs {\n\t\tfor difficulty := 1; difficulty <= 5; difficulty++ {\n\t\t\tfor i := 0; i < 10; i++ {\n\t\t\t\talias := \"null\"\n\t\t\t\tif spec.category == \"fun\" {\n\t\t\t\t\talias = `'[\"同义词\"]'::jsonb`\n\t\t\t\t}\n\t\t\t\tif _, err := pool.Exec(ctx, `\n\t\t\t\t\tinsert into question (\n\t\t\t\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\t\t\t\toptions, answer, answer_alias, status, version, schema_ver)\n\t\t\t\t\tvalues ($1, $2, 'low', $3, 'choice', $4,\n\t\t\t\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t\t\t\t        '[\"a\"]'::jsonb, `+alias+`, 'online', 1, 1)`,\n\t\t\t\t\tspec.subject, spec.category, difficulty,\n\t\t\t\t\tspec.subject+\"-\"+string(rune('0'+difficulty))+\"-\"+string(rune('a'+i))); err != nil {\n\t\t\t\t\tt.Fatalf(\"insert question: %v\", err)\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\n\tvar offlineID string\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into question (\n\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\toptions, answer, status, version, schema_ver)\n\t\tvalues ('math', 'core', 'low', 2, 'choice', '已下线题目',\n\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t        '[\"a\"]'::jsonb, 'offline', 1, 1)\n\t\treturning id`).Scan(&offlineID); err != nil {\n\t\tt.Fatalf(\"insert offline: %v\", err)\n\t}\n\treturn offlineID\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/selector_test.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626275714,
+            "ran": 1793626285691,
+            "completed": 1793626285699
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8673ae9bc94a1bc4e3561066539dc8ce43bdb127",
+        "end": "d8a5768527637fc7b2b86586099703ceb2cc9f9d",
+        "files": [
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1523,
+        "output": 2425,
+        "reasoning": 602,
+        "cache": {
+          "read": 328064,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c7526de001GrhtuItyjSelEr",
+      "time": {
+        "created": 1793626285794,
+        "streamed": 1793626298303,
+        "completed": 1793626298359
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Issues:\n- Test dedupe: answer_log not seeded, so no repeated. I intended to seed one answered question and assert not selected. Currently no answer_log, so the loop checks Repeated false only. Need add answered question with answer_log. Add in seedQuestions: pick a math question id returned, insert answer_log for child. Then return offlineID and answeredID; test assert answered not selected. Modify seedQuestions signature.\n\nSimpler: after seeding, query one math online question id, insert answer_log, return as answeredID. Add.\n\n- Stems use string(rune('0'+difficulty)) and rune('a'+i) fine.\n- `alias` string concatenation with raw SQL; okay.\n- `prepareQuizDB` truncates parent_account; identity test also truncates; sequential -p1.\n- `svc.Select` with stage high and no child: `fun` stages high/mid no questions; error.\n- `first.Total` should be 5 (threshold3 max2).\n- Duplicate stems not unique; no constraint.\n- `TestSelectWithRealPool` runs after unit tests; DB.\n\nAdd answeredID and assertions.\n\nModify:\n```go\nfunc seedQuestions(...) (offlineID, answeredID string)\n...\nvar answeredID string\nerr := pool.QueryRow(`select id from question where subject_code='math' and status='online' order by id limit 1`).Scan(&answeredID)\ninsert answer_log (child_id, question_id, device_id, is_correct) values...\nreturn offlineID, answeredID\n```\nThen in test:\n```go\nofflineID, answeredID := seedQuestions...\n...\nif item.QuestionID == answeredID { fatal }\n```\nIn the seeds loop assert not equal to answeredID (fresh alternatives exist).\n\nBut one answered math among 50 math; selector excludes it; enough alternatives.\n\nApply.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626293119,
+            "completed": 1793626298273
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_nprgs72k37y6kk8yzag6jbiv",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tchildID := seedChild(t, pool)\n\tofflineID, answeredID := seedQuestions(t, pool, childID)",
+              "oldString": "\tchildID := seedChild(t, pool)\n\tofflineID := seedQuestions(t, pool, childID)",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -76,9 +76,9 @@\n \t}\n \tdefer pool.Close()\n \n \tchildID := seedChild(t, pool)\n-\tofflineID := seedQuestions(t, pool, childID)\n+\tofflineID, answeredID := seedQuestions(t, pool, childID)\n \n \tsvc := New(pool, slog.New(slog.NewTextHandler(io.Discard, nil)))\n \trule := Rule{\n \t\tUnlockMinutes: 20,\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626296016,
+            "ran": 1793626298297,
+            "completed": 1793626298305
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_xk0by3he1di3elyennqp5de9",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\tif item.QuestionID == offlineID {\n\t\t\tt.Fatal(\"offline question was selected\")\n\t\t}\n\t\tif item.QuestionID == answeredID {\n\t\t\tt.Fatal(\"recently answered question was selected\")\n\t\t}",
+              "oldString": "\t\tif item.QuestionID == offlineID {\n\t\t\tt.Fatal(\"offline question was selected\")\n\t\t}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -120,8 +120,11 @@\n \t\t}\n \t\tif item.QuestionID == offlineID {\n \t\t\tt.Fatal(\"offline question was selected\")\n \t\t}\n+\t\tif item.QuestionID == answeredID {\n+\t\t\tt.Fatal(\"recently answered question was selected\")\n+\t\t}\n \t}\n \tif funCount > rule.FunRatioCap {\n \t\tt.Fatalf(\"fun count = %d, cap = %d\", funCount, rule.FunRatioCap)\n \t}\n",
+                  "status": "modified",
+                  "additions": 3,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626296247,
+            "ran": 1793626298298,
+            "completed": 1793626298307
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_02_v0uh6vy0i5ujzuccxc9fx5ef",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\tfor _, item := range result.Selected {\n\t\t\tif item.QuestionID == offlineID {\n\t\t\t\tt.Fatalf(\"seed %d selected offline question\", seed)\n\t\t\t}\n\t\t\tif item.QuestionID == answeredID {\n\t\t\t\tt.Fatalf(\"seed %d selected recently answered question\", seed)\n\t\t\t}\n\t\t\tif item.Repeated {\n\t\t\t\tt.Fatalf(\"seed %d unexpectedly used repeated question\", seed)\n\t\t\t}\n\t\t}",
+              "oldString": "\t\tfor _, item := range result.Selected {\n\t\t\tif item.QuestionID == offlineID {\n\t\t\t\tt.Fatalf(\"seed %d selected offline question\", seed)\n\t\t\t}\n\t\t\tif item.Repeated {\n\t\t\t\tt.Fatalf(\"seed %d unexpectedly used repeated question\", seed)\n\t\t\t}\n\t\t}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -137,8 +137,11 @@\n \t\tfor _, item := range result.Selected {\n \t\t\tif item.QuestionID == offlineID {\n \t\t\t\tt.Fatalf(\"seed %d selected offline question\", seed)\n \t\t\t}\n+\t\t\tif item.QuestionID == answeredID {\n+\t\t\t\tt.Fatalf(\"seed %d selected recently answered question\", seed)\n+\t\t\t}\n \t\t\tif item.Repeated {\n \t\t\t\tt.Fatalf(\"seed %d unexpectedly used repeated question\", seed)\n \t\t\t}\n \t\t}\n",
+                  "status": "modified",
+                  "additions": 3,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626297556,
+            "ran": 1793626298302,
+            "completed": 1793626298309
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "d8a5768527637fc7b2b86586099703ceb2cc9f9d",
+        "end": "6b498f1e6ec3bf08005208524394d6eabc24cccb",
+        "files": [
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 3165,
+        "output": 527,
+        "reasoning": 392,
+        "cache": {
+          "read": 329472,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c75580d001WzYki1wydFjnv7",
+      "time": {
+        "created": 1793626298386,
+        "streamed": 1793626305805,
+        "completed": 1793626305926
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_z8oitbqw6bjl41yw814lmpvv",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "func seedQuestions(t *testing.T, pool *pgxpool.Pool, childID string) (offlineID, answeredID string) {\n\tt.Helper()\n\tctx := context.Background()",
+              "oldString": "func seedQuestions(t *testing.T, pool *pgxpool.Pool, childID string) string {\n\tt.Helper()\n\tctx := context.Background()",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -202,9 +202,9 @@\n \t}\n \treturn childID\n }\n \n-func seedQuestions(t *testing.T, pool *pgxpool.Pool, childID string) string {\n+func seedQuestions(t *testing.T, pool *pgxpool.Pool, childID string) (offlineID, answeredID string) {\n \tt.Helper()\n \tctx := context.Background()\n \tspecs := []struct {\n \t\tsubject  string\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626302085,
+            "ran": 1793626305795,
+            "completed": 1793626305822
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_34jbg4wtgu8khgx1ddgd2fs4",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tvar offlineID string\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into question (\n\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\toptions, answer, status, version, schema_ver)\n\t\tvalues ('math', 'core', 'low', 2, 'choice', '已下线题目',\n\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t        '[\"a\"]'::jsonb, 'offline', 1, 1)\n\t\treturning id`).Scan(&offlineID); err != nil {\n\t\tt.Fatalf(\"insert offline: %v\", err)\n\t}\n\n\tif err := pool.QueryRow(ctx, `\n\t\tselect id from question\n\t\twhere subject_code = 'math' and status = 'online'\n\t\torder by id limit 1`).Scan(&answeredID); err != nil {\n\t\tt.Fatalf(\"pick answered question: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tinsert into answer_log (child_id, question_id, device_id, is_correct, answered_at)\n\t\tvalues ($1, $2, 'tv-test', true, now())`, childID, answeredID); err != nil {\n\t\tt.Fatalf(\"insert answer log: %v\", err)\n\t}\n\treturn offlineID, answeredID\n}",
+              "oldString": "\tvar offlineID string\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into question (\n\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\toptions, answer, status, version, schema_ver)\n\t\tvalues ('math', 'core', 'low', 2, 'choice', '已下线题目',\n\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t        '[\"a\"]'::jsonb, 'offline', 1, 1)\n\t\treturning id`).Scan(&offlineID); err != nil {\n\t\tt.Fatalf(\"insert offline: %v\", err)\n\t}\n\treturn offlineID\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -247,6 +247,18 @@\n \t\t        '[\"a\"]'::jsonb, 'offline', 1, 1)\n \t\treturning id`).Scan(&offlineID); err != nil {\n \t\tt.Fatalf(\"insert offline: %v\", err)\n \t}\n-\treturn offlineID\n+\n+\tif err := pool.QueryRow(ctx, `\n+\t\tselect id from question\n+\t\twhere subject_code = 'math' and status = 'online'\n+\t\torder by id limit 1`).Scan(&answeredID); err != nil {\n+\t\tt.Fatalf(\"pick answered question: %v\", err)\n+\t}\n+\tif _, err := pool.Exec(ctx, `\n+\t\tinsert into answer_log (child_id, question_id, device_id, is_correct, answered_at)\n+\t\tvalues ($1, $2, 'tv-test', true, now())`, childID, answeredID); err != nil {\n+\t\tt.Fatalf(\"insert answer log: %v\", err)\n+\t}\n+\treturn offlineID, answeredID\n }\n",
+                  "status": "modified",
+                  "additions": 13,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626302983,
+            "ran": 1793626305800,
+            "completed": 1793626305829
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "6b498f1e6ec3bf08005208524394d6eabc24cccb",
+        "end": "4b690028771549c204c997bd694a38ccf4751203",
+        "files": [
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1073,
+        "output": 710,
+        "reasoning": 0,
+        "cache": {
+          "read": 332544,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c7575da001DvvsOQqEzO2KPj",
+      "time": {
+        "created": 1793626306050,
+        "streamed": 1793626311208,
+        "completed": 1793626311769
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Run tests for quiz.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626310264,
+            "completed": 1793626311206
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_nqrwsbm4m9zknzu3h0vlutn1",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && make fmt >/dev/null && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test ./internal/quiz -v 2>&1 | tail -30",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# github.com/roma007/OpenQuizGo/internal/quiz [github.com/roma007/OpenQuizGo/internal/quiz.test]\ninternal/quiz/selector_test.go:240:6: offlineID redeclared in this block\n\tinternal/quiz/selector_test.go:206:71: other declaration of offlineID\nFAIL\tgithub.com/roma007/OpenQuizGo/internal/quiz [build failed]\nFAIL\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626310266,
+            "ran": 1793626311208,
+            "completed": 1793626311719
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "4b690028771549c204c997bd694a38ccf4751203",
+        "end": "dfa1c1466144ba825250f03ab2d1c53e2c8fe680",
+        "files": [
+          "internal/quiz/models.go",
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 802,
+        "output": 143,
+        "reasoning": 5,
+        "cache": {
+          "read": 333568,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c758c79001K3Ji1HVPp2kSey",
+      "time": {
+        "created": 1793626311808,
+        "streamed": 1793626413843,
+        "completed": 1793626413995
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Named return values `offlineID, answeredID` and then `var offlineID string` redeclares. Change to `var offline string` or assign directly. Use named returns without var:\n```go\nif err := pool.QueryRow(...).Scan(&offlineID)\n```\nRemove `var offlineID string`. But `.Scan(&offlineID)` works with named return. Do that.\n\nEdit remove var line.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626390822,
+            "completed": 1793626413835
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-8e9f8eb15caf5804",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tif err := pool.QueryRow(ctx, `\n\t\tinsert into question (\n\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\toptions, answer, status, version, schema_ver)\n\t\tvalues ('math', 'core', 'low', 2, 'choice', '已下线题目',\n\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t        '[\"a\"]'::jsonb, 'offline', 1, 1)\n\t\treturning id`).Scan(&offlineID); err != nil {",
+              "oldString": "\tvar offlineID string\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into question (\n\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\toptions, answer, status, version, schema_ver)\n\t\tvalues ('math', 'core', 'low', 2, 'choice', '已下线题目',\n\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t        '[\"a\"]'::jsonb, 'offline', 1, 1)\n\t\treturning id`).Scan(&offlineID); err != nil {",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -236,9 +236,8 @@\n \t\t\t}\n \t\t}\n \t}\n \n-\tvar offlineID string\n \tif err := pool.QueryRow(ctx, `\n \t\tinsert into question (\n \t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n \t\t\toptions, answer, status, version, schema_ver)\n",
+                  "status": "modified",
+                  "additions": 0,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626396846,
+            "ran": 1793626413842,
+            "completed": 1793626413906
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "dfa1c1466144ba825250f03ab2d1c53e2c8fe680",
+        "end": "01b735a6355125933448755295698f019bb2317d",
+        "files": [
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 8928,
+        "output": 363,
+        "reasoning": 86,
+        "cache": {
+          "read": 325632,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c771bf2001nMMhLiVPFPgN0V",
+      "time": {
+        "created": 1793626414083,
+        "streamed": 1793626420094,
+        "completed": 1793626426175
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_4ara3xpr803sqlbbdjv7mv64",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test ./internal/quiz -v 2>&1 | tail -30",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "=== RUN   TestAllocate\n--- PASS: TestAllocate (0.00s)\n=== RUN   TestSessionSize\n--- PASS: TestSessionSize (0.00s)\n=== RUN   TestTargetDifficulty\n--- PASS: TestTargetDifficulty (0.00s)\n=== RUN   TestValidateRuleRejectsFunWeight\n--- PASS: TestValidateRuleRejectsFunWeight (0.00s)\n=== RUN   TestSelectWithRealPool\n2026/11/02 21:33:45 goose: no migrations to run. current version: 4\n    selector_test.go:153: expected INSUFFICIENT_POOL, got <nil>\n--- FAIL: TestSelectWithRealPool (0.85s)\nFAIL\nFAIL\tgithub.com/roma007/OpenQuizGo/internal/quiz\t3.846s\nFAIL\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626418731,
+            "ran": 1793626420092,
+            "completed": 1793626426163
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "01b735a6355125933448755295698f019bb2317d",
+        "end": "01b735a6355125933448755295698f019bb2317d",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 753,
+        "output": 136,
+        "reasoning": 0,
+        "cache": {
+          "read": 334336,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c774b61001L77FeV3ZlCWcX6",
+      "time": {
+        "created": 1793626426213,
+        "streamed": 1793626434487,
+        "completed": 1793626434563
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Insufficient test with stage high selected something? Our seeded questions stage low; require stage high. But `Select` with no child uses stage \"high\", stages order [\"high\",\"mid\",\"low\",\"preschool\"], so fallback picks low questions, enough to meet threshold. Stage fallback is intended; so INSUFFICIENT isn't triggered because low pool covers. To test insufficient, use a stage with no questions but fallback also finds low. Need a subject with no questions at all, e.g., weights {\"english\":2} since we didn't seed english. Then pool empty → error. Use rule2 := Rule{PassThreshold:3, SubjectWeight:{\"english\":2}, FunEnabled:false}. Select stage low no child. Should error.\n\nChange test.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626431678,
+            "completed": 1793626434480
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_u0smjcpcjh063kj0ewgskrlf",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\temptyRule := Rule{\n\t\tPassThreshold: 3,\n\t\tSubjectWeight: map[string]float64{\"english\": 2},\n\t}\n\t_, err = svc.Select(ctx, SelectRequest{Stage: \"low\", Rule: emptyRule, Seed: 1})\n\tquizErr, ok := err.(*Error)\n\tif !ok || quizErr.Code != \"INSUFFICIENT_POOL\" {\n\t\tt.Fatalf(\"expected INSUFFICIENT_POOL, got %v\", err)\n\t}",
+              "oldString": "\t_, err = svc.Select(ctx, SelectRequest{Stage: \"high\", Rule: rule, Seed: 1})\n\tquizErr, ok := err.(*Error)\n\tif !ok || quizErr.Code != \"INSUFFICIENT_POOL\" {\n\t\tt.Fatalf(\"expected INSUFFICIENT_POOL, got %v\", err)\n\t}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -146,9 +146,13 @@\n \t\t\t}\n \t\t}\n \t}\n \n-\t_, err = svc.Select(ctx, SelectRequest{Stage: \"high\", Rule: rule, Seed: 1})\n+\temptyRule := Rule{\n+\t\tPassThreshold: 3,\n+\t\tSubjectWeight: map[string]float64{\"english\": 2},\n+\t}\n+\t_, err = svc.Select(ctx, SelectRequest{Stage: \"low\", Rule: emptyRule, Seed: 1})\n \tquizErr, ok := err.(*Error)\n \tif !ok || quizErr.Code != \"INSUFFICIENT_POOL\" {\n \t\tt.Fatalf(\"expected INSUFFICIENT_POOL, got %v\", err)\n \t}\n",
+                  "status": "modified",
+                  "additions": 5,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626433181,
+            "ran": 1793626434485,
+            "completed": 1793626434503
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "01b735a6355125933448755295698f019bb2317d",
+        "end": "3b548c304c0403d62f2941f59533edaf191032c0",
+        "files": [
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 438,
+        "output": 276,
+        "reasoning": 160,
+        "cache": {
+          "read": 334976,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c776c11001rBpDibKDOlJjam",
+      "time": {
+        "created": 1793626434582,
+        "streamed": 1793626460758,
+        "completed": 1793626463760
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-967381af26c8709d",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test ./internal/quiz -v 2>&1 | tail -20",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "=== RUN   TestAllocate\n--- PASS: TestAllocate (0.00s)\n=== RUN   TestSessionSize\n--- PASS: TestSessionSize (0.00s)\n=== RUN   TestTargetDifficulty\n--- PASS: TestTargetDifficulty (0.00s)\n=== RUN   TestValidateRuleRejectsFunWeight\n--- PASS: TestValidateRuleRejectsFunWeight (0.00s)\n=== RUN   TestSelectWithRealPool\n2026/11/02 21:34:23 goose: no migrations to run. current version: 4\n    selector_test.go:106: same seed produced different question order\n--- FAIL: TestSelectWithRealPool (0.12s)\nFAIL\nFAIL\tgithub.com/roma007/OpenQuizGo/internal/quiz\t1.031s\nFAIL\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626455207,
+            "ran": 1793626460756,
+            "completed": 1793626463745
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "3b548c304c0403d62f2941f59533edaf191032c0",
+        "end": "3b548c304c0403d62f2941f59533edaf191032c0",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 838,
+        "output": 137,
+        "reasoning": 0,
+        "cache": {
+          "read": 334976,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c77de2a001T9iZqRowCtxek3",
+      "time": {
+        "created": 1793626463794,
+        "streamed": 1793626473705,
+        "completed": 1793626473780
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Determinism fails. Why? Candidates query order by q.id deterministic. But within `fillSubject`, for each quota map iteration is random (map iteration order over quota) → selected append order differs; then rng.Shuffle over different initial order yields different. But the set should be same, only order differs. Test compares sequence. To be deterministic, iterate quota keys sorted. Change in Select:\n```go\nfor _, subject := range sortedKeys(quota) { ... }\n```\nAlso redistribution ordered by weight deterministic. chosen set same. Shuffle with same seed over same initial order → same.\n\nMap iteration in quota is the culprit; sort keys.\n\nAdd helper sortedQuotaKeys.\n\nAlso `subjectWeights` map iteration to build subjects sorted used in allocate (subjectsByWeight sorted) fine.\n\nImplement:\n```go\nquotaSubjects := make([]string,0,len(quota)); for s := range quota { append }; sort.Strings\nfor _, subject := range quotaSubjects\n```\n\nDo it.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626468578,
+            "completed": 1793626473694
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_8k0bgv05pqpl4z3scvjnd1m6",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tfor _, subject := range sortedKeys(quota) {\n\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\ttarget, quota[subject], rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}",
+              "oldString": "\tfor subject, count := range quota {\n\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\ttarget, count, rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector.go",
+                  "patch": "Index: internal/quiz/selector.go\n===================================================================\n--- internal/quiz/selector.go\n+++ internal/quiz/selector.go\n@@ -111,11 +111,11 @@\n \n \tstages := stageOrder[stage]\n \tprimaryRank := stageRanks[stage]\n \n-\tfor subject, count := range quota {\n+\tfor _, subject := range sortedKeys(quota) {\n \t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n-\t\t\ttarget, count, rng, chosen, &selected, addWarning); err != nil {\n+\t\t\ttarget, quota[subject], rng, chosen, &selected, addWarning); err != nil {\n \t\t\treturn Result{}, err\n \t\t}\n \t}\n \n",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 2
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626470745,
+            "ran": 1793626473699,
+            "completed": 1793626473714
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_dpwl5pvpvndr71rstryqq08v",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "func subjectsByWeight(weights map[string]float64) []string {\n\tsubjects := make([]string, 0, len(weights))\n\tfor subject, weight := range weights {\n\t\tif weight > 0 {\n\t\t\tsubjects = append(subjects, subject)\n\t\t}\n\t}\n\tsort.Slice(subjects, func(i, j int) bool {\n\t\tif weights[subjects[i]] != weights[subjects[j]] {\n\t\t\treturn weights[subjects[i]] > weights[subjects[j]]\n\t\t}\n\t\treturn subjects[i] < subjects[j]\n\t})\n\treturn subjects\n}\n\nfunc sortedKeys(quota map[string]int) []string {\n\tkeys := make([]string, 0, len(quota))\n\tfor key := range quota {\n\t\tkeys = append(keys, key)\n\t}\n\tsort.Strings(keys)\n\treturn keys\n}",
+              "oldString": "func subjectsByWeight(weights map[string]float64) []string {\n\tsubjects := make([]string, 0, len(weights))\n\tfor subject, weight := range weights {\n\t\tif weight > 0 {\n\t\t\tsubjects = append(subjects, subject)\n\t\t}\n\t}\n\tsort.Slice(subjects, func(i, j int) bool {\n\t\tif weights[subjects[i]] != weights[subjects[j]] {\n\t\t\treturn weights[subjects[i]] > weights[subjects[j]]\n\t\t}\n\t\treturn subjects[i] < subjects[j]\n\t})\n\treturn subjects\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector.go",
+                  "patch": "Index: internal/quiz/selector.go\n===================================================================\n--- internal/quiz/selector.go\n+++ internal/quiz/selector.go\n@@ -400,8 +400,17 @@\n \t})\n \treturn subjects\n }\n \n+func sortedKeys(quota map[string]int) []string {\n+\tkeys := make([]string, 0, len(quota))\n+\tfor key := range quota {\n+\t\tkeys = append(keys, key)\n+\t}\n+\tsort.Strings(keys)\n+\treturn keys\n+}\n+\n func targetDifficulty(stage, grade string, stats map[int]float64) int {\n \tbest, bestDistance := 0, math.MaxFloat64\n \tfor difficulty, rate := range stats {\n \t\tdistance := math.Abs(rate - 0.7)\n",
+                  "status": "modified",
+                  "additions": 9,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626472074,
+            "ran": 1793626473704,
+            "completed": 1793626473720
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "3b548c304c0403d62f2941f59533edaf191032c0",
+        "end": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "files": [
+          "internal/quiz/selector.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 832,
+        "output": 598,
+        "reasoning": 207,
+        "cache": {
+          "read": 335360,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c7805420019XLGRJYLM1SbgA",
+      "time": {
+        "created": 1793626473798,
+        "streamed": 1793626478966,
+        "completed": 1793626481657
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Also `actual` map in Result key order irrelevant. `rng.Shuffle` deterministic given order.\n\nBut `for seed loop` may still have different because map order in `quota` sorted now.\n\nRun tests.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626477989,
+            "completed": 1793626478960
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_11l1b1e4tnevp4yxjqlk47y4",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test ./internal/quiz -v 2>&1 | tail -15",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "=== RUN   TestAllocate\n--- PASS: TestAllocate (0.00s)\n=== RUN   TestSessionSize\n--- PASS: TestSessionSize (0.00s)\n=== RUN   TestTargetDifficulty\n--- PASS: TestTargetDifficulty (0.00s)\n=== RUN   TestValidateRuleRejectsFunWeight\n--- PASS: TestValidateRuleRejectsFunWeight (0.00s)\n=== RUN   TestSelectWithRealPool\n2026/11/02 21:34:41 goose: no migrations to run. current version: 4\n--- PASS: TestSelectWithRealPool (0.30s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t1.853s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626478545,
+            "ran": 1793626478964,
+            "completed": 1793626481645
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "end": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 909,
+        "output": 136,
+        "reasoning": 45,
+        "cache": {
+          "read": 336128,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c78240f001jFSH5oLz77mAZr",
+      "time": {
+        "created": 1793626481684,
+        "streamed": 1793626487411,
+        "completed": 1793626491039
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Great.\n\nNow manual preview endpoint smoke to ensure wiring works. Rebuild bin/api, start on 18080, login admin, call preview with stage low. The dev DB has imported questions (1000) + seeded? Dev DB question data exists from T4 smoke, but no child maybe. Use stage low no child. Start server and curl.\n\nAlso update Makefile test-int to include quiz.\n\nThen docs (plan T5 done, README), commit.\n\nFirst smoke preview.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626484965,
+            "completed": 1793626487406
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_lec88nebi64ldzqvyx5g57cu",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && go build -trimpath -o bin/api ./cmd/api && set -a; source .env; set +a; HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t5-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done; TOKEN=$(curl -sS -X POST localhost:18080/v1/admin/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin12345\"}' | jq -r .token); curl -sS -X POST localhost:18080/v1/admin/quiz/preview -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' -d '{\"stage\":\"low\",\"seed\":42,\"rule\":{\"unlock_minutes\":20,\"pass_threshold\":3,\"subject_weight\":{\"math\":2,\"chinese\":1,\"science\":1,\"fun\":0.5},\"fun_ratio_cap\":2,\"fun_enabled\":true}}' | jq -c '{total,quota,max_score,difficulty_target,warnings,subjects:[.selected[].subject]}'; kill $API_PID 2>/dev/null || true",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "jq: error (at <stdin>:1): Cannot iterate over null (null)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626485671,
+            "ran": 1793626487409,
+            "completed": 1793626491028
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "end": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 362,
+        "output": 390,
+        "reasoning": 98,
+        "cache": {
+          "read": 337024,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c7848c5001zUYN4g1j23wL3b",
+      "time": {
+        "created": 1793626491082,
+        "streamed": 1793626515687,
+        "completed": 1793626516455
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Response wasn't as expected. Print raw response. Maybe token empty? Login failed? Let's debug by running again with raw output. Could be 404 because new binary? We rebuilt. Maybe preview route registration conflicts? Print response and token length.\n\nStart server again, curl verbose.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626496833,
+            "completed": 1793626515676
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-807dee8a1317fb08",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a; source .env; set +a; HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t5-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done; echo \"login:\"; curl -sS -X POST localhost:18080/v1/admin/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin12345\"}' | head -c 300; echo; TOKEN=$(curl -sS -X POST localhost:18080/v1/admin/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin12345\"}' | jq -r .token); echo \"token len: ${#TOKEN}\"; echo \"preview:\"; curl -sS -i -X POST localhost:18080/v1/admin/quiz/preview -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' -d '{\"stage\":\"low\",\"seed\":42,\"rule\":{\"unlock_minutes\":20,\"pass_threshold\":3,\"subject_weight\":{\"math\":2,\"chinese\":1,\"science\":1,\"fun\":0.5},\"fun_ratio_cap\":2,\"fun_enabled\":true}}' | head -20; kill $API_PID 2>/dev/null || true",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "login:\n{\"admin\":{\"id\":\"7704bbe8-5ed5-4af3-a7c5-1cc04d300bfa\",\"username\":\"admin\",\"display_name\":\"超级管理员\",\"roles\":[\"super_admin\"],\"permissions\":[\"audit.read\",\"question.import\",\"question.publish\",\"question.read\",\"question.review\",\"question.write\"],\"expires_at\":\"2026-11-03T05:35:16.355795+08:00\"},\"exp\ntoken len: 443\npreview:\nHTTP/1.1 409 Conflict\r\nContent-Type: application/json; charset=utf-8\r\nX-Request-Id: 6c0f51aa45f1dd190b75ca62\r\nDate: Mon, 02 Nov 2026 13:35:16 GMT\r\nContent-Length: 224\r\n\r\n{\"code\":\"INSUFFICIENT_POOL\",\"message\":\"题池不足：已选 0 题，最高加权分 0.0，低于门槛 3.0\",\"warnings\":[\"subject_shortage:chinese\",\"subject_shortage:math\",\"subject_shortage:science\",\"subject_shortage:fun\"]}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626498415,
+            "ran": 1793626515684,
+            "completed": 1793626516445
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "end": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1973,
+        "output": 428,
+        "reasoning": 57,
+        "cache": {
+          "read": 335872,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c78abf7001eYT11kK0Ax6hL5",
+      "time": {
+        "created": 1793626516475,
+        "streamed": 1793626524688,
+        "completed": 1793626525472
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Dev DB has no questions for stage low with category math? T4 imported questions into dev DB with stage low, but maybe status draft (import creates draft, not online). Yes, imported are drafts. The smoke created one online question (math low) but then offline. So no online questions → insufficient. That's correct behavior.\n\nTo smoke preview, publish a few questions or use test DB. Not necessary; integration test covers. But let's verify endpoint works with data by inserting/publishing via API: create 4 questions and publish? That takes transitions each. Or directly update DB status online for imported questions:\n`update question set status='online' where status='draft' and subject_code in (...)`.\nThen preview. Let's do that for dev DB (fine).\n\nRun update then preview again (server running? killed). Start, update DB, preview.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626520516,
+            "completed": 1793626524680
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_x94zub37n08lj89b3k4mruca",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && psql -d openquizgo -c \"update question set status='online' where status='draft'\" && set -a; source .env; set +a; HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t5-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done; TOKEN=$(curl -sS -X POST localhost:18080/v1/admin/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin12345\"}' | jq -r .token); curl -sS -X POST localhost:18080/v1/admin/quiz/preview -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' -d '{\"stage\":\"low\",\"seed\":42,\"rule\":{\"unlock_minutes\":20,\"pass_threshold\":3,\"subject_weight\":{\"math\":2,\"chinese\":1,\"science\":1,\"fun\":0.5},\"fun_ratio_cap\":2,\"fun_enabled\":true}}' | jq -c '{total,quota,max_score,difficulty_target,warnings,subjects:[.selected[].subject]}'; kill $API_PID 2>/dev/null || true",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "UPDATE 2002\n{\"total\":5,\"quota\":{\"math\":5},\"max_score\":10,\"difficulty_target\":2,\"warnings\":[\"subject_shortage:chinese\",\"subject_shortage:science\",\"subject_shortage:fun\",\"quota_redistributed\"],\"subjects\":[\"math\",\"math\",\"math\",\"math\",\"math\"]}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626522219,
+            "ran": 1793626524687,
+            "completed": 1793626525462
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "end": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1381,
+        "output": 401,
+        "reasoning": 176,
+        "cache": {
+          "read": 337280,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c78cf2e001f6kAP2LiOPA5Sr",
+      "time": {
+        "created": 1793626525491,
+        "streamed": 1793626533380,
+        "completed": 1793626533493
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "All imported are math, so composition all math with warnings; correct behavior.\n\nNow update docs and tests:\n- Makefile test-int include quiz.\n- README progress T5 done, next T6; add preview endpoint.\n- Plan T5 done + log.\n- Design changelog? T5 implemented per 8.3, no change.\n\nAlso update Makefile test-int:\n`go test -p 1 ./internal/identity ./internal/question ./internal/quiz -v`.\n\nApply.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626529956,
+            "completed": 1793626533363
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_x3c0dzsvraawk7lxqeegr3va",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "test-int: ## 集成测试（需 TEST_DATABASE_URL / TEST_REDIS_URL）\n\t$(GO) test -p 1 ./internal/identity ./internal/question ./internal/quiz -v",
+              "oldString": "test-int: ## 集成测试（需 TEST_DATABASE_URL / TEST_REDIS_URL）\n\t$(GO) test -p 1 ./internal/identity ./internal/question -v",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/Makefile"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited Makefile (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "Makefile",
+                  "patch": "Index: Makefile\n===================================================================\n--- Makefile\n+++ Makefile\n@@ -22,9 +22,9 @@\n test: ## 运行测试\n \t$(GO) test -p 1 ./...\n \n test-int: ## 集成测试（需 TEST_DATABASE_URL / TEST_REDIS_URL）\n-\t$(GO) test -p 1 ./internal/identity ./internal/question -v\n+\t$(GO) test -p 1 ./internal/identity ./internal/question ./internal/quiz -v\n \n build: ## 编译二进制\n \t$(GO) build -trimpath -o $(BIN_DIR)/api ./cmd/api\n \t$(GO) build -trimpath -o $(BIN_DIR)/migrate ./cmd/migrate\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626530766,
+            "ran": 1793626533369,
+            "completed": 1793626533387
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_eyakm19auj2tj7c01xpq2j94",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "- ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）\n- ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n- ⏳ T6 答题会话与判分",
+              "oldString": "- ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n- ⏳ T5 组卷 v0",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/README.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited README.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "README.md",
+                  "patch": "Index: README.md\n===================================================================\n--- README.md\n+++ README.md\n@@ -11,10 +11,11 @@\n - ✅ T1 工程骨架\n - ✅ T2 数据模型与迁移（26 张业务表 + 标签种子）\n - ✅ T3 身份/家庭/设备（登录、孩子、激活、PIN、邀请）\n - ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）\n+- ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）\n - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n-- ⏳ T5 组卷 v0\n+- ⏳ T6 答题会话与判分\n \n ## 技术栈\n \n - 服务端：Go 1.25（模块化单体）、PostgreSQL、Redis\n",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626531511,
+            "ran": 1793626533372,
+            "completed": 1793626533419
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_02_i93x4yto76dtj3qmwu2k2roi",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "GET  /v1/admin/audit                 审计日志\nPOST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）\n```",
+              "oldString": "GET  /v1/admin/audit                 审计日志\n```",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/README.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited README.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "README.md",
+                  "patch": "Index: README.md\n===================================================================\n--- README.md\n+++ README.md\n@@ -143,8 +143,9 @@\n POST /v1/admin/questions/{id}/offline\n POST /v1/admin/questions/{id}/resubmit\n \n GET  /v1/admin/audit                 审计日志\n+POST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）\n ```\n \n 状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。\n \n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626532638,
+            "ran": 1793626533378,
+            "completed": 1793626533444
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "179402a0edbf838903b74033f624a367f8a08ca0",
+        "end": "5ec434acf8ae3869bcf04e3d0d0b518bca9ac55f",
+        "files": [
+          "Makefile",
+          "README.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 768,
+        "output": 510,
+        "reasoning": 101,
+        "cache": {
+          "read": 338560,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c78ee8b0011wwnFweqOFySvm",
+      "time": {
+        "created": 1793626533520,
+        "streamed": 1793626543652,
+        "completed": 1793626543725
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Plan T5 done + log. Also T5 acceptance \"权重分配误差 ≤1\" unit test; \"断供有降级与告警\" warnings; \"给定规则可复现\" deterministic seed.\n\nLog:\n```\n| 2026-11-02 | T5 完成：加权配额、趣味题上限、难度/学段降级、30 天去重、断供重分配与告警；预览接口 | 组件测试：同 seed 可复现、配额误差 <1、下线/已答题目不入选、题池不足返回 409 |\n```\n\nT5 row status done.\n\nApply.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626539532,
+            "completed": 1793626543642
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_joeqr3ywzdl78w8l7d7eopww",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| T5 | 组卷 v0 | T4 | 选题器、权重倾向分配、趣味题占位、去重、断供兜底 | 给定规则可复现组卷；权重分配误差 ≤1 题；断供有降级与告警 | 3 | done |",
+              "oldString": "| T5 | 组卷 v0 | T4 | 选题器、权重倾向分配、趣味题占位、去重、断供兜底 | 给定规则可复现组卷；权重分配误差 ≤1 题；断供有降级与告警 | 3 | todo |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/plans/001-项目总体实施计划.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/plans/001-项目总体实施计划.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/plans/001-项目总体实施计划.md",
+                  "patch": "Index: docs/plans/001-项目总体实施计划.md\n===================================================================\n--- docs/plans/001-项目总体实施计划.md\n+++ docs/plans/001-项目总体实施计划.md\n@@ -61,9 +61,9 @@\n | T1 | 工程骨架 | — | Go module、目录结构、配置、slog、错误体系、Dockerfile、compose、Makefile、CI | `make dev` 可启动；`make test` 通过；CI 绿 | 2 | done |\n | T2 | 数据模型与迁移 | T1 | SQL 迁移、`tag_dict` 种子、应用使用/设备能力/篡改事件表、ER 说明、sqlc 查询 | 空库一键迁移成功；回滚脚本可用；种子含全部字典值 | 4 | done |\n | T3 | 身份/家庭/设备 | T2 | 注册登录、短信验证码（可 Mock）、家庭组、孩子档案、激活码与设备令牌、家长 PIN | 设备激活→绑定→令牌可用；解绑即时 401/403；多家长可加入 | 4 | done |\n | T4 | 题库与治理 API | T2、T3 | 题目 CRUD、四维检索、导入（JSON/CSV）、版本、状态机、RBAC、审计 | 导入 1000 题 ≤ 60s；非法状态跃迁被拒；下线题不再被抽中 | 5 | done |\n-| T5 | 组卷 v0 | T4 | 选题器、权重倾向分配、趣味题占位、去重、断供兜底 | 给定规则可复现组卷；权重分配误差 ≤1 题；断供有降级与告警 | 3 | todo |\n+| T5 | 组卷 v0 | T4 | 选题器、权重倾向分配、趣味题占位、去重、断供兜底 | 给定规则可复现组卷；权重分配误差 ≤1 题；断供有降级与告警 | 3 | done |\n | T6 | 答题会话与判分 | T5 | 会话、题令牌、判分、解析返回、防重放、限流 | 重放返回 409；<300ms 异常被标记；判分正确率 100% 对拍 | 4 | todo |\n | T7 | 加权规则引擎 | T3、T6 | 规则快照、时段/加权门槛/权重/每日上限判定、可达性校验、预设档位 | 「2 道数学（2×2=4≥3）解锁」「3 道科学（3×1=3）解锁」可复现；不可达配置被拒；边界用例全绿 | 6 | todo |\n | T8 | 授权与使用 | T7 | `watch_grant` 签发、应用使用心跳、暂停不计量、吊销、离线对账、篡改事件 | 多设备并发不超发（100 并发误差 0）；权限关闭 ≤1 个心跳周期上报；答题暂停时段不扣额度 | 4 | todo |\n | T9 | 报告聚合 | T6、T8 | 日聚合任务、周/月报告、趣味单列 | T+1 生成；趣味不计入学科正确率；任务可重跑幂等 | 3 | todo |\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626540811,
+            "ran": 1793626543646,
+            "completed": 1793626543659
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_h8a6pglkug23g2dfpflmib45",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| 2026-11-02 | 偏差：导入采用同步（原设计为异步任务）；管理端权限固化在 8h 令牌内 | 首期数据量小，同步实现更简单；权限变更需重新登录 |\n| 2026-11-02 | T5 完成：加权配额、趣味上限、难度/学段降级、30 天去重、断供重分配与告警；管理端预览接口 | 同 seed 可复现；配额误差 <1；下线/已答题目不入选；题池不足 409 |",
+              "oldString": "| 2026-11-02 | 偏差：导入采用同步（原设计为异步任务）；管理端权限固化在 8h 令牌内 | 首期数据量小，同步实现更简单；权限变更需重新登录 |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/plans/001-项目总体实施计划.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/plans/001-项目总体实施计划.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/plans/001-项目总体实施计划.md",
+                  "patch": "Index: docs/plans/001-项目总体实施计划.md\n===================================================================\n--- docs/plans/001-项目总体实施计划.md\n+++ docs/plans/001-项目总体实施计划.md\n@@ -164,8 +164,9 @@\n | 2026-11-02 | T3 完成：短信登录/JWT/刷新轮换、家庭与邀请、孩子档案+默认规则、设备激活/令牌/解绑、家长 PIN | 集成测试 `TestIdentityFlow` 全绿；解绑后设备令牌即时 403 |\n | 2026-11-02 | 接口微调：PIN 改为账号级 `/family/pin`（原设计为 `/family/children/{id}/pin`）；新增 `active_family_id` 支持受邀家长切换家庭 | 记录于数据模型说明 |\n | 2026-11-02 | T4 完成：管理端登录/RBAC、题目 CRUD、四维检索、状态机、JSON+CSV 导入、审计 | 1000 题导入 0.13s；非法流转 409；editor 越权 403；下线题排除待 T5 验证 |\n | 2026-11-02 | 偏差：导入采用同步（原设计为异步任务）；管理端权限固化在 8h 令牌内 | 首期数据量小，同步实现更简单；权限变更需重新登录 |\n+| 2026-11-02 | T5 完成：加权配额、趣味上限、难度/学段降级、30 天去重、断供重分配与告警；管理端预览接口 | 同 seed 可复现；配额误差 <1；下线/已答题目不入选；题池不足 409 |\n \n ## 7. 验收结论\n \n - 结论：待验收\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793626542258,
+            "ran": 1793626543649,
+            "completed": 1793626543664
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "5ec434acf8ae3869bcf04e3d0d0b518bca9ac55f",
+        "end": "1145face3640f9ab760e609af5e0ec9a810fda4b",
+        "files": [
+          "docs/plans/001-项目总体实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 659,
+        "output": 485,
+        "reasoning": 131,
+        "cache": {
+          "read": 339328,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c79167c001OLtrdBQUwK8OPK",
+      "time": {
+        "created": 1793626543744,
+        "streamed": 1793626557727,
+        "completed": 1793626565384
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Run full tests once more (fmt, vet, test-int includes quiz). Then commit/push.\n\nNote `make test` with .env runs integration too; test-int covers all. Run `make fmt`, `go vet`, `make test-int`.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626556459,
+            "completed": 1793626557721
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_j2gy8pyn1177vztw3j9rcz6t",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && make fmt >/dev/null && go vet ./... && GOTOOLCHAIN=local make test-int 2>&1 | tail -15",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "PASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/question\t1.008s\n=== RUN   TestAllocate\n--- PASS: TestAllocate (0.00s)\n=== RUN   TestSessionSize\n--- PASS: TestSessionSize (0.00s)\n=== RUN   TestTargetDifficulty\n--- PASS: TestTargetDifficulty (0.00s)\n=== RUN   TestValidateRuleRejectsFunWeight\n--- PASS: TestValidateRuleRejectsFunWeight (0.00s)\n=== RUN   TestSelectWithRealPool\n2026/11/02 21:34:41 goose: no migrations to run. current version: 4\n--- PASS: TestSelectWithRealPool (0.30s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t(cached)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626557242,
+            "ran": 1793626557725,
+            "completed": 1793626565371
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1145face3640f9ab760e609af5e0ec9a810fda4b",
+        "end": "1145face3640f9ab760e609af5e0ec9a810fda4b",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 687,
+        "output": 100,
+        "reasoning": 51,
+        "cache": {
+          "read": 339968,
           "write": 0
         }
       }

@@ -12,8 +12,9 @@
 - ✅ T2 数据模型与迁移（26 张业务表 + 标签种子）
 - ✅ T3 身份/家庭/设备（登录、孩子、激活、PIN、邀请）
 - ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）
+- ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T5 组卷 v0
+- ⏳ T6 答题会话与判分
 
 ## 技术栈
 
@@ -143,6 +144,7 @@ POST /v1/admin/questions/{id}/offline
 POST /v1/admin/questions/{id}/resubmit
 
 GET  /v1/admin/audit                 审计日志
+POST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）
 ```
 
 状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。
