@@ -1,0 +1,84 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/roma007/OpenQuizGo/internal/config"
+	"github.com/roma007/OpenQuizGo/internal/httpapi"
+	"github.com/roma007/OpenQuizGo/internal/platform/cache"
+	"github.com/roma007/OpenQuizGo/internal/platform/database"
+	"github.com/roma007/OpenQuizGo/internal/platform/logx"
+)
+
+func main() {
+	cfg, err := config.Load()
+	if err != nil {
+		slog.Error("load config", "error", err)
+		os.Exit(1)
+	}
+
+	logger := logx.New(cfg.LogLevel, cfg.Env)
+	slog.SetDefault(logger)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	initCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	pool, err := database.Open(initCtx, cfg.DatabaseURL, cfg.DBMaxConns)
+	if err != nil {
+		logger.Error("connect database", "error", err)
+		os.Exit(1)
+	}
+	defer pool.Close()
+
+	rdb, err := cache.Open(initCtx, cfg.RedisURL)
+	if err != nil {
+		logger.Error("connect cache", "error", err)
+		os.Exit(1)
+	}
+	defer func() { _ = rdb.Close() }()
+
+	handler := httpapi.New(httpapi.Deps{
+		Logger:  logger,
+		DB:      pool,
+		Redis:   rdb,
+		Version: cfg.Version,
+		Env:     cfg.Env,
+	})
+
+	srv := &http.Server{
+		Addr:              cfg.HTTPAddr,
+		Handler:           handler,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
+	go func() {
+		logger.Info("http server starting", "addr", cfg.HTTPAddr, "env", cfg.Env, "version", cfg.Version)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Error("http server stopped unexpectedly", "error", err)
+			stop()
+		}
+	}()
+
+	<-ctx.Done()
+	logger.Info("shutting down")
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	defer shutdownCancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		logger.Error("graceful shutdown failed", "error", err)
+	}
+	logger.Info("bye")
+}
