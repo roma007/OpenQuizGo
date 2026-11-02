@@ -83,7 +83,7 @@ docs/
 ## 五、当前技术栈与约定
 
 - **服务端**：Go（模块化单体）、PostgreSQL 16、Redis 7、S3 兼容对象存储。
-- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/悬浮窗/UsageStats），定位为**守护端**，不承载内容播放。
+- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/悬浮窗/UsageStats），定位为**守护端**，不承载内容播放；答题时按「MediaSession → 音频焦点 → 媒体按键」组合暂停/恢复第三方播放（尽力而为）。
 - **家长端**：Flutter（Android / iOS）。
 - **管控对象**：第三方视频 App（播放器不可控），设备级管控方案见设计 001 第 4.6 节。
 - 目录结构、构建与测试命令：待 T1 工程骨架落地后补充。
