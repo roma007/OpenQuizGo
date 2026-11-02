@@ -1,7 +1,7 @@
 {
   "info": {
     "id": "ses_e64488e2cffeDYNmw42RxNLybD",
-    "projectID": "5ddb113d89e5f3d7335337ba76ae7f1ecde6f2ca",
+    "projectID": "785918a96bb643b073682956c406cb83da15bee7",
     "agent": "build",
     "model": {
       "id": "deepseek-v4.1-flash",
@@ -10,18 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 66902,
-      "output": 10159,
-      "reasoning": 8515,
+      "input": 96773,
+      "output": 22656,
+      "reasoning": 19218,
       "cache": {
-        "read": 724224,
+        "read": 1117696,
         "write": 0
       }
     },
+    "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793614984198,
-      "busy": 1793613853448
+      "updated": 1793620552218,
+      "busy": 1793620348595,
+      "idle": 1793615050222,
+      "viewed": 1793615050222
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -2609,6 +2612,716 @@
         "reasoning": 78,
         "cache": {
           "read": 35584,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19bc85d5f001mrMrjU3kinQ5MB",
+      "time": {
+        "created": 1793614962026,
+        "streamed": 1793615002660,
+        "completed": 1793615011551
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Both pushed successfully. Now re-run archive so the conversation includes the git work (still missing final message, but next session catch-up covers it). Re-running creates a new commit though — archive is versioned, so the archive file changes after commit → dirty tree.\n\nOptions: re-run archive, commit the updated archive, push again. That's a loop (each archive run adds messages). Standard approach: archive at end, commit as separate commit \"docs: 更新对话归档\". The final message still missing, but next session's catch-up adds it. Acceptable.\n\nLet me re-run archive, then commit and push. But then the archive content won't include this commit action. Infinite regress. Just do one final refresh + commit, noting that final response is archived next session.\n\nActually a cleaner approach: leave the archive as-is (already committed). The archive currently contains the conversation through the git setup? No — the last archive ran before git init. It contains up to the question/answer and my git checks? Let me see: last archive run at 18:13, before user answered at ~18:20. So the Q&A and git work are missing. Must refresh.\n\nRun archive, then commit \"docs(conversations): 归档本次会话\" and push both. Then done. Next session start runs --all to capture the tail.\n\nAlso update docs/README status row? It's fine.\n\nLet me also verify the archive markdown renders (heading spacing). And check file size.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793614984211,
+            "completed": 1793615002654
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-8bceabec7a488658",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "node scripts/archive-conversation.mjs && git add -A && git commit -q -m \"docs(conversations): 归档本次会话（规范建立与仓库初始化）\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git log --oneline -3",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "✔ 2026-11-02-001-项目铁律-留档与开发计划.md（37 条消息）\n\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   3c4eb83..b421b2e  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   3c4eb83..b421b2e  main -> master\nb421b2e docs(conversations): 归档本次会话（规范建立与仓库初始化）\n3c4eb83 chore: 建立项目规范、文档体系与对话归档机制\n8b467dc Merge remote-tracking branch 'gitee/master'\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793615001797,
+            "ran": 1793615002658,
+            "completed": 1793615011548
+          }
+        }
+      ],
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1955,
+        "output": 133,
+        "reasoning": 307,
+        "cache": {
+          "read": 34304,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19bc91eeb001UMFCjNABlsBx8s",
+      "time": {
+        "created": 1793615011569,
+        "streamed": 1793615014710,
+        "completed": 1793615020314
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Both remotes at b421b2e. Verify remote refs match.\n\nAlso check that docs/README.md status table needs update? It lists \"项目规范与文档机制建立 — done\". Good.\n\nFinal: verify both remotes point to same commit, and summarize.\n\nAlso note that \"暂不需要\" for next step, so I won't create design docs.\n\nLet me do a final consistency check (ls-remote both).",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793615013653,
+            "completed": 1793615014703
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_j4lk1ws5v9pqro1hkgtcw9jj",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "echo \"github:\"; git ls-remote github main; echo \"gitee:\"; git ls-remote gitee master; echo \"local:\"; git rev-parse HEAD; echo \"status:\"; git status --short | head -5",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "github:\nb421b2edc7ef15f24e742de9cfff427de5bd7d00\trefs/heads/main\ngitee:\nb421b2edc7ef15f24e742de9cfff427de5bd7d00\trefs/heads/master\nlocal:\nb421b2edc7ef15f24e742de9cfff427de5bd7d00\nstatus:\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793615014440,
+            "ran": 1793615014708,
+            "completed": 1793615020312
+          }
+        }
+      ],
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1042,
+        "output": 106,
+        "reasoning": 88,
+        "cache": {
+          "read": 35840,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19bc94123001Lacm8R7FTvn6TA",
+      "time": {
+        "created": 1793615020325,
+        "streamed": 1793615050210,
+        "completed": 1793615050214
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "All in sync. Clean tree.\n\nNow final response summarizing:\n- 规范落地\n- 仓库初始化，远端合并，双推成功，同一 commit\n- 本次对话已归档\n- 下次开始先 --all 补档（写进 AGENTS）\n- 设计暂缓，等需要时从 001 开始\n\nKeep concise. Mention commands.\n\nNote: I should mention that the final message of this session is not in the archive yet; next session start `--all` will补齐. That's honest and matches the documented rule.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793615037812,
+            "completed": 1793615050204
+          }
+        },
+        {
+          "type": "text",
+          "text": "已完成，本地、GitHub、Gitee 三处指向同一提交 `b421b2e`。\n\n**本次落地内容**\n\n| 项 | 结果 |\n| --- | --- |\n| 规范文件 | `AGENTS.md`：两条铁律、文档体系、状态流转、远端同步规则 |\n| 对话留档 | `docs/conversations/2026-11-02-001-...md` + `raw/ses_e64488e2....json` |\n| 归档工具 | `scripts/archive-conversation.mjs`（默认/`--session`/`--all`/`--sanitize`） |\n| 设计/计划模板 | `docs/design/TEMPLATE.md`、`docs/plans/TEMPLATE.md`、`BACKLOG.md` |\n| 版本管理 | `main` 跟踪 `github/main`，Gitee 用 `main:master` 同步 |\n\n**关于历史合并**：两个远端原本各有一份初始 LICENSE 提交（署名 `roma007` 与 `roma`），我没有强推覆盖，而是把 Gitee 的初始提交合并进主干（LICENSE 保留 GitHub 版本），两边都是快进推送，历史完整。\n\n**日常命令**\n\n```bash\n# 会话开始：补齐上次会话的收尾内容\nnode scripts/archive-conversation.mjs --all\n\n# 会话结束：归档并双推\nnode scripts/archive-conversation.mjs\ngit add -A && git commit -m \"docs(conversations): 归档会话\"\ngit push github main && git push gitee main:master\n```\n\n两点说明：\n\n1. 本次会话最后这条回复尚未进入归档（导出发生在回复之前），下次会话开始执行 `--all` 会自动补齐，这是规范里约定的机制。\n2. 设计流程已就绪但暂未启动。需要开始时，从 `docs/design/001-项目总体设计.md` 起笔，确认后再出 `docs/plans/001-...md`，approved 之后才动代码。"
+        }
+      ],
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 575,
+        "output": 447,
+        "reasoning": 114,
+        "cache": {
+          "read": 36608,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19bc9b5ee001mb84lKbn7ERJqh",
+      "time": {
+        "created": 1793615050222
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_19c1a8f070018JlWMCu120g3Wh",
+      "metadata": {
+        "notice": "instructions",
+        "instructionSources": [
+          "core/environment"
+        ]
+      },
+      "time": {
+        "created": 1793620348679
+      },
+      "type": "system",
+      "text": "The environment you are running in is now:\n<env>\n  Working directory: /Users/mengfeng/我的文档/源码/OpenQuizGo\n  Workspace root folder: /Users/mengfeng/我的文档/源码/OpenQuizGo\n  Is directory a git repo: yes\n  Platform: darwin\n  Prefer /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode over generic system temporary directories such as /tmp; it is pre-created and approved for external access.\n</env>",
+      "description": "Instructions updated: core/environment"
+    },
+    {
+      "id": "msg_19c1a8dca001sBYPKu08nFtDA5",
+      "metadata": {
+        "displayText": "已把对于这个项目的想法放在/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/idea.txt",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793620348684
+      },
+      "text": "已把对于这个项目的想法放在/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/idea.txt",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_19c1a8f1f0019EWCauhIaJxXU9",
+      "time": {
+        "created": 1793620348725,
+        "streamed": 1793620353082,
+        "completed": 1793620353209
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The user placed their idea in docs/idea.txt. Per the rules, read it, then design doc 001. Let me read it.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793620352187,
+            "completed": 1793620353075
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_pim0i13az3y22uqtdeiszj8h",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/idea.txt"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /Users/mengfeng/我的文档/源码/OpenQuizGo/docs/idea.txt, lines 1-175\n1: \n2: ## 四、功能需求\n3: \n4: ### 4.1 答题解锁机制\n5: \n6: - 观看前 / 观看中答题，答对达阈值解锁观看时长\n7: - 规则引擎支持：观看时长、答题通过阈值、时段限制（如晚 8 点后不可看）、按学科设不同权重阈值\n8: - **断网降级**：允许看已缓存内容限时（默认 10 分钟）；**核心规则校验与答案判定不落本地，必须走服务端**\n9: \n10: ### 4.2 学科体系（三层结构 + 趣味类目）\n11: \n12: - **核心学科**：数学思维（主力）、语文素养、英语启蒙\n13: - **素养学科**：科学常识、逻辑推理、生活 / 安全常识\n14: - **专题内容**：节日题包、IP 联动题包、寒暑假专题（运营抓手，不占学科框架）\n15: - **趣味类目**（脑筋急转弯）：\n16:   - 独立 `category`，**不进学科矩阵考核**\n17:   - 学段只分两档：3–8 / 9+\n18:   - 题型以选择 + 语音为主\n19:   - 必须标准答案 + 近义答案白名单\n20:   - 设占比上限：一次解锁最多 1–2 道\n21:   - 家长可开关\n22: - **底层一套题库，学科只是标签**；禁止按学科拆独立模块 / 独立表\n23: \n24: ### 4.3 学段与年级\n25: \n26: - **学段刚性四档**（必填，题库按学段铺满）：\n27: \n28: | 学段 | 对应年级参考 | 题型重心 |\n29: |---|---|---|\n30: | 启蒙 3–5 | 幼儿园小 / 中 / 大班 | 图、音、连线、选择 |\n31: | 低年级 6–8 | 一~三年级 | 图文选择、简单填空、排序 |\n32: | 中年级 9–11 | 四~六年级 | 文字题干、多步推理、阅读 |\n33: | 高年级 12+ | 初一及以上 | 短平快学科题、逻辑题 |\n34: \n35: - **年级柔性**：`grade_tag` 选填，不单独建题库，仅在学段题池内做难度偏移 / 推荐加权\n36: - 家长默认选学段，「精准模式」可选年级；映射为默认推荐，家长可覆盖\n37: - **不做 12 年级硬分层**\n38: \n39: ### 4.4 题库治理（完整版重点）\n40: \n41: - 后台按 `学科 / 学段 / 难度 / 题型` 四维检索、批量导入、版本管理、上下架\n42: - **难度校准**：用真实正确率反推（>90% 降难度，<40% 升难度）\n43: - **质量审核流**：教研出题 → 审核 → 试答 → 上线，多角色权限\n44: - **覆盖率看板**：`学科 × 学段 × 难度` 热力图，防断供；`grade_tag` 只做分布统计，不纳入铺满考核\n45: - **推荐引擎**：按学段筛池 → 按 grade_tag 加权 → 按历史正确率动态调难度与学科配比\n46: - **A/B 测试**能力\n47: \n48: ### 4.5 运营与变现\n49: \n50: - 基础学科免费；素养学科 / 专题题包做会员或单购\n51: - 每日一题、节日题包、亲子对战（挂趣味类目）\n52: - 会员订阅体系\n53: \n54: ## 五、数据与架构\n55: \n56: ### 5.1 服务端（必须做）\n57: \n58: 服务端是产品「大脑」，承载四件事：**题库、规则引擎、账号家庭体系、数据报告**。\n59: \n60: - 早期可用 BaaS（Supabase / Firebase / LeanCloud）覆盖账号、数据库、推送；用户量起来再迁自建\n61: - 客户端薄，**规则判定与答案校验走服务端接口**\n62: - 接口设计预留扩展：题型 `type`（选择 / 语音 / 看图 / 填空 / 排序 / 连线）、`ageRange`、`difficulty` 等字段\n63: \n64: ### 5.2 核心数据模型（字段清单）\n65: \n66: #### `question`（题目主表）\n67: \n68: | 字段 | 类型 | 必填 | 说明 |\n69: |---|---|---|---|\n70: | `id` | bigint/uuid | 是 | 主键 |\n71: | `subject` | enum | 是 | 学科标签：math / chinese / english / science / logic / safety / fun |\n72: | `category` | enum | 是 | 类目：core / literacy / topic / fun |\n73: | `stage` | enum | 是 | 学段：preschool / low / mid / high |\n74: | `grade_tag` | enum/null | 否 | 年级微调标签 g1~g9，仅学段内偏移 |\n75: | `difficulty` | tinyint | 是 | 难度 1–5，可被正确率反推校准 |\n76: | `type` | enum | 是 | choice / voice / image / fill / sort / match |\n77: | `stem` | text | 是 | 题干 |\n78: | `stem_media` | json | 否 | 题干图 / 音资源（低龄必填） |\n79: | `options` | json | 条件 | 选项（选择题必填） |\n80: | `answer` | json | 是 | 标准答案（选项 id / 文本 / 排序序列） |\n81: | `answer_alias` | json | 否 | 近义答案白名单（趣味题必填） |\n82: | `explain` | text | 否 | 解析 |\n83: | `duration_limit` | int | 否 | 单题限时秒数（学科 ≤30，趣味 10–20） |\n84: | `topic_id` | bigint | 否 | 归属专题题包 |\n85: | `status` | enum | 是 | draft / review / trial / online / offline |\n86: | `version` | int | 是 | 版本号 |\n87: | `schema_ver` | int | 是 | json 字段 schema 版本 |\n88: | `created_by` / `reviewed_by` | bigint | 是 | 教研 / 审核角色 |\n89: | `created_at` / `updated_at` | datetime | 是 | 时间戳 |\n90: \n91: #### `tag_dict`（标签字典）\n92: \n93: - `tag_type`：subject / category / stage / grade / difficulty / type\n94: - `tag_value`、`tag_name`、`sort`、`enabled`\n95: - **新增学科 / 题型只加字典值，不改表结构**\n96: \n97: #### `topic_pack`（专题题包）\n98: \n99: - `id`、`name`、`type`（节日 / IP / 假期 / 每日一题）、`subject_scope`、`stage_scope`、`start_at` / `end_at`、`is_paid`、`status`\n100: \n101: #### `watch_rule`（规则配置，独立于题库）\n102: \n103: | 字段 | 说明 |\n104: |---|---|\n105: | `id` / `child_id` | 规则归属孩子档案 |\n106: | `unlock_minutes` | 每次解锁观看时长 |\n107: | `pass_threshold` | 答对题数阈值 |\n108: | `subject_weight` | json，按学科设不同权重阈值 |\n109: | `fun_ratio_cap` | 趣味题占比上限（如 1–2 道/次） |\n110: | `fun_enabled` | 家长开关 |\n111: | `time_window` | 允许观看时段 |\n112: | `daily_limit` | 每日总时长 |\n113: | `offline_fallback_min` | 断网降级分钟数（默认 10） |\n114: | `updated_by` / `updated_at` | 家长修改留痕，实时下发电视端 |\n115: \n116: #### `answer_log`（答题记录）\n117: \n118: - `id`、`child_id`、`question_id`、`device_id`、`answer_given`、`is_correct`、`duration_ms`、`answered_at`\n119: - 用途：难度校准、成长报告、推荐引擎\n120: \n121: #### `watch_log`（观看记录）\n122: \n123: - `id`、`child_id`、`device_id`、`start_at`、`end_at`、`unlocked_by`（关联答题会话）、`content_id`\n124: \n125: #### 家庭与账号\n126: \n127: - `family`（id、家长账号、会员状态）\n128: - `child_profile`（id、family_id、昵称、生日 → 自动映射学段、当前 stage / grade_tag、头像）\n129: - `device_bind`（device_id、child_id、端类型 tv / phone / pad / miniapp、绑定状态）\n130: - `family_member`（family_id、家长账号、角色、二次验证状态）\n131: \n132: #### 覆盖率看板视图\n133: \n134: - 维度：`subject × stage × difficulty` 在线题数\n135: - 阈值告警：某格子低于 N 题即预警断供\n136: - `grade_tag` 单独分布统计，不纳入铺满考核\n137: \n138: #### `growth_report`（报告聚合）\n139: \n140: - `child_id`、`period`（周 / 月）、`subject_stats`（json：正确率 / 题量 / 趋势）、`fun_stats`（单列，不计学科）、`watch_minutes`、`generated_at`\n141: \n142: #### 扩展预留\n143: \n144: - `question.type` 新增题型只加枚举 + 渲染器，不改表\n145: - `subject` 新增学科只加字典值\n146: - 所有 json 字段（options / answer / rule）带 `schema_ver`，便于迁移\n147: \n148: ## 六、非功能要求\n149: \n150: - **合规**：儿童个人信息保护，数据最小化、家长同意、加密存储；学科表述避开培训口径\n151: - **体验**：电视端遥控器可达、大字体、语音答题；单题时长控制（学科 ≤30 秒，趣味 10–20 秒）\n152: - **防绕过**：规则与答案校验不落本地\n153: - **多端同步**：手机规则、电视执行记录、平板答题数据汇总一处\n154: - **内容审核**：儿童向，禁止低俗 / 歧义 / 硬凑谐音题\n155: \n156: ## 七、分期建议（完整版内部排序）\n157: \n158: | 期 | 内容 |\n159: |---|---|\n160: | 1 | 服务端 + 题库数据模型 + 标签体系 + 规则引擎 |\n161: | 2 | **Android TV 电视端 + 家长端手机 App（设置 / 报告）**（同期上线） |\n162: | 3 | 题库治理后台 + 覆盖率看板 + 难度校准 |\n163: | 4 | 平板端、小程序、孩子端互动 |\n164: | 5 | 运营层：专题题包、每日一题、亲子对战、会员体系 |\n165: | 6 | 推荐引擎与 A/B |\n166: \n167: ## 八、硬约束（务必遵守）\n168: \n169: 1. 学科是**标签**不是模块，禁止按学科拆表 / 拆服务\n170: 2. 学段必填且铺满，年级选填只做偏移，**不做 12 年级硬分层**\n171: 3. 脑筋急转弯是**独立趣味类目**，不进学科矩阵、设占比上限、答案白名单、家长可关\n172: 4. 电视端薄客户端，规则与判分在服务端\n173: 5. **家长端必做**：装家长手机、强身份验证、推送、离线可看、多家长家庭组\n174: 6. 面向儿童，合规与内容审核前置，不后补\n175: 7. 所有扩展点（题型 / 学科 / 学段）用标签 / 枚举预留，避免后期重构"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793620352563,
+            "ran": 1793620353078,
+            "completed": 1793620353096
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_bu1ye6zamxi9h79p9c3bc9l9",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "git status --short; git log --oneline -3"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "?? docs/idea.txt\nb421b2e docs(conversations): 归档本次会话（规范建立与仓库初始化）\n3c4eb83 chore: 建立项目规范、文档体系与对话归档机制\n8b467dc Merge remote-tracking branch 'gitee/master'\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793620352883,
+            "ran": 1793620353081,
+            "completed": 1793620353200
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "ca433d24b1fbe35bb8cf840e1d7226c37c4f813d",
+        "end": "ca433d24b1fbe35bb8cf840e1d7226c37c4f813d",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1053,
+        "output": 92,
+        "reasoning": 29,
+        "cache": {
+          "read": 36864,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c1aa0bf00160Ca5gZwQMHUa5",
+      "time": {
+        "created": 1793620353218,
+        "streamed": 1793620435206,
+        "completed": 1793620435832
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The idea.txt starts at \"## 四、功能需求\" — it's a fragment (missing sections 1-3: product background, positioning, users, maybe competitors). So I know: an Android TV kids quiz-unlock app, parents set rules, kids answer questions to unlock watch time. Server-side brain, thin TV client, parent mobile app, question bank governance.\n\nNow per rule 2: produce design doc 001 (project overall design) and plan 001, then get approval before implementation.\n\nI should:\n1. Archive session start (--all) per AGENTS.\n2. Write `docs/design/001-项目总体设计方案.md` — comprehensive, based on idea.txt, with the gaps flagged as open questions (sections 1-3 missing: product positioning, target users, business model, etc.). I can infer but should mark assumptions.\n3. Write `docs/plans/001-项目实施计划.md` — phased plan matching 分期建议, with tasks/acceptance.\n4. Update docs/README status table.\n5. Commit? The rule says approved plans only before implementation; documentation can be committed in draft. I'll commit as draft design docs.\n6. Archive conversation at end, commit, push both.\n\nShould I ask questions before writing the design? The idea is quite detailed. Missing: sections 1-3 (background, goals, competitive analysis). I can draft with explicit assumptions + 未决问题. Better to produce the design first, then ask for review — that respects \"设计方案及计划\" and gives the user something concrete to correct.\n\nBut some key decisions materially affect the architecture:\n- Tech stack: idea says BaaS early (Supabase/Firebase/LeanCloud), later self-hosted. Project name \"OpenQuizGo\" suggests Go backend. Actually \"Go\" might be part of \"Quiz Go\". Given the name and that I'm a coding agent, likely Go backend. I should propose Go + PostgreSQL self-hosted from the start (simpler to keep single stack, no migration), with option of BaaS rejected? The idea explicitly suggests BaaS early. Design should weigh: BaaS speeds up but rule engine is custom anyway; self-hosted Go backend with Postgres gives control and avoids migration. I'll recommend Go (Gin/Echo? or chi) + PostgreSQL + Redis, and clearly note the alternative.\n\nHmm, but the user hasn't confirmed the stack. The design template includes 方案对比与选型. I'll do the comparison and mark as \"建议方案，待确认\".\n\n- Android TV client: Kotlin + Compose for TV? Or Flutter? Parent app: Flutter or native? Multi-platform (TV + phone + pad + miniapp) → Flutter could reduce cost, but Android TV needs Leanback/DPAD focus handling; Flutter supports Android TV reasonably but not great. Options: \n  A. TV: Kotlin + Compose for TV (native, best DPAD/voice), Parent: Flutter or native Android/iOS.\n  B. TV: Flutter, Parent: Flutter — one codebase.\n  C. React Native — no TV support.\nI'd recommend native Kotlin for TV (Compose for TV + Media3/ExoPlayer), and Flutter for parent app (iOS+Android). Or native parent Android first to cut scope. Phase 1 is server only; phase 2 TV + parent app.\n\nSince phase 1 is server + data model + rule engine, the immediate design can focus there while the overall design covers all.\n\nGiven the size, design 001 should be the \"项目总体设计\" (product + architecture + phasing), and then 002+ for detailed subsystem designs (server, rule engine, question bank governance, TV client, parent app). The plan 001 should cover phase 1.\n\nThe user's idea file is a fragment — I should also note it's incomplete (sections 1-3 missing) and ask them to supply, or I fill with assumptions.\n\nLet me think about the product domain deeply to write a good design.\n\n**Product**: Kids' TV viewing controlled by quiz answering. Parent sets rules (watch time, pass threshold, time windows, subject weights, daily limit, offline fallback). Child answers questions on TV before/during watching; correct answers unlock time. Server is authoritative for rules and answer validation (anti-bypass). Question bank spans subjects/stages/difficulties/types, with governance (review flow, coverage dashboard, difficulty calibration, recommendation, A/B).\n\n**Key architecture decisions**:\n1. Monolith modular (Go) initially — modular monolith with clear domains: identity/family, question bank, quiz session, rule engine, watch/unlock, reporting, admin, commerce. Avoid microservices.\n2. PostgreSQL as source of truth; Redis for sessions/cache/rate-limit; object storage (S3/MinIO) for media; CDN for media.\n3. Answer validation server-side: never send correct answers to client. Question delivery strips answer; submission endpoint validates. For offline degradation: client may view cached content for N minutes, but unlock requires server check? The idea says \"核心规则校验与答案判定不落本地，必须走服务端\" and \"断网降级：允许看已缓存内容限时（默认 10 分钟）\". These coexist: offline fallback is a time-boxed grace period, not rule evaluation. Design: device holds a signed offline lease token (JWT) issued by server with expiry; offline playback allowed until lease expires; quiz answering requires network. Anti-tamper: token signed, device clock checks, playback gated by license/DRM for paid content.\n4. Rule engine: configuration-driven per child; evaluate server-side. Deterministic function: given child rule + quiz session result + time + watch history → unlock grant (minutes). Weighted thresholds per subject. Fun ratio cap. Time windows. Daily limit.\n5. Quiz session flow: \n   - Client requests \"unlock session\" → server picks questions (recommendation), creates quiz_session with TTL, returns questions without answers.\n   - Client submits answers one by one or batch → server grades (idempotent, server timestamps, anti-replay: one-time question token per item, server-side duration measurement).\n   - On threshold met → server issues watch grant (signed lease: content scope, minutes, expires_at, child, device).\n   - TV plays gated by lease; heartbeat/watch log reports actual minutes.\n   - Daily limit enforcement: server tracks watch_log; lease minutes capped by remaining daily allowance.\n6. Anti-cheat: rate limiting, question token single-use, answer timing sanity, device binding, parent PIN for rule changes, audit logs. Kids could brute-force options — limit attempts, randomize options.\n7. Data model: as given, refine: add quiz_session, quiz_session_item, watch_grant/lease, audit_log, admin users/roles, media_asset. `question` as single table with tags (hard constraint: no per-subject tables). Use enum types or tag_dict with FK? The idea says tag_dict for extensibility; but subject/category/stage/type as enums + dict table for display. Compromise: store codes as smallint/text with FK to tag_dict, plus CHECK? I'd use PostgreSQL enum? Adding enum values requires migration but is simple. The idea insists \"新增学科/题型只加字典值，不改表结构\" → use tag_dict references (code text, FK tag_dict(tag_type, code)) and validate at app layer + optional trigger. I'll design tag_dict with (tag_type, code) unique, question.subject_code etc. referencing it. Actually FKs to composite key require unique constraint — doable.\n\nBut over-engineering. Alternative: keep `subject` as text with dict in app config (no DB FK). Simpler, still no schema change. I'll propose: `tag_dict` table as single source for UI/validation; question columns store `*_code` text, validated in service layer; no PG enum. Note the tradeoff.\n\n8. Multi-tenancy: family-based. Not SaaS multi-tenant.\n9. Compliance: COPPA/PIPL (China), data minimization, parental consent, encryption at rest, no ad tracking, content review. Store birthdate as month/year only? Child nickname; device IDs hashed.\n10. Reporting: daily aggregation jobs (materialized views / scheduled), growth_report per week/month, subject_stats excluding fun; fun_stats separate.\n\n**Phasing** per idea: 1 server + model + tags + rule engine; 2 TV + parent app; 3 governance backend + coverage + calibration; 4 pad/miniapp; 5 ops/monetization; 6 recommendation + A/B.\n\nFor plan 001, focus on Phase 1 deliverables + acceptance.\n\nI need to be careful: writing a huge design doc is expected. The user asked implicitly to proceed based on idea.txt. Since they said \"暂不需要\" earlier for next step, but now they gave the idea — that means proceed with design. Yes.\n\nLet me also read if there's more context in the repo (only idea.txt). No.\n\nI should follow the rule: archive at session start (--all). Let me do that first (it will capture last session's final message).\n\nThen write:\n- docs/design/001-项目总体设计方案.md\n- docs/plans/001-第一期服务端实施计划.md\n\nNumbering: design 001 overall, plan 001 phase 1. But the convention says same number = same theme. Overall design 001 ↔ plan 001 (第一期)? Slight mismatch. Better:\n- Design 001: 项目总体设计方案\n- Plan 001: 项目总体实施计划 (phases, milestones) — high level; then detailed designs 002+ per subsystem.\n\nPer template, plan = task breakdown. For phase 1 detailed tasks, make Plan 001 = 第一期（服务端基座）实施计划 tied to Design 001? Hmm.\n\nAlternative:\n- 001 项目总体设计（含分期） + 001 总体实施计划（分期里程碑与治理，不含每个任务）\n- Then 002 服务端核心域设计 + 002 服务端核心域实施计划 (phase 1 detail).\n\nThat's clean: design 001 and plan 001 share theme \"项目总体\"; phase 1 detail becomes 002. But writing both 001 pair now is enough for approval; 002 after 001 approved.\n\nGiven the user wants progress, I'll deliver 001 design + 001 plan (phase 1 detail inside plan), keeping numbering aligned: Plan 001 covers Phase 1 implementation but references design 001. Actually simpler for the user: one design + one plan for the first phase, plus the overall roadmap inside the design. Let me do:\n\n- `docs/design/001-项目总体设计方案.md`: product, architecture, data model, APIs, non-functional, phasing, risks.\n- `docs/plans/001-第一期服务端实施计划.md`: detailed tasks for phase 1 only.\n\nThe numbering rule says 001 design and 001 plan same theme; theme = \"项目总体设计\", plan = \"第一期\"? To keep strictly aligned, name plan `001-项目总体与第一期实施计划.md`. That's fine, a bit long. Or name both \"001-项目总体设计方案\" and \"001-项目实施计划（第一期）\". Header links handle it.\n\nI'll use:\n- design/001-项目总体设计方案.md\n- plans/001-第一期实施计划.md with 对应设计 001.\n\nSlight deviation but acceptable; I could instead call plan \"001-项目总体设计方案-实施计划\". Ugly.\n\nDecision: plan file `001-项目总体实施计划.md`, whose section 2 task breakdown focuses on Phase 1 and section 3 covers all milestones. Good alignment.\n\nNow content depth. This is a big doc. Let me write carefully but not absurdly long. Include:\n\n1. 背景与目标 (note idea.txt is excerpt lacking sections 1-3; assumptions)\n2. 需求与验收标准 (R1..R12 mapped from idea, P0/P1)\n3. 方案对比与选型:\n   - 后端: BaaS 起步 vs 自建 Go 单体; choose modular monolith Go + Postgres\n   - 客户端: 原生 Kotlin TV + Flutter 家长端 vs 全 Flutter; choose native TV + Flutter parent\n   - 判分: 本地 vs 服务端; server authoritative\n4. 总体架构: diagram (ASCII), modules, key flows (unlock flow sequence, offline fallback, rule change propagation)\n5. 数据模型: core tables DDL-level descriptions, including new ones (quiz_session, quiz_session_item, watch_grant, audit_log, admin_user, media_asset, device_command?)\n6. 接口设计: REST endpoints for TV, parent app, admin; auth; error codes\n7. 非功能: security/anti-cheat, performance targets, availability, observability, compliance\n8. 风险\n9. 未决问题 (especially missing product sections, stack confirmation, DRM, content source/licensing, payment)\n10. 变更记录\n\nData model needs care to reflect hard constraints:\n- question single table, subject as tag\n- stage required, grade_tag optional\n- fun category separate, not in subject matrix, capped, alias answers, parent switch\n- rule engine config\n- watch grants\n\nLet me design the schema:\n\ntag_dict(tag_type, code, name, sort, enabled) PK(tag_type, code)\nquestion(id uuid, subject_code, category_code, stage_code, grade_tag, difficulty smallint, type_code, stem text, stem_media jsonb, options jsonb, answer jsonb, answer_alias jsonb, explain text, duration_limit smallint, topic_id, status, version int, schema_ver int, created_by, reviewed_by, created_at, updated_at)\n- CHECK stage in ('preschool','low','mid','high')? If using dict, soft check.\n- category: core/literacy/topic/fun.\n- fun constraint: category='fun' → stage restricted to 'preschool' (3-8) / 'low'? The idea says fun stage only 2 tiers: 3–8 / 9+. But core stage has 4 tiers. So `stage` for fun would need 2-tier representation. Hmm! Conflict: stage enum has 4 values; fun uses 3-8/9+. Options:\n  - Add `age_band` enum (3-8, 9+) used only for fun; `stage` nullable for fun? But stage is 必填.\n  - Map fun to stage codes `fun_3_8`, `fun_9plus` — pollutes stage dict.\n  - Keep stage required for all; fun questions assigned to stage but recommendation for fun uses age_band.\n  \n  Better: introduce `age_min`/`age_max` (or age_band) columns for all questions, with stage still required. For fun: stage = preschool/low mapping? The idea says 学段只分两档 for fun. I'll design: question.stage nullable? No—\"学段必填\" is a hard constraint.\n  \n  Cleanest: `stage` stays 4-tier required for all; fun questions are authored with stage by age: 3-5 → preschool, 6-8 → low, 9-11 → mid, 12+ → high, and additionally have `age_band` ('3-8','9+') for fun selection. This keeps stage铺满 and lets fun filter by two bands. But then a fun question covering 6-8 gets stage=low, and 3-5 gets preschool — both age_band 3-8. That works, though fun question valid across stage boundary can't be single row (one stage only). Acceptable: author duplicate per stage or pick primary.\n  \n  Alternatively fun questions use `stage` = 'preschool'/'low'... hmm.\n  \n  I'll go with: `stage` required 4-tier for every question; add `age_band` derived/optional for fun (3-8/9+). Note this in design as a decision, with alternative documented. Actually simpler: fun always assigned stage by age; recommendation uses age from child profile. The 2-tier is just for UI/selection. Document that fun questions are tagged with the 4-tier stage internally but only two bands are exposed to parents/analytics. Hmm, but then a 9+ fun question must be mid/high; a 3-8 could be preschool/low. Fine.\n\nLet me not overcomplicate: I'll define `age_band` as a computed attribute: based on stage (preschool+low → 3-8; mid+high → 9+)? No, low = 6-8, mid = 9-11. Yes! preschool(3-5)+low(6-8) = 3-8; mid(9-11)+high(12+) = 9+. So age_band is derived from stage for fun. That's elegant: no extra field needed, fun uses stage grouped into two bands. But the idea says fun \"学段只分两档\" — implementation-wise derived band satisfies it while keeping stage required. Document it.\n\n- question answer storage: choice answer = option ids; voice = alias list; fill = text list; sort = order; match = pairs. JSON schema_ver.\n- Never expose answer/answer_alias via client API.\n\nquiz_session(id, child_id, device_id, rule_snapshot jsonb, state, started_at, expires_at, granted_minutes, ...)\nquiz_session_item(id, session_id, question_id, question_version, position, issued_at, answer_token(jti), answered_at, answer_given, is_correct, duration_ms) — server stores issued token to prevent replay; question snapshot maybe necessary for versioning (if question edited mid-session). Use question_version snapshot of answer? Storing answer snapshot leaks nothing server-side; fine.\nwatch_grant(id, child_id, device_id, session_id, minutes, valid_from, valid_until, token_jti, consumed_minutes, status)\nwatch_log(id, child_id, device_id, grant_id, content_id, start_at, end_at, minutes)\nrule/watch_rule as given + version.\nfamily, parent_account, child_profile, device_bind, family_member.\ntopic_pack, topic_question (many-to-many).\ngrowth_report.\naudit_log(actor, action, target, before, after, ip, at)\nadmin_user, role, permission (RBAC) — for governance.\nmedia_asset.\n\nRecommendation: separate service but inside monolith: question selector using coverage + child history.\n\n4.5 变现: membership/subscription — phase 5, but data model reserve: family.member_status, order tables later. Don't build now.\n\nAPIs (TV):\n- POST /v1/auth/device/code, /v1/auth/device/token (device binding via code shown on TV, parent confirms)\n- GET /v1/child/{id}/unlock-context → rule summary, remaining daily minutes, fun enabled, time window status\n- POST /v1/quiz/sessions → {child_id, device_id, trigger: pre_watch|in_watch} → session with question list (no answers), expires_at\n- POST /v1/quiz/sessions/{id}/answers → {item_id, answer, client_ts} → {is_correct, correct_answer? (only after answer), explain, progress}\n  - Should we return correct answer? For learning, yes after submission, with explanation. But then a kid could answer wrong deliberately to learn answers, then... no retry in same session? Limit retries; answers revealed after grading is standard. But anti-cheat: revealing answers allows passing by trial if unlimited attempts. Mitigate: each question one attempt per session; failed questions not re-issued soon; threshold counts correct.\n- POST /v1/quiz/sessions/{id}/complete → grant\n- POST /v1/watch/grants/{id}/heartbeat → {position, watched_seconds} → updates consumed; returns remaining\n- POST /v1/watch/logs → report\n- GET /v1/offline/lease → signed lease for cached content (10 min default) — actually offline means no network, so lease must be pre-issued when online: GET /v1/devices/offline-lease returns signed JWT valid N minutes from first offline use? Server can't know offline start. Use lease valid_until absolute (e.g., issued_at + 24h) and device enforces max 10 min of playback offline per online check-in, recorded locally and reconciled. Design: offline fallback = pre-authorized grace of 10 minutes per 24h, enforced client-side by trusted playback module + signed lease; reconciled on reconnect. Acknowledge it's a soft control (can't be fully enforced offline), document risk.\n\nParent APIs: family/children CRUD, rules CRUD, reports, device binding, PIN/2FA.\nAdmin APIs: question CRUD, import, review workflow, publish, coverage, calibration, A/B.\n\nNon-functional: p95 < 200ms for quiz answer; 99.9% availability; 10k concurrent TVs target? Unknown scale — set design target: 1万家庭/5万设备, peak 2000 QPS. Mark assumption.\n\nSecurity: JWT short-lived + refresh; device attestation? TV devices often no Play Integrity. Use device binding + per-device secret stored in keystore. TLS pinning optional. Rate limits. Answer token single-use, server timestamps. Parent rule change requires PIN + re-auth; push invalidation.\n\nCompliance: PIPL/COPPA, parental consent, data minimization; birthdate → only year-month; no precise location; encryption at rest (KMS); logs redact PII; retention policy; content review SLA.\n\nPhasing & milestones.\n\nOpen questions:\n- idea.txt 缺 1-3 节（产品定位、目标用户、竞品/差异、商业模式细节）\n- 技术栈确认（Go? Postgres? 云厂商?）\n- 电视端具体平台（Android TV 最低版本、是否兼容 Fire TV/国内厂商）\n- 内容来源与版权（自研题库 or 采购）、视频内容源（自有/第三方 App 投屏？）—— 关键！This product unlocks *watching* — what content? Is it controlling a specific video app, or the TV's general screen time? Huge ambiguity: \"观看时长\" of what content? If it's controlling third-party apps (YouTube/Netflix), impossible without device admin/accessibility. Likely their own content library? The idea mentions `content_id` in watch_log and \"已缓存内容\". So there's a content library. But no content module in data model or phases. This is a major gap → 未决问题 P0.\n- 会员支付渠道\n- 语音答题 ASR 方案（云端/本地）\n- 是否需要 DRM\n\nThese are important. I'll flag content source as top open question.\n\nGiven missing info, my design must make assumptions explicit. I'll write a section \"关键假设\" and list questions at top.\n\nNow, the plan: Phase 1 tasks:\nT1 工程骨架（Go module, config, logging, migrations, CI, Docker）\nT2 数据库 schema + 迁移 + 种子数据 (tag_dict)\nT3 账号/家庭/设备绑定/家长 PIN\nT4 题库 CRUD（内部 API）+ 导入导出 + 审核流最小可用\nT5 选题/推荐 v0（按 stage/difficulty/coverage, fun cap）\nT6 答题会话与判分（防重放）\nT7 规则引擎（时段/阈值/权重/占比/每日上限）\nT8 观看授权与心跳/日志\nT9 报告聚合 v0（周/月）\nT10 离线租约\nT11 可观测性与压测\nT12 验收\n\nEstimated durations? I could give rough days but the user may not want estimates. Template asks 里程碑/计划日期; I can put TBD or relative weeks. I'll use relative (W1..W6) and note effort assumptions.\n\nVerification: unit tests for rule engine table-driven; integration tests with testcontainers Postgres; contract tests; load test k6.\n\nRollback: feature flags, DB migrations forward-only with down scripts.\n\nLet me also produce an API spec? Design doc table is enough; detailed OpenAPI later in 002.\n\nLength: aim ~400-500 lines design, ~150 plan. That's fine.\n\nAlso update docs/README status table.\n\nThen commit as draft? The user must review. Status `review`. Then ask for confirmation. Don't start coding.\n\nAlso archive at start: run `node scripts/archive-conversation.mjs --all` now. That will update archive file for previous session (add final message). It creates a diff to commit later.\n\nWait — running archive now exports the current session too? `--all` exports all sessions in project; current session is included and will be archived mid-conversation. That's fine (incremental archival), will refresh at end.\n\nLet me run it.\n\nThen write docs.\n\nI should number design/plan 001/002? Let me settle:\n- design/001-项目总体设计方案.md\n- plans/001-项目总体实施计划.md\n\nPlan contains phase-1 task detail; later phases get their own plans 002+ with designs.\n\nUpdate README table:\n| 001 | 项目总体设计方案 | [设计](design/001-...) | [计划](plans/001-...) | review |\n\nLet me write the design now. I'll be thorough but organized.\n\nArchitecture diagram in ASCII:\n\n```\nAndroid TV (Kotlin/Compose for TV)   Parent App (Flutter)\n        |  HTTPS/mTLS(optional)               |\n        +---------------+---------------------+\n                        v\n                 API Gateway (Go)  - auth, rate limit, WAF\n                        v\n   +--------------------------------------------------+\n   |  模块化单体 (Go)                                  |\n   |  Identity/Family | QuestionBank | Quiz | Rule    |\n   |  Watch/Grant     | Report      | Admin | Notify  |\n   +--------------------------------------------------+\n        |                |                 |\n   PostgreSQL          Redis           Object Storage + CDN\n   (source of truth)  (cache/session)  (media)\n                        |\n                   Async jobs (outbox + worker): 报告聚合/难度校准/推送\n```\n\nRule engine flow:\n1. TV requests unlock context.\n2. Server loads rule + today's watch_log + grants, evaluates time window/daily remaining.\n3. Creates quiz session with N questions selected (weighted by subject_weight; fun cap).\n4. Grading per answer; when correct count meets weighted threshold → unlock minutes = rule.unlock_minutes (possibly weighted? unlock_minutes fixed; subject_weight affects pass threshold composition).\n   Hmm \"按学科设不同权重阈值\" — subject_weight json maps subject→weight; threshold = pass_threshold (count) and weights determine how many questions per subject. Design: selection quota per subject proportional to weight; pass requires weighted score ≥ threshold. Define clearly:\n   - `subject_weight`: {\"math\":0.5,\"chinese\":0.3,\"english\":0.2} → question distribution per session.\n   - `pass_threshold`: weighted correct ratio e.g. 0.6 of total weight, or count. Idea says 答对题数阈值. I'll define both: `pass_threshold` = number of correct answers; `subject_weight` = distribution. Simpler and matches text. Document.\n5. Grant issued: minutes = min(unlock_minutes, remaining daily limit), signed lease token, TTL.\n6. TV plays; heartbeat every 30-60s updates consumed; lease cannot exceed.\n7. On expiry, re-quiz.\n\nTime window: e.g. 20:00之后不可看 → rule.time_window {allow: [{start:\"07:00\",end:\"20:00\"}]}; server evaluates at grant time and heartbeat (revoke on crossing).\n\nDaily limit: sum of grant minutes / actual watch minutes.\n\nAnti-bypass:\n- Questions delivered via tokenized API, no answers client-side.\n- Each item has one-time answer_token (JWT/jti stored) valid 10 min.\n- Server records issued_at; duration_ms = server received - issued (minus network); reject impossible fast answers (<300ms).\n- Option order shuffled server-side per session? Client renders order from server; store mapping.\n- Rate limit sessions (e.g. max 3 per 10 min), lockout after abuse.\n- Device binding: TV activation code + parent approval; per-device token in Android Keystore.\n- Parent rule changes: PIN + optional 2FA; audit log; TV gets push invalidation (FCM) or polls on next request.\n\nData model details with indexes:\n- question: index (status, stage, difficulty, subject_code), GIN on topic? \n- answer_log partition by month? Later.\n- watch_log partition by month.\n- coverage materialized view refreshed hourly.\n\nAPI list with methods. Error codes: AUTH_*, RULE_*, QUIZ_*, etc.\n\nNow write. Also mention Go module path? e.g. `github.com/roma007/OpenQuizGo`? The repo path. Since Go, module `github.com/roma007/OpenQuizGo`. But repo also synced to gitee; module path can stay GitHub. Note as assumption.\n\nDirectory structure proposal:\n\n```\ncmd/\n  api/main.go\n  worker/main.go\ninternal/\n  config/\n  httpapi/          # routing, middleware\n  domain/\n    identity/\n    question/\n    quiz/\n    rule/\n    watch/\n    report/\n    admin/\n  platform/         # db, redis, storage, sms, push\n  jobs/\nmigrations/\napi/openapi.yaml\ntest/\ndeploy/\n  docker-compose.yml\n  Dockerfile\n```\n\nMaybe use sqlc + pgx, chi router, slog, golang-migrate, testify, testcontainers-go, k6. Admin front-end: later (React/Next or simple). Governance backend phase 3 — but question creation needs *some* UI in phase 1? Phase 1 says \"服务端+题库+规则引擎\" — admin can be API + CLI/import only; internal tools minimal. I'll say Phase 1 delivers Admin REST API + import scripts (CSV/JSON), UI in Phase 3.\n\nWait, Phase 1 must be usable end-to-end? Without TV/parent client, can't demo. Phase 2 brings clients. So phase 1 acceptance = API-level E2E via automated tests + Postman/k6. Reasonable.\n\nAlternative phasing: build a thin web admin + a test harness. Keep.\n\nNow the \"content\" gap is critical — without content integration, \"watch\" can't be enforced. Phase 1 watch grant is just time accounting; actual playback enforcement belongs to client/content module. Flag as open question P0 and design an integration contract: content playback must call `POST /v1/playback/authorize` with content_id and lease; player refuses without valid lease. If content is third-party app, need Android TV device owner/accessibility — huge. State assumptions.\n\nLet me now write the files. I'll write design first.\n\nAlso note in design: idea.txt is a fragment; I'll copy its constraints into requirements table.\n\nLet me be precise with numbers and defaults:\n- unlock_minutes default 20\n- pass_threshold default 5 correct\n- questions per session default 8 (5 pass + buffer?) Hmm: if threshold 5, session should have maybe 8 questions; unused? Simpler: session size = pass_threshold + 2 (max 10), and pass ends session early. Weighted per subject: distribute N by weights; fun cap 1-2.\n- difficulty adaptive: target 60-80% correctness (flow). Start at stage default, adjust by history.\n- offline fallback 10 min/day, lease TTL 15 min, only cached content.\n- heartbeat 30s, lease 60s grace? \n- daily_limit default 60 min.\n- time window default 07:00-21:00.\n\nThese are defaults; configurable.\n\nDB: PostgreSQL 16. Redis 7. Object storage S3-compatible.\n\nAPI versioning /v1.\n\nAuth: parent JWT (15min access + 30d refresh, rotating); TV device token long-lived (1y) bound to child; admin JWT + RBAC.\n\nNow, let me write the document. Keep tables readable.\n\nI'll include a requirements table R1-R14 with acceptance criteria.\n\nRisk table.\n\nOpen questions Q1-Q10 with priority and owner.\n\nPlan tasks T1-T12 with dependencies, acceptance, status todo, milestone M1-M4, verification, rollback, execution log empty.\n\nEffort estimate: maybe include \"人日\" rough: 20-30 人日? State as estimate only after confirmation. I'll include rough ranges in milestones (W1-W8) and note assumptions.\n\nLet me write.\n\nOne more thing: the rule says plan must be approved before implementation. I'll set both status `review` and ask user to confirm. Also I should not commit? Committing docs is fine (not implementation). I'll commit docs + idea.txt and push.\n\nAlso archive at end and push — but the archive is huge with reasoning; repeated commits bloat. It's the rule. Fine.\n\nLet me write the design file now. It'll be long; ensure quality.\n\nFor the API section, include tables:\n\nTV:\n| POST | /v1/device/activate/code | 设备请求激活码 |\n| POST | /v1/device/activate | 家长确认后兑换设备令牌 |\n... \n\nLet me define auth flows:\n1. TV shows 6-digit code + QR.\n2. Parent app POST /v1/family/devices/activate {code, child_id} (authenticated).\n3. TV polls or calls POST /v1/device/token {code, device_pubkey} → device token.\n\nParent:\n- POST /v1/auth/register/login (phone + SMS), refresh\n- GET/POST /v1/family/children\n- GET/PUT /v1/family/children/{id}/rule\n- GET /v1/family/children/{id}/reports?period=week\n- GET /v1/family/devices, DELETE unbind\n- POST /v1/family/children/{id}/pin (set/verify)\n\nTV runtime:\n- GET /v1/child/context (rule summary, eligibility)\n- POST /v1/quiz/sessions\n- POST /v1/quiz/sessions/{sid}/answers\n- POST /v1/quiz/sessions/{sid}/finish\n- POST /v1/watch/grants/{gid}/heartbeat\n- POST /v1/watch/logs\n- GET /v1/offline/lease?content_id=\n\nAdmin:\n- /v1/admin/questions CRUD, import, submit-review, approve, publish, offline\n- /v1/admin/coverage\n- /v1/admin/calibration/apply\n- /v1/admin/ab-tests (phase 6)\n\nError codes table.\n\nData model: present as tables with key fields, not full DDL.\n\nI also need \"方案对比\" content:\nA. BaaS (Supabase) vs 自建 Go 单体:\n - BaaS: fast, auth/db/realtime; but custom rule engine anyway deployed as edge functions; vendor lock-in; China access issues (Supabase/Firebase unavailable/blocked); compliance data residency; TV long connections; cost at scale.\n - 自建 Go: full control, one language, Docker deploy anywhere (阿里云/腾讯云), Postgres; higher initial effort (~2-3 weeks more).\n - Decision: 自建 Go modular monolith. Reason: China network + compliance + rule engine core + TV-specific auth. BaaS not viable for mainland distribution.\nB. Client:\n - All Flutter: one team/skill; Android TV support via flutter-tv? Compose for TV gives best DPAD/voice/Media3; Flutter TV ecosystem immature.\n - Native Kotlin TV + Flutter parent: best UX on TV, one codebase for iOS/Android parent.\n - Native both: more cost.\n - Decision: native TV + Flutter parent (phase 2 confirm).\nC. Question bank storage: per-subject tables (rejected by constraint) vs single table + tags (chosen).\nD. Answer validation: local (rejected, anti-bypass) vs server (chosen); offline fallback via signed lease.\nE. Monolith vs microservices: monolith first (chosen), extract later if needed.\n\nAssumptions section.\n\nCompliance specifics for China: PIPL, 未成年人保护法, 儿童个人信息网络保护规定; no ads; parent consent; data localization.\n\nPerformance targets:\n- API p95 ≤ 200ms (answer submission ≤ 150ms)\n- 5万注册设备, 1万日活, 峰值 1000 QPS\n- Availability 99.9%\n- RPO 15min, RTO 1h\n\nObservability: OpenTelemetry traces, Prometheus metrics, structured logs, alerting; audit logs separate retention.\n\nNow write files. Given length, I'll write in one go.\n\nFor the plan, tasks with 人日 estimates:\n\nT1 工程骨架 2\nT2 数据模型与迁移 3\nT3 身份/家庭/设备 4\nT4 题库与治理 API 5\nT5 选题 3\nT6 答题会话 4\nT7 规则引擎 5\nT8 授权/观看 3\nT9 报告 3\nT10 离线租约 2\nT11 可观测/压测/安全 3\nT12 验收 2\nTotal ~39 人日 (single dev ~8 weeks). Mark as estimate.\n\nMilestones:\nM1 基座 (T1,T2) W1\nM2 内容与规则 (T3,T4,T5) W2-4\nM3 答题与观看闭环 (T6,T7,T8,T10) W4-6\nM4 报告与验收 (T9,T11,T12) W7-8\n\nNow write.\n\nAlso update AGENTS section 5 tech stack once confirmed? Not yet (design is review). Leave.\n\nUpdate docs/README table with 001 row status review, and note idea.txt.\n\nLet me write the design file.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793620356031,
+            "completed": 1793620435195
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_zp0nkq9lacrrjsvem34ifslc",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "node scripts/archive-conversation.mjs --all"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "✔ 2026-11-02-001-项目铁律-留档与开发计划.md（44 条消息）\n\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793620434907,
+            "ran": 1793620435203,
+            "completed": 1793620435775
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "ca433d24b1fbe35bb8cf840e1d7226c37c4f813d",
+        "end": "9e6599a630bd5aa79992ace25f23f437e818a39a",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 3149,
+        "output": 47,
+        "reasoning": 8249,
+        "cache": {
+          "read": 37888,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c1be381001tQwiKiGgG7NQKg",
+      "time": {
+        "created": 1793620435844,
+        "streamed": 1793620516813,
+        "completed": 1793620516891
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now write design 001. Let me compose carefully.\n\nI'll write in Chinese, structured per template.\n\nNote: idea.txt starts at section 4 — mention in 背景 that sections 1-3 are missing and we assume.\n\nLet me draft.\n\nTitle: 001-项目总体设计方案\n\nMetadata table.\n\n## 0. 摘要\n一句话：面向家庭的「答题解锁电视观看时长」产品... \n\n## 1. 背景与目标\n- 来源：docs/idea.txt（该文件为需求草案第 4–8 节，缺少产品定位/用户/竞品部分）\n- 现状：从零开始\n- 目标：给出可实施的整体架构、数据模型、接口与分期，作为后续设计与开发基线\n- 非目标：本期不做具体代码；不做内容版权采购方案；不做运营活动细节\n\n## 2. 关键假设（需确认）\nA1 内容源：平台自有/授权视频内容库，播放器可控（否则无法按 lease 卡控）...\nA2 首发 Android TV（Android 9+），国内应用市场；家长端 Android/iOS。\nA3 服务部署于中国大陆云，PostgreSQL 16 + Redis 7 + S3。\nA4 规模：1 万家庭 / 5 万设备 / 峰值 1000 QPS。\nA5 商业模式：基础免费 + 会员（阶段 5），本期不实现支付。\nA6 语音答题：先接云端 ASR（阶段 4）。\n\n## 3. 需求与验收标准\nTable R1..R16 mapping idea sections:\nR1 答题解锁（阈值、时长）\nR2 规则引擎（时段/权重/占比/每日上限）\nR3 断网降级 10min 且判分走服务端\nR4 学科三层 + 趣味类目\nR5 学段四档 + 年级柔性\nR6 单题库、标签化\nR7 题库治理（检索/导入/版本/上下架/审核流）\nR8 难度校准\nR9 覆盖率看板\nR10 推荐引擎\nR11 A/B（P2）\nR12 家庭账号/多家长/设备绑定\nR13 家长端（设置/报告/推送）\nR14 电视端（遥控器/大字/语音）\nR15 报告\nR16 合规与内容审核\n\nEach with acceptance.\n\n## 4. 方案对比与选型\n4.1 后端形态\n4.2 客户端技术\n4.3 题库存储\n4.4 判分位置\n4.5 部署形态\n\nTable + decision.\n\n## 5. 总体架构\nASCII diagram\n模块职责表\n关键流程:\n5.1 设备激活\n5.2 解锁观看（时序）\n5.3 断网降级\n5.4 规则变更下发\n5.5 题库发布与版本\n\n## 6. 数据模型\n6.1 设计原则\n6.2 实体清单 + 表结构（关键字段）\n6.3 关键约束与索引\n6.4 分区与归档\n6.5 schema_ver 演进\n\nTables: tag_dict, question, topic_pack, topic_question, family, parent_account, family_member, child_profile, device_bind, watch_rule, quiz_session, quiz_session_item, watch_grant, watch_log, answer_log, growth_report, audit_log, admin_user, media_asset.\n\nFor each, brief fields. Avoid full DDL.\n\n6.3 constraints:\n- stage 必填 CHECK in 4\n- category in 4; fun 不参与学科矩阵（查询过滤 category != 'fun'）\n- fun age band derived: preschool/low→3-8, mid/high→9+\n- answer never leaves server before grading\n- question version snapshot in quiz_session_item\n- unique (device_id) active bind\n- watch_grant minutes <= daily remaining\n- partial index on online questions\n\n## 7. 接口设计\n7.1 通用约定: base /v1, JSON, JWT, idempotency-key, error envelope {code,message,request_id}\n7.2 认证与设备激活\n7.3 电视端\n7.4 家长端\n7.5 管理端\n7.6 错误码\n7.7 限流与幂等\n\n## 8. 规则引擎设计\n8.1 输入/输出\n8.2 判定顺序（时段→每日剩余→规则快照→选题→判分→授权）\n8.3 阈值与权重算法（伪代码）\n8.4 防绕过\n8.5 边界：跨零点、时区、夏令时（中国无）、规则并发修改\n\n## 9. 非功能设计\n性能/可用性/安全/合规/可观测/运维\n\n## 10. 分期与交付\nTable phase 1-6 with scope and exit criteria. Align idea's phases.\n\n## 11. 风险与对策\n## 12. 未决问题\n## 13. 变更记录\n\nThat's comprehensive. Let me write it now. Keep each table concise.\n\nFor rule algorithm pseudocode:\n\n```\nselect questions:\n  n = pass_threshold + buffer (2), cap 10\n  quota[subject] = round(n * weight[subject])\n  ensure sum = n (largest remainder)\n  fun_count = min(fun_cap, n) if fun_enabled\n  for each subject: pick from pool stage/difficulty/coverage, excluding recently seen (30d)\n  shuffle; persist snapshot\n\ngrade:\n  weighted_correct = Σ(correct_i ? weight[subject_i] : 0)\n  pass if correct_count >= pass_threshold  // idea says count\n```\n\nSince idea says \"答对题数阈值\", use count; subject_weight controls distribution. If weights are meant as thresholds, note alternative and open question Q. Actually \"按学科设不同权重阈值\" ambiguous. I'll define: weights affect (a) question distribution and (b) weighted pass score option; default count. Flag Q.\n\nTime window crossing midnight: represent as [{start:\"20:00\", end:\"07:00\"}] allowed overnight; validate.\n\nDaily limit: sum of actual watched seconds from watch_log + active grants' consumed. Grant capped.\n\nOffline lease: pre-issued signed token (EdDSA) with {device, child, content_ids?, max_offline_minutes:10, issued_at, valid_until: issued+24h}; client tracks offline playback seconds in secure storage; on reconnect report; server reconciles and deducts daily limit. Limit: cannot fully prevent tampering on rooted devices; mitigations: keystore, integrity check, DRM for paid content.\n\nNow write.\n\nLength maybe 500 lines. Go.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793620438918,
+            "completed": 1793620516789
+          }
+        },
+        {
+          "type": "text",
+          "text": "需求草案已读。这是「答题解锁电视观看时长」的儿童家庭产品，信息量足够启动 001 总体设计。我先按模板产出设计方案 + 第一期实施计划（状态 `review`，等你确认后才动代码）。"
+        },
+        {
+          "type": "tool",
+          "id": "call_00_wyxx13c4q20yjnno5e78b9hc",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "# 001-项目总体设计方案\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 001 |\n| 状态 | review |\n| 作者 | AI（基于 `docs/idea.txt`） |\n| 创建日期 | 2026-11-02 |\n| 最后更新 | 2026-11-02 |\n| 对应计划 | [001-项目总体实施计划](../plans/001-项目总体实施计划.md) |\n| 需求来源 | [`docs/idea.txt`](../idea.txt)（草案第 4–8 节） |\n\n## 0. 摘要\n\nOpenQuizGo 是面向家庭的儿童电视观看管理产品：孩子在电视上答题，答对达到阈值后由**服务端**签发观看时长；家长通过手机端配置规则（时长、阈值、时段、学科权重、每日上限、趣味题开关），并查看成长报告。题库按「学科标签 + 学段 + 难度 + 题型」组织，配套治理、覆盖率看板、难度校准与推荐。\n\n核心架构判断：**模块化单体（Go）+ PostgreSQL + Redis + 对象存储**，服务端为唯一裁决者；电视端是薄客户端；家长端独立 App。首发聚焦服务端基座（第一期），再上电视端与家长端。\n\n## 1. 背景与目标\n\n### 1.1 背景\n\n- `docs/idea.txt` 给出了功能需求（第 4 节）、数据与架构（第 5 节）、非功能要求（第 6 节）、分期建议（第 7 节）与硬约束（第 8 节）。\n- 该文件**缺少第 1–3 节**（产品定位、目标用户画像、竞品与差异化），本设计基于现有内容做合理假设，未确认项统一列入「12. 未决问题」。\n- 项目从零开始，尚无代码。\n\n### 1.2 本次目标\n\n1. 固化产品边界与硬约束，形成可评审的总体架构。\n2. 给出可落地的数据模型、接口契约、规则引擎与安全方案。\n3. 明确分期与第一期范围，作为后续子系统设计（002+）与开发计划的基线。\n\n### 1.3 非目标\n\n- 不在本设计内完成具体编码。\n- 不解决视频内容版权采购、CDN 商务、支付通道签约等业务合作事项。\n- 不做运营活动（节日题包内容、IP 合作）的具体策划。\n\n## 2. 关键假设（需确认）\n\n| 编号 | 假设 | 影响 |\n| --- | --- | --- |\n| A1 | 观看的是**平台自有/已授权的内容库**，播放器由我方控制，可强制校验观看授权 | 若为第三方 App（如爱奇艺/YouTube），需设备管理员/无障碍权限，方案完全不同，属最高风险假设 |\n| A2 | 首发电视端为 Android TV（Android 9+），家长端为 Android/iOS 手机 | 决定客户端技术选型与人力 |\n| A3 | 服务部署在中国大陆云（阿里云/腾讯云），PostgreSQL 16 + Redis 7 + S3 兼容存储 | 排除 Firebase/Supabase 直连方案 |\n| A4 | 首年规模 ≤ 1 万家庭 / 5 万设备，峰值 1000 QPS | 决定容量与成本基线 |\n| A5 | 商业模式为基础免费 + 会员/单购，第五期实现 | 本期仅预留字段，不做交易 |\n| A6 | 语音答题先接云端 ASR，后续评估端侧 | 影响低龄体验与成本 |\n| A7 | 一个孩子可绑定多设备，一台设备同一时间只绑定一个孩子 | 决定授权与并发模型 |\n\n## 3. 需求与验收标准\n\n| 编号 | 需求 | 验收标准 | 优先级 |\n| --- | --- | --- | --- |\n| R1 | 答题解锁观看时长：观看前/观看中答题，答对达阈值解锁 | 服务端判定通过后签发授权，客户端无有效授权无法播放 | P0 |\n| R2 | 规则引擎：观看时长、通过阈值、时段限制、学科权重、趣味题占比、每日上限、断网降级 | 规则全部服务端可配、可审计；修改后 ≤ 30s 生效 | P0 |\n| R3 | 断网降级：已缓存内容可看限时（默认 10 分钟），判分与规则不落本地 | 离线租约过期即停播；离线期间无法完成答题解锁 | P0 |\n| R4 | 学科体系：核心（数学思维/语文素养/英语启蒙）、素养（科学/逻辑/安全）、专题、趣味（脑筋急转弯） | 学科为标签；趣味类目独立、不进学科矩阵、占比受限、家长可关 | P0 |\n| R5 | 学段四档必填，年级选填仅做难度偏移；趣味题只分 3–8 / 9+ 两档 | 题库按学段铺满；不存在按年级拆分的题库 | P0 |\n| R6 | 单一题库，禁止按学科拆表/拆服务 | 数据库仅一张 `question` 主表；新增学科/题型只加字典值 | P0 |\n| R7 | 题库治理：四维检索、批量导入、版本管理、上下架、审核流 | 教研→审核→试答→上线全流程留痕；下线题目不再被抽中 | P0 |\n| R8 | 难度校准：按真实正确率反推（>90% 降、<40% 升） | 校准任务可预览、可回滚，变更留痕 | P1 |\n| R9 | 覆盖率看板：`subject × stage × difficulty` 热力图与断供告警 | 低于阈值格子标红并可导出 | P1 |\n| R10 | 推荐引擎：学段筛池 → 年级加权 → 历史正确率调难度与学科配比 | 抽题命中率、断供兜底、重复率可观测 | P1 |\n| R11 | A/B 测试能力 | 可分流、可统计、可一键停止 | P2 |\n| R12 | 家庭与账号：家庭组、多家长、孩子档案、设备绑定、家长强验证 | 未绑定设备无法获取题目；解绑即时失效 | P0 |\n| R13 | 家长端：规则设置、报告、推送、离线查看 | 关键操作需二次验证；规则变更实时下发 | P0 |\n| R14 | 电视端：遥控器可达、大字体、语音答题、单题限时 | 全流程可仅用遥控器完成；焦点不丢失 | P0 |\n| R15 | 成长报告：周/月，学科统计与趣味单列 | 数据 T+1 生成；趣味不计入学科正确率 | P1 |\n| R16 | 合规与内容审核：儿童个人信息保护、家长同意、加密存储、内容审核前置 | 隐私政策与授权链路完整；审核记录可追溯 | P0 |\n| R17 | 多端同步：手机改规则、电视执行、平板答题汇总 | 同一孩子在多端看到一致的剩余时长与规则 | P0 |\n\n## 4. 方案对比与选型\n\n### 4.1 后端形态：BaaS 起步 vs 自建模块化单体\n\n| 方案 | 优点 | 缺点 | 结论 |\n| --- | --- | --- | --- |\n| A. BaaS（Supabase/Firebase/LeanCloud） | 账号、数据库、推送开箱即用，起步快 | 大陆网络与合规不可控；规则引擎仍需自写服务；电视长连接/设备绑定能力弱；后期迁移成本高 | 否决 |\n| B. 自建 Go 模块化单体 + PostgreSQL | 全链路可控；规则与判分天然服务端；一套语言；可私有化部署；迁移成本低 | 初期多 2–3 周基建 | **选用** |\n| C. 微服务 | 隔离性好 | 团队规模不匹配，运维与一致性成本高 | 否决（后续按需拆分） |\n\n**选型理由**：产品的核心资产是「规则 + 判分 + 题库」，这三者都必须服务端可控；大陆发行与儿童合规要求数据自主可控，BaaS 不可行。\n\n### 4.2 客户端技术\n\n| 端 | 方案 | 结论 |\n| --- | --- | --- |\n| Android TV | Kotlin + Jetpack Compose for TV + Media3/ExoPlayer | **选用**：DPAD 焦点、语音、播放器生态最成熟 |\n| Android TV | Flutter | 否决：TV 焦点与播放器生态不成熟，低龄动画性能风险 |\n| 家长端 | Flutter（Android/iOS 一套代码） | **选用**：表单与报表为主，跨端收益高 |\n| 家长端 | 原生双端 | 备选：团队 Flutter 能力不足时启用 |\n\n### 4.3 题库存储\n\n| 方案 | 结论 |\n| --- | --- |\n| 按学科拆表/拆库 | 违反硬约束 1，否决 |\n| 单表 + `tag_dict` 标签 + `schema_ver` | **选用** |\n\n### 4.4 判分位置\n\n| 方案 | 结论 |\n| --- | --- |\n| 客户端本地判分 | 可被改包/抓包绕过，违反硬约束 4，否决 |\n| 服务端判分 + 一次性答题令牌 | **选用** |\n| 离线判分 | 仅作为「离线租约」限时兜底，不产生新的解锁，否决作为主路径 |\n\n### 4.5 部署形态\n\n容器化部署（Docker + Kubernetes 或云托管容器），单地域多可用区；对象存储 + CDN 承载图片/音频；静态资源与 API 同域或独立网关。\n\n## 5. 总体架构\n\n### 5.1 架构图\n\n```\n┌──────────────────────┐        ┌──────────────────────┐\n│  Android TV 客户端    │        │  家长端 App (Flutter) │\n│  Kotlin/Compose TV   │        │  Android / iOS       │\n│  Media3 播放器        │        │  规则 / 报告 / 推送    │\n└──────────┬───────────┘        └──────────┬───────────┘\n           │ HTTPS + 设备令牌                 │ HTTPS + 家长 JWT\n           └───────────────┬──────────────────┘\n                           ▼\n                 ┌───────────────────┐\n                 │  API 网关 / WAF    │  限流、鉴权、审计\n                 └─────────┬─────────┘\n                           ▼\n        ┌──────────────────────────────────────────────┐\n        │           模块化单体服务（Go）                 │\n        │  identity  question  quiz  rule  watch        │\n        │  report    admin     notify  billing(预留)    │\n        └───────┬──────────────┬──────────────┬────────┘\n                │              │              │\n        ┌───────▼──────┐ ┌─────▼─────┐ ┌──────▼────────┐\n        │ PostgreSQL 16│ │ Redis 7   │ │ 对象存储 + CDN │\n        │ 唯一事实来源  │ │ 会话/缓存  │ │ 题干图/音/视频 │\n        └──────────────┘ └───────────┘ └───────────────┘\n                │\n        ┌───────▼──────────────────────────────────────┐\n        │ 异步任务（outbox + worker）                     │\n        │ 报告聚合 / 难度校准 / 覆盖率刷新 / 推送 / 对账    │\n        └──────────────────────────────────────────────┘\n```\n\n### 5.2 模块职责\n\n| 模块 | 职责 | 第一期 |\n| --- | --- | --- |\n| `identity` | 家长账号、家庭组、孩子档案、设备激活与绑定、家长 PIN/二次验证 | ✅ |\n| `question` | 题目 CRUD、标签字典、导入导出、版本、审核流、上下架 | ✅（API + 导入，无 UI） |\n| `quiz` | 组卷、答题会话、一次性令牌、判分、防重放 | ✅ |\n| `rule` | 规则配置、快照、判定、权重与占比、时段与每日上限 | ✅ |\n| `watch` | 观看授权（lease）、心跳、观看日志、断网租约 | ✅ |\n| `report` | 答题/观看聚合、周/月报告 | ✅（基础聚合） |\n| `admin` | 管理端 API、RBAC、审计 | ✅（API） |\n| `notify` | 推送（规则变更、报告、绑定确认） | 第二期 |\n| `billing` | 会员与订单 | 第五期（仅预留字段） |\n\n### 5.3 关键流程\n\n#### 5.3.1 设备激活\n\n1. 电视启动，调用 `POST /v1/device/activate/code` 获得 6 位激活码 + 二维码，展示在电视上。\n2. 家长端登录后扫描/输入激活码，选择孩子，调用 `POST /v1/family/devices/activate`。\n3. 电视轮询 `POST /v1/device/token`，凭激活码换取长期设备令牌（写入 Android Keystore），同时上报设备指纹。\n4. 服务端建立 `device_bind`（一台设备同一时刻仅一个孩子），旧绑定自动失效。\n\n#### 5.3.2 解锁观看（主链路）\n\n```\nTV                        Server                         DB\n |-- GET /child/context -->|                              |\n |                         |-- 读取 rule + 今日观看/授权 --->|\n |<-- 可看状态/剩余时长 ----|                              |\n |-- POST /quiz/sessions ->|  时段校验 + 每日剩余校验        |\n |                         |-- 选题（学段/难度/权重/趣味上限）|\n |<-- 题目（无答案）+ 令牌 -|                              |\n |-- POST .../answers ---->|  一次性令牌校验 + 服务端判分    |\n |<-- 对错/解析/进度 -------|                              |\n |-- POST .../finish ----->|  达阈值 → 生成 watch_grant     |\n |<-- lease(分钟/到期) -----|                              |\n |-- 播放（校验 lease）                                      |\n |-- POST /watch/heartbeat>|  扣减已观看时长                 |\n```\n\n- 组卷默认题量 = `pass_threshold + 2`（上限 10），答对达阈值即提前结束。\n- 学科权重决定**题目分布**；阈值默认按答对**题数**计（见 Q3）。\n- 授权分钟数 = `min(unlock_minutes, 今日剩余额度)`；额度不足时不发或发剩余值（可配）。\n- 心跳 30s 一次，服务端累计实际观看秒数；跨时段边界或额度耗尽时下发 `revoke`。\n\n#### 5.3.3 断网降级\n\n- 在线时预取「离线租约」：`GET /v1/offline/lease`，返回 EdDSA 签名令牌，含 `child_id / device_id / 允许内容 / 最大离线分钟(默认10) / 签发时间 / 绝对过期时间(24h)`。\n- 离线播放由客户端可信播放模块计时，累计不超过租约分钟数；恢复网络后上报，服务端扣减当日额度并入库。\n- **诚实说明**：离线状态无法 100% 防篡改（root/改包），通过 Keystore、完整性校验、付费内容 DRM 提高成本；离线不产生新的答题解锁。\n\n#### 5.3.4 规则变更下发\n\n- 家长修改规则 → 服务端版本号 +1 → 写 outbox → 推送（FCM/厂商通道）通知设备 → 电视下次请求或收到推送后拉取新规则。\n- 任何请求都以服务端最新规则为准，客户端缓存仅用于展示，不作为判定依据。\n- 修改需家长 PIN（或生物识别），并写 `audit_log`。\n\n#### 5.3.5 题库发布与版本\n\n- 状态机：`draft → review → trial → online → offline`，非法跃迁由服务端拒绝。\n- 题目被抽中时记录 `question_version` 与答案快照到 `quiz_session_item`，保证会话期间改题不影响判分。\n- 下线题目立即从在线池移除；已发出的会话继续有效（快照）。\n\n## 6. 数据模型\n\n### 6.1 设计原则\n\n1. **单题库**：只有 `question` 一张题目主表，学科/类目/学段/题型全部是标签。\n2. **标签字典化**：`tag_dict` 是唯一枚举来源，新增取值不改表结构。\n3. **答案不出服务端**：任何面向客户端的响应都不得包含 `answer` / `answer_alias`（提交后判分响应除外）。\n4. **一切判定留痕**：授权、规则变更、审核、上下架写审计日志。\n5. **JSON 字段带 `schema_ver`**，迁移可回放。\n\n### 6.2 核心表\n\n#### `tag_dict`\n\n| 字段 | 说明 |\n| --- | --- |\n| `tag_type` | subject / category / stage / grade / difficulty / type |\n| `code` | 取值编码，如 `math` / `preschool` / `choice` |\n| `name` | 展示名 |\n| `sort` / `enabled` | 排序、启停 |\n\n主键 `(tag_type, code)`。`subject` 字典：`math, chinese, english, science, logic, safety, fun`；`category`：`core, literacy, topic, fun`。\n\n#### `question`\n\n在 `idea.txt` 字段清单基础上补充：\n\n| 字段 | 说明 |\n| --- | --- |\n| `subject_code` / `category_code` / `stage_code` / `type_code` | 外键到 `tag_dict`，服务层校验 |\n| `grade_tag` | `g1~g9`，可空，仅学段内偏移 |\n| `difficulty` | 1–5，可被校准任务调整 |\n| `stem` / `stem_media` / `options` / `answer` / `answer_alias` / `explain` | 题干与答案，`options`、`answer` 为 JSON |\n| `duration_limit` | 学科 ≤30s，趣味 10–20s（服务端校验） |\n| `topic_id` | 专题题包 |\n| `status` / `version` / `schema_ver` | 状态、版本、JSON schema 版本 |\n| `created_by` / `reviewed_by` / 时间戳 | 责任链 |\n\n**趣味题约束**：`category_code='fun'` 时，`answer_alias` 必填至少 1 条；不进学科矩阵统计；学段两档由 `stage` 派生（`preschool/low → 3–8`，`mid/high → 9+`），不新增字段、不破坏「学段必填」。\n\n**索引**：`(status, stage_code, subject_code, difficulty)`、`(status, category_code)`、`(topic_id)`；题干全文检索后续再加 `pg_trgm`。\n\n#### `topic_pack` / `topic_question`\n\n题包元信息（类型、学科/学段范围、起止时间、是否付费、状态）+ 题目多对多关联。\n\n#### 家庭与账号\n\n| 表 | 关键字段 |\n| --- | --- |\n| `parent_account` | id、手机号（加密/脱敏）、密码哈希或验证码登录、状态 |\n| `family` | id、owner_id、会员状态（预留）、创建时间 |\n| `family_member` | family_id、account_id、角色（owner/member）、二次验证状态 |\n| `child_profile` | id、family_id、昵称、生日（仅存年月）、`stage_code`、`grade_tag`、头像 |\n| `device_bind` | id、device_id（设备指纹哈希）、child_id、端类型、状态、绑定时间、解绑时间 |\n\n约束：`device_bind` 上 `(device_id) WHERE status='active'` 唯一；孩子删除时级联失效绑定。\n\n#### `watch_rule`\n\n沿用草案字段，补充：`version`、`timezone`（默认 Asia/Shanghai）、`effective_from`。`subject_weight` 形如 `{\"math\":0.5,\"chinese\":0.3,\"english\":0.2}`，服务端校验和为 1。\n\n#### 答题与会话\n\n| 表 | 关键字段 | 说明 |\n| --- | --- | --- |\n| `quiz_session` | id、child_id、device_id、rule_version、state、question_count、pass_threshold、started_at、expires_at、finished_at | 一次解锁尝试 |\n| `quiz_session_item` | id、session_id、question_id、question_version、position、answer_token_jti、issued_at、answered_at、answer_given、is_correct、duration_ms | 一题一次机会，令牌一次性 |\n| `answer_log` | 草案字段 + session_id | 校准/报告数据源 |\n\n状态：`active → passed / failed / expired / cancelled`。\n\n#### 授权与观看\n\n| 表 | 关键字段 | 说明 |\n| --- | --- | --- |\n| `watch_grant` | id、child_id、device_id、session_id、minutes、valid_from、valid_until、jti、consumed_seconds、status | 服务端签发的观看许可 |\n| `watch_log` | id、grant_id、child_id、device_id、content_id、start_at、end_at、watched_seconds | 心跳汇总与实际观看 |\n| `offline_lease` | id、device_id、child_id、jti、max_minutes、issued_at、expires_at、reported_minutes、status | 离线降级对账 |\n\n#### 报告与治理\n\n| 表 | 说明 |\n| --- | --- |\n| `growth_report` | child_id、period(week/month)、period_start、subject_stats、fun_stats、watch_minutes、generated_at |\n| `audit_log` | actor_type/id、action、target_type/id、before/after、ip、ua、created_at |\n| `admin_user` / `admin_role` / `admin_permission` | RBAC，教研/审核/运营/管理员 |\n| `media_asset` | 资源 id、类型、URL、时长、hash、审核状态 |\n\n### 6.3 关键业务约束\n\n- 学段只能取四档；`grade_tag` 仅在学段内做推荐偏移，不参与分组统计口径。\n- 趣味题：`category_code='fun'`，不进入 `subject × stage × difficulty` 覆盖率考核；每次会话最多 `fun_ratio_cap`（默认 2）道。\n- `watch_grant.minutes` 不得超过当日剩余额度；额度以 `watch_log` 实际秒数 + 未结算授权计。\n- 一条 `quiz_session` 只能签发一次 `watch_grant`（幂等）。\n- 所有时间以服务端 UTC 存储，展示层按家庭时区转换。\n\n### 6.4 数据量与归档\n\n- `answer_log`、`watch_log` 按月分区，保留 24 个月；`audit_log` 保留 36 个月。\n- 报告表按孩子 + 周期唯一，生成任务幂等（upsert）。\n\n### 6.5 演进\n\n- `schema_ver` 与题目 `version` 分离：前者描述 JSON 结构，后者描述内容修订。\n- 新增题型：加 `type` 字典 + 客户端渲染器 + 判分策略注册表，不改表。\n- 新增学科：加 `subject` 字典，不改表。\n\n## 7. 接口设计\n\n### 7.1 通用约定\n\n- Base path：`/v1`；JSON；UTF-8；时间为 RFC3339（UTC）。\n- 鉴权：`Authorization: Bearer <token>`；电视端使用设备令牌，家长端使用短期 access token + 轮换 refresh token，管理端 JWT + RBAC。\n- 幂等：写操作支持 `Idempotency-Key`；答题提交天然幂等（令牌一次性）。\n- 错误体：`{\"code\":\"QUIZ_SESSION_EXPIRED\",\"message\":\"...\",\"request_id\":\"...\"}`。\n- 分页：`?cursor=&limit=`，默认 20，上限 100。\n\n### 7.2 设备与认证\n\n| 方法 | 路径 | 说明 |\n| --- | --- | --- |\n| POST | `/device/activate/code` | 电视获取激活码（TTL 5 分钟） |\n| POST | `/family/devices/activate` | 家长凭码绑定孩子（需登录） |\n| POST | `/device/token` | 电视凭码换取设备令牌 |\n| POST | `/auth/sms/code` | 家长验证码 |\n| POST | `/auth/login` | 登录，返回 access/refresh |\n| POST | `/auth/refresh` | 轮换 refresh |\n| POST | `/auth/logout` | 注销并吊销令牌 |\n\n### 7.3 电视端\n\n| 方法 | 路径 | 说明 |\n| --- | --- | --- |\n| GET | `/child/context` | 规则摘要、可看状态、今日剩余、趣味开关 |\n| POST | `/quiz/sessions` | 创建答题会话，返回题目（无答案）+ 题令牌 |\n| POST | `/quiz/sessions/{id}/answers` | 提交单题答案，服务端判分 |\n| POST | `/quiz/sessions/{id}/finish` | 结束会话并尝试签发授权 |\n| GET | `/watch/grants/{id}` | 查询授权状态与剩余秒数 |\n| POST | `/watch/grants/{id}/heartbeat` | 心跳上报，返回剩余/是否吊销 |\n| POST | `/watch/logs` | 补报观看记录（断网恢复后） |\n| GET | `/offline/lease` | 获取离线租约（需在线） |\n\n### 7.4 家长端\n\n| 方法 | 路径 | 说明 |\n| --- | --- | --- |\n| GET/POST | `/family/children` | 孩子列表/新增 |\n| PUT | `/family/children/{id}` | 修改档案（生日、学段、年级） |\n| GET/PUT | `/family/children/{id}/rule` | 读取/更新规则（需 PIN） |\n| POST | `/family/children/{id}/pin` | 设置/校验家长 PIN |\n| GET | `/family/children/{id}/reports` | 周/月报告 |\n| GET | `/family/devices` | 设备列表 |\n| DELETE | `/family/devices/{id}` | 解绑（即时失效） |\n| POST | `/family/members/invite` | 邀请另一位家长 |\n\n### 7.5 管理端\n\n| 方法 | 路径 | 说明 |\n| --- | --- | --- |\n| GET/POST/PUT | `/admin/questions` | 四维检索与维护 |\n| POST | `/admin/questions/import` | 批量导入（JSON/CSV，异步任务） |\n| POST | `/admin/questions/{id}/submit-review` | 提交审核 |\n| POST | `/admin/questions/{id}/review` | 审核通过/驳回 |\n| POST | `/admin/questions/{id}/publish` | 上线 |\n| POST | `/admin/questions/{id}/offline` | 下线 |\n| GET | `/admin/coverage` | 覆盖率热力图 |\n| GET | `/admin/calibration/preview` | 难度校准预览 |\n| POST | `/admin/calibration/apply` | 应用校准（写审计） |\n\n### 7.6 主要错误码\n\n| 错误码 | HTTP | 场景 |\n| --- | --- | --- |\n| `AUTH_INVALID_TOKEN` | 401 | 令牌无效/过期 |\n| `AUTH_DEVICE_UNBOUND` | 403 | 设备未绑定或已解绑 |\n| `RULE_TIME_WINDOW` | 403 | 当前不在允许时段 |\n| `RULE_DAILY_LIMIT` | 403 | 今日额度用尽 |\n| `QUIZ_SESSION_EXPIRED` | 409 | 会话超时 |\n| `QUIZ_TOKEN_USED` | 409 | 答题令牌重复使用 |\n| `QUIZ_SESSION_LIMIT` | 429 | 频繁创建会话 |\n| `GRANT_REVOKED` | 410 | 授权被吊销 |\n| `NOT_FOUND` | 404 | 资源不存在 |\n| `VALIDATION_ERROR` | 422 | 参数校验失败 |\n| `INTERNAL` | 500 | 服务端错误（带 request_id） |\n\n### 7.7 限流与防刷\n\n- 设备维度：会话创建 ≤ 3 次/10 分钟；答题 ≤ 60 次/分钟。\n- 家长账号：验证码 1 次/60s、5 次/小时；登录失败 5 次锁定 15 分钟。\n- 管理端：按角色限流，导入任务并发 1。\n\n## 8. 规则引擎设计\n\n### 8.1 输入与输出\n\n**输入**：`child_id`、`device_id`、`watch_rule`（含版本）、当前时间、当日观看秒数、当日已签发未消费额度、最近答题记录。\n\n**输出**：是否允许发起答题、组卷参数、判定结果、授权分钟数。\n\n### 8.2 判定顺序\n\n1. 设备/孩子绑定有效。\n2. 时段校验（支持跨零点配置）。\n3. 每日额度校验（已看 + 已授权 + 本次预估 > `daily_limit` → 拒绝或降额）。\n4. 生成规则快照（写入会话，保证会话期间规则稳定）。\n5. 组卷 → 判分。\n6. 达阈值 → 签发授权；否则拒绝并给出剩余机会。\n\n### 8.3 组卷与阈值算法（草案）\n\n```text\nn = clamp(pass_threshold + 2, 3, 10)\nquota = 按 subject_weight 分配 n（最大余数法，和为 n）\nif fun_enabled: fun_count = min(fun_ratio_cap, max(0, n - 1))\nfor subject in quota:\n    从 stage 池中按 difficulty 目标区间抽题\n    排除该孩子最近 30 天做过的题（题量不足时放宽）\n    优先补齐覆盖率低的难度档\n乱序后落库 session_item，生成一次性 answer_token\n通过条件：correct_count >= pass_threshold\n授权分钟 = min(unlock_minutes, daily_limit - 今日已用 - 今日已授权)\n```\n\n- 难度目标默认 60%–80% 正确率，按孩子历史滚动调整（P1）。\n- 趣味题不参与学科权重分配，单独占位。\n- 题库断供兜底：降级到相邻难度/学段（记录告警），绝不返回空会话。\n\n### 8.4 防绕过\n\n| 手段 | 说明 |\n| --- | --- |\n| 答案不下发 | 组卷响应剥离 `answer` / `answer_alias` |\n| 一次性令牌 | 每题一个 `jti`，提交即失效，重放返回 409 |\n| 服务端计时 | `duration_ms = 服务端接收时间 - 签发时间`，<300ms 判异常 |\n| 会话限额 | 单位时间内会话数、答题数限流 |\n| 选项乱序 | 服务端生成展示顺序并落库，防止按位置背答案 |\n| 设备绑定 | 设备令牌存 Keystore，解绑即失效 |\n| 规则与判分 | 全在服务端，客户端仅展示 |\n\n### 8.5 边界情况\n\n- 跨零点时段：`20:00–07:00` 视为允许，按家庭时区计算。\n- 会话中途规则变更：以会话快照为准，下次会话生效。\n- 授权中途额度耗尽/进入禁看时段：心跳返回 `revoke`，客户端立即停播。\n- 多设备并行：授权按设备签发，额度按孩子合并计算，Redis 分布式锁防超发。\n\n## 9. 非功能设计\n\n### 9.1 性能与容量\n\n| 指标 | 目标 |\n| --- | --- |\n| 答题提交 p95 | ≤ 150ms |\n| 其他读接口 p95 | ≤ 200ms |\n| 组卷 p95 | ≤ 300ms |\n| 可用性 | 99.9% |\n| 峰值 | 1000 QPS / 1 万日活 |\n| RPO / RTO | 15 分钟 / 1 小时 |\n\n### 9.2 安全\n\n- 全链路 HTTPS；令牌短期化 + 轮换；设备令牌可吊销。\n- 密码/验证码限流；家长敏感操作二次验证。\n- 数据库字段级加密（手机号、生日）；日志脱敏。\n- 管理端独立域名/网段、RBAC、操作审计、导出水印。\n\n### 9.3 合规（儿童产品）\n\n- 遵循《个人信息保护法》《儿童个人信息网络保护规定》：监护人同意、最小必要、目的限定。\n- 不采集精确位置、通讯录、广告标识；设备指纹哈希化。\n- 生日仅存年月用于学段映射；提供数据导出与删除能力。\n- 内容审核前置：儿童向内容禁止低俗、歧义、硬凑谐音；审核记录留存。\n- 学科表述避免学科培训口径（用语审查清单）。\n\n### 9.4 可观测性\n\n- OpenTelemetry 链路追踪；Prometheus 指标（QPS、延迟、判分失败率、授权拒绝原因、断供格子数）。\n- 结构化日志（slog），`request_id` 贯穿。\n- 告警：5xx 比例、p95 超阈值、覆盖率断供、授权异常、会话异常高频。\n\n### 9.5 运维\n\n- 迁移工具：golang-migrate，仅向前迁移 + 可回滚脚本。\n- 灰度：按家庭/设备维度开关；规则引擎支持 dry-run。\n- 备份：PostgreSQL 每日全量 + WAL 归档；对象存储跨区复制。\n\n## 10. 分期与交付\n\n| 期 | 范围 | 退出标准 |\n| --- | --- | --- |\n| 1 | 服务端基座：数据模型、标签体系、账号家庭设备、题库治理 API、组卷判分、规则引擎、授权与观看、基础报告 | 自动化 E2E 跑通「绑定→答题→解锁→扣减」，压测达标 |\n| 2 | Android TV 客户端 + 家长端 App（设置/报告） | 真机完成遥控器全流程；家长改规则 ≤30s 生效 |\n| 3 | 题库治理后台 UI、覆盖率看板、难度校准 | 教研可独立完成出题→审核→上线；看板可告警 |\n| 4 | 平板端、小程序、孩子端互动 | 多端数据一致 |\n| 5 | 专题题包、每日一题、亲子对战、会员体系 | 支付与权益闭环 |\n| 6 | 推荐引擎、A/B 测试 | 推荐命中率与留存提升可量化 |\n\n**第一期只做服务端**，以自动化测试与 API 文档作为验收载体；管理端仅提供 API 与导入脚本。\n\n## 11. 风险与对策\n\n| 风险 | 影响 | 概率 | 对策 |\n| --- | --- | --- | --- |\n| A1 内容源不成立（无法控制播放器） | 产品核心失效 | 中 | **立即确认**；若为第三方 App，改为设备级屏幕时间方案，需重新设计 |\n| 规则被绕过（改包/抓包/root） | 家长信任受损 | 中 | 服务端判分、令牌一次性、完整性校验、DRM、行为风控 |\n| 低龄语音识别准确率不足 | 体验差、误判 | 中 | 语音题仅作辅助；别名白名单；可切换点选 |\n| 题库断供（某学段/学科题不足） | 无法解锁 | 中 | 覆盖率看板预警、相邻难度兜底、冷启动题包 |\n| 儿童合规审查 | 下架/处罚 | 低 | 合规前置、家长同意、数据最小化、内容审核留痕 |\n| 多设备额度并发超发 | 规则失效 | 中 | Redis 原子扣减 + 数据库最终对账 |\n| 规则复杂导致家长难配置 | 留存下降 | 中 | 默认模板 + 高级选项折叠 + 预览「今天能看多久」 |\n| 团队客户端能力不足 | 二期延期 | 中 | 二期前评估 Flutter/Compose 能力，必要时外包 TV 端 |\n\n## 12. 未决问题\n\n| 编号 | 问题 | 优先级 | 影响 |\n| --- | --- | --- | --- |\n| Q1 | **观看的内容来自哪里？**自有内容库/第三方 App/系统级屏幕时间？播放器是否可控？ | P0 | 决定整个卡控方案（假设 A1） |\n| Q2 | `docs/idea.txt` 缺少第 1–3 节：产品定位、目标用户、竞品差异化、商业模式细节 | P0 | 影响优先级与范围 |\n| Q3 | `subject_weight` 是「题目分布权重」还是「加权及格分」？草案表述为「权重阈值」 | P0 | 影响规则引擎与家长端文案 |\n| Q4 | 技术栈是否确认 Go + PostgreSQL？（项目名含 Go，但需明确） | P0 | 影响一期计划 |\n| Q5 | 电视端最低系统版本与目标渠道（Google Play / 国内厂商商店 / 预装） | P1 | 影响播放器与推送方案 |\n| Q6 | 语音答题的 ASR 供应商与成本上限 | P1 | 影响低龄体验 |\n| Q7 | 会员支付渠道与是否需要苹果 IAP | P2 | 影响第五期 |\n| Q8 | 是否需要 DRM（付费内容防盗录） | P2 | 影响成本与播放器 |\n| Q9 | 多家长家庭组的权限边界（谁可改规则、谁可解绑） | P1 | 影响身份模型 |\n| Q10 | 数据保留期限与家长注销后的数据处理策略 | P1 | 影响合规与分区策略 |\n\n## 13. 变更记录\n\n| 日期 | 变更内容 | 原因 |\n| --- | --- | --- |\n| 2026-11-02 | 初稿 | 基于 `docs/idea.txt` 建立总体设计 |\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/design/001-项目总体设计方案.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/design/001-项目总体设计方案.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793620452113,
+            "ran": 1793620516804,
+            "completed": 1793620516830
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "9e6599a630bd5aa79992ace25f23f437e818a39a",
+        "end": "cbf8062545dd05f672d4eb0490d295dd4379b90b",
+        "files": [
+          "docs/design/001-项目总体设计方案.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 8438,
+        "output": 8746,
+        "reasoning": 1461,
+        "cache": {
+          "read": 40960,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c1d2029001hla88gRdJINPcG",
+      "time": {
+        "created": 1793620516907,
+        "streamed": 1793620534783,
+        "completed": 1793620534857
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now the plan 001.\n\nInclude tasks with estimates, milestones, verification, rollback, execution log, acceptance.\n\nPhase 1 scope from design section 10.\n\nT1 工程骨架\nT2 数据库与迁移\nT3 身份/家庭/设备\nT4 题库与治理 API\nT5 组卷与推荐 v0\nT6 答题会话与判分\nT7 规则引擎\nT8 授权与观看\nT9 报告聚合\nT10 离线租约\nT11 可观测性/安全/压测\nT12 验收与文档\n\nDependencies.\n\nEstimate person-days; total ~41.\n\nAlso \"前置决策\" Q1-Q4 must be resolved before T1? Q1 is P0 but doesn't block server core (content_id is generic). Q3/Q4 block rule/T1. State gate.\n\nStatus draft? The rule: plan must be approved. Set `review` (ready for review) and note entry gate: Q1/Q3/Q4 resolved.\n\nWrite.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793620519557,
+            "completed": 1793620534770
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_wym33bxs85bt2vh5ny4utpsc",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "# 001-项目总体实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 001 |\n| 状态 | review |\n| 负责人 | 待定 |\n| 创建日期 | 2026-11-02 |\n| 最后更新 | 2026-11-02 |\n| 对应设计 | [001-项目总体设计方案](../design/001-项目总体设计方案.md) |\n\n## 1. 目标与范围\n\n### 1.1 交付目标（第一期）\n\n交付可独立运行、可验证的服务端基座，打通「设备绑定 → 组卷答题 → 服务端判分 → 规则校验 → 签发观看授权 → 心跳扣减 → 报告聚合」完整闭环，并通过自动化 E2E 与压测。\n\n### 1.2 范围边界\n\n**包含**：\n\n- Go 模块化单体工程骨架、配置、日志、迁移、容器化、CI。\n- PostgreSQL 数据模型与迁移；标签字典与种子数据。\n- 家长账号、家庭组、孩子档案、设备激活/绑定、家长 PIN。\n- 题库 CRUD、四维检索、批量导入、版本与审核流、上下架（API 级）。\n- 组卷 v0（学段/难度/学科权重/趣味占比/去重）。\n- 答题会话、一次性令牌、服务端判分、防重放。\n- 规则引擎（时段、阈值、权重、每日上限、趣味开关）。\n- 观看授权、心跳、观看日志、离线租约与对账。\n- 周/月报告基础聚合。\n- 可观测性、审计日志、限流、压测脚本、OpenAPI 文档。\n\n**不包含**：\n\n- Android TV 客户端、家长端 App（第二期）。\n- 题库治理后台 UI（第三期，本期仅 API + 导入脚本）。\n- 推荐引擎高级策略、A/B 测试（第六期）。\n- 会员、支付、专题运营（第五期）。\n- 视频播放器与内容版权侧改造（依赖 Q1 结论）。\n\n### 1.3 前置条件（进入开发的门槛）\n\n| 编号 | 条件 | 状态 |\n| --- | --- | --- |\n| G1 | 设计 001 评审通过 | 待确认 |\n| G2 | Q1 内容源与播放器可控性确认 | 待确认 |\n| G3 | Q3 学科权重语义确认 | 待确认 |\n| G4 | Q4 技术栈确认（Go + PostgreSQL） | 待确认 |\n\n> G2–G4 未确认前，可先行 T1/T2（与业务语义无关的基建），业务代码不启动。\n\n## 2. 任务拆分\n\n| 序号 | 任务 | 依赖 | 产出物 | 验收标准 | 估算(人日) | 状态 |\n| --- | --- | --- | --- | --- | --- | --- |\n| T1 | 工程骨架 | — | Go module、目录结构、配置、slog、错误体系、Dockerfile、compose、Makefile、CI | `make dev` 可启动；`make test` 通过；CI 绿 | 2 | todo |\n| T2 | 数据模型与迁移 | T1 | SQL 迁移、`tag_dict` 种子、ER 说明、sqlc 查询 | 空库一键迁移成功；回滚脚本可用；种子含全部字典值 | 3 | todo |\n| T3 | 身份/家庭/设备 | T2 | 注册登录、短信验证码（可 Mock）、家庭组、孩子档案、激活码与设备令牌、家长 PIN | 设备激活→绑定→令牌可用；解绑即时 401/403；多家长可加入 | 4 | todo |\n| T4 | 题库与治理 API | T2、T3 | 题目 CRUD、四维检索、导入（JSON/CSV）、版本、状态机、RBAC、审计 | 导入 1000 题 ≤ 60s；非法状态跃迁被拒；下线题不再被抽中 | 5 | todo |\n| T5 | 组卷 v0 | T4 | 选题器、权重分配、趣味题占位、去重、断供兜底 | 给定规则可复现组卷；权重误差 ≤1 题；断供有降级与告警 | 3 | todo |\n| T6 | 答题会话与判分 | T5 | 会话、题令牌、判分、解析返回、防重放、限流 | 重放返回 409；<300ms 异常被标记；判分正确率 100% 对拍 | 4 | todo |\n| T7 | 规则引擎 | T3、T6 | 规则快照、时段/额度/阈值判定、授权分钟计算 | 表驱动用例覆盖边界（跨零点、额度不足、规则变更）；dry-run 可查 | 5 | todo |\n| T8 | 授权与观看 | T7 | `watch_grant` 签发、心跳、吊销、观看日志、并发扣减 | 多设备并发不超发（压测 100 并发误差 0）；心跳吊销 ≤1 个周期 | 3 | todo |\n| T9 | 报告聚合 | T6、T8 | 日聚合任务、周/月报告、趣味单列 | T+1 生成；趣味不计入学科正确率；任务可重跑幂等 | 3 | todo |\n| T10 | 离线租约 | T8 | 签名租约（EdDSA）、离线上报、对账扣减 | 租约过期拒绝；恢复网络后额度正确扣减；篡改签名被拒 | 2 | todo |\n| T11 | 可观测性与压测 | T8、T9 | 指标、追踪、告警规则、k6 脚本、安全自查 | 压测 1000 QPS 下 p95 达标；关键告警可触发 | 3 | todo |\n| T12 | 验收与文档 | 全部 | OpenAPI、部署文档、验收报告、遗留问题清单 | E2E 全绿；文档可让新人独立跑通 | 2 | todo |\n\n**合计估算：约 39 人日**（单人约 8 周；双人可并行压缩至 5–6 周，T3/T4 与 T5/T6 可并行）。\n\n状态取值：`todo` / `doing` / `done` / `blocked` / `cancelled`。\n\n### 2.1 排序说明\n\n1. 先基建（T1/T2），保证所有后续任务有稳定地基。\n2. 身份与题库并行（T3/T4），二者只依赖 T2。\n3. 组卷 → 答题 → 规则 → 授权构成主链路，必须串行验证。\n4. 报告、离线、压测在闭环之后，避免过早优化。\n\n## 3. 里程碑\n\n| 里程碑 | 包含任务 | 完成标准 | 计划 | 实际 |\n| --- | --- | --- | --- | --- |\n| M1 基座可用 | T1、T2 | 本地一键启动，空库迁移成功，CI 绿 | W1 | |\n| M2 内容与身份 | T3、T4、T5 | 可绑定设备、导入题库、按规则组卷 | W2–W4 | |\n| M3 解锁闭环 | T6、T7、T8、T10 | E2E：绑定→答题→判分→授权→心跳→吊销 | W4–W6 | |\n| M4 可运营验收 | T9、T11、T12 | 报告可查、压测达标、文档齐全 | W7–W8 | |\n\n> 周期按单人 39 人日折算；实际排期以确认后的资源投入为准。\n\n## 4. 验证方式\n\n### 4.1 单元测试\n\n- 规则引擎：表驱动，覆盖时段（含跨零点）、每日额度、阈值、权重、趣味占比、规则版本。\n- 判分：各题型（choice/voice/image/fill/sort/match）正误用例、别名白名单、异常输入。\n- 组卷：权重分配、去重、断供降级、题量边界。\n\n### 4.2 集成测试\n\n- testcontainers 启动 PostgreSQL/Redis，跑真实迁移。\n- 主链路 E2E：激活 → 绑定 → 组卷 → 全部答对 → 授权 → 心跳 → 额度耗尽 → 再次答题被拒。\n- 并发：同一孩子多设备同时申请授权，校验不超发。\n- 安全：重放令牌、篡改租约签名、越权访问他人孩子数据。\n\n### 4.3 压测\n\n- k6 场景：70% 答题提交、20% 上下文查询、10% 心跳。\n- 目标：1000 QPS 持续 10 分钟，p95 ≤ 200ms，错误率 < 0.1%。\n\n### 4.4 手工验收\n\n1. 用脚本创建家庭、孩子、规则。\n2. 模拟电视激活并绑定。\n3. 调用组卷接口，提交答案至通过。\n4. 校验授权分钟数、心跳扣减、超额被拒。\n5. 修改规则（禁看时段/每日上限），确认下次请求立即生效。\n\n## 5. 回滚方案\n\n- **代码**：按 Git 提交回滚；服务无状态，镜像可回退到上一版本。\n- **数据库**：迁移仅向前；每个迁移附带 `down` 脚本，发布前在预发库演练。\n- **开关**：规则引擎、推荐、离线租约均带功能开关，异常时关闭并降级到保守策略（拒绝解锁、仅在线）。\n- **数据**：授权与日志只追加不物理删除；错误授权通过 `status='revoked'` 失效，不删记录。\n\n## 6. 执行记录\n\n> 每完成一项任务或发生偏差时追加，不删除历史记录。\n\n| 日期 | 内容 | 结果/偏差 |\n| --- | --- | --- |\n| 2026-11-02 | 计划创建，状态 review | 等待 G1–G4 确认 |\n\n## 7. 验收结论\n\n- 结论：待验收\n- 遗留问题：\n- 后续建议：\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/plans/001-项目总体实施计划.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/plans/001-项目总体实施计划.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793620520792,
+            "ran": 1793620534780,
+            "completed": 1793620534788
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "cbf8062545dd05f672d4eb0490d295dd4379b90b",
+        "end": "7c30148c7ce25ced9ed1e929af9e637926fb37b1",
+        "files": [
+          "docs/plans/001-项目总体实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 10351,
+        "output": 2334,
+        "reasoning": 220,
+        "cache": {
+          "read": 49280,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c1d66540014QW2CxBiD0UNIm",
+      "time": {
+        "created": 1793620534871,
+        "streamed": 1793620543954,
+        "completed": 1793620544034
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now update docs/README.md status table, and maybe AGENTS section 5 tech stack (still pending confirmation, so leave).\n\nREADME table:\n| 001 | 项目总体设计方案 | [设计](design/001-...) | [计划](plans/001-...) | review |\n\nAlso mention idea.txt in docs navigation? Add row for 需求草案.\n\nThen commit and push (docs only). Then archive and commit again? Doing two commits fine. Better: archive once at the end, then a single commit with docs + archive. But if I archive now, my final message not included; whatever.\n\nSequence:\n1. Update README.\n2. Run archive (captures writing docs).\n3. git add, commit, push both.\n4. Respond to user with summary and ask G2/G3/G4.\n\nCareful: the archive captures current session including everything. Fine.\n\nAlso the archive file name remains 001-项目铁律... because session title unchanged. Fine.\n\nPotential conflict: docs/conversations/2026-11-02-001-...md and design 001. Different dirs.\n\nLet me update README.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793620538769,
+            "completed": 1793620543948
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_suwstl86v6tfzcy81ebbyf2j",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| 目录 | 用途 | 入口 |\n| --- | --- | --- |\n| `docs/idea.txt` | 产品需求草案（第 4–8 节，待补 1–3 节） | [idea.txt](idea.txt) |\n| `docs/conversations/` | 对话留档（Markdown + 原始 JSON） | [INDEX.md](conversations/INDEX.md) |\n| `docs/design/` | 设计方案 | [TEMPLATE.md](design/TEMPLATE.md) |\n| `docs/plans/` | 实施计划 | [TEMPLATE.md](plans/TEMPLATE.md)、[BACKLOG.md](plans/BACKLOG.md) |",
+              "oldString": "| 目录 | 用途 | 入口 |\n| --- | --- | --- |\n| `docs/conversations/` | 对话留档（Markdown + 原始 JSON） | [INDEX.md](conversations/INDEX.md) |\n| `docs/design/` | 设计方案 | [TEMPLATE.md](design/TEMPLATE.md) |\n| `docs/plans/` | 实施计划 | [TEMPLATE.md](plans/TEMPLATE.md)、[BACKLOG.md](plans/BACKLOG.md) |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/README.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/README.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/README.md",
+                  "patch": "Index: docs/README.md\n===================================================================\n--- docs/README.md\n+++ docs/README.md\n@@ -8,8 +8,9 @@\n ## 目录导航\n \n | 目录 | 用途 | 入口 |\n | --- | --- | --- |\n+| `docs/idea.txt` | 产品需求草案（第 4–8 节，待补 1–3 节） | [idea.txt](idea.txt) |\n | `docs/conversations/` | 对话留档（Markdown + 原始 JSON） | [INDEX.md](conversations/INDEX.md) |\n | `docs/design/` | 设计方案 | [TEMPLATE.md](design/TEMPLATE.md) |\n | `docs/plans/` | 实施计划 | [TEMPLATE.md](plans/TEMPLATE.md)、[BACKLOG.md](plans/BACKLOG.md) |\n \n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793620541664,
+            "ran": 1793620543952,
+            "completed": 1793620543965
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "7c30148c7ce25ced9ed1e929af9e637926fb37b1",
+        "end": "e236dd7a7b6f50a4c8c2d93514e1df02f6508674",
+        "files": [
+          "docs/README.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2694,
+        "output": 353,
+        "reasoning": 235,
+        "cache": {
+          "read": 59520,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c1d8a2f001mYfz2sh0PLjU1P",
+      "time": {
+        "created": 1793620544050,
+        "streamed": 1793620549063,
+        "completed": 1793620549151
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_99ykxesd3in8086bwjov6af6",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| 编号 | 主题 | 设计 | 计划 | 状态 |\n| --- | --- | --- | --- | --- |\n| — | 项目规范与文档机制建立 | — | — | done |\n| 001 | 项目总体设计（答题解锁电视观看时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | review |",
+              "oldString": "| 编号 | 主题 | 设计 | 计划 | 状态 |\n| --- | --- | --- | --- | --- |\n| — | 项目规范与文档机制建立 | — | — | done |\n| 001 | 待定（等待首个需求） | — | — | — |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/README.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/README.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/README.md",
+                  "patch": "Index: docs/README.md\n===================================================================\n--- docs/README.md\n+++ docs/README.md\n@@ -26,7 +26,7 @@\n \n | 编号 | 主题 | 设计 | 计划 | 状态 |\n | --- | --- | --- | --- | --- |\n | — | 项目规范与文档机制建立 | — | — | done |\n-| 001 | 待定（等待首个需求） | — | — | — |\n+| 001 | 项目总体设计（答题解锁电视观看时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | review |\n \n > 新增设计/计划后，请同步更新此表。\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793620547100,
+            "ran": 1793620549030,
+            "completed": 1793620549102
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "e236dd7a7b6f50a4c8c2d93514e1df02f6508674",
+        "end": "a3ccb744321f2411dd79238a194524a33101c376",
+        "files": [
+          "docs/README.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 614,
+        "output": 239,
+        "reasoning": 0,
+        "cache": {
+          "read": 62208,
           "write": 0
         }
       }

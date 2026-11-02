@@ -9,6 +9,7 @@
 
 | 目录 | 用途 | 入口 |
 | --- | --- | --- |
+| `docs/idea.txt` | 产品需求草案（第 4–8 节，待补 1–3 节） | [idea.txt](idea.txt) |
 | `docs/conversations/` | 对话留档（Markdown + 原始 JSON） | [INDEX.md](conversations/INDEX.md) |
 | `docs/design/` | 设计方案 | [TEMPLATE.md](design/TEMPLATE.md) |
 | `docs/plans/` | 实施计划 | [TEMPLATE.md](plans/TEMPLATE.md)、[BACKLOG.md](plans/BACKLOG.md) |
@@ -26,6 +27,6 @@ node scripts/archive-conversation.mjs --all
 | 编号 | 主题 | 设计 | 计划 | 状态 |
 | --- | --- | --- | --- | --- |
 | — | 项目规范与文档机制建立 | — | — | done |
-| 001 | 待定（等待首个需求） | — | — | — |
+| 001 | 项目总体设计（答题解锁电视观看时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | review |
 
 > 新增设计/计划后，请同步更新此表。
