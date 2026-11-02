@@ -16,7 +16,18 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  openSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dirname, '..')
@@ -40,12 +51,29 @@ function valueOf(flag) {
   return i >= 0 ? args[i + 1] : undefined
 }
 
+/**
+ * 通过文件承接 stdout 调用 opencode。
+ * 直接走管道时，CLI 可能在进程退出前未刷完 stdout，导致 JSON 被截断；
+ * 文件写入在 Node 中是同步的，可完整落盘。
+ */
 function run(args) {
-  return execFileSync('opencode', args, {
-    cwd: ROOT,
-    encoding: 'utf8',
-    maxBuffer: 256 * 1024 * 1024,
-  })
+  const dir = mkdtempSync(join(tmpdir(), 'oqg-archive-'))
+  const out = join(dir, 'stdout.txt')
+  const fd = openSync(out, 'w')
+  try {
+    execFileSync('opencode', args, {
+      cwd: ROOT,
+      stdio: ['ignore', fd, 'pipe'],
+      maxBuffer: 256 * 1024 * 1024,
+    })
+  } finally {
+    closeSync(fd)
+  }
+  try {
+    return readFileSync(out, 'utf8')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 }
 
 function pad(n, len = 2) {
