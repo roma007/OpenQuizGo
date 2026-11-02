@@ -79,7 +79,7 @@ func TestSelectWithRealPool(t *testing.T) {
 	childID := seedChild(t, pool)
 	offlineID, answeredID := seedQuestions(t, pool, childID)
 
-	svc := New(pool, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	svc := New(pool, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	rule := Rule{
 		UnlockMinutes: 20,
 		PassThreshold: 3,

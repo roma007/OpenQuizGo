@@ -45,10 +45,11 @@ type Result struct {
 
 // Error 是组卷业务错误。
 type Error struct {
-	Status   int
-	Code     string
-	Message  string
-	Warnings []string
+	Status    int
+	Code      string
+	Message   string
+	Warnings  []string
+	SessionID string
 }
 
 func (e *Error) Error() string { return e.Message }

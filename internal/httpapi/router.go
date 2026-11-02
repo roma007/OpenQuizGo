@@ -81,6 +81,12 @@ func New(d Deps) http.Handler {
 		if d.Quiz != nil && d.Admin != nil {
 			d.Quiz.Routes(r, d.Admin)
 		}
+		if d.Quiz != nil && d.Identity != nil {
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.DeviceAuth)
+				d.Quiz.DeviceRoutes(r)
+			})
+		}
 	})
 
 	r.NotFound(func(w http.ResponseWriter, req *http.Request) {

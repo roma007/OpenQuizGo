@@ -68,7 +68,7 @@ func main() {
 
 	adminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)
 	questionService := question.New(pool, logger)
-	quizService := quiz.New(pool, logger)
+	quizService := quiz.New(pool, rdb, logger)
 
 	handler := httpapi.New(httpapi.Deps{
 		Logger:    logger,

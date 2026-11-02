@@ -13,8 +13,9 @@
 - ✅ T3 身份/家庭/设备（登录、孩子、激活、PIN、邀请）
 - ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）
 - ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）
+- ✅ T6 答题会话与判分（一次性令牌、服务端判分、防重放）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T6 答题会话与判分
+- ⏳ T7 加权规则引擎
 
 ## 技术栈
 
@@ -146,6 +147,19 @@ POST /v1/admin/questions/{id}/resubmit
 GET  /v1/admin/audit                 审计日志
 POST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）
 ```
+
+## 电视端答题（T6，设备令牌）
+
+```text
+POST /v1/quiz/sessions                    创建会话（返回题目 + 一次性题令牌，不含答案）
+GET  /v1/quiz/sessions/{id}               断线重连，查看进度与未答题
+POST /v1/quiz/sessions/{id}/answers       提交答案（token + answer，服务端判分）
+POST /v1/quiz/sessions/{id}/finish        结算（加权分 ≥ 门槛 → passed）
+```
+
+- 会话有效期 10 分钟；同一设备同时只能有一个进行中的会话。
+- 每题令牌一次性，重放返回 409；答案与解析不下发，判分后才返回。
+- 服务端计时 < 300ms 标记 `suspicious`。
 
 状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。
 

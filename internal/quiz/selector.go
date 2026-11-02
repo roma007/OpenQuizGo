@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -32,12 +33,13 @@ var (
 // Service 是组卷服务。
 type Service struct {
 	repo   *repository
+	redis  *redis.Client
 	logger *slog.Logger
 }
 
 // New 构造组卷服务。
-func New(pool *pgxpool.Pool, logger *slog.Logger) *Service {
-	return &Service{repo: newRepository(pool), logger: logger}
+func New(pool *pgxpool.Pool, rdb *redis.Client, logger *slog.Logger) *Service {
+	return &Service{repo: newRepository(pool), redis: rdb, logger: logger}
 }
 
 // Select 按规则组卷。

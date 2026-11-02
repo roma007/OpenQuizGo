@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 2387368,
-      "output": 165301,
-      "reasoning": 116497,
+      "input": 3498126,
+      "output": 183068,
+      "reasoning": 127185,
       "cache": {
-        "read": 52321408,
+        "read": 59460608,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793626569310,
-      "busy": 1793626051137,
-      "idle": 1793626033161,
-      "viewed": 1793626033161
+      "updated": 1793628183969,
+      "busy": 1793627514028,
+      "idle": 1793626590626,
+      "viewed": 1793626590626
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -27421,6 +27421,2099 @@
         "reasoning": 51,
         "cache": {
           "read": 339968,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c796b1e001rDCGBW74TKCxaP",
+      "time": {
+        "created": 1793626565410,
+        "streamed": 1793626571323,
+        "completed": 1793626581247
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Note cached quiz test; okay.\n\nArchive, commit, push. Commit message `feat(t5): 组卷 v0`.\n\nCheck status includes internal/quiz, docs, Makefile, README.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626569315,
+            "completed": 1793626571315
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_d1iyex07x9jbqeyaqjeqgwak",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -2 && git add -A && git commit -q -m \"feat(t5): 组卷 v0 与选题器\n\n- 加权配额（最大余数法）、趣味题上限与权重校验\n- 难度目标按历史正确率/学段年级偏移\n- 30 天去重、难度/学段降级、断供重分配与告警\n- 下线题不入选；题池不足返回 409\n- 管理端 /admin/quiz/preview dry-run\n- 单元 + 集成测试（同 seed 可复现）\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git log --oneline -2",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   4e09406..d310327  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   4e09406..d310327  main -> master\nd310327 feat(t5): 组卷 v0 与选题器\n4e09406 feat(t4): 题库治理 API 与 RBAC\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793626569819,
+            "ran": 1793626571320,
+            "completed": 1793626581181
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1145face3640f9ab760e609af5e0ec9a810fda4b",
+        "end": "77379f1508e67ca777758c57494f3e2c4959c357",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 387,
+        "output": 250,
+        "reasoning": 42,
+        "cache": {
+          "read": 340608,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c79a915001UY122UylyrymAl",
+      "time": {
+        "created": 1793626581273,
+        "streamed": 1793626590598,
+        "completed": 1793626590622
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "T5 done. Final response. Next T6 (答题会话与判分) is the biggest core. Summarize T5, note preview example, tests, next.\n\nMention dev DB was modified (status online) — not relevant to repo.\n\nKey points:\n- Quota allocation max remainder, fun cap.\n- Difficulty target history.\n- Dedupe 30d, fallback.\n- Insufficient pool behavior.\n- Preview API.\n- Tests.\n- Implementation note: candidate query status online ensures offline excluded (T4 tail acceptance closed).\n\nNext T6: sessions, one-time tokens, grading, anti-replay, rate limits. T7 rule engine weighted.\n\nKeep concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793626585307,
+            "completed": 1793626590592
+          }
+        },
+        {
+          "type": "text",
+          "text": "**T5 完成并推送**（`d310327`）。组卷器已可用于 T6 的答题会话。\n\n## 交付内容\n\n| 能力 | 实现 |\n| --- | --- |\n| 题量计算 | `n = clamp(ceil(门槛 / 最高权重) + 2, 3, 12)` |\n| 权重配额 | 最大余数法分配学科题量，误差 < 1 题 |\n| 趣味题 | 独立配额、受 `fun_ratio_cap` 限制、权重必须低于最低学科权重 |\n| 难度目标 | 优先用近 30 天正确率最接近 70% 的难度；否则按学段 + 年级偏移 |\n| 去重 | 排除近 30 天做过的题；题量不足时降级重复并告警 |\n| 断供兜底 | 学段相邻降级、难度相邻降级、配额重分配；仍不足返回 409 `INSUFFICIENT_POOL` |\n| 审核状态 | 只从 `online` 题池抽题，下线题不入选（补齐 T4 验收尾项） |\n| 预览接口 | `POST /v1/admin/quiz/preview` 可 dry-run 查看配额、题目与警告 |\n\n## 验证\n\n- 单元测试：配额分配、题量、难度目标、规则校验。\n- 集成测试：同 seed 结果完全一致；20 个 seed 均未选中下线题和近 30 天已答题；题池不足返回 409。\n- 实测预览（dev 库 2000 道数学题）：\n\n```json\n{\"total\":5,\"quota\":{\"math\":5},\"max_score\":10,\"difficulty_target\":2,\n \"warnings\":[\"subject_shortage:chinese\",\"subject_shortage:science\",\"subject_shortage:fun\",\"quota_redistributed\"]}\n```\n\n断供时不会硬失败，而是降级并明确告警——家长端可以据此提示「当前题库不足」。\n\n## 当前进度\n\n- ✅ T1–T5 全部完成（工程、数据、身份、题库、组卷）\n- 🚧 T0 PoC APK 待实机\n- ⏳ **T6 答题会话与判分**：会话、一次性题令牌、服务端判分、防重放、限流\n\nT6 是解锁链路的核心，之后 T7 加权规则引擎、T8 授权与计量才能串成闭环。继续我就开工。"
+        }
+      ],
+      "snapshot": {
+        "start": "77379f1508e67ca777758c57494f3e2c4959c357",
+        "end": "77379f1508e67ca777758c57494f3e2c4959c357",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 422,
+        "output": 550,
+        "reasoning": 139,
+        "cache": {
+          "read": 340992,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c79cda2001gFYHpQZG5PDanv",
+      "time": {
+        "created": 1793626590626
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_19c87e425001jiS99kcoWybh1q",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793627514094
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_19c87e507001Av9Oe1Qg6VQbJK",
+      "time": {
+        "created": 1793627514137,
+        "streamed": 1793627555164,
+        "completed": 1793627555240
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Continue T6: 答题会话与判分.\n\nScope from plan:\n- Session creation using selector (T5).\n- One-time answer tokens, server grading, explanation, anti-replay, rate limiting.\n- Quiz session states.\n- Integration with child/device auth.\n- Rule snapshot (needs rule from watch_rule; T7 not done but rule exists with defaults). We can load watch_rule for child and build Rule.\n- Finish session → evaluate weighted score → pass/fail; grant issuance is T8. For T6, finish returns pass/fail and score; no watch_grant yet.\n- API:\n  - POST /v1/quiz/sessions (device auth) body {trigger: pre_watch|in_watch} → session + questions without answers + answer tokens.\n  - POST /v1/quiz/sessions/{id}/answers (device auth) {item_id/token, answer} → correctness + explanation + score progress.\n  - POST /v1/quiz/sessions/{id}/finish (device auth) → result.\n- Session creation should enforce time window/daily limit? T7 rule engine. For T6, load rule and create session; T7 will add rule checks. But selector needs rule. Load watch_rule for child; fallback defaults.\n- Rate limits: session creation ≤3/10min per device; answers ≤60/min. Use Redis.\n- Anti-replay: answer_token_jti unique, one-time; mark answered_at.\n- Server timing: duration_ms = now - issued_at; flag <300ms but still grade? Design says mark abnormal. For T6, store duration; optionally `suspicious` boolean in response? DB column exists duration_ms. No suspicious column. Return it.\n- Questions must not include answer/alias/explain? Explain should be returned after answering. Before answering, no answer/explain.\n- Option order shuffle server-side? T5 selects; T6 can shuffle options per item and store? No column for option order. Skip; options are IDs, not position.\n- Session expiry: 10 minutes from creation (configurable 10m). Answer after expiry → 409.\n- Idempotency: one session one grant (T8).\n- Child ownership: device token binds child, so session child = device child.\n- Session item stores answer_snapshot (question answer at issue time) to grade; selector returns question IDs only. Need load question details and snapshot answers. Query questions by IDs including answer, answer_alias, explain, version, type.\n- For grading, support choice/voice/fill/sort/match:\n  - choice/image: answer array of option ids; compare sets.\n  - voice/fill: answer string or []string; normalize (trim, lower? Chinese) and compare against snapshot answer + alias whitelist (for fun and voice).\n  - sort: answer array order exact.\n  - match: object mapping comparison (map equality).\n- Alias: answer_alias array of strings for text types; also maybe arrays of accepted answer arrays. Keep simple: alias strings compared with given text.\n- Expose correct answer after submission for learning? Design says \"对错/解析\". Return `correct_answer` after grading? Could leak if retry; one attempt per item. But kid could intentionally answer wrong to see answer, then next session gets same question (dedupe prevents 30 days? It was answered, so excluded). Fine. Return answer + explain after each answer. For choice, answer IDs.\n- Score progress: weighted score based on rule weights.\n- Session completion:\n  - if score >= threshold → state passed; else failed.\n  - If all questions answered and score < threshold → failed.\n  - If time expired → expired.\n  - Client can finish early; if score >= threshold passed else failed.\n  - Return score, threshold, passed, correct/total.\n- T8 will create watch_grant on passed; leave hook.\n\nData model already has quiz_session, quiz_session_item, answer_log.\n\nNeed a repository in `internal/quiz` for sessions (extend package). This is natural: T5 selector + T6 sessions.\n\nTables:\n- quiz_session: id, child_id, device_id, rule_version, state, question_count, pass_threshold, score, paused_app, was_playing, paused_at, resumed_at, started_at, expires_at, finished_at.\n- quiz_session_item: id, session_id, question_id, question_version, answer_snapshot, position, answer_token_jti, issued_at, answered_at, answer_given, is_correct, duration_ms.\n\nSession creation flow:\n1. Device auth middleware (identity) → principal childID, deviceID.\n2. Load watch_rule for child (query); build Rule.\n   - If no rule (shouldn't; created with child), defaults.\n   - Get `rule.version` for session snapshot.\n3. Rule checks (time window/daily limit) — T7. For T6, at least check time window? The plan puts rule engine T7. Skip with TODO.\n4. Rate limit: Redis key `rl:quiz:session:<deviceID>` count 10min max 3; use INCR+expire.\n5. Select questions via Selector (childID, rule, seed random).\n6. Load question details for selected IDs (answer, alias, explain, version, type, options, stem, media).\n7. Insert session + items in transaction:\n   - session expires at now+10m, pass_threshold snapshot, question_count, rule_version.\n   - each item: answer_token_jti random 16 bytes, answer_snapshot JSON.\n8. Return questions: item_id, question_id, type, stem, stem_media, options, duration_limit, token, position. No answer/explain.\n9. If selector fails (insufficient pool) → 409.\n\nQuestion details query:\n```sql\nselect id, version, type_code, stem, coalesce(stem_media::text,''), coalesce(options::text,''), answer::text, coalesce(answer_alias::text,''), coalesce(explain,''), duration_limit\nfrom question where id = any($1) and status='online'\n```\nIf missing (offline after selection) → error/skip. Use selector status check.\n\nAnswer flow:\n1. Device auth; load session by id and child_id=device child; check active and not expired.\n2. Load item by id (or token). Request: {item_id, answer}. Validate item belongs session, unanswered.\n3. Check token? The item_id + device auth is enough; add `answer_token` in request for anti-CSRF? Design says one-time token. Use token as the item identifier: request {token, answer}; hash lookup. But simpler: item_id + token. Let's use `token` only; query item by answer_token_jti and session. Response includes item_id too.\n4. One-time: update `answered_at` where answered_at is null returning ...; use atomic UPDATE to prevent race.\n5. Grade with snapshot.\n6. Insert answer_log (async? sync).\n7. duration_ms = now - issued_at (server).\n8. Update session score += weight if correct.\n9. Return {correct, correct_answer, explain, duration_ms, score, threshold, progress}.\n10. If all items answered and score >= threshold → could auto-finish? Design: finish endpoint. Keep explicit finish; but if score reached threshold, client may call finish. Return `can_finish`/`passed_possible`? Provide `passed` boolean? Simple: return `score`, `threshold`, `remaining`.\n\nFinish:\n1. Load session active; if expired → mark expired and return 410.\n2. Compute passed = score >= threshold.\n3. state passed/failed, finished_at.\n4. Return summary.\n5. If passed, T8 issues grant.\n\nSession expiry handling: query session with expires_at < now → update state expired.\n\nDevice rate limits:\n- create: 3/10min.\n- answer: 60/min.\nUse Redis helper `allowN(key, limit, window)`.\n\nGrading functions:\n```go\nfunc grade(q snapshot, answer json.RawMessage) (bool, error)\n```\nSnapshot struct:\n```go\ntype questionSnapshot struct { Type string; Answer json.RawMessage; Alias json.RawMessage }\n```\nBut store only answer + alias + type; type in item? question_type not stored in item. Add question type to snapshot JSON. Store `answer_snapshot` = {\"type\":\"choice\",\"answer\":...,\"alias\":...}. Also store explain? Explain can be loaded from question at answer time, but question may change/offline. Snapshot explain too. Store all.\n\nResponse after grading includes explain from snapshot.\n\nAnswer comparison:\n- Unmarshal answer_given into any; compare normalized.\n- choice: given []string vs correct []string; sort both and compare.\n- sort: given []string order vs correct order.\n- fill/voice: given string, correct string or []string; trim space, lower-case (for English), compare; alias list also.\n- match: map[string]string compare both directions.\n- image treated as choice.\n\nImplement robust with generic normalization.\n\nInput answer JSON raw from request: body {token, answer: <any>}. Marshal to RawMessage.\n\nValidate answer type per question type; if wrong → 422.\n\nWeight: rule.SubjectWeight[subject]. Session needs subject per item; not stored! quiz_session_item lacks subject. We can join question at grade/score time; but if question offline, still exists. Join question table for subject/type. Or snapshot includes subject. Add subject to snapshot JSON. Then scoring uses snapshot.Subject, no join.\n\nSession snapshot rule: pass_threshold snapshot; subject_weight snapshot? For scoring after rule changes, need weights frozen. Add `rule_snapshot jsonb` column to quiz_session? Schema lacks. Design says rule_version + snapshot. We can add migration 00005:\n- `alter table quiz_session add column rule_snapshot jsonb not null default '{}'::jsonb;`\n- maybe `add column weighted_score numeric(6,2)` already `score`.\n- `quiz_session_item` add `question_snapshot jsonb`? It has answer_snapshot; we can store full snapshot there including subject/type/answer/alias/explain.\n- Add `score` already.\n- Add `correct_count` int default 0? Useful for summary. Add.\n- Add `suspicious` boolean? duration only.\n- Add `last_activity_at`? not needed.\n- `quiz_session_item.duration_ms` exists.\n- `answer_log` needs subject? already join.\n\nMigration 00005:\n```sql\nalter table quiz_session add column rule_snapshot jsonb not null default '{}'::jsonb;\nalter table quiz_session add column correct_count integer not null default 0;\nalter table quiz_session_item add column question_snapshot jsonb not null default '{}'::jsonb;\n-- index token already unique\n```\nCould reuse answer_snapshot for full snapshot and add rule_snapshot. Add correct_count.\n\nMaybe also `session_code`? no.\n\nSession create transaction:\n- insert session with rule_snapshot (JSON of Rule + version), pass_threshold, question_count, expires.\n- insert items with answer_snapshot = full snapshot.\n\nSnapshot struct:\n```go\ntype itemSnapshot struct {\n Subject string `json:\"subject\"`\n Type string `json:\"type\"`\n Answer json.RawMessage `json:\"answer\"`\n Alias json.RawMessage `json:\"alias,omitempty\"`\n Explain string `json:\"explain\"`\n}\n```\n\nReturn questions includes options/duration from question table; snapshot in DB also could store stem/options for display after offline? Not needed; response built at creation.\n\nLoad question details returns `QuestionDetail` with fields.\n\nSession load for finish/answer:\n- session record with rule_snapshot, pass_threshold, score, correct_count.\n\nConcurrency:\n- Answer atomic update:\n```sql\nupdate quiz_session_item set answered_at=now(), answer_given=$3, is_correct=$4, duration_ms=$5\nwhere answer_token_jti=$1 and session_id=$2 and answered_at is null\nreturning id, question_snapshot\n```\nBut we need snapshot before grading. Load item first, grade, then conditional update returning; if no rows → already answered (409). Between load and update, another request could answer; conditional update catches.\n- Score update increment:\n```sql\nupdate quiz_session set score=score+$2, correct_count=correct_count+$3 where id=$1 and state='active' returning score\n```\n- Insert answer_log.\n\nSession expiry check before answer: `select ... where id=$1 and child_id=$2` then if expires < now → mark expired and 410.\n\nDevice auth context provides child/device. Session must belong device? Allow same child on other device? Design: session tied device; enforce device_id = principal.DeviceID to prevent cross-device replay.\n\nRate limit helper with Redis INCR.\n\nHandlers under `/v1/quiz` with identity.DeviceAuth:\n- POST /quiz/sessions\n- POST /quiz/sessions/{id}/answers (body token)\n- POST /quiz/sessions/{id}/finish\n- GET /quiz/sessions/{id} (resume session, returns remaining questions? Useful; optional)\nAdd GET for recovery: returns session state + unanswered items? Good for TV reconnect. Implement simple GET session summary with items (no answers). Maybe skip to control scope; but TV may reconnect. Add.\n\nRoutes:\n```go\nfunc (s *Service) DeviceRoutes(r chi.Router, deviceAuth func(http.Handler) http.Handler)\n```\nQuiz package shouldn't import identity? It can accept middleware param. Simpler: httpapi router mounts:\n```go\nr.Group(func(r chi.Router) {\n  r.Use(d.Identity.DeviceAuth)\n  d.Quiz.DeviceRoutes(r)\n})\n```\nQuiz routes use identity.DeviceFrom(ctx) → but that imports identity into quiz. Acceptable (quiz is downstream of identity). Or pass principal via context keys defined in quiz? Use identity.DeviceFrom. Import no cycle (identity doesn't import quiz).\n\nSo quiz imports identity; main wiring: httpapi Deps Quiz; router uses d.Identity.DeviceAuth and d.Quiz.DeviceRoutes(r, child/device extraction). Routes:\n```go\nfunc (s *Service) DeviceRoutes(r chi.Router) {\n r.Post(\"/quiz/sessions\", s.handleCreate)\n ...\n}\n```\nHandler gets principal via identity.DeviceFrom.\n\nPotential import cycle: identity imports nothing from quiz; fine.\n\nRule loading:\n```go\nfunc (r *repository) ruleForChild(ctx, childID) (childRule, error)\n```\nQuery watch_rule fields; rule_snapshot includes subject_weight, threshold, unlock, fun. Also version, daily/time window for T7 later.\nIf no rows → default Rule balanced; but child creation inserts rule. Return error if missing? Use defaults fallback.\n\nSelector needs child stage; it queries child itself.\n\nSession creation should ensure no active session? Rate limit handles. If active session exists, maybe return it? Could create multiple. Enforce one active session per device: query existing active not expired; if exists, return 409 with session id (client can resume). Implement `activeSession(ctx, deviceID)`; return 409 `QUIZ_SESSION_ACTIVE` with id. Good.\n- Or return existing session to be idempotent. Simpler: 409 + id. TV can GET.\n\nFinish scoring: session score stored; correct_count.\n\nTime window/daily limit not T6.\n\nAnti-cheat: duration_ms from server; <300ms mark? Add response `suspicious: duration_ms < 300`. No DB column; can derive.\n\nQuestion duration_limit passed.\n\nLimit answer attempts: item one-time.\n\nAPI shapes:\n\nCreate response:\n```json\n{\n \"session_id\": \"...\",\n \"expires_at\": \"...\",\n \"pass_threshold\": 3,\n \"questions\": [\n   {\"item_id\":\"...\",\"question_id\":\"...\",\"position\":0,\"type\":\"choice\",\"stem\":\"...\",\"options\":[...],\"duration_limit\":30,\"token\":\"...\"}\n ]\n}\n```\nNo answers/explain.\n\nAnswer response:\n```json\n{\"correct\":true,\"correct_answer\":[\"b\"],\"explain\":\"...\",\"duration_ms\":1200,\"score\":2,\"threshold\":3,\"answered\":1,\"total\":5,\"suspicious\":false}\n```\n\nFinish:\n```json\n{\"session_id\":..., \"state\":\"passed\",\"score\":4,\"threshold\":3,\"correct\":2,\"total\":5,\"finished_at\":...}\n```\n\nGet:\n```json\n{session summary, questions unanswered/all with answered bool}\n```\n\nNeed answer token returned per item.\n\nQuestion details load:\n```go\ntype questionDetail struct {\n ID, Version, Subject, Type, Stem string\n StemMedia, Options []byte\n Answer, Alias []byte\n Explain string\n DurationLimit *int\n}\n```\nQuery `where id = any($1)`; build map.\n\nSnapshot:\n```go\ntype itemSnapshot struct {\n Subject string `json:\"subject\"`\n Type string `json:\"type\"`\n Answer json.RawMessage `json:\"answer\"`\n Alias json.RawMessage `json:\"alias,omitempty\"`\n Explain string `json:\"explain\"`\n}\n```\n\nStore JSON string in jsonb.\n\nSession rule snapshot:\n```go\ntype ruleSnapshot struct { Version int; Rule Rule }\n```\nRule includes all.\n\nWhen grading weight, use session rule snapshot; load session along with rule_snapshot.\n\nRepository methods:\n- `createSession(ctx, session, items)` returns.\n- `sessionForDevice(ctx, sessionID, deviceID, childID)`.\n- `hasActiveSession(ctx, deviceID)`.\n- `itemByToken(ctx, sessionID, token)`.\n- `markAnswered(...)`.\n- `addScore(...)`.\n- `insertAnswerLog(...)`.\n- `finishSession(...)`.\n- `expireSession(...)`.\n- `listItems(ctx, sessionID)` for GET.\n\nLet's add migration 00005 first.\n\n```sql\n-- +goose Up\nalter table quiz_session add column rule_snapshot jsonb not null default '{}'::jsonb;\nalter table quiz_session add column correct_count integer not null default 0;\nalter table quiz_session_item add column question_snapshot jsonb not null default '{}'::jsonb;\n-- +goose Down\nalter table quiz_session_item drop column ...\n...\n```\n\nNow code.\n\nGiven length, implement repository_session.go, session_service.go, session_handlers.go, grading.go.\n\nLet's go.\n\nMigration first.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627520133,
+            "completed": 1793627555147
+          }
+        },
+        {
+          "type": "text",
+          "text": "继续 T6：答题会话与判分。先补会话快照字段，再实现创建、一次性题令牌、服务端判分与防重放。"
+        },
+        {
+          "type": "tool",
+          "id": "call_00_ikm092yuuj0mcglhi4wc87b1",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "-- +goose Up\n\n-- 会话规则快照：保证一次会话期间判分口径稳定\nalter table quiz_session add column rule_snapshot jsonb not null default '{}'::jsonb;\nalter table quiz_session add column correct_count integer not null default 0;\n\n-- 题目快照：答案、解析、学科、题型，避免会话中途改题影响判分\nalter table quiz_session_item add column question_snapshot jsonb not null default '{}'::jsonb;\n\n-- +goose Down\n\nalter table quiz_session_item drop column if exists question_snapshot;\nalter table quiz_session drop column if exists correct_count;\nalter table quiz_session drop column if exists rule_snapshot;\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/migrations/00005_quiz_snapshot.sql"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: migrations/00005_quiz_snapshot.sql"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627553637,
+            "ran": 1793627555158,
+            "completed": 1793627555175
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "77379f1508e67ca777758c57494f3e2c4959c357",
+        "end": "41d00e991a14c8042241c9a82dfb9bc4509f0f7c",
+        "files": [
+          "migrations/00005_quiz_snapshot.sql"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 732,
+        "output": 258,
+        "reasoning": 3938,
+        "cache": {
+          "read": 341376,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8885c7001SAv8UwRjDMex7P",
+      "time": {
+        "created": 1793627555275,
+        "streamed": 1793627564614,
+        "completed": 1793627564687
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now session models. Add to models.go or new file `session_models.go`.\n\n```go\ntype Session struct {...}\ntype SessionQuestion struct {...}\ntype AnswerResult struct {...}\ntype SessionSummary struct {...}\ntype CreateSessionResponse struct {...}\n```\n\nRule snapshot:\n```go\ntype ruleSnapshot struct { Version int `json:\"version\"`; Rule Rule `json:\"rule\"` }\n```\n\nItem snapshot.\n\nLet's write session_models.go.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627559417,
+            "completed": 1793627564605
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_re0oxpc29qag8fvgjhj1gg64",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"encoding/json\"\n\t\"time\"\n)\n\nconst sessionTTL = 10 * time.Minute\n\ntype ruleSnapshot struct {\n\tVersion int  `json:\"version\"`\n\tRule    Rule `json:\"rule\"`\n}\n\ntype itemSnapshot struct {\n\tSubject string          `json:\"subject\"`\n\tType    string          `json:\"type\"`\n\tAnswer  json.RawMessage `json:\"answer\"`\n\tAlias   json.RawMessage `json:\"alias,omitempty\"`\n\tExplain string          `json:\"explain,omitempty\"`\n}\n\n// SessionQuestion 是下发给客户端的题目（不含答案与解析）。\ntype SessionQuestion struct {\n\tItemID        string          `json:\"item_id\"`\n\tQuestionID    string          `json:\"question_id\"`\n\tPosition      int             `json:\"position\"`\n\tType          string          `json:\"type\"`\n\tStem          string          `json:\"stem\"`\n\tStemMedia     json.RawMessage `json:\"stem_media,omitempty\"`\n\tOptions       json.RawMessage `json:\"options,omitempty\"`\n\tDurationLimit *int            `json:\"duration_limit,omitempty\"`\n\tToken         string          `json:\"token\"`\n}\n\n// CreateSessionResponse 是创建会话的返回。\ntype CreateSessionResponse struct {\n\tSessionID     string            `json:\"session_id\"`\n\tExpiresAt     time.Time         `json:\"expires_at\"`\n\tPassThreshold float64           `json:\"pass_threshold\"`\n\tRuleVersion   int               `json:\"rule_version\"`\n\tQuestions     []SessionQuestion `json:\"questions\"`\n}\n\n// AnswerResult 是单题判分结果。\ntype AnswerResult struct {\n\tCorrect       bool            `json:\"correct\"`\n\tCorrectAnswer json.RawMessage `json:\"correct_answer\"`\n\tExplain       string          `json:\"explain,omitempty\"`\n\tDurationMS    int             `json:\"duration_ms\"`\n\tSuspicious    bool            `json:\"suspicious\"`\n\tScore         float64         `json:\"score\"`\n\tThreshold     float64         `json:\"threshold\"`\n\tAnswered      int             `json:\"answered\"`\n\tTotal         int             `json:\"total\"`\n\tRemaining     int             `json:\"remaining\"`\n}\n\n// SessionSummary 是会话状态。\ntype SessionSummary struct {\n\tSessionID     string            `json:\"session_id\"`\n\tState         string            `json:\"state\"`\n\tScore         float64           `json:\"score\"`\n\tThreshold     float64           `json:\"pass_threshold\"`\n\tCorrectCount  int               `json:\"correct_count\"`\n\tAnsweredCount int               `json:\"answered_count\"`\n\tQuestionCount int               `json:\"question_count\"`\n\tStartedAt     time.Time         `json:\"started_at\"`\n\tExpiresAt     time.Time         `json:\"expires_at\"`\n\tFinishedAt    *time.Time        `json:\"finished_at,omitempty\"`\n\tQuestions     []SessionQuestion `json:\"questions,omitempty\"`\n}\n\n// AnswerSubmission 是提交答案的入参。\ntype AnswerSubmission struct {\n\tToken  string          `json:\"token\"`\n\tAnswer json.RawMessage `json:\"answer\"`\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_models.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/session_models.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627560396,
+            "ran": 1793627564611,
+            "completed": 1793627564621
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "41d00e991a14c8042241c9a82dfb9bc4509f0f7c",
+        "end": "08f50c4e8bd7436a5876ebec0d95c16c26e144f3",
+        "files": [
+          "internal/quiz/session_models.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 4314,
+        "output": 731,
+        "reasoning": 92,
+        "cache": {
+          "read": 342016,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c88aa9d001BvuMIJ0FedO9Zy",
+      "time": {
+        "created": 1793627564706,
+        "streamed": 1793627586515,
+        "completed": 1793627586589
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now session repository.\n\nStructures:\n```go\ntype sessionRecord struct { ID, ChildID, DeviceID, State string; RuleVersion int; PassThreshold float64; Score float64; CorrectCount, QuestionCount int; RuleSnapshot []byte; StartedAt, ExpiresAt time.Time; FinishedAt *time.Time }\ntype itemRecord struct { ID, QuestionID, Token string; Position int; QuestionVersion int; Snapshot []byte; AnsweredAt *time.Time; IsCorrect *bool; DurationMS *int }\ntype detail struct {...}\n```\n\nMethods:\n- `ruleForChild(ctx, childID) (ruleSnapshot, error)`:\n```sql\nselect version, subject_weight::text, pass_threshold, unlock_minutes, fun_ratio_cap, fun_enabled\nfrom watch_rule where child_id=$1\n```\nBuild Rule with weights map.\nIf no rows: default (but child always has). Return error not found; service fallback.\n\n- `activeSessionForDevice(ctx, deviceID) (string, error)`:\n```sql\nselect id from quiz_session where device_id=$1 and state='active' and expires_at > now() limit 1\n```\n- `createSession(ctx, rec, items)`: tx insert session returning id; insert items with token.\n- `questionDetails(ctx, ids []string) (map[string]detail, error)`.\n- `sessionByID(ctx, sessionID)`: includes rule_snapshot.\n- `itemsBySession(ctx, sessionID)`.\n- `itemByToken(ctx, sessionID, token)`.\n- `markAnswered(...)` conditional update.\n- `updateScore(ctx, sessionID, delta, correctDelta)`.\n- `insertAnswerLog(...)`.\n- `finish(ctx, sessionID, state)`.\n- `expire(ctx, sessionID)`.\n\nToken generation: random base64 24 bytes. Use crypto/rand in service.\n\nUUIDs generated by DB.\n\nSession create SQL:\n```sql\ninsert into quiz_session (child_id, device_id, rule_version, state, question_count, pass_threshold, rule_snapshot, expires_at)\nvalues (...,'active',...,now()+interval? ) returning id\n```\nPass expiresAt explicit.\n\nItems:\n```sql\ninsert into quiz_session_item (session_id, question_id, question_version, answer_snapshot, question_snapshot, position, answer_token_jti)\nvalues ...\n```\n`answer_snapshot` can duplicate snapshot answer; set to snapshot JSON too? Column answer_snapshot not null. Use same JSON for both to satisfy. Or set answer_snapshot to answer only. We'll store full snapshot in question_snapshot and `answer_snapshot` = snapshot.Answer (jsonb). Both not null.\n\nQuestion details query only online? At creation, selected online. Use `status='online'`; if missing, error. Query `where id = any($1)`.\n\nScan options/stem_media as text coalesce.\n\nSession by id:\n```sql\nselect id, child_id, device_id, state, rule_version, pass_threshold, score, correct_count, question_count, rule_snapshot::text, started_at, expires_at, finished_at\nfrom quiz_session where id=$1\n```\n\nItems:\n```sql\nselect id, question_id, question_version, position, answer_token_jti, question_snapshot::text, answered_at, is_correct, duration_ms\nfrom quiz_session_item where session_id=$1 order by position\n```\nFor GET response, need question display fields (stem/options) which are in question table, not snapshot. SessionQuestion response for resume requires stem/options. Could store them in snapshot too at creation. Extend itemSnapshot with Stem, Options, StemMedia, DurationLimit. Then GET can rebuild without question table. Do that. Update itemSnapshot fields:\n```\nStem string; StemMedia json.RawMessage; Options json.RawMessage; DurationLimit *int\n```\nThen create response from details.\n\nSnapshot includes all; answer hidden when building SessionQuestion.\n\nSession create flow can build snapshots.\n\nItem record for answer: id, snapshot, answered_at.\n\nmarkAnswered:\n```sql\nupdate quiz_session_item set answered_at=now(), answer_given=$3::jsonb, is_correct=$4, duration_ms=$5\nwhere id=$1 and answered_at is null\nreturning id\n```\nPass answer string.\n\nupdateScore:\n```sql\nupdate quiz_session set score=score+$2, correct_count=correct_count+$3 where id=$1 and state='active'\nreturning score, correct_count\n```\n\ninsertAnswerLog: child_id, question_id, session_id, device_id, answer_given, is_correct, duration_ms, answered_at now.\n\nfinish:\n```sql\nupdate quiz_session set state=$2, finished_at=now() where id=$1 and state='active' returning ...\n```\n\nexpire similar.\n\nCount answered: `select count(*) from quiz_session_item where session_id=$1 and answered_at is not null`.\n\nLet me write repo file.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627568897,
+            "completed": 1793627586507
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_eu3xc7565n6da8jxo5j4ggw4",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"errors\"\n\t\"fmt\"\n\t\"time\"\n\n\t\"github.com/jackc/pgx/v5\"\n)\n\ntype sessionRecord struct {\n\tID            string\n\tChildID       string\n\tDeviceID      string\n\tState         string\n\tRuleVersion   int\n\tPassThreshold float64\n\tScore         float64\n\tCorrectCount  int\n\tQuestionCount int\n\tRuleSnapshot  []byte\n\tStartedAt     time.Time\n\tExpiresAt     time.Time\n\tFinishedAt    *time.Time\n}\n\ntype itemRecord struct {\n\tID              string\n\tQuestionID      string\n\tQuestionVersion int\n\tPosition        int\n\tToken           string\n\tSnapshot        []byte\n\tAnsweredAt      *time.Time\n\tIsCorrect       *bool\n\tDurationMS      *int\n}\n\ntype questionDetail struct {\n\tID            string\n\tVersion       int\n\tSubject       string\n\tType          string\n\tStem          string\n\tStemMedia     json.RawMessage\n\tOptions       json.RawMessage\n\tAnswer        json.RawMessage\n\tAlias         json.RawMessage\n\tExplain       string\n\tDurationLimit *int\n}\n\nfunc (r *repository) ruleForChild(ctx context.Context, childID string) (ruleSnapshot, error) {\n\tvar version, unlockMinutes, funCap int\n\tvar threshold float64\n\tvar weightsJSON string\n\tvar funEnabled bool\n\terr := r.pool.QueryRow(ctx, `\n\t\tselect version, unlock_minutes, pass_threshold, subject_weight::text,\n\t\t       fun_ratio_cap, fun_enabled\n\t\tfrom watch_rule where child_id = $1`, childID).Scan(\n\t\t&version, &unlockMinutes, &threshold, &weightsJSON, &funCap, &funEnabled)\n\tif err != nil {\n\t\treturn ruleSnapshot{}, err\n\t}\n\tweights := map[string]float64{}\n\tif err := json.Unmarshal([]byte(weightsJSON), &weights); err != nil {\n\t\treturn ruleSnapshot{}, fmt.Errorf(\"decode subject weights: %w\", err)\n\t}\n\treturn ruleSnapshot{Version: version, Rule: Rule{\n\t\tUnlockMinutes: unlockMinutes,\n\t\tPassThreshold: threshold,\n\t\tSubjectWeight: weights,\n\t\tFunRatioCap:   funCap,\n\t\tFunEnabled:    funEnabled,\n\t}}, nil\n}\n\nfunc (r *repository) activeSessionForDevice(ctx context.Context, deviceID string) (string, error) {\n\tvar id string\n\terr := r.pool.QueryRow(ctx, `\n\t\tselect id from quiz_session\n\t\twhere device_id = $1 and state = 'active' and expires_at > now()\n\t\torder by started_at desc limit 1`, deviceID).Scan(&id)\n\treturn id, err\n}\n\nfunc (r *repository) createSession(ctx context.Context, childID, deviceID string, rule ruleSnapshot,\n\tthreshold float64, expiresAt time.Time, items []itemRecord) (string, error) {\n\ttx, err := r.pool.Begin(ctx)\n\tif err != nil {\n\t\treturn \"\", fmt.Errorf(\"begin: %w\", err)\n\t}\n\tdefer func() { _ = tx.Rollback(ctx) }()\n\n\truleJSON, _ := json.Marshal(rule)\n\tvar sessionID string\n\tif err := tx.QueryRow(ctx, `\n\t\tinsert into quiz_session (\n\t\t\tchild_id, device_id, rule_version, state, question_count, pass_threshold,\n\t\t\trule_snapshot, expires_at)\n\t\tvalues ($1, $2, $3, 'active', $4, $5, $6::jsonb, $7)\n\t\treturning id`,\n\t\tchildID, deviceID, rule.Version, len(items), threshold, string(ruleJSON), expiresAt).\n\t\tScan(&sessionID); err != nil {\n\t\treturn \"\", fmt.Errorf(\"insert session: %w\", err)\n\t}\n\n\tfor _, item := range items {\n\t\tsnapshot := item.Snapshot\n\t\tvar snap itemSnapshot\n\t\t_ = json.Unmarshal(snapshot, &snap)\n\t\tif _, err := tx.Exec(ctx, `\n\t\t\tinsert into quiz_session_item (\n\t\t\t\tsession_id, question_id, question_version, answer_snapshot,\n\t\t\t\tquestion_snapshot, position, answer_token_jti)\n\t\t\tvalues ($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7)`,\n\t\t\tsessionID, item.QuestionID, item.QuestionVersion,\n\t\t\tjsonText(snap.Answer), string(snapshot), item.Position, item.Token); err != nil {\n\t\t\treturn \"\", fmt.Errorf(\"insert session item: %w\", err)\n\t\t}\n\t}\n\tif err := tx.Commit(ctx); err != nil {\n\t\treturn \"\", fmt.Errorf(\"commit: %w\", err)\n\t}\n\treturn sessionID, nil\n}\n\nfunc jsonText(raw json.RawMessage) any {\n\tif len(raw) == 0 {\n\t\treturn nil\n\t}\n\treturn string(raw)\n}\n\nfunc (r *repository) questionDetails(ctx context.Context, ids []string) (map[string]questionDetail, error) {\n\trows, err := r.pool.Query(ctx, `\n\t\tselect id, version, subject_code, type_code, stem,\n\t\t       coalesce(stem_media::text, ''), coalesce(options::text, ''),\n\t\t       answer::text, coalesce(answer_alias::text, ''),\n\t\t       coalesce(explain, ''), duration_limit\n\t\tfrom question\n\t\twhere id = any($1) and status = 'online'`, ids)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tdefer rows.Close()\n\n\tdetails := make(map[string]questionDetail, len(ids))\n\tfor rows.Next() {\n\t\tvar d questionDetail\n\t\tvar media, options, answer, alias string\n\t\tif err := rows.Scan(&d.ID, &d.Version, &d.Subject, &d.Type, &d.Stem,\n\t\t\t&media, &options, &answer, &alias, &d.Explain, &d.DurationLimit); err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\td.StemMedia = rawOrEmpty(media)\n\t\td.Options = rawOrEmpty(options)\n\t\td.Answer = json.RawMessage(answer)\n\t\td.Alias = rawOrEmpty(alias)\n\t\tdetails[d.ID] = d\n\t}\n\treturn details, rows.Err()\n}\n\nfunc rawOrEmpty(value string) json.RawMessage {\n\tif value == \"\" {\n\t\treturn nil\n\t}\n\treturn json.RawMessage(value)\n}\n\nfunc (r *repository) sessionByID(ctx context.Context, sessionID string) (sessionRecord, error) {\n\tvar rec sessionRecord\n\tvar ruleJSON string\n\terr := r.pool.QueryRow(ctx, `\n\t\tselect id, child_id, device_id, state, rule_version, pass_threshold, score,\n\t\t       correct_count, question_count, rule_snapshot::text,\n\t\t       started_at, expires_at, finished_at\n\t\tfrom quiz_session where id = $1`, sessionID).Scan(\n\t\t&rec.ID, &rec.ChildID, &rec.DeviceID, &rec.State, &rec.RuleVersion,\n\t\t&rec.PassThreshold, &rec.Score, &rec.CorrectCount, &rec.QuestionCount,\n\t\t&ruleJSON, &rec.StartedAt, &rec.ExpiresAt, &rec.FinishedAt)\n\tif err != nil {\n\t\treturn sessionRecord{}, err\n\t}\n\trec.RuleSnapshot = []byte(ruleJSON)\n\treturn rec, nil\n}\n\nfunc (r *repository) itemsBySession(ctx context.Context, sessionID string) ([]itemRecord, error) {\n\trows, err := r.pool.Query(ctx, `\n\t\tselect id, question_id, question_version, position, answer_token_jti,\n\t\t       question_snapshot::text, answered_at, is_correct, duration_ms\n\t\tfrom quiz_session_item\n\t\twhere session_id = $1\n\t\torder by position`, sessionID)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tdefer rows.Close()\n\n\titems := make([]itemRecord, 0)\n\tfor rows.Next() {\n\t\tvar item itemRecord\n\t\tvar snapshot string\n\t\tif err := rows.Scan(&item.ID, &item.QuestionID, &item.QuestionVersion, &item.Position,\n\t\t\t&item.Token, &snapshot, &item.AnsweredAt, &item.IsCorrect, &item.DurationMS); err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\titem.Snapshot = []byte(snapshot)\n\t\titems = append(items, item)\n\t}\n\treturn items, rows.Err()\n}\n\nfunc (r *repository) itemByToken(ctx context.Context, sessionID, token string) (itemRecord, error) {\n\tvar item itemRecord\n\tvar snapshot string\n\terr := r.pool.QueryRow(ctx, `\n\t\tselect id, question_id, question_version, position, answer_token_jti,\n\t\t       question_snapshot::text, answered_at, is_correct, duration_ms\n\t\tfrom quiz_session_item\n\t\twhere session_id = $1 and answer_token_jti = $2`, sessionID, token).Scan(\n\t\t&item.ID, &item.QuestionID, &item.QuestionVersion, &item.Position,\n\t\t&item.Token, &snapshot, &item.AnsweredAt, &item.IsCorrect, &item.DurationMS)\n\tif err != nil {\n\t\treturn itemRecord{}, err\n\t}\n\titem.Snapshot = []byte(snapshot)\n\treturn item, nil\n}\n\nfunc (r *repository) markAnswered(ctx context.Context, itemID string, given json.RawMessage, correct bool, durationMS int) (bool, error) {\n\ttag, err := r.pool.Exec(ctx, `\n\t\tupdate quiz_session_item\n\t\tset answered_at = now(), answer_given = $2::jsonb, is_correct = $3, duration_ms = $4\n\t\twhere id = $1 and answered_at is null`,\n\t\titemID, string(given), correct, durationMS)\n\tif err != nil {\n\t\treturn false, err\n\t}\n\treturn tag.RowsAffected() > 0, nil\n}\n\nfunc (r *repository) addScore(ctx context.Context, sessionID string, delta float64, correctDelta int) (float64, int, error) {\n\tvar score float64\n\tvar correct int\n\terr := r.pool.QueryRow(ctx, `\n\t\tupdate quiz_session\n\t\tset score = score + $2, correct_count = correct_count + $3\n\t\twhere id = $1 and state = 'active'\n\t\treturning score, correct_count`, sessionID, delta, correctDelta).Scan(&score, &correct)\n\treturn score, correct, err\n}\n\nfunc (r *repository) insertAnswerLog(ctx context.Context, childID, questionID, sessionID, deviceID string,\n\tgiven json.RawMessage, correct bool, durationMS int) error {\n\t_, err := r.pool.Exec(ctx, `\n\t\tinsert into answer_log (child_id, question_id, session_id, device_id, answer_given, is_correct, duration_ms)\n\t\tvalues ($1, $2, $3, $4, $5::jsonb, $6, $7)`,\n\t\tchildID, questionID, sessionID, deviceID, string(given), correct, durationMS)\n\treturn err\n}\n\nfunc (r *repository) setSessionState(ctx context.Context, sessionID, state string) error {\n\t_, err := r.pool.Exec(ctx, `\n\t\tupdate quiz_session\n\t\tset state = $2, finished_at = now()\n\t\twhere id = $1 and state = 'active'`, sessionID, state)\n\treturn err\n}\n\nfunc (r *repository) answeredCount(ctx context.Context, sessionID string) (int, error) {\n\tvar count int\n\terr := r.pool.QueryRow(ctx, `\n\t\tselect count(*) from quiz_session_item\n\t\twhere session_id = $1 and answered_at is not null`, sessionID).Scan(&count)\n\treturn count, err\n}\n\nfunc isNoRows(err error) bool {\n\treturn errors.Is(err, pgx.ErrNoRows)\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_repository.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/session_repository.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627575351,
+            "ran": 1793627586512,
+            "completed": 1793627586523
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "08f50c4e8bd7436a5876ebec0d95c16c26e144f3",
+        "end": "11aed8ea8b8511b396fe715c511c67c912111b4e",
+        "files": [
+          "internal/quiz/session_repository.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 937,
+        "output": 2731,
+        "reasoning": 1055,
+        "cache": {
+          "read": 346240,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8900340013QkJNcZrVmVJps",
+      "time": {
+        "created": 1793627586618,
+        "streamed": 1793627640087,
+        "completed": 1793627640167
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Issue: `isNoRows` already defined in question package, not quiz. In quiz package, no conflict. But `rawOrNil` exists in question package, not quiz; `rawOrEmpty` new. Good.\n\n`jsonText` name maybe conflicts? no.\n\n`ruleForChild` scan `pass_threshold numeric` into float64 works.\n\n`itemSnapshot` needs Stem/Options for resume; add fields to struct now. Update session_models itemSnapshot:\n```go\nStem, StemMedia, Options, DurationLimit\n```\nWe'll store when creating.\n\nNow grading.go.\n\nFunctions:\n```go\nfunc gradeAnswer(snapshot itemSnapshot, given json.RawMessage) (bool, error)\n```\nReturn error for invalid format.\n\nComparison helpers:\n- normalizeText: strings.TrimSpace, strings.ToLower, remove spaces? For Chinese answers, trim spaces; for English lower.\n- choice: unmarshal []string; sort and compare.\n- sort: order exact.\n- fill/voice: given string; correct answer string or []string; alias []string.\n- match: map[string]string; compare length/values.\n- image: choice.\n- unknown type → false, error? Types enum fixed; return error unsupported.\n\nGiven may be `{\"...\"}` etc. Validate raw non-empty.\n\nAlias could be array of strings or arrays? Design says近义答案白名单; treat []string.\n\nFor fill, given might be array (multiple blanks) — compare arrays normalized.\n\nImplement `asStrings(raw)`:\n- try []string; try string → []{s}.\n\nChoice compare sets:\n```go\na,b := asStrings; if len != len; sort; equal\n```\nSort type: compare order (no sort).\n\nText: join? For multiple blanks, compare normalized sequences; for single, compare string.\n```go\nfunc textMatches(given, correct, alias) bool\n```\n- normalize each.\n- given list vs correct list: if same length and all equal.\n- For single given and correct list, accept if equals any correct? Correct answer may be []string with multiple accepted? For fill, array likely blanks, not alternatives. Ambiguous. Use: if correct has 1 element, compare; else compare arrays. Alias only for single answers.\n- For voice: answer may be string; alias alternatives.\n\nMatch: unmarshal map[string]string for both; compare.\n\nReturn errors as `errInvalidAnswer`.\n\nAdd `suspicious` threshold 300ms.\n\nNow session service:\n- Extend Service with methods CreateSession, SubmitAnswer, FinishSession, GetSession.\n- Service has repo, logger, plus `redis` for rate limits. Currently New(pool, logger). Add redis param. main/httpapi update. Selector uses Service fields; adding redis okay.\n- Change New signature `New(pool, rdb, logger)`; update main and tests (`quiz.New(pool, logger)` in selector_test). Add rdb param; tests use nil? Rate limit only in session methods, so nil okay. Use `*redis.Client`; if nil skip limits.\n\nUpdate constructor and calls.\n\nCreateSession:\n```go\nfunc (s *Service) CreateSession(ctx, device identity.DevicePrincipal) (CreateSessionResponse, error)\n```\nImport identity in quiz. That creates dependency quiz→identity; identity doesn't import quiz. Fine.\n\nSteps:\n- rate limit `rl:quiz:create:<deviceID>` 3/10min.\n- active session check → 409 with session id in message? Error type currently no data. Return newError(409,\"QUIZ_SESSION_ACTIVE\",...). Handler could include? Add `Error.Data any`? Simpler message includes id. Better extend Error with `SessionID string`? Add field `Meta map[string]any`. Use message only for now; client can GET active? No endpoint by device. Hmm. Add `SessionID` field to Error and handler include `session_id`. Do.\n- load rule; if no rows → default balanced (fallback).\n- selector Select with child; if error INSUFFICIENT_POOL → propagate 409.\n- load details; if any missing → 409.\n- build items with tokens.\n- insert.\n- response.\n\nRate limit helper:\n```go\nfunc (s *Service) allow(ctx, key string, limit int, window time.Duration) bool {\n if s.redis==nil { return true }\n n, err := Incr; if n==1 Expire; return n<=limit\n}\n```\nIf Redis error → allow? Fail closed? Allow to avoid outage; log. For security, fail closed maybe. Use allow on error.\n\nToken: `randomToken()` base64 18 bytes.\n\nItem snapshot:\n```go\nsnap := itemSnapshot{Subject:d.Subject,Type:d.Type,Answer:d.Answer,Alias:d.Alias,Explain:d.Explain,Stem:d.Stem,StemMedia:d.StemMedia,Options:d.Options,DurationLimit:d.DurationLimit}\n```\nMarshal.\n\nSubmitAnswer:\n- rate limit 60/min per device.\n- session by id; check child/device; state active; expiry.\n  - if expired: set state expired; return 410 `QUIZ_SESSION_EXPIRED`.\n- item by token; if no rows → 404 `QUIZ_ITEM_NOT_FOUND`.\n- if answered → 409 `QUIZ_TOKEN_USED`.\n- snapshot unmarshal.\n- duration = now - item issued? itemRecord doesn't include issued_at. Add `IssuedAt time.Time` to itemRecord and query. Do.\n- grade.\n- markAnswered conditional; if false → 409.\n- addScore if correct.\n- insert answer_log; ignore error? Log.\n- answered count.\n- return.\n\nGetSession:\n- session by id; check device/child.\n- items; build questions (all, with answered flag? SessionQuestion lacks answered; add `Answered bool`).\nAdd field.\n- summary.\n\nFinishSession:\n- session check; if expired mark expired, return summary with state expired (200? or 410). Design says error; return 200 with state expired? Simpler: mark and return summary, state expired.\n- if state != active → return current summary (idempotent).\n- passed = score >= threshold; state passed/failed; set.\n- return summary.\n- T8 hook later.\n\nSession summary questions maybe.\n\nErrors: extend `Error` with `SessionID` and handler writes it. Modify models.go Error:\n```go\nSessionID string\n```\nHandler include.\n\nLet's patch models Error, SessionQuestion.Answered, itemRecord IssuedAt, New signature.\n\nThen write grading.go, session_service.go, session_handlers.go.\n\nUpdate selector_test New call.\n\nLet's do.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627602936,
+            "completed": 1793627640064
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-b05f6d28952417fc",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "// Error 是组卷业务错误。\ntype Error struct {\n\tStatus    int\n\tCode      string\n\tMessage   string\n\tWarnings  []string\n\tSessionID string\n}",
+              "oldString": "// Error 是组卷业务错误。\ntype Error struct {\n\tStatus   int\n\tCode     string\n\tMessage  string\n\tWarnings []string\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/models.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/models.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/models.go",
+                  "patch": "Index: internal/quiz/models.go\n===================================================================\n--- internal/quiz/models.go\n+++ internal/quiz/models.go\n@@ -44,12 +44,13 @@\n }\n \n // Error 是组卷业务错误。\n type Error struct {\n-\tStatus   int\n-\tCode     string\n-\tMessage  string\n-\tWarnings []string\n+\tStatus    int\n+\tCode      string\n+\tMessage   string\n+\tWarnings  []string\n+\tSessionID string\n }\n \n func (e *Error) Error() string { return e.Message }\n \n",
+                  "status": "modified",
+                  "additions": 5,
+                  "deletions": 4
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627637059,
+            "ran": 1793627640071,
+            "completed": 1793627640097
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-a044c9fc577efad1",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "// SessionQuestion 是下发给客户端的题目（不含答案与解析）。\ntype SessionQuestion struct {\n\tItemID        string          `json:\"item_id\"`\n\tQuestionID    string          `json:\"question_id\"`\n\tPosition      int             `json:\"position\"`\n\tType          string          `json:\"type\"`\n\tStem          string          `json:\"stem\"`\n\tStemMedia     json.RawMessage `json:\"stem_media,omitempty\"`\n\tOptions       json.RawMessage `json:\"options,omitempty\"`\n\tDurationLimit *int            `json:\"duration_limit,omitempty\"`\n\tToken         string          `json:\"token\"`\n\tAnswered      bool            `json:\"answered\"`\n}",
+              "oldString": "// SessionQuestion 是下发给客户端的题目（不含答案与解析）。\ntype SessionQuestion struct {\n\tItemID        string          `json:\"item_id\"`\n\tQuestionID    string          `json:\"question_id\"`\n\tPosition      int             `json:\"position\"`\n\tType          string          `json:\"type\"`\n\tStem          string          `json:\"stem\"`\n\tStemMedia     json.RawMessage `json:\"stem_media,omitempty\"`\n\tOptions       json.RawMessage `json:\"options,omitempty\"`\n\tDurationLimit *int            `json:\"duration_limit,omitempty\"`\n\tToken         string          `json:\"token\"`\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_models.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/session_models.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/session_models.go",
+                  "patch": "Index: internal/quiz/session_models.go\n===================================================================\n--- internal/quiz/session_models.go\n+++ internal/quiz/session_models.go\n@@ -30,8 +30,9 @@\n \tStemMedia     json.RawMessage `json:\"stem_media,omitempty\"`\n \tOptions       json.RawMessage `json:\"options,omitempty\"`\n \tDurationLimit *int            `json:\"duration_limit,omitempty\"`\n \tToken         string          `json:\"token\"`\n+\tAnswered      bool            `json:\"answered\"`\n }\n \n // CreateSessionResponse 是创建会话的返回。\n type CreateSessionResponse struct {\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627637571,
+            "ran": 1793627640075,
+            "completed": 1793627640094
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-b408ecd43e243861",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "type itemSnapshot struct {\n\tSubject       string          `json:\"subject\"`\n\tType          string          `json:\"type\"`\n\tAnswer        json.RawMessage `json:\"answer\"`\n\tAlias         json.RawMessage `json:\"alias,omitempty\"`\n\tExplain       string          `json:\"explain,omitempty\"`\n\tStem          string          `json:\"stem\"`\n\tStemMedia     json.RawMessage `json:\"stem_media,omitempty\"`\n\tOptions       json.RawMessage `json:\"options,omitempty\"`\n\tDurationLimit *int            `json:\"duration_limit,omitempty\"`\n}",
+              "oldString": "type itemSnapshot struct {\n\tSubject string          `json:\"subject\"`\n\tType    string          `json:\"type\"`\n\tAnswer  json.RawMessage `json:\"answer\"`\n\tAlias   json.RawMessage `json:\"alias,omitempty\"`\n\tExplain string          `json:\"explain,omitempty\"`\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_models.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/session_models.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/session_models.go",
+                  "patch": "Index: internal/quiz/session_models.go\n===================================================================\n--- internal/quiz/session_models.go\n+++ internal/quiz/session_models.go\n@@ -12,13 +12,17 @@\n \tRule    Rule `json:\"rule\"`\n }\n \n type itemSnapshot struct {\n-\tSubject string          `json:\"subject\"`\n-\tType    string          `json:\"type\"`\n-\tAnswer  json.RawMessage `json:\"answer\"`\n-\tAlias   json.RawMessage `json:\"alias,omitempty\"`\n-\tExplain string          `json:\"explain,omitempty\"`\n+\tSubject       string          `json:\"subject\"`\n+\tType          string          `json:\"type\"`\n+\tAnswer        json.RawMessage `json:\"answer\"`\n+\tAlias         json.RawMessage `json:\"alias,omitempty\"`\n+\tExplain       string          `json:\"explain,omitempty\"`\n+\tStem          string          `json:\"stem\"`\n+\tStemMedia     json.RawMessage `json:\"stem_media,omitempty\"`\n+\tOptions       json.RawMessage `json:\"options,omitempty\"`\n+\tDurationLimit *int            `json:\"duration_limit,omitempty\"`\n }\n \n // SessionQuestion 是下发给客户端的题目（不含答案与解析）。\n type SessionQuestion struct {\n",
+                  "status": "modified",
+                  "additions": 9,
+                  "deletions": 5
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627638807,
+            "ran": 1793627640084,
+            "completed": 1793627640102
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "11aed8ea8b8511b396fe715c511c67c912111b4e",
+        "end": "f1bc946296ff6ad2a93ad2a53aac421086dd51a9",
+        "files": [
+          "internal/quiz/models.go",
+          "internal/quiz/session_models.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 349007,
+        "output": 794,
+        "reasoning": 1413,
+        "cache": {
+          "read": 1920,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c89d17e001mbuBUiHr99p5q5",
+      "time": {
+        "created": 1793627640195,
+        "streamed": 1793627653879,
+        "completed": 1793627654023
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Add IssuedAt to itemRecord and queries.\n\nQueries select `issued_at`. Update in itemsBySession, itemByToken, and scan. In create items we don't need return.\n\nEdit.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627648875,
+            "completed": 1793627653871
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_wdraqga8bkslhjl145p198k8",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "type itemRecord struct {\n\tID              string\n\tQuestionID      string\n\tQuestionVersion int\n\tPosition        int\n\tToken           string\n\tSnapshot        []byte\n\tIssuedAt        time.Time\n\tAnsweredAt      *time.Time\n\tIsCorrect       *bool\n\tDurationMS      *int\n}",
+              "oldString": "type itemRecord struct {\n\tID              string\n\tQuestionID      string\n\tQuestionVersion int\n\tPosition        int\n\tToken           string\n\tSnapshot        []byte\n\tAnsweredAt      *time.Time\n\tIsCorrect       *bool\n\tDurationMS      *int\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_repository.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/session_repository.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/session_repository.go",
+                  "patch": "Index: internal/quiz/session_repository.go\n===================================================================\n--- internal/quiz/session_repository.go\n+++ internal/quiz/session_repository.go\n@@ -32,8 +32,9 @@\n \tQuestionVersion int\n \tPosition        int\n \tToken           string\n \tSnapshot        []byte\n+\tIssuedAt        time.Time\n \tAnsweredAt      *time.Time\n \tIsCorrect       *bool\n \tDurationMS      *int\n }\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627649249,
+            "ran": 1793627653875,
+            "completed": 1793627653892
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_gj9obgaavkhjcfbnd0uno5am",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/quiz/session_repository.go'); s=p.read_text()\ns=s.replace('''\t\tselect id, question_id, question_version, position, answer_token_jti,\n\t\t       question_snapshot::text, answered_at, is_correct, duration_ms\n\t\tfrom quiz_session_item\n\t\twhere session_id = $1\n\t\torder by position''','''\t\tselect id, question_id, question_version, position, answer_token_jti,\n\t\t       question_snapshot::text, issued_at, answered_at, is_correct, duration_ms\n\t\tfrom quiz_session_item\n\t\twhere session_id = $1\n\t\torder by position''')\ns=s.replace('''\t\tif err := rows.Scan(&item.ID, &item.QuestionID, &item.QuestionVersion, &item.Position,\n\t\t\t&item.Token, &snapshot, &item.AnsweredAt, &item.IsCorrect, &item.DurationMS); err != nil {''','''\t\tif err := rows.Scan(&item.ID, &item.QuestionID, &item.QuestionVersion, &item.Position,\n\t\t\t&item.Token, &snapshot, &item.IssuedAt, &item.AnsweredAt, &item.IsCorrect, &item.DurationMS); err != nil {''')\ns=s.replace('''\t\tselect id, question_id, question_version, position, answer_token_jti,\n\t\t       question_snapshot::text, answered_at, is_correct, duration_ms\n\t\tfrom quiz_session_item\n\t\twhere session_id = $1 and answer_token_jti = $2`, sessionID, token).Scan(\n\t\t&item.ID, &item.QuestionID, &item.QuestionVersion, &item.Position,\n\t\t&item.Token, &snapshot, &item.AnsweredAt, &item.IsCorrect, &item.DurationMS)''','''\t\tselect id, question_id, question_version, position, answer_token_jti,\n\t\t       question_snapshot::text, issued_at, answered_at, is_correct, duration_ms\n\t\tfrom quiz_session_item\n\t\twhere session_id = $1 and answer_token_jti = $2`, sessionID, token).Scan(\n\t\t&item.ID, &item.QuestionID, &item.QuestionVersion, &item.Position,\n\t\t&item.Token, &snapshot, &item.IssuedAt, &item.AnsweredAt, &item.IsCorrect, &item.DurationMS)''')\np.write_text(s)\nprint('patched')\nPY"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "patched\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793627650740,
+            "ran": 1793627653877,
+            "completed": 1793627653978
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "f1bc946296ff6ad2a93ad2a53aac421086dd51a9",
+        "end": "3a773ff955f227a2f57abb1a64558dbff398e7a1",
+        "files": [
+          "internal/quiz/session_repository.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 6118,
+        "output": 824,
+        "reasoning": 41,
+        "cache": {
+          "read": 347136,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8a079d001gO3HPxzaxcdz06",
+      "time": {
+        "created": 1793627654056,
+        "streamed": 1793627799346,
+        "completed": 1793627799425
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now grading.go.\n\nImplement:\n```go\nfunc grade(snapshot itemSnapshot, given json.RawMessage) (bool, error)\n```\nValidate given not empty.\n\nswitch type:\n- choice/image: choiceEqual\n- sort: sortEqual\n- fill/voice: textEqual\n- match: matchEqual\ndefault error.\n\nHelpers:\n```go\nfunc stringList(raw) ([]string, bool)\nfunc normalize(s string) string { strings.ToLower(strings.Join(strings.Fields(s), \"\")) } // remove spaces\n```\nFor Chinese, removing spaces okay. Lowercase for English.\n\nchoiceEqual: lists; sort copies; compare.\nsortEqual: exact order.\ntextEqual:\n- given list; correct list.\n- if len(correct)==1: match any given? Typically one answer. Compare given[0] to correct[0] or aliases.\n- if multiple: exact sequence normalized.\n- aliases: []string; if single given, match any alias.\nmatchEqual: map[string]string both; compare.\n\nReturn error on invalid JSON.\n\nImplement.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627760102,
+            "completed": 1793627799339
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-9759827d0937277e",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"encoding/json\"\n\t\"errors\"\n\t\"sort\"\n\t\"strings\"\n)\n\nvar errInvalidAnswer = errors.New(\"答案格式不合法\")\n\n// grade 使用会话快照判分，支持选择/语音/看图/填空/排序/连线。\nfunc grade(snapshot itemSnapshot, given json.RawMessage) (bool, error) {\n\tif len(given) == 0 || string(given) == \"null\" {\n\t\treturn false, errInvalidAnswer\n\t}\n\tswitch snapshot.Type {\n\tcase \"choice\", \"image\":\n\t\treturn equalStringSet(snapshot.Answer, given)\n\tcase \"sort\":\n\t\treturn equalStringSequence(snapshot.Answer, given)\n\tcase \"fill\", \"voice\":\n\t\treturn matchText(snapshot.Answer, snapshot.Alias, given)\n\tcase \"match\":\n\t\treturn equalStringMap(snapshot.Answer, given)\n\tdefault:\n\t\treturn false, errInvalidAnswer\n\t}\n}\n\nfunc equalStringSet(expected, given json.RawMessage) (bool, error) {\n\twant, ok1 := stringList(expected)\n\tgot, ok2 := stringList(given)\n\tif !ok1 || !ok2 || len(want) != len(got) {\n\t\treturn false, errInvalidAnswer\n\t}\n\twant = append([]string(nil), want...)\n\tgot = append([]string(nil), got...)\n\tsort.Strings(want)\n\tsort.Strings(got)\n\tfor i := range want {\n\t\tif want[i] != got[i] {\n\t\t\treturn false, nil\n\t\t}\n\t}\n\treturn true, nil\n}\n\nfunc equalStringSequence(expected, given json.RawMessage) (bool, error) {\n\twant, ok1 := stringList(expected)\n\tgot, ok2 := stringList(given)\n\tif !ok1 || !ok2 || len(want) != len(got) {\n\t\treturn false, errInvalidAnswer\n\t}\n\tfor i := range want {\n\t\tif want[i] != got[i] {\n\t\t\treturn false, nil\n\t\t}\n\t}\n\treturn true, nil\n}\n\nfunc matchText(expected, alias, given json.RawMessage) (bool, error) {\n\twant, ok1 := stringList(expected)\n\tgot, ok2 := stringList(given)\n\tif !ok1 || !ok2 || len(got) == 0 {\n\t\treturn false, errInvalidAnswer\n\t}\n\tif len(want) == 1 {\n\t\tif normalizeText(got[0]) == normalizeText(want[0]) {\n\t\t\treturn true, nil\n\t\t}\n\t\taliases, _ := stringList(alias)\n\t\tfor _, item := range aliases {\n\t\t\tif normalizeText(got[0]) == normalizeText(item) {\n\t\t\t\treturn true, nil\n\t\t\t}\n\t\t}\n\t\treturn false, nil\n\t}\n\tif len(want) != len(got) {\n\t\treturn false, errInvalidAnswer\n\t}\n\tfor i := range want {\n\t\tif normalizeText(want[i]) != normalizeText(got[i]) {\n\t\t\treturn false, nil\n\t\t}\n\t}\n\treturn true, nil\n}\n\nfunc equalStringMap(expected, given json.RawMessage) (bool, error) {\n\tvar want, got map[string]string\n\tif json.Unmarshal(expected, &want) != nil || json.Unmarshal(given, &got) != nil {\n\t\treturn false, errInvalidAnswer\n\t}\n\tif len(want) != len(got) {\n\t\treturn false, nil\n\t}\n\tfor key, value := range want {\n\t\tif got[key] != value {\n\t\t\treturn false, nil\n\t\t}\n\t}\n\treturn true, nil\n}\n\nfunc stringList(raw json.RawMessage) ([]string, bool) {\n\tif len(raw) == 0 {\n\t\treturn nil, false\n\t}\n\tvar many []string\n\tif err := json.Unmarshal(raw, &many); err == nil {\n\t\treturn many, true\n\t}\n\tvar single string\n\tif err := json.Unmarshal(raw, &single); err == nil {\n\t\treturn []string{single}, true\n\t}\n\treturn nil, false\n}\n\nfunc normalizeText(value string) string {\n\treturn strings.ToLower(strings.Join(strings.Fields(value), \"\"))\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/grading.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/grading.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627768997,
+            "ran": 1793627799344,
+            "completed": 1793627799354
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "3a773ff955f227a2f57abb1a64558dbff398e7a1",
+        "end": "354380d99bf8896feb01575f44160b2fd02e6ab6",
+        "files": [
+          "internal/quiz/grading.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1070,
+        "output": 969,
+        "reasoning": 220,
+        "cache": {
+          "read": 353024,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8c3f9e001yyd94pxzRYa4US",
+      "time": {
+        "created": 1793627799459,
+        "streamed": 1793627811833,
+        "completed": 1793627811900
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now session_service.go.\n\nChange New signature to include redis. Update:\n```go\ntype Service struct { repo *repository; redis *redis.Client; logger *slog.Logger }\nfunc New(pool *pgxpool.Pool, rdb *redis.Client, logger *slog.Logger) *Service\n```\nUpdate main and selector_test.\n\nAdd methods:\n\n```go\nfunc (s *Service) CreateSession(ctx context.Context, p identity.DevicePrincipal) (CreateSessionResponse, error)\nfunc (s *Service) SubmitAnswer(ctx, p, sessionID, sub) (AnswerResult, error)\nfunc (s *Service) FinishSession(ctx, p, sessionID) (SessionSummary, error)\nfunc (s *Service) GetSession(ctx, p, sessionID) (SessionSummary, error)\n```\n\nImport identity, redis, crypto/rand, base64.\n\nRate limit:\n```go\nfunc (s *Service) allow(ctx, key string, limit int, window time.Duration) bool {\n if s.redis==nil { return true }\n n, err := s.redis.Incr(ctx,key).Result()\n if err != nil { s.logger.Error...; return true }\n if n == 1 { Expire }\n return n <= int64(limit)\n}\n```\nFor create 3/10min; answers 60/min.\n\nCreate:\n- allow create.\n- active, err := repo.activeSessionForDevice; if nil (found) → Error 409 with SessionID.\n- rule, err := repo.ruleForChild; if no rows → default balanced rule version 0. But watch_rule requires JSON weights; default map.\n- result, err := s.Select(ctx, SelectRequest{ChildID:p.ChildID, Rule: rule.Rule, Seed: time.Now...}); errors: *Error propagate.\n- details := repo.questionDetails(ids); ensure len == len(selected).\n- build items preserving position from selected order.\n- tokens via randomToken.\n- snapshot JSON.\n- expires := now+sessionTTL.\n- createSession.\n- questions response (Answered false).\n\nNote selector `Rule` uses `WeightPreset` omitted; fine.\n\nCreateSessionResponse RuleVersion.\n\nSubmit:\n- allow answer key `rl:quiz:answer:<deviceID>` 60/min.\n- session, err := repo.sessionByID; no rows → 404; check ChildID/DeviceID match → 403/404 (use 404 to avoid leak).\n- if state != active → 409.\n- if expires < now → set expired; 410.\n- item := repo.itemByToken(sessionID, token); no rows → 404.\n- if item.AnsweredAt != nil → 409 QUIZ_TOKEN_USED.\n- snapshot unmarshal.\n- duration := int(time.Since(item.IssuedAt).Milliseconds()); clamp >=0.\n- correct, err := grade; invalid → 422 with message.\n- ok := repo.markAnswered; if !ok 409.\n- delta weight if correct.\n- repo.addScore; if no rows (session finished concurrently) → 409.\n- answer_log insert; log error but don't fail? If insert fails, still return; but data consistency. Return error? Better log and continue.\n- answered count.\n- remaining = questionCount - answered.\n- result.\n\nWeight from rule snapshot: parse rule.Rule.SubjectWeight[snapshot.Subject]; if missing 0.\n\nFinish:\n- session; check ownership.\n- if state != active → return summary (idempotent); if expired time passed and active → set expired.\n- passed := score >= threshold.\n- state passed/failed; set.\n- return summary.\n\nSummary builder:\n- answered count.\n- questions if requested? For Finish no need questions; leave nil. GetSession include questions.\n\nGetSession:\n- ownership; if active and expired → set expired.\n- items; build questions with Answered.\n- summary.\n\nNeed helper `sessionSummary(rec, answered)`.\n\nErrors: newError.\n\nFor answer invalid: newError(422, \"INVALID_ANSWER\", ...).\n\nFor token used: 409.\n\nSession ownership: compare device and child; if mismatch → 404.\n\n`randomToken` 18 bytes base64 raw URL.\n\nOne more: active session check returns existing; error message includes id; handler includes `session_id`.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627804103,
+            "completed": 1793627811820
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_m46x4ktl8sp6almhz5s79phh",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "// Service 是组卷服务。\ntype Service struct {\n\trepo   *repository\n\tredis  *redis.Client\n\tlogger *slog.Logger\n}\n\n// New 构造组卷服务。\nfunc New(pool *pgxpool.Pool, rdb *redis.Client, logger *slog.Logger) *Service {\n\treturn &Service{repo: newRepository(pool), redis: rdb, logger: logger}\n}",
+              "oldString": "// Service 是组卷服务。\ntype Service struct {\n\trepo   *repository\n\tlogger *slog.Logger\n}\n\n// New 构造组卷服务。\nfunc New(pool *pgxpool.Pool, logger *slog.Logger) *Service {\n\treturn &Service{repo: newRepository(pool), logger: logger}\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector.go",
+                  "patch": "Index: internal/quiz/selector.go\n===================================================================\n--- internal/quiz/selector.go\n+++ internal/quiz/selector.go\n@@ -31,14 +31,15 @@\n \n // Service 是组卷服务。\n type Service struct {\n \trepo   *repository\n+\tredis  *redis.Client\n \tlogger *slog.Logger\n }\n \n // New 构造组卷服务。\n-func New(pool *pgxpool.Pool, logger *slog.Logger) *Service {\n-\treturn &Service{repo: newRepository(pool), logger: logger}\n+func New(pool *pgxpool.Pool, rdb *redis.Client, logger *slog.Logger) *Service {\n+\treturn &Service{repo: newRepository(pool), redis: rdb, logger: logger}\n }\n \n // Select 按规则组卷。\n func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error) {\n",
+                  "status": "modified",
+                  "additions": 3,
+                  "deletions": 2
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627810198,
+            "ran": 1793627811825,
+            "completed": 1793627811839
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_tp1yihdeavhba63b5kuxaxg9",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "import (\n\t\"context\"\n\t\"fmt\"\n\t\"log/slog\"\n\t\"math\"\n\t\"math/rand\"\n\t\"sort\"\n\t\"strings\"\n\t\"time\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n\t\"github.com/redis/go-redis/v9\"\n)",
+              "oldString": "import (\n\t\"context\"\n\t\"fmt\"\n\t\"log/slog\"\n\t\"math\"\n\t\"math/rand\"\n\t\"sort\"\n\t\"strings\"\n\t\"time\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n)",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector.go",
+                  "patch": "Index: internal/quiz/selector.go\n===================================================================\n--- internal/quiz/selector.go\n+++ internal/quiz/selector.go\n@@ -10,8 +10,9 @@\n \t\"strings\"\n \t\"time\"\n \n \t\"github.com/jackc/pgx/v5/pgxpool\"\n+\t\"github.com/redis/go-redis/v9\"\n )\n \n const (\n \tmaxSessionQuestions = 12\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627811030,
+            "ran": 1793627811827,
+            "completed": 1793627811844
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "354380d99bf8896feb01575f44160b2fd02e6ab6",
+        "end": "5ba18cde155cc3b35541129afe1643a77d7cdcf9",
+        "files": [
+          "internal/quiz/selector.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2212,
+        "output": 439,
+        "reasoning": 904,
+        "cache": {
+          "read": 353152,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8c7055001qvP8AUlXW7HIbf",
+      "time": {
+        "created": 1793627811931,
+        "streamed": 1793627830070,
+        "completed": 1793627830145
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now session_service.go.\n\nDefault rule fallback:\n```go\nfunc defaultRule() ruleSnapshot {\n return ruleSnapshot{Version:0, Rule: Rule{UnlockMinutes:20, PassThreshold:3, SubjectWeight: map... , FunRatioCap:2, FunEnabled:true}}\n}\n```\n\nCreate question response from details.\n\n`itemSnapshot` marshal.\n\nNeed `positions`: selected order after shuffle; assign i.\n\nQuestion detail map lookup; if missing → error 409.\n\nRate limit key.\n\n`identity.DevicePrincipal` import.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627816513,
+            "completed": 1793627830060
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_e5jup317s8hw12fnzma961hd",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"context\"\n\t\"crypto/rand\"\n\t\"encoding/base64\"\n\t\"encoding/json\"\n\t\"time\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n)\n\nconst (\n\tsessionCreateLimit = 3\n\tsessionCreateWindow = 10 * time.Minute\n\tanswerLimit        = 60\n\tanswerWindow       = time.Minute\n\tsuspiciousMS       = 300\n)\n\n// CreateSession 为设备上的孩子创建答题会话。\nfunc (s *Service) CreateSession(ctx context.Context, principal identity.DevicePrincipal) (CreateSessionResponse, error) {\n\tif !s.allow(ctx, \"rl:quiz:create:\"+principal.DeviceID, sessionCreateLimit, sessionCreateWindow) {\n\t\treturn CreateSessionResponse{}, newError(429, \"QUIZ_SESSION_LIMIT\", \"发起答题过于频繁，请稍后再试\")\n\t}\n\tif existing, err := s.repo.activeSessionForDevice(ctx, principal.DeviceID); err == nil {\n\t\tconflict := newError(409, \"QUIZ_SESSION_ACTIVE\", \"已有进行中的答题会话\")\n\t\tconflict.SessionID = existing\n\t\treturn CreateSessionResponse{}, conflict\n\t}\n\n\trule, err := s.repo.ruleForChild(ctx, principal.ChildID)\n\tif err != nil {\n\t\tif !isNoRows(err) {\n\t\t\treturn CreateSessionResponse{}, err\n\t\t}\n\t\trule = defaultRule()\n\t}\n\n\tresult, err := s.Select(ctx, SelectRequest{\n\t\tChildID: principal.ChildID,\n\t\tRule:    rule.Rule,\n\t\tSeed:    time.Now().UnixNano(),\n\t})\n\tif err != nil {\n\t\treturn CreateSessionResponse{}, err\n\t}\n\tif len(result.Selected) == 0 {\n\t\treturn CreateSessionResponse{}, newError(409, \"INSUFFICIENT_POOL\", \"题库不足，无法组卷\")\n\t}\n\n\tids := make([]string, 0, len(result.Selected))\n\tfor _, item := range result.Selected {\n\t\tids = append(ids, item.QuestionID)\n\t}\n\tdetails, err := s.repo.questionDetails(ctx, ids)\n\tif err != nil {\n\t\treturn CreateSessionResponse{}, err\n\t}\n\n\tnow := time.Now()\n\texpiresAt := now.Add(sessionTTL)\n\titems := make([]itemRecord, 0, len(result.Selected))\n\tquestions := make([]SessionQuestion, 0, len(result.Selected))\n\tfor position, selected := range result.Selected {\n\t\tdetail, ok := details[selected.QuestionID]\n\t\tif !ok {\n\t\t\treturn CreateSessionResponse{}, newError(409, \"QUESTION_OFFLINE\", \"题目已下线，请重新发起\")\n\t\t}\n\t\tsnapshot := itemSnapshot{\n\t\t\tSubject:       detail.Subject,\n\t\t\tType:          detail.Type,\n\t\t\tAnswer:        detail.Answer,\n\t\t\tAlias:         detail.Alias,\n\t\t\tExplain:       detail.Explain,\n\t\t\tStem:          detail.Stem,\n\t\t\tStemMedia:     detail.StemMedia,\n\t\t\tOptions:       detail.Options,\n\t\t\tDurationLimit: detail.DurationLimit,\n\t\t}\n\t\tencoded, err := json.Marshal(snapshot)\n\t\tif err != nil {\n\t\t\treturn CreateSessionResponse{}, err\n\t\t}\n\t\ttoken := randomToken()\n\t\titems = append(items, itemRecord{\n\t\t\tQuestionID:      detail.ID,\n\t\t\tQuestionVersion: detail.Version,\n\t\t\tPosition:        position,\n\t\t\tToken:           token,\n\t\t\tSnapshot:        encoded,\n\t\t})\n\t\tquestions = append(questions, SessionQuestion{\n\t\t\tItemID:        \"\",\n\t\t\tQuestionID:    detail.ID,\n\t\t\tPosition:      position,\n\t\t\tType:          detail.Type,\n\t\t\tStem:          detail.Stem,\n\t\t\tStemMedia:     detail.StemMedia,\n\t\t\tOptions:       detail.Options,\n\t\t\tDurationLimit: detail.DurationLimit,\n\t\t\tToken:         token,\n\t\t})\n\t}\n\n\tsessionID, err := s.repo.createSession(ctx, principal.ChildID, principal.DeviceID,\n\t\trule, rule.Rule.PassThreshold, expiresAt, items)\n\tif err != nil {\n\t\treturn CreateSessionResponse{}, err\n\t}\n\treturn CreateSessionResponse{\n\t\tSessionID:     sessionID,\n\t\tExpiresAt:     expiresAt,\n\t\tPassThreshold: rule.Rule.PassThreshold,\n\t\tRuleVersion:   rule.Version,\n\t\tQuestions:     questions,\n\t}, nil\n}\n\n// SubmitAnswer 校验一次性题令牌并服务端判分。\nfunc (s *Service) SubmitAnswer(ctx context.Context, principal identity.DevicePrincipal,\n\tsessionID string, submission AnswerSubmission) (AnswerResult, error) {\n\tif !s.allow(ctx, \"rl:quiz:answer:\"+principal.DeviceID, answerLimit, answerWindow) {\n\t\treturn AnswerResult{}, newError(429, \"RATE_LIMITED\", \"答题过于频繁，请稍后再试\")\n\t}\n\tsession, err := s.loadSession(ctx, principal, sessionID)\n\tif err != nil {\n\t\treturn AnswerResult{}, err\n\t}\n\tif session.State != \"active\" {\n\t\treturn AnswerResult{}, newError(409, \"QUIZ_SESSION_CLOSED\", \"答题会话已结束\")\n\t}\n\tif time.Now().After(session.ExpiresAt) {\n\t\t_ = s.repo.setSessionState(ctx, session.ID, \"expired\")\n\t\treturn AnswerResult{}, newError(410, \"QUIZ_SESSION_EXPIRED\", \"答题会话已超时\")\n\t}\n\n\titem, err := s.repo.itemByToken(ctx, session.ID, submission.Token)\n\tif err != nil {\n\t\tif isNoRows(err) {\n\t\t\treturn AnswerResult{}, newError(404, \"QUIZ_ITEM_NOT_FOUND\", \"题目不存在\")\n\t\t}\n\t\treturn AnswerResult{}, err\n\t}\n\tif item.AnsweredAt != nil {\n\t\treturn AnswerResult{}, newError(409, \"QUIZ_TOKEN_USED\", \"该题已作答，令牌已失效\")\n\t}\n\n\tvar snapshot itemSnapshot\n\tif err := json.Unmarshal(item.Snapshot, &snapshot); err != nil {\n\t\treturn AnswerResult{}, err\n\t}\n\tcorrect, err := grade(snapshot, submission.Answer)\n\tif err != nil {\n\t\treturn AnswerResult{}, newError(422, \"INVALID_ANSWER\", \"答案格式不合法\")\n\t}\n\n\tdurationMS := int(time.Since(item.IssuedAt).Milliseconds())\n\tif durationMS < 0 {\n\t\tdurationMS = 0\n\t}\n\tmarked, err := s.repo.markAnswered(ctx, item.ID, submission.Answer, correct, durationMS)\n\tif err != nil {\n\t\treturn AnswerResult{}, err\n\t}\n\tif !marked {\n\t\treturn AnswerResult{}, newError(409, \"QUIZ_TOKEN_USED\", \"该题已作答，令牌已失效\")\n\t}\n\n\tvar rule ruleSnapshot\n\t_ = json.Unmarshal(session.RuleSnapshot, &rule)\n\tweight := rule.Rule.SubjectWeight[snapshot.Subject]\n\tdelta := 0.0\n\tif correct {\n\t\tdelta = weight\n\t}\n\tscore, _, err := s.repo.addScore(ctx, session.ID, delta, boolToInt(correct))\n\tif err != nil {\n\t\treturn AnswerResult{}, err\n\t}\n\tif err := s.repo.insertAnswerLog(ctx, session.ChildID, item.QuestionID, session.ID,\n\t\tprincipal.DeviceID, submission.Answer, correct, durationMS); err != nil {\n\t\ts.logger.Error(\"insert answer log\", \"error\", err, \"session_id\", session.ID)\n\t}\n\n\tanswered, err := s.repo.answeredCount(ctx, session.ID)\n\tif err != nil {\n\t\treturn AnswerResult{}, err\n\t}\n\treturn AnswerResult{\n\t\tCorrect:       correct,\n\t\tCorrectAnswer: snapshot.Answer,\n\t\tExplain:       snapshot.Explain,\n\t\tDurationMS:    durationMS,\n\t\tSuspicious:    durationMS < suspiciousMS,\n\t\tScore:         score,\n\t\tThreshold:     session.PassThreshold,\n\t\tAnswered:      answered,\n\t\tTotal:         session.QuestionCount,\n\t\tRemaining:     session.QuestionCount - answered,\n\t}, nil\n}\n\n// FinishSession 结算会话：加权分达到门槛即通过。\nfunc (s *Service) FinishSession(ctx context.Context, principal identity.DevicePrincipal, sessionID string) (SessionSummary, error) {\n\tsession, err := s.loadSession(ctx, principal, sessionID)\n\tif err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tif session.State != \"active\" {\n\t\treturn s.summary(ctx, session, false)\n\t}\n\tif time.Now().After(session.ExpiresAt) {\n\t\t_ = s.repo.setSessionState(ctx, session.ID, \"expired\")\n\t\tsession.State = \"expired\"\n\t\treturn s.summary(ctx, session, false)\n\t}\n\tstate := \"failed\"\n\tif session.Score >= session.PassThreshold {\n\t\tstate = \"passed\"\n\t}\n\tif err := s.repo.setSessionState(ctx, session.ID, state); err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tsession.State = state\n\tnow := time.Now()\n\tsession.FinishedAt = &now\n\treturn s.summary(ctx, session, false)\n}\n\n// GetSession 返回会话状态（用于断线重连）。\nfunc (s *Service) GetSession(ctx context.Context, principal identity.DevicePrincipal, sessionID string) (SessionSummary, error) {\n\tsession, err := s.loadSession(ctx, principal, sessionID)\n\tif err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tif session.State == \"active\" && time.Now().After(session.ExpiresAt) {\n\t\t_ = s.repo.setSessionState(ctx, session.ID, \"expired\")\n\t\tsession.State = \"expired\"\n\t}\n\treturn s.summary(ctx, session, true)\n}\n\nfunc (s *Service) loadSession(ctx context.Context, principal identity.DevicePrincipal, sessionID string) (sessionRecord, error) {\n\tsession, err := s.repo.sessionByID(ctx, sessionID)\n\tif err != nil {\n\t\tif isNoRows(err) {\n\t\t\treturn sessionRecord{}, newError(404, \"QUIZ_SESSION_NOT_FOUND\", \"答题会话不存在\")\n\t\t}\n\t\treturn sessionRecord{}, err\n\t}\n\tif session.ChildID != principal.ChildID || session.DeviceID != principal.DeviceID {\n\t\treturn sessionRecord{}, newError(404, \"QUIZ_SESSION_NOT_FOUND\", \"答题会话不存在\")\n\t}\n\treturn session, nil\n}\n\nfunc (s *Service) summary(ctx context.Context, session sessionRecord, withQuestions bool) (SessionSummary, error) {\n\tanswered, err := s.repo.answeredCount(ctx, session.ID)\n\tif err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tsummary := SessionSummary{\n\t\tSessionID:     session.ID,\n\t\tState:         session.State,\n\t\tScore:         session.Score,\n\t\tThreshold:     session.PassThreshold,\n\t\tCorrectCount:  session.CorrectCount,\n\t\tAnsweredCount: answered,\n\t\tQuestionCount: session.QuestionCount,\n\t\tStartedAt:     session.StartedAt,\n\t\tExpiresAt:     session.ExpiresAt,\n\t\tFinishedAt:    session.FinishedAt,\n\t}\n\tif !withQuestions {\n\t\treturn summary, nil\n\t}\n\titems, err := s.repo.itemsBySession(ctx, session.ID)\n\tif err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tquestions := make([]SessionQuestion, 0, len(items))\n\tfor _, item := range items {\n\t\tvar snapshot itemSnapshot\n\t\t_ = json.Unmarshal(item.Snapshot, &snapshot)\n\t\tquestions = append(questions, SessionQuestion{\n\t\t\tItemID:        item.ID,\n\t\t\tQuestionID:    item.QuestionID,\n\t\t\tPosition:      item.Position,\n\t\t\tType:          snapshot.Type,\n\t\t\tStem:          snapshot.Stem,\n\t\t\tStemMedia:     snapshot.StemMedia,\n\t\t\tOptions:       snapshot.Options,\n\t\t\tDurationLimit: snapshot.DurationLimit,\n\t\t\tToken:         item.Token,\n\t\t\tAnswered:      item.AnsweredAt != nil,\n\t\t})\n\t}\n\tsummary.Questions = questions\n\treturn summary, nil\n}\n\nfunc (s *Service) allow(ctx context.Context, key string, limit int, window time.Duration) bool {\n\tif s.redis == nil {\n\t\treturn true\n\t}\n\tcount, err := s.redis.Incr(ctx, key).Result()\n\tif err != nil {\n\t\ts.logger.Error(\"rate limit\", \"error\", err, \"key\", key)\n\t\treturn true\n\t}\n\tif count == 1 {\n\t\t_ = s.redis.Expire(ctx, key, window).Err()\n\t}\n\treturn count <= int64(limit)\n}\n\nfunc defaultRule() ruleSnapshot {\n\treturn ruleSnapshot{\n\t\tVersion: 0,\n\t\tRule: Rule{\n\t\t\tUnlockMinutes: 20,\n\t\t\tPassThreshold: 3,\n\t\t\tSubjectWeight: map[string]float64{\n\t\t\t\t\"math\": 1.5, \"chinese\": 1.5, \"english\": 1.5,\n\t\t\t\t\"science\": 1, \"logic\": 1, \"safety\": 1, \"fun\": 0.5,\n\t\t\t},\n\t\t\tFunRatioCap: 2,\n\t\t\tFunEnabled:  true,\n\t\t},\n\t}\n}\n\nfunc randomToken() string {\n\tb := make([]byte, 18)\n\tif _, err := rand.Read(b); err != nil {\n\t\tpanic(err)\n\t}\n\treturn base64.RawURLEncoding.EncodeToString(b)\n}\n\nfunc boolToInt(value bool) int {\n\tif value {\n\t\treturn 1\n\t}\n\treturn 0\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_service.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/session_service.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627817620,
+            "ran": 1793627830067,
+            "completed": 1793627830080
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "5ba18cde155cc3b35541129afe1643a77d7cdcf9",
+        "end": "b463a12d2b623874a8aaecd12888c7586e1ccdc9",
+        "files": [
+          "internal/quiz/session_service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1419,
+        "output": 3078,
+        "reasoning": 115,
+        "cache": {
+          "read": 355328,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8cb797001a7w13jmlN0dcZ3",
+      "time": {
+        "created": 1793627830173,
+        "streamed": 1793628004921,
+        "completed": 1793628005004
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Issues:\n- `CreateSessionResponse` questions ItemID empty; DB item IDs not returned from createSession. Client uses token, fine; GET session returns item IDs. Could leave ItemID empty. Better return item_id: need insert returning IDs. Not critical; client uses token. But consistency: SessionQuestion has ItemID; set empty. Fine.\n- `s.summary` with `session.FinishedAt` after set; okay.\n- `FinishSession` when state active and passed sets state; score is current.\n- `loadSession` uses DeviceID match; good.\n- Rate limit create counts even if active session exists; fine.\n- `defaultRule` version 0; session rule_version 0 (column not null, no check). Fine.\n- `ruleForChild` error other than no rows returns raw; fine.\n- `grade` errors mapped to INVALID_ANSWER for all; okay.\n- `itemRecord.IssuedAt` populated.\n- `addScore` error if session not active (no rows) returns pgx.ErrNoRows → 500; race unlikely. Could handle; fine.\n- `suspiciousMS` 300.\n- `answer_log` insert uses string(given) into jsonb; if given invalid JSON grade would error first.\n- `Select` returns Error with Status; CreateSession propagates.\n\nNow handlers for sessions. Route mounting with identity.DeviceAuth.\n\n`DeviceRoutes(r chi.Router)`:\n```go\nr.Post(\"/quiz/sessions\", s.handleCreateSession)\nr.Get(\"/quiz/sessions/{id}\", ...)\nr.Post(\"/quiz/sessions/{id}/answers\", ...)\nr.Post(\"/quiz/sessions/{id}/finish\", ...)\n```\nHandlers get principal:\n```go\nprincipal, ok := identity.DeviceFrom(ctx)\n```\nWrite error mapping includes SessionID and Warnings.\n\nAdd to handlers.go or new session_handlers.go.\n\nWrite.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793627960386,
+            "completed": 1793628004913
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-904ddc86e32f22e5",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"encoding/json\"\n\t\"errors\"\n\t\"net/http\"\n\n\t\"github.com/go-chi/chi/v5\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n)\n\n// DeviceRoutes 注册电视端答题路由（需设备令牌）。\nfunc (s *Service) DeviceRoutes(r chi.Router) {\n\tr.Post(\"/quiz/sessions\", s.handleCreateSession)\n\tr.Get(\"/quiz/sessions/{sessionID}\", s.handleGetSession)\n\tr.Post(\"/quiz/sessions/{sessionID}/answers\", s.handleSubmitAnswer)\n\tr.Post(\"/quiz/sessions/{sessionID}/finish\", s.handleFinishSession)\n}\n\nfunc (s *Service) handleCreateSession(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tresult, err := s.CreateSession(r.Context(), principal)\n\tif err != nil {\n\t\twriteQuizError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleGetSession(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tresult, err := s.GetSession(r.Context(), principal, chi.URLParam(r, \"sessionID\"))\n\tif err != nil {\n\t\twriteQuizError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleSubmitAnswer(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tvar submission AnswerSubmission\n\tr.Body = http.MaxBytesReader(w, r.Body, 1<<20)\n\tif err := json.NewDecoder(r.Body).Decode(&submission); err != nil {\n\t\twriteError(w, http.StatusUnprocessableEntity, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\")\n\t\treturn\n\t}\n\tif submission.Token == \"\" {\n\t\twriteError(w, http.StatusUnprocessableEntity, \"VALIDATION_ERROR\", \"缺少题令牌\")\n\t\treturn\n\t}\n\tresult, err := s.SubmitAnswer(r.Context(), principal, chi.URLParam(r, \"sessionID\"), submission)\n\tif err != nil {\n\t\twriteQuizError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleFinishSession(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tresult, err := s.FinishSession(r.Context(), principal, chi.URLParam(r, \"sessionID\"))\n\tif err != nil {\n\t\twriteQuizError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc writeQuizError(w http.ResponseWriter, r *http.Request, err error) {\n\tvar quizErr *Error\n\tif errors.As(err, &quizErr) {\n\t\tbody := map[string]any{\n\t\t\t\"code\":       quizErr.Code,\n\t\t\t\"message\":    quizErr.Message,\n\t\t\t\"request_id\": w.Header().Get(\"X-Request-Id\"),\n\t\t}\n\t\tif len(quizErr.Warnings) > 0 {\n\t\t\tbody[\"warnings\"] = quizErr.Warnings\n\t\t}\n\t\tif quizErr.SessionID != \"\" {\n\t\t\tbody[\"session_id\"] = quizErr.SessionID\n\t\t}\n\t\twriteJSON(w, quizErr.Status, body)\n\t\treturn\n\t}\n\twriteError(w, http.StatusInternalServerError, \"INTERNAL\", \"服务端错误\")\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_handlers.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/session_handlers.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793627991146,
+            "ran": 1793628004918,
+            "completed": 1793628004931
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "b463a12d2b623874a8aaecd12888c7586e1ccdc9",
+        "end": "fe70f554d7d92faf8a4b2659165a69d22f64aca1",
+        "files": [
+          "internal/quiz/session_handlers.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 357983,
+        "output": 964,
+        "reasoning": 399,
+        "cache": {
+          "read": 1920,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8f62af0014MFXUT9F3Cf47g",
+      "time": {
+        "created": 1793628005045,
+        "streamed": 1793628012734,
+        "completed": 1793628012839
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now wire DeviceRoutes in router. The quiz admin Routes and device routes both on Service. In httpapi router:\n```go\nif d.Quiz != nil && d.Identity != nil {\n  r.Group(func(r chi.Router) {\n    r.Use(d.Identity.DeviceAuth)\n    d.Quiz.DeviceRoutes(r)\n  })\n}\n```\nNeed place inside /v1 after routes.\n\nUpdate main New signature with rdb; selector_test New call.\n\n- main: `quiz.New(pool, logger)` → `quiz.New(pool, rdb, logger)`.\n- selector_test: `New(pool, slog...)` → `New(pool, nil, slog...)`.\n\nRouter add.\n\nThen build.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628010532,
+            "completed": 1793628012716
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_mjpfy59yonrw12nyzfxh5ay3",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\tif d.Quiz != nil && d.Admin != nil {\n\t\t\td.Quiz.Routes(r, d.Admin)\n\t\t}\n\t\tif d.Quiz != nil && d.Identity != nil {\n\t\t\tr.Group(func(r chi.Router) {\n\t\t\t\tr.Use(d.Identity.DeviceAuth)\n\t\t\t\td.Quiz.DeviceRoutes(r)\n\t\t\t})\n\t\t}\n\t})",
+              "oldString": "\t\tif d.Quiz != nil && d.Admin != nil {\n\t\t\td.Quiz.Routes(r, d.Admin)\n\t\t}\n\t})",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/httpapi/router.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/httpapi/router.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/httpapi/router.go",
+                  "patch": "Index: internal/httpapi/router.go\n===================================================================\n--- internal/httpapi/router.go\n+++ internal/httpapi/router.go\n@@ -80,8 +80,14 @@\n \t\t}\n \t\tif d.Quiz != nil && d.Admin != nil {\n \t\t\td.Quiz.Routes(r, d.Admin)\n \t\t}\n+\t\tif d.Quiz != nil && d.Identity != nil {\n+\t\t\tr.Group(func(r chi.Router) {\n+\t\t\t\tr.Use(d.Identity.DeviceAuth)\n+\t\t\t\td.Quiz.DeviceRoutes(r)\n+\t\t\t})\n+\t\t}\n \t})\n \n \tr.NotFound(func(w http.ResponseWriter, req *http.Request) {\n \t\tWriteError(w, req, http.StatusNotFound, \"NOT_FOUND\", \"resource not found\")\n",
+                  "status": "modified",
+                  "additions": 6,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628011244,
+            "ran": 1793628012720,
+            "completed": 1793628012744
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_h7x8lvancjf3vmspe68uhuyy",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tquizService := quiz.New(pool, rdb, logger)",
+              "oldString": "\tquizService := quiz.New(pool, logger)",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/cmd/api/main.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited cmd/api/main.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "cmd/api/main.go",
+                  "patch": "Index: cmd/api/main.go\n===================================================================\n--- cmd/api/main.go\n+++ cmd/api/main.go\n@@ -67,9 +67,9 @@\n \t}, logger)\n \n \tadminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)\n \tquestionService := question.New(pool, logger)\n-\tquizService := quiz.New(pool, logger)\n+\tquizService := quiz.New(pool, rdb, logger)\n \n \thandler := httpapi.New(httpapi.Deps{\n \t\tLogger:    logger,\n \t\tDB:        pool,\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628012210,
+            "ran": 1793628012724,
+            "completed": 1793628012742
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_02_a5c6to0m7z9un6xeed40nbb2",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\tsvc := New(pool, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))",
+              "oldString": "\tsvc := New(pool, slog.New(slog.NewTextHandler(io.Discard, nil)))",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/selector_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/quiz/selector_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/quiz/selector_test.go",
+                  "patch": "Index: internal/quiz/selector_test.go\n===================================================================\n--- internal/quiz/selector_test.go\n+++ internal/quiz/selector_test.go\n@@ -78,9 +78,9 @@\n \n \tchildID := seedChild(t, pool)\n \tofflineID, answeredID := seedQuestions(t, pool, childID)\n \n-\tsvc := New(pool, slog.New(slog.NewTextHandler(io.Discard, nil)))\n+\tsvc := New(pool, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))\n \trule := Rule{\n \t\tUnlockMinutes: 20,\n \t\tPassThreshold: 3,\n \t\tSubjectWeight: map[string]float64{\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628012252,
+            "ran": 1793628012733,
+            "completed": 1793628012746
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "fe70f554d7d92faf8a4b2659165a69d22f64aca1",
+        "end": "891e8ecfc8934cbaf491f0419e99871b876161a5",
+        "files": [
+          "cmd/api/main.go",
+          "internal/httpapi/router.go",
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 4614,
+        "output": 423,
+        "reasoning": 145,
+        "cache": {
+          "read": 356736,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8f8135001xI4hbqVXhfMLlb",
+      "time": {
+        "created": 1793628012858,
+        "streamed": 1793628038150,
+        "completed": 1793628039846
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628034829,
+            "completed": 1793628038141
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-98e998ba16ca2f5e",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOTOOLCHAIN=local go build ./... 2>&1 | head -30",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "(no output)"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628035645,
+            "ran": 1793628038148,
+            "completed": 1793628039834
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "891e8ecfc8934cbaf491f0419e99871b876161a5",
+        "end": "891e8ecfc8934cbaf491f0419e99871b876161a5",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 698,
+        "output": 90,
+        "reasoning": 2,
+        "cache": {
+          "read": 361216,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c8feac1001s70LZRdNaNDEAy",
+      "time": {
+        "created": 1793628039879,
+        "streamed": 1793628060236,
+        "completed": 1793628060405
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build ok. Apply migration 00005 to dev/test.\n\nNow integration test T6. Extend quiz test with session flow:\n- Needs device token auth? Test service directly (CreateSession/SubmitAnswer/Finish) with identity.DevicePrincipal; simpler, avoids HTTP/device setup. But route/auth already tested in identity. Test service:\n  - Seed child + rule? Child created in selector test without watch_rule. CreateSession falls back defaultRule if no rule. Fine, but weights default. For deterministic grading, create watch_rule with controlled weights.\n  - Seed questions as in selector test.\n  - CreateSession → questions with tokens, no answers.\n  - Submit wrong answer → correct false, score 0.\n  - Submit correct answers for all → score accumulates; ensure duplicate token → 409.\n  - Finish → passed if score >= threshold.\n  - Expired session test: manually update expires_at past, submit → 410.\n  - Session active duplicate → 409 with session id.\n  - Anti-replay/suspicious: duration <300ms → suspicious true.\n\nTest in `session_test.go` package quiz.\n\nNeed question answer 'a' (all questions answer [\"a\"]); submit `\"a\"` as JSON string? For choice, answer expected []string. Submit `[\"a\"]` correct; wrong `[\"b\"]`.\n\nWeights: default math 1.5, etc. Seed only math? If only math questions, selector quotas all math; threshold default 3; math weight 1.5 → 2 correct passes. n=5? max weight 1.5, threshold 3 → nMin=2→3, n=5. 5 math questions. Submit all 5 correct → score 7.5.\n\nCreate watch_rule for child with weights math 2, fun 0.5, etc.; threshold 3. But selector needs stage low; seeded math low.\n\nSimpler use default rule (no watch_rule) → weights from default; math 1.5; score after 2 correct = 3.0 >=3. Finish passes.\n\nTest:\n```go\nsvc := New(pool, rdb?, logger) — rate limit with nil redis.\nprincipal := identity.DevicePrincipal{DeviceID:\"tv-session\", ChildID: childID}\ns1, err := svc.CreateSession(ctx, principal)\n```\nBut selector requires at least 3 questions; seeded math 50. Fun enabled default and fun weight; selector picks fun 2? We seeded fun questions too in selector seed; reuse seedQuestions. Fine.\n\nActive session: second CreateSession → 409 SessionID.\n\nDetermine items: s1.Questions tokens.\n\nSubmit wrong on first → false.\nSubmit correct on second → score 1.5.\nDuplicate second token → 409.\nSubmit correct on others until score >=3 (2 correct). Finish → passed (score likely 4.5 if 3 correct).\nCheck answer response correct_answer, explain empty, suspicious true likely (fast).\n\nTest expired: create another session? Active one passed after finish, so create new; update expires_at -1m; SubmitAnswer → 410. Then Finish → state expired? Finish sets expired and returns summary.\n\nRate limit with nil redis not tested.\n\nNeed kid child row; reuse seedChild from selector_test (same package) — function available across files. `seedQuestions` returns offline/answered and seeds answer_log for answered. Session creation excludes answered; fine.\n\nPrepare DB in session test? If run after selector test, DB already prepared; but tests can run in any order within package (sequential by default in file order? Go runs tests in order of registration across files, usually file order). Better call prepareQuizDB in session test too; it truncates. If selector test runs after, it prepares again. Fine.\n\nTest file can call prepareQuizDB, seedChild, seedQuestions.\n\nBut seedQuestions marks one math as answered; exclusion fine.\n\nSession test needs no Redis. Use nil.\n\nPotential issue: CreateSession calls Select which queries watch_rule; no rule → default. Good.\n\nFinish passed requires score>=3; after 2 correct math score=3.0; but selected mix may include chinese/science/fun weights. Submit all questions correct → pass.\n\nAssertions:\n- len questions == 5.\n- Questions have no answer field (by struct, not serialized; can't assert).\n- Wrong answer first: result.Correct false.\n- Correct second: score >0.\n- duplicate → Error code QUIZ_TOKEN_USED.\n- Submit remaining correct.\n- Finish state passed.\n- GET session state passed.\n- New session → active conflict while first not finished? After finish, create new.\n- Expire: update DB expires_at; GetSession → expired; Submit → 409 QUIZ_SESSION_CLOSED (since state updated expired) not 410. If we don't call GetSession, Submit checks time and returns 410. So update expires_at then Submit directly → 410.\n\nLet's write.\n\nNote `CreateSession` rate limit nil redis → allow. Active session check query.\n\n`Finish` passed after score threshold.\n\nTest suspicious: duration since creation is small (<300) → true.\n\nLet's write session_test.go.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628045345,
+            "completed": 1793628060230
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_a4dk3x9o67syj6dn6478ynmu",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package quiz\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"io\"\n\t\"log/slog\"\n\t\"os\"\n\t\"testing\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n)\n\nfunc TestSessionFlow(t *testing.T) {\n\tdbURL := os.Getenv(\"TEST_DATABASE_URL\")\n\tif dbURL == \"\" {\n\t\tt.Skip(\"TEST_DATABASE_URL not set\")\n\t}\n\tctx := context.Background()\n\tprepareQuizDB(t, dbURL)\n\n\tpool, err := pgxpool.New(ctx, dbURL)\n\tif err != nil {\n\t\tt.Fatalf(\"pool: %v\", err)\n\t}\n\tdefer pool.Close()\n\n\tchildID := seedChild(t, pool)\n\tseedQuestions(t, pool, childID)\n\n\tsvc := New(pool, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))\n\tprincipal := identity.DevicePrincipal{DeviceID: \"tv-session\", ChildID: childID}\n\n\tsession, err := svc.CreateSession(ctx, principal)\n\tif err != nil {\n\t\tt.Fatalf(\"create session: %v\", err)\n\t}\n\tif len(session.Questions) != 5 {\n\t\tt.Fatalf(\"questions = %d, want 5\", len(session.Questions))\n\t}\n\n\t_, err = svc.CreateSession(ctx, principal)\n\tconflict, ok := err.(*Error)\n\tif !ok || conflict.Code != \"QUIZ_SESSION_ACTIVE\" || conflict.SessionID != session.SessionID {\n\t\tt.Fatalf(\"expected active session conflict, got %v\", err)\n\t}\n\n\twrong, err := svc.SubmitAnswer(ctx, principal, session.SessionID, AnswerSubmission{\n\t\tToken:  session.Questions[0].Token,\n\t\tAnswer: json.RawMessage(`[\"b\"]`),\n\t})\n\tif err != nil {\n\t\tt.Fatalf(\"submit wrong: %v\", err)\n\t}\n\tif wrong.Correct {\n\t\tt.Fatal(\"expected wrong answer\")\n\t}\n\tif !wrong.Suspicious {\n\t\tt.Fatal(\"fast answer should be marked suspicious\")\n\t}\n\n\tcorrect, err := svc.SubmitAnswer(ctx, principal, session.SessionID, AnswerSubmission{\n\t\tToken:  session.Questions[1].Token,\n\t\tAnswer: json.RawMessage(`[\"a\"]`),\n\t})\n\tif err != nil {\n\t\tt.Fatalf(\"submit correct: %v\", err)\n\t}\n\tif !correct.Correct || correct.Score <= 0 {\n\t\tt.Fatalf(\"expected correct answer with score, got %+v\", correct)\n\t}\n\n\t_, err = svc.SubmitAnswer(ctx, principal, session.SessionID, AnswerSubmission{\n\t\tToken:  session.Questions[1].Token,\n\t\tAnswer: json.RawMessage(`[\"a\"]`),\n\t})\n\treused, ok := err.(*Error)\n\tif !ok || reused.Code != \"QUIZ_TOKEN_USED\" {\n\t\tt.Fatalf(\"expected token reuse error, got %v\", err)\n\t}\n\n\tfor _, question := range session.Questions[2:] {\n\t\tif _, err := svc.SubmitAnswer(ctx, principal, session.SessionID, AnswerSubmission{\n\t\t\tToken:  question.Token,\n\t\t\tAnswer: json.RawMessage(`[\"a\"]`),\n\t\t}); err != nil {\n\t\t\tt.Fatalf(\"submit remaining: %v\", err)\n\t\t}\n\t}\n\n\tsummary, err := svc.FinishSession(ctx, principal, session.SessionID)\n\tif err != nil {\n\t\tt.Fatalf(\"finish: %v\", err)\n\t}\n\tif summary.State != \"passed\" || summary.Score < summary.Threshold {\n\t\tt.Fatalf(\"unexpected summary: %+v\", summary)\n\t}\n\n\trecovered, err := svc.GetSession(ctx, principal, session.SessionID)\n\tif err != nil {\n\t\tt.Fatalf(\"get session: %v\", err)\n\t}\n\tif recovered.AnsweredCount != len(session.Questions) {\n\t\tt.Fatalf(\"answered = %d, want %d\", recovered.AnsweredCount, len(session.Questions))\n\t}\n\n\tsecond, err := svc.CreateSession(ctx, principal)\n\tif err != nil {\n\t\tt.Fatalf(\"create second session: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx,\n\t\t`update quiz_session set expires_at = now() - interval '1 minute' where id = $1`,\n\t\tsecond.SessionID); err != nil {\n\t\tt.Fatalf(\"expire session: %v\", err)\n\t}\n\t_, err = svc.SubmitAnswer(ctx, principal, second.SessionID, AnswerSubmission{\n\t\tToken:  second.Questions[0].Token,\n\t\tAnswer: json.RawMessage(`[\"a\"]`),\n\t})\n\texpired, ok := err.(*Error)\n\tif !ok || expired.Code != \"QUIZ_SESSION_EXPIRED\" {\n\t\tt.Fatalf(\"expected expired error, got %v\", err)\n\t}\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/quiz/session_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/quiz/session_test.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628053827,
+            "ran": 1793628060233,
+            "completed": 1793628060338
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "891e8ecfc8934cbaf491f0419e99871b876161a5",
+        "end": "80faf50c7140efeba34b33b2b6e0599cf531dbf9",
+        "files": [
+          "internal/quiz/session_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 735,
+        "output": 1178,
+        "reasoning": 1088,
+        "cache": {
+          "read": 361344,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c903b1f001E4kn70uHZFxUvh",
+      "time": {
+        "created": 1793628060454,
+        "streamed": 1793628067535,
+        "completed": 1793628072448
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Potential: `session.Questions` length 5 because default rule threshold 3, max weight 1.5 -> nMin=2→3, n=5; fun slots: fun enabled cap2 weight0.5 -> funSlots=2, subject 3. Selected total 5. Good.\n\nBut `seedQuestions` has one math answered; no watch_rule; default rule weights include english/logic/safety with no questions; redistribution fills. Total should be 5 if pool enough.\n\n`Suspicious`: duration from session creation to answer likely <300ms → true.\n\nRun migration 00005 + tests.\n\n`prepareQuizDB` in both tests: goose up (migration 5), truncate. Good.\n\nRun `go test ./internal/quiz`.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628065728,
+            "completed": 1793628067530
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_3r4lrrj5kl09rdx2rgbz73lo",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && make fmt >/dev/null && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test ./internal/quiz -v 2>&1 | tail -30",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "=== RUN   TestAllocate\n--- PASS: TestAllocate (0.00s)\n=== RUN   TestSessionSize\n--- PASS: TestSessionSize (0.00s)\n=== RUN   TestTargetDifficulty\n--- PASS: TestTargetDifficulty (0.00s)\n=== RUN   TestValidateRuleRejectsFunWeight\n--- PASS: TestValidateRuleRejectsFunWeight (0.00s)\n=== RUN   TestSelectWithRealPool\n2026/11/02 22:01:12 OK   00005_quiz_snapshot.sql (6.82ms)\n2026/11/02 22:01:12 goose: successfully migrated database to version: 5\n--- PASS: TestSelectWithRealPool (0.18s)\n=== RUN   TestSessionFlow\n2026/11/02 22:01:12 goose: no migrations to run. current version: 5\n--- PASS: TestSessionFlow (0.14s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t2.912s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628067271,
+            "ran": 1793628067534,
+            "completed": 1793628072400
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "80faf50c7140efeba34b33b2b6e0599cf531dbf9",
+        "end": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "files": [
+          "internal/quiz/session_service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2384,
+        "output": 143,
+        "reasoning": 161,
+        "cache": {
+          "read": 361984,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c906a0e001zG0TF3dWlFSZd9",
+      "time": {
+        "created": 1793628072467,
+        "streamed": 1793628110481,
+        "completed": 1793628113892
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Tests pass.\n\nNow end-to-end HTTP smoke for T6: need device token. Use dev DB, but question data status online and child? Dev DB has questions, but no child maybe. Create via API: login parent, create child, activate device, get token, then quiz session.\n\nDev DB currently has imported math questions online (we updated). Create parent/child/device via API, then POST /quiz/sessions with device token. But default rule created on child creation (balanced weights); selector stage low has math only → redistribution; session 5 math. Submit answers, finish.\n\nLet's run smoke script on 18080.\n\nSteps:\n1. phone random, sms/login.\n2. create child low.\n3. device code/confirm/token.\n4. POST /v1/quiz/sessions with device token → session.\n5. answer all with [\"a\"] (all seeded/imported answers are [\"a\"]? T4 smoke imported answer [\"a\"]; original online question maybe offline. The 2002 draft→online were imports with answer a. Good.)\n6. finish → passed.\n7. duplicate token check.\n\nNeed `jq`.\n\nLet's run.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628095661,
+            "completed": 1793628110474
+          }
+        },
+        {
+          "type": "tool",
+          "id": "chatcmpl-tool-bd7cca0898a98c80",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && go build -trimpath -o bin/api ./cmd/api && set -a; source .env; set +a; HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t6-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done\nBASE=http://localhost:18080/v1\nPHONE=\"137$(date +%H%M%S)00\"; DEVICE=\"tv-t6-$(date +%s)\"\ncurl -sS -X POST \"$BASE/auth/sms/code\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\"}\" >/dev/null\nLOGIN=$(curl -sS -X POST \"$BASE/auth/login\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\",\\\"code\\\":\\\"123456\\\"}\")\nAT=$(echo \"$LOGIN\" | jq -r .access_token)\nCHILD=$(curl -sS -X POST \"$BASE/family/children\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d '{\"nickname\":\"T6孩子\",\"stage\":\"low\"}' | jq -r .id)\nCODE=$(curl -sS -X POST \"$BASE/device/activate/code\" -H 'Content-Type: application/json' -d \"{\\\"device_id\\\":\\\"$DEVICE\\\",\\\"platform\\\":\\\"tv\\\"}\" | jq -r .code)\ncurl -sS -X POST \"$BASE/family/devices/activate\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"child_id\\\":\\\"$CHILD\\\"}\" >/dev/null\nDT=$(curl -sS -X POST \"$BASE/device/token\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"device_id\\\":\\\"$DEVICE\\\"}\" | jq -r .device_token)\necho \"== create session\"\nS=$(curl -sS -X POST \"$BASE/quiz/sessions\" -H \"Authorization: Bearer $DT\")\necho \"$S\" | jq -c '{session_id,pass_threshold,count:(.questions|length),has_answer:(.questions[0]|has(\"answer\")),first_token:(.questions[0].token|length)}'\nSID=$(echo \"$S\" | jq -r .session_id)\nTOK=$(echo \"$S\" | jq -r '.questions[0].token')\necho \"== answer first (correct)\"\ncurl -sS -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$TOK\\\",\\\"answer\\\":[\\\"a\\\"]}\" | jq -c '{correct,score,threshold,answered,total,suspicious}'\necho \"== replay\"\ncurl -s -o /tmp/t6_replay.json -w '%{http_code}\\n' -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$TOK\\\",\\\"answer\\\":[\\\"a\\\"]}\"\ncat /tmp/t6_replay.json | jq -c .\necho \"== answer rest\"\nfor T in $(echo \"$S\" | jq -r '.questions[1:].token'); do curl -sS -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$T\\\",\\\"answer\\\":[\\\"a\\\"]}\" >/dev/null; done\necho \"== finish\"\ncurl -sS -X POST \"$BASE/quiz/sessions/$SID/finish\" -H \"Authorization: Bearer $DT\" | jq -c '{state,score,pass_threshold,correct_count,answered_count,question_count}'\necho \"== get session\"\ncurl -sS \"$BASE/quiz/sessions/$SID\" -H \"Authorization: Bearer $DT\" | jq -c '{state,answered_count,questions:(.questions|length)}'\nkill $API_PID 2>/dev/null || true",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "== create session\n{\"session_id\":null,\"pass_threshold\":null,\"count\":0,\"has_answer\":false,\"first_token\":0}\n== answer first (correct)\n{\"correct\":null,\"score\":null,\"threshold\":null,\"answered\":null,\"total\":null,\"suspicious\":null}\n== replay\n500\n{\"code\":\"INTERNAL\",\"message\":\"服务端错误\"}\n== answer rest\n== finish\n{\"state\":null,\"score\":null,\"pass_threshold\":null,\"correct_count\":null,\"answered_count\":null,\"question_count\":null}\n== get session\n{\"state\":null,\"answered_count\":null,\"questions\":0}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628105350,
+            "ran": 1793628110479,
+            "completed": 1793628113882
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "end": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2866,
+        "output": 1079,
+        "reasoning": 243,
+        "cache": {
+          "read": 361984,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c910bf30012vfzxxX8GogvHx",
+      "time": {
+        "created": 1793628113913,
+        "streamed": 1793628121933,
+        "completed": 1793628121964
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Create session failed. Need raw response. Likely 500 or 409. Check log.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628120955,
+            "completed": 1793628121930
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_v6x2ctqidmb4tuqtc5hj5b9m",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "tail -30 /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t6-api.log"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "time=2026-11-02T22:01:53.542+08:00 level=INFO msg=\"http server starting\" addr=:18080 env=dev version=dev\ntime=2026-11-02T22:01:53.667+08:00 level=INFO msg=\"http request\" request_id=1856f7f95b2dfa97ef5c809e method=GET path=/healthz status=200 bytes=16 duration_ms=0 remote_ip=[::1]:62176\ntime=2026-11-02T22:01:53.692+08:00 level=INFO msg=\"sms code issued (mock)\" phone=137****5300 code=123456\ntime=2026-11-02T22:01:53.692+08:00 level=INFO msg=\"http request\" request_id=b7b428739e2e881c5cc6e7d7 method=POST path=/v1/auth/sms/code status=200 bytes=33 duration_ms=1 remote_ip=[::1]:62177\ntime=2026-11-02T22:01:53.717+08:00 level=INFO msg=\"http request\" request_id=b277eba28638f13425421d5b method=POST path=/v1/auth/login status=200 bytes=532 duration_ms=12 remote_ip=[::1]:62178\ntime=2026-11-02T22:01:53.742+08:00 level=INFO msg=\"http request\" request_id=58ae01e459efdcbb15482867 method=POST path=/v1/family/children status=201 bytes=130 duration_ms=5 remote_ip=[::1]:62179\ntime=2026-11-02T22:01:53.753+08:00 level=INFO msg=\"http request\" request_id=70acb065e6891ab320e1f8b4 method=POST path=/v1/device/activate/code status=200 bytes=35 duration_ms=0 remote_ip=[::1]:62180\ntime=2026-11-02T22:01:53.766+08:00 level=INFO msg=\"http request\" request_id=e8729ac01488bced806758b4 method=POST path=/v1/family/devices/activate status=200 bytes=54 duration_ms=2 remote_ip=[::1]:62181\ntime=2026-11-02T22:01:53.776+08:00 level=INFO msg=\"http request\" request_id=8c3f9841c8dde086d55cd7d0 method=POST path=/v1/device/token status=200 bytes=216 duration_ms=1 remote_ip=[::1]:62182\ntime=2026-11-02T22:01:53.815+08:00 level=INFO msg=\"http request\" request_id=330e08e7486f9a09148e83ef method=POST path=/v1/quiz/sessions status=500 bytes=48 duration_ms=30 remote_ip=[::1]:62183\ntime=2026-11-02T22:01:53.837+08:00 level=INFO msg=\"http request\" request_id=663b8271a024b8fd94accb70 method=POST path=/v1/quiz/sessions/null/answers status=500 bytes=48 duration_ms=0 remote_ip=[::1]:62184\ntime=2026-11-02T22:01:53.846+08:00 level=INFO msg=\"http request\" request_id=0cc0d2eb843a12b05c6e1da1 method=POST path=/v1/quiz/sessions/null/answers status=500 bytes=48 duration_ms=0 remote_ip=[::1]:62185\ntime=2026-11-02T22:01:53.863+08:00 level=INFO msg=\"http request\" request_id=1aa186ec00649a0d2fc603fd method=POST path=/v1/quiz/sessions/null/answers status=500 bytes=48 duration_ms=0 remote_ip=[::1]:62186\ntime=2026-11-02T22:01:53.871+08:00 level=INFO msg=\"http request\" request_id=7af5bb1106c8c977663d0bc2 method=POST path=/v1/quiz/sessions/null/finish status=500 bytes=48 duration_ms=0 remote_ip=[::1]:62187\ntime=2026-11-02T22:01:53.880+08:00 level=INFO msg=\"http request\" request_id=02c9a39deda0ac9c38aa1055 method=GET path=/v1/quiz/sessions/null status=500 bytes=48 duration_ms=0 remote_ip=[::1]:62188\ntime=2026-11-02T22:01:53.881+08:00 level=INFO msg=\"shutting down\"\ntime=2026-11-02T22:01:53.881+08:00 level=INFO msg=bye\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628121859,
+            "ran": 1793628121932,
+            "completed": 1793628121948
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "end": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2090,
+        "output": 78,
+        "reasoning": 19,
+        "cache": {
+          "read": 364288,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c912b7d001H4ESas2qF9jnUu",
+      "time": {
+        "created": 1793628121986,
+        "streamed": 1793628131063,
+        "completed": 1793628133029
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "500 without error log. Need details. Maybe selector returned nil error but createSession failed due to migration not applied to dev DB (00005 missing) → insert rule_snapshot column missing → error. We applied tests only on test DB; dev DB version 4. Yes! Run migrate up on dev DB.\n\nDo that and retry.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628125777,
+            "completed": 1793628131056
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_aj4324ohf555jddbrrocy43t",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a; source .env; set +a; go run ./cmd/migrate up 2>&1 | tail -2 && HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t6-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done\nBASE=http://localhost:18080/v1\nPHONE=\"137$(date +%H%M%S)00\"; DEVICE=\"tv-t6-$(date +%s)\"\ncurl -sS -X POST \"$BASE/auth/sms/code\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\"}\" >/dev/null\nAT=$(curl -sS -X POST \"$BASE/auth/login\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\",\\\"code\\\":\\\"123456\\\"}\" | jq -r .access_token)\nCHILD=$(curl -sS -X POST \"$BASE/family/children\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d '{\"nickname\":\"T6孩子\",\"stage\":\"low\"}' | jq -r .id)\nCODE=$(curl -sS -X POST \"$BASE/device/activate/code\" -H 'Content-Type: application/json' -d \"{\\\"device_id\\\":\\\"$DEVICE\\\",\\\"platform\\\":\\\"tv\\\"}\" | jq -r .code)\ncurl -sS -X POST \"$BASE/family/devices/activate\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"child_id\\\":\\\"$CHILD\\\"}\" >/dev/null\nDT=$(curl -sS -X POST \"$BASE/device/token\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"device_id\\\":\\\"$DEVICE\\\"}\" | jq -r .device_token)\necho \"== create session\"\nS=$(curl -sS -X POST \"$BASE/quiz/sessions\" -H \"Authorization: Bearer $DT\")\necho \"$S\" | jq -c '{session_id,pass_threshold,count:(.questions|length),has_answer:(.questions[0]|has(\"answer\"))}'\nSID=$(echo \"$S\" | jq -r .session_id)\nTOK=$(echo \"$S\" | jq -r '.questions[0].token')\necho \"== answer first\"\ncurl -sS -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$TOK\\\",\\\"answer\\\":[\\\"a\\\"]}\" | jq -c '{correct,score,threshold,answered,total,suspicious}'\necho \"== replay\"\ncurl -s -o /tmp/t6_replay.json -w '%{http_code}\\n' -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$TOK\\\",\\\"answer\\\":[\\\"a\\\"]}\"\ncat /tmp/t6_replay.json | jq -c .\necho \"== answer rest\"\nfor T in $(echo \"$S\" | jq -r '.questions[1:].token'); do curl -sS -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$T\\\",\\\"answer\\\":[\\\"a\\\"]}\" >/dev/null; done\necho \"== finish\"\ncurl -sS -X POST \"$BASE/quiz/sessions/$SID/finish\" -H \"Authorization: Bearer $DT\" | jq -c '{state,score,pass_threshold,correct_count,answered_count,question_count}'\nkill $API_PID 2>/dev/null || true",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "2026/11/02 22:02:12 OK   00005_quiz_snapshot.sql (5.6ms)\n2026/11/02 22:02:12 goose: successfully migrated database to version: 5\n== create session\n{\"session_id\":\"c6cfe018-ad02-44b7-bbcd-e1d6c5d26b0d\",\"pass_threshold\":3,\"count\":5,\"has_answer\":false}\n== answer first\n{\"correct\":true,\"score\":1.5,\"threshold\":3,\"answered\":1,\"total\":5,\"suspicious\":true}\n== replay\n409\n{\"code\":\"QUIZ_TOKEN_USED\",\"message\":\"该题已作答，令牌已失效\",\"request_id\":\"51282006bec8e22761ca1869\"}\n== answer rest\njq: error (at <stdin>:1): Cannot index array with string \"token\"\n== finish\n{\"state\":\"failed\",\"score\":1.5,\"pass_threshold\":3,\"correct_count\":1,\"answered_count\":1,\"question_count\":5}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628126866,
+            "ran": 1793628131060,
+            "completed": 1793628133019
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "end": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1280,
+        "output": 1011,
+        "reasoning": 70,
+        "cache": {
+          "read": 366336,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c9156b200170EkXmCA06LE7x",
+      "time": {
+        "created": 1793628133048,
+        "streamed": 1793628146067,
+        "completed": 1793628146831
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The `for T in $(echo \"$S\" | jq -r '.questions[1:].token')` failed because jq expression precedence: `.questions[1:].token` invalid (array slice then .token on array). Use `.questions[1:][] | .token`. But session now failed after finish. Still, the session flow mostly works: first answer correct score 1.5, replay 409, finish failed because only 1 answered (expected). Good.\n\nRun a clean session with correct loop to verify pass. Use `.questions[].token` with skip first? We can just create new session and answer all tokens. Let's do quick, using a new phone/device or same? Same device now has failed session (finished), can create new.\n\nRun again on same server? Server killed. Start fresh? Simpler rerun whole with fixed jq. But enough evidence; still want pass state. Let's run a focused script reusing new device.\n\nAlso note answer score 1.5 matches default weights (no rule? Child creation inserts default watch_rule balanced with math 1.5). Good.\n\nLet's run a short session: create, loop all tokens, finish.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628142020,
+            "completed": 1793628146060
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_67UTBtDgr4SCHhiExG1S3359",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a; source .env; set +a; HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t6-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done\nBASE=http://localhost:18080/v1\nPHONE=\"136$(date +%H%M%S)00\"; DEVICE=\"tv-t6b-$(date +%s)\"\ncurl -sS -X POST \"$BASE/auth/sms/code\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\"}\" >/dev/null\nAT=$(curl -sS -X POST \"$BASE/auth/login\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\",\\\"code\\\":\\\"123456\\\"}\" | jq -r .access_token)\nCHILD=$(curl -sS -X POST \"$BASE/family/children\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d '{\"nickname\":\"T6孩子B\",\"stage\":\"low\"}' | jq -r .id)\nCODE=$(curl -sS -X POST \"$BASE/device/activate/code\" -H 'Content-Type: application/json' -d \"{\\\"device_id\\\":\\\"$DEVICE\\\",\\\"platform\\\":\\\"tv\\\"}\" | jq -r .code)\ncurl -sS -X POST \"$BASE/family/devices/activate\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"child_id\\\":\\\"$CHILD\\\"}\" >/dev/null\nDT=$(curl -sS -X POST \"$BASE/device/token\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"device_id\\\":\\\"$DEVICE\\\"}\" | jq -r .device_token)\nS=$(curl -sS -X POST \"$BASE/quiz/sessions\" -H \"Authorization: Bearer $DT\"); SID=$(echo \"$S\" | jq -r .session_id)\nfor T in $(echo \"$S\" | jq -r '.questions[].token'); do curl -sS -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$T\\\",\\\"answer\\\":[\\\"a\\\"]}\" >/dev/null; done\ncurl -sS -X POST \"$BASE/quiz/sessions/$SID/finish\" -H \"Authorization: Bearer $DT\" | jq -c '{state,score,pass_threshold,correct_count,answered_count,question_count}'\nkill $API_PID 2>/dev/null || true",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"state\":\"passed\",\"score\":7.5,\"pass_threshold\":3,\"correct_count\":5,\"answered_count\":5,\"question_count\":5}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628143933,
+            "ran": 1793628146065,
+            "completed": 1793628146822
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "end": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 367089,
+        "output": 739,
+        "reasoning": 249,
+        "cache": {
+          "read": 1792,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c918c9d001DjJ5uT3SkmXFcS",
+      "time": {
+        "created": 1793628146850,
+        "streamed": 1793628155143,
+        "completed": 1793628155218
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Session pass works.\n\nNow T6 remaining: rule engine checks (time window, daily limit) are T7; grant T8. T6 done.\n\nUpdate docs:\n- README progress T6 done, next T7.\n- API section add quiz endpoints.\n- Plan T6 done + log.\n- Data model doc: session snapshot fields.\n- Makefile test-int already includes quiz.\n- README mention session TTL 10m, one-time tokens.\n\nAlso update design changelog? T6 implemented per design; no changes.\n\nPlan acceptance: \"重放返回409; <300ms异常被标记; 判分正确率100%对拍\" — implemented suspicious, tests. Good.\n\nLog:\n```\n| 2026-11-02 | T6 完成：会话创建/断线恢复、一次性题令牌、服务端判分、防重放、限流、加权累计 | 集成测试覆盖正误、重放409、过期410、重复会话409；快速作答标记 suspicious |\n```\n\nREADME progress and endpoints.\n\nLet's apply.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628150201,
+            "completed": 1793628155127
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_9mlddp44wyd07n7zkuziowx5",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "- ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）\n- ✅ T6 答题会话与判分（一次性令牌、服务端判分、防重放）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n- ⏳ T7 加权规则引擎",
+              "oldString": "- ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n- ⏳ T6 答题会话与判分",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/README.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited README.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "README.md",
+                  "patch": "Index: README.md\n===================================================================\n--- README.md\n+++ README.md\n@@ -12,10 +12,11 @@\n - ✅ T2 数据模型与迁移（26 张业务表 + 标签种子）\n - ✅ T3 身份/家庭/设备（登录、孩子、激活、PIN、邀请）\n - ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）\n - ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）\n+- ✅ T6 答题会话与判分（一次性令牌、服务端判分、防重放）\n - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n-- ⏳ T6 答题会话与判分\n+- ⏳ T7 加权规则引擎\n \n ## 技术栈\n \n - 服务端：Go 1.25（模块化单体）、PostgreSQL、Redis\n",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628151900,
+            "ran": 1793628155131,
+            "completed": 1793628155152
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_yrigb9mfxeuhz6a61g0asngb",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "GET  /v1/admin/audit                 审计日志\nPOST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）\n```\n\n## 电视端答题（T6，设备令牌）\n\n```text\nPOST /v1/quiz/sessions                    创建会话（返回题目 + 一次性题令牌，不含答案）\nGET  /v1/quiz/sessions/{id}               断线重连，查看进度与未答题\nPOST /v1/quiz/sessions/{id}/answers       提交答案（token + answer，服务端判分）\nPOST /v1/quiz/sessions/{id}/finish        结算（加权分 ≥ 门槛 → passed）\n```\n\n- 会话有效期 10 分钟；同一设备同时只能有一个进行中的会话。\n- 每题令牌一次性，重放返回 409；答案与解析不下发，判分后才返回。\n- 服务端计时 < 300ms 标记 `suspicious`。",
+              "oldString": "GET  /v1/admin/audit                 审计日志\nPOST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）\n```",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/README.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited README.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "README.md",
+                  "patch": "Index: README.md\n===================================================================\n--- README.md\n+++ README.md\n@@ -147,8 +147,21 @@\n GET  /v1/admin/audit                 审计日志\n POST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）\n ```\n \n+## 电视端答题（T6，设备令牌）\n+\n+```text\n+POST /v1/quiz/sessions                    创建会话（返回题目 + 一次性题令牌，不含答案）\n+GET  /v1/quiz/sessions/{id}               断线重连，查看进度与未答题\n+POST /v1/quiz/sessions/{id}/answers       提交答案（token + answer，服务端判分）\n+POST /v1/quiz/sessions/{id}/finish        结算（加权分 ≥ 门槛 → passed）\n+```\n+\n+- 会话有效期 10 分钟；同一设备同时只能有一个进行中的会话。\n+- 每题令牌一次性，重放返回 409；答案与解析不下发，判分后才返回。\n+- 服务端计时 < 300ms 标记 `suspicious`。\n+\n 状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。\n \n 创建管理员（需先迁移）：\n \n",
+                  "status": "modified",
+                  "additions": 13,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628152582,
+            "ran": 1793628155134,
+            "completed": 1793628155159
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_02_ssv4d0ernyjt0w89owepkke9",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| T6 | 答题会话与判分 | T5 | 会话、题令牌、判分、解析返回、防重放、限流 | 重放返回 409；<300ms 异常被标记；判分正确率 100% 对拍 | 4 | done |",
+              "oldString": "| T6 | 答题会话与判分 | T5 | 会话、题令牌、判分、解析返回、防重放、限流 | 重放返回 409；<300ms 异常被标记；判分正确率 100% 对拍 | 4 | todo |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/plans/001-项目总体实施计划.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/plans/001-项目总体实施计划.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/plans/001-项目总体实施计划.md",
+                  "patch": "Index: docs/plans/001-项目总体实施计划.md\n===================================================================\n--- docs/plans/001-项目总体实施计划.md\n+++ docs/plans/001-项目总体实施计划.md\n@@ -62,9 +62,9 @@\n | T2 | 数据模型与迁移 | T1 | SQL 迁移、`tag_dict` 种子、应用使用/设备能力/篡改事件表、ER 说明、sqlc 查询 | 空库一键迁移成功；回滚脚本可用；种子含全部字典值 | 4 | done |\n | T3 | 身份/家庭/设备 | T2 | 注册登录、短信验证码（可 Mock）、家庭组、孩子档案、激活码与设备令牌、家长 PIN | 设备激活→绑定→令牌可用；解绑即时 401/403；多家长可加入 | 4 | done |\n | T4 | 题库与治理 API | T2、T3 | 题目 CRUD、四维检索、导入（JSON/CSV）、版本、状态机、RBAC、审计 | 导入 1000 题 ≤ 60s；非法状态跃迁被拒；下线题不再被抽中 | 5 | done |\n | T5 | 组卷 v0 | T4 | 选题器、权重倾向分配、趣味题占位、去重、断供兜底 | 给定规则可复现组卷；权重分配误差 ≤1 题；断供有降级与告警 | 3 | done |\n-| T6 | 答题会话与判分 | T5 | 会话、题令牌、判分、解析返回、防重放、限流 | 重放返回 409；<300ms 异常被标记；判分正确率 100% 对拍 | 4 | todo |\n+| T6 | 答题会话与判分 | T5 | 会话、题令牌、判分、解析返回、防重放、限流 | 重放返回 409；<300ms 异常被标记；判分正确率 100% 对拍 | 4 | done |\n | T7 | 加权规则引擎 | T3、T6 | 规则快照、时段/加权门槛/权重/每日上限判定、可达性校验、预设档位 | 「2 道数学（2×2=4≥3）解锁」「3 道科学（3×1=3）解锁」可复现；不可达配置被拒；边界用例全绿 | 6 | todo |\n | T8 | 授权与使用 | T7 | `watch_grant` 签发、应用使用心跳、暂停不计量、吊销、离线对账、篡改事件 | 多设备并发不超发（100 并发误差 0）；权限关闭 ≤1 个心跳周期上报；答题暂停时段不扣额度 | 4 | todo |\n | T9 | 报告聚合 | T6、T8 | 日聚合任务、周/月报告、趣味单列 | T+1 生成；趣味不计入学科正确率；任务可重跑幂等 | 3 | todo |\n | T10 | 离线租约 | T8 | 签名租约（EdDSA）、离线计时上报、对账扣减 | 租约过期拒绝；恢复网络后额度正确扣减；篡改签名被拒 | 2 | todo |\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628154269,
+            "ran": 1793628155141,
+            "completed": 1793628155155
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2d5b1d520a1318a31a108509b3b64771b22b2623",
+        "end": "605405601152412ef41d00f32baea06bc600458b",
+        "files": [
+          "README.md",
+          "docs/plans/001-项目总体实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2357,
+        "output": 752,
+        "reasoning": 220,
+        "cache": {
+          "read": 367616,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c91ad60001ohAcRl3g0KPKOC",
+      "time": {
+        "created": 1793628155236,
+        "streamed": 1793628160616,
+        "completed": 1793628160686
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_7jlrxs2cq0kvatovfh46o43f",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| 2026-11-02 | T5 完成：加权配额、趣味上限、难度/学段降级、30 天去重、断供重分配与告警；管理端预览接口 | 同 seed 可复现；配额误差 <1；下线/已答题目不入选；题池不足 409 |\n| 2026-11-02 | T6 完成：会话创建/断线恢复、一次性题令牌、服务端判分、防重放、限流、加权累计 | 集成测试覆盖正误、重放 409、过期 410、重复会话 409；快速作答标记 suspicious |",
+              "oldString": "| 2026-11-02 | T5 完成：加权配额、趣味上限、难度/学段降级、30 天去重、断供重分配与告警；管理端预览接口 | 同 seed 可复现；配额误差 <1；下线/已答题目不入选；题池不足 409 |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/plans/001-项目总体实施计划.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/plans/001-项目总体实施计划.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/plans/001-项目总体实施计划.md",
+                  "patch": "Index: docs/plans/001-项目总体实施计划.md\n===================================================================\n--- docs/plans/001-项目总体实施计划.md\n+++ docs/plans/001-项目总体实施计划.md\n@@ -165,8 +165,9 @@\n | 2026-11-02 | 接口微调：PIN 改为账号级 `/family/pin`（原设计为 `/family/children/{id}/pin`）；新增 `active_family_id` 支持受邀家长切换家庭 | 记录于数据模型说明 |\n | 2026-11-02 | T4 完成：管理端登录/RBAC、题目 CRUD、四维检索、状态机、JSON+CSV 导入、审计 | 1000 题导入 0.13s；非法流转 409；editor 越权 403；下线题排除待 T5 验证 |\n | 2026-11-02 | 偏差：导入采用同步（原设计为异步任务）；管理端权限固化在 8h 令牌内 | 首期数据量小，同步实现更简单；权限变更需重新登录 |\n | 2026-11-02 | T5 完成：加权配额、趣味上限、难度/学段降级、30 天去重、断供重分配与告警；管理端预览接口 | 同 seed 可复现；配额误差 <1；下线/已答题目不入选；题池不足 409 |\n+| 2026-11-02 | T6 完成：会话创建/断线恢复、一次性题令牌、服务端判分、防重放、限流、加权累计 | 集成测试覆盖正误、重放 409、过期 410、重复会话 409；快速作答标记 suspicious |\n \n ## 7. 验收结论\n \n - 结论：待验收\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628158968,
+            "ran": 1793628160614,
+            "completed": 1793628160621
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "605405601152412ef41d00f32baea06bc600458b",
+        "end": "1cc9d0ee1cf9e8701e5fb445fbe558fdd2edb270",
+        "files": [
+          "docs/plans/001-项目总体实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1083,
+        "output": 306,
+        "reasoning": 0,
+        "cache": {
+          "read": 369920,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c91c2bd001T0lvmb0n1WMALk",
+      "time": {
+        "created": 1793628160706,
+        "streamed": 1793628168998,
+        "completed": 1793628172975
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Data model doc: mention session snapshots and correct_count. Edit table row for quiz_session/item description.\n\nCurrent:\n| 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话、题目快照、答题记录 |\n\nChange to \"会话、规则/题目快照、答题记录\". Good enough.\n\nAlso known tradeoffs? fine.\n\nRun full tests, gofmt, vet, then commit/push.\n\nAlso update `docs/data-model.md` constraint: answer snapshot. Minor.\n\nApply.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628164766,
+            "completed": 1793628168986
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_3cl01a1mjojgk88plck1sqvs",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话（规则快照/得分）、题目快照、答题记录 |",
+              "oldString": "| 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话、题目快照、答题记录 |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/data-model.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/data-model.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/data-model.md",
+                  "patch": "Index: docs/data-model.md\n===================================================================\n--- docs/data-model.md\n+++ docs/data-model.md\n@@ -41,9 +41,9 @@\n | 题库 | `question`、`topic_pack`、`topic_question`、`media_asset` | 单表题库 + 题包关联 |\n | 身份 | `parent_account`、`parent_session`、`family`、`family_member`、`family_invite`、`child_profile` | 家长、登录会话、家庭组、邀请、孩子档案 |\n | 设备 | `device_bind`、`device_capability`、`tamper_event` | 绑定、能力/权限、异常上报 |\n | 规则 | `watch_rule` | 每孩子一条，带版本 |\n-| 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话、题目快照、答题记录 |\n+| 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话（规则快照/得分）、题目快照、答题记录 |\n | 授权 | `watch_grant`、`watch_log`、`offline_lease` | 使用授权、应用使用、离线租约 |\n | 报告 | `growth_report` | 周/月聚合 |\n | 治理 | `admin_user`、`admin_role`、`admin_permission`、`admin_user_role`、`admin_role_permission`、`audit_log` | RBAC 与审计 |\n \n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793628165591,
+            "ran": 1793628168991,
+            "completed": 1793628169008
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_axw4gdnccdj17bimsv5af3l6",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && make fmt >/dev/null && go vet ./... && GOTOOLCHAIN=local make test-int 2>&1 | tail -12",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "--- PASS: TestTargetDifficulty (0.00s)\n=== RUN   TestValidateRuleRejectsFunWeight\n--- PASS: TestValidateRuleRejectsFunWeight (0.00s)\n=== RUN   TestSelectWithRealPool\n2026/11/02 22:01:12 OK   00005_quiz_snapshot.sql (6.82ms)\n2026/11/02 22:01:12 goose: successfully migrated database to version: 5\n--- PASS: TestSelectWithRealPool (0.18s)\n=== RUN   TestSessionFlow\n2026/11/02 22:01:12 goose: no migrations to run. current version: 5\n--- PASS: TestSessionFlow (0.14s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t(cached)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628166705,
+            "ran": 1793628168996,
+            "completed": 1793628172933
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1cc9d0ee1cf9e8701e5fb445fbe558fdd2edb270",
+        "end": "2427a4bd4d2f51b26a4fb2a3e05ef2449d939b3b",
+        "files": [
+          "docs/data-model.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 394,
+        "output": 242,
+        "reasoning": 108,
+        "cache": {
+          "read": 370944,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19c91f2c8001T89m8YPKRCEjdf",
+      "time": {
+        "created": 1793628173004,
+        "streamed": 1793628178042,
+        "completed": 1793628179264
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Tests cached but pass. Run with -count=1? To be safe for final verification, run quiz tests uncached.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793628176713,
+            "completed": 1793628178036
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_eyjvtjkw0fhoc1l8bwhz7zkm",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test -count=1 ./internal/quiz 2>&1 | tail -5",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "ok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t0.853s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793628177140,
+            "ran": 1793628178040,
+            "completed": 1793628179254
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2427a4bd4d2f51b26a4fb2a3e05ef2449d939b3b",
+        "end": "2427a4bd4d2f51b26a4fb2a3e05ef2449d939b3b",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 567,
+        "output": 138,
+        "reasoning": 25,
+        "cache": {
+          "read": 371328,
           "write": 0
         }
       }
