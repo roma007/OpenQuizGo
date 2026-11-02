@@ -11,8 +11,9 @@
 - ✅ T1 工程骨架
 - ✅ T2 数据模型与迁移（26 张业务表 + 标签种子）
 - ✅ T3 身份/家庭/设备（登录、孩子、激活、PIN、邀请）
+- ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T4 题库与治理 API
+- ⏳ T5 组卷 v0
 
 ## 技术栈
 
@@ -26,6 +27,7 @@
 ```
 cmd/api           HTTP 服务入口
 cmd/migrate       数据库迁移入口
+cmd/admin         管理端账号 CLI
 internal/config   环境变量配置
 internal/httpapi  路由、中间件、统一响应
 internal/platform 数据库 / Redis / 日志适配
@@ -121,6 +123,38 @@ GET  /v1/device/me              设备信息（设备令牌鉴权）
 GET  /v1/family/devices         设备列表
 DELETE /v1/family/devices/{id}  解绑（令牌立即失效）
 ```
+
+## 管理端（T4）
+
+```text
+POST /v1/admin/auth/login            管理员登录
+GET  /v1/admin/me                    当前管理员与权限
+
+GET  /v1/admin/questions             四维检索 + 关键词 + 分页
+POST /v1/admin/questions             创建题目（draft）
+GET  /v1/admin/questions/{id}        题目详情
+PUT  /v1/admin/questions/{id}        编辑（仅 draft/offline，版本 +1）
+DELETE /v1/admin/questions/{id}      删除（仅 draft）
+POST /v1/admin/questions/import      批量导入（JSON 或 CSV）
+POST /v1/admin/questions/{id}/submit-review
+POST /v1/admin/questions/{id}/review 审核（approve/reject）
+POST /v1/admin/questions/{id}/publish
+POST /v1/admin/questions/{id}/offline
+POST /v1/admin/questions/{id}/resubmit
+
+GET  /v1/admin/audit                 审计日志
+```
+
+状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。
+
+创建管理员（需先迁移）：
+
+```bash
+go run ./cmd/admin create -username admin -password 'admin12345' -role super_admin -name 管理员
+go run ./cmd/admin list
+```
+
+角色：`super_admin`（全部）、`editor`（读写+导入）、`reviewer`（查看+审核）、`ops`（查看+上下线+审计）。
 
 本地冒烟：`make dev` 后请求验证码，服务端日志会打印 `123456`。
 

@@ -11,17 +11,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/roma007/OpenQuizGo/internal/admin"
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/question"
 )
 
 // Deps 是 HTTP 层依赖。
 type Deps struct {
-	Logger   *slog.Logger
-	DB       *pgxpool.Pool
-	Redis    *redis.Client
-	Identity *identity.Service
-	Version  string
-	Env      string
+	Logger    *slog.Logger
+	DB        *pgxpool.Pool
+	Redis     *redis.Client
+	Identity  *identity.Service
+	Admin     *admin.Service
+	Questions *question.Service
+	Version   string
+	Env       string
 }
 
 // New 构建路由。
@@ -65,6 +69,12 @@ func New(d Deps) http.Handler {
 		})
 		if d.Identity != nil {
 			d.Identity.Routes(r)
+		}
+		if d.Admin != nil {
+			d.Admin.Routes(r)
+		}
+		if d.Questions != nil && d.Admin != nil {
+			d.Questions.Routes(r, d.Admin)
 		}
 	})
 

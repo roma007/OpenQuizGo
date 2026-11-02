@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/roma007/OpenQuizGo/internal/admin"
 	"github.com/roma007/OpenQuizGo/internal/config"
 	"github.com/roma007/OpenQuizGo/internal/httpapi"
 	"github.com/roma007/OpenQuizGo/internal/identity"
@@ -17,6 +18,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/platform/cryptox"
 	"github.com/roma007/OpenQuizGo/internal/platform/database"
 	"github.com/roma007/OpenQuizGo/internal/platform/logx"
+	"github.com/roma007/OpenQuizGo/internal/question"
 )
 
 func main() {
@@ -63,13 +65,18 @@ func main() {
 		Environment: cfg.Env,
 	}, logger)
 
+	adminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)
+	questionService := question.New(pool, logger)
+
 	handler := httpapi.New(httpapi.Deps{
-		Logger:   logger,
-		DB:       pool,
-		Redis:    rdb,
-		Identity: identityService,
-		Version:  cfg.Version,
-		Env:      cfg.Env,
+		Logger:    logger,
+		DB:        pool,
+		Redis:     rdb,
+		Identity:  identityService,
+		Admin:     adminService,
+		Questions: questionService,
+		Version:   cfg.Version,
+		Env:       cfg.Env,
 	})
 
 	srv := &http.Server{
