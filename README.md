@@ -10,7 +10,7 @@
 
 - ✅ T1 工程骨架
 - ✅ T2 数据模型与迁移（26 张业务表 + 标签种子）
-- ⏳ T0 设备管控 PoC（需电视实机）
+- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
 - ⏳ T3 身份/家庭/设备
 
 ## 技术栈
@@ -29,6 +29,7 @@ internal/config   环境变量配置
 internal/httpapi  路由、中间件、统一响应
 internal/platform 数据库 / Redis / 日志适配
 migrations        SQL 迁移（goose）
+android           T0 设备管控 PoC（Java，见 android/README.md）
 docs              设计、计划、对话归档
 ```
 
