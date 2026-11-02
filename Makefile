@@ -22,6 +22,9 @@ vet: ## 静态检查
 test: ## 运行测试
 	$(GO) test ./...
 
+test-int: ## 集成测试（需 TEST_DATABASE_URL / TEST_REDIS_URL）
+	$(GO) test ./internal/identity -v
+
 build: ## 编译二进制
 	$(GO) build -trimpath -o $(BIN_DIR)/api ./cmd/api
 	$(GO) build -trimpath -o $(BIN_DIR)/migrate ./cmd/migrate

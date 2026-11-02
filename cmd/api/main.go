@@ -12,7 +12,9 @@ import (
 
 	"github.com/roma007/OpenQuizGo/internal/config"
 	"github.com/roma007/OpenQuizGo/internal/httpapi"
+	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/platform/cache"
+	"github.com/roma007/OpenQuizGo/internal/platform/cryptox"
 	"github.com/roma007/OpenQuizGo/internal/platform/database"
 	"github.com/roma007/OpenQuizGo/internal/platform/logx"
 )
@@ -47,12 +49,27 @@ func main() {
 	}
 	defer func() { _ = rdb.Close() }()
 
+	cipher, err := cryptox.New(cfg.EncryptionKey, cfg.PhoneHashKey)
+	if err != nil {
+		logger.Error("init field cipher", "error", err)
+		os.Exit(1)
+	}
+	identityService := identity.NewService(pool, rdb, cipher, identity.Options{
+		JWTSecret:   cfg.JWTSecret,
+		AccessTTL:   cfg.AccessTokenTTL,
+		RefreshTTL:  cfg.RefreshTokenTTL,
+		SMSMode:     cfg.SMSMode,
+		SMSMockCode: cfg.SMSMockCode,
+		Environment: cfg.Env,
+	}, logger)
+
 	handler := httpapi.New(httpapi.Deps{
-		Logger:  logger,
-		DB:      pool,
-		Redis:   rdb,
-		Version: cfg.Version,
-		Env:     cfg.Env,
+		Logger:   logger,
+		DB:       pool,
+		Redis:    rdb,
+		Identity: identityService,
+		Version:  cfg.Version,
+		Env:      cfg.Env,
 	})
 
 	srv := &http.Server{

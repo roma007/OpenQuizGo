@@ -10,8 +10,9 @@
 
 - ✅ T1 工程骨架
 - ✅ T2 数据模型与迁移（26 张业务表 + 标签种子）
+- ✅ T3 身份/家庭/设备（登录、孩子、激活、PIN、邀请）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T3 身份/家庭/设备
+- ⏳ T4 题库与治理 API
 
 ## 技术栈
 
@@ -84,6 +85,44 @@ docker compose up --build
 | `DB_MAX_CONNS` | `10` | 连接池上限 |
 | `LOG_LEVEL` | `info` | debug / info / warn / error |
 | `SHUTDOWN_TIMEOUT` | `10s` | 优雅退出超时 |
+| `JWT_SECRET` | dev 默认值 | 访问令牌签名密钥，生产必须替换且 ≥32 字符 |
+| `ACCESS_TOKEN_TTL` | `15m` | 访问令牌有效期 |
+| `REFRESH_TOKEN_TTL` | `720h` | 刷新令牌有效期 |
+| `DATA_ENCRYPTION_KEY` | dev 默认值 | 手机号字段加密密钥（base64 32 字节） |
+| `PHONE_HASH_KEY` | dev 默认值 | 手机号查询哈希密钥 |
+| `SMS_MODE` | `mock` | `mock` 固定验证码；`disabled` 关闭 |
+| `SMS_MOCK_CODE` | `123456` | mock 模式验证码 |
+
+## 已实现接口（T3）
+
+```text
+POST /v1/auth/sms/code          发送登录验证码（mock 写入日志）
+POST /v1/auth/login             手机号 + 验证码登录（首登自动建家庭）
+POST /v1/auth/refresh           轮换刷新令牌
+POST /v1/auth/logout            吊销刷新令牌
+
+GET  /v1/family/me              当前账号
+GET  /v1/family/children        孩子列表
+POST /v1/family/children        新增孩子（自动创建默认规则）
+GET  /v1/family/children/{id}   孩子详情
+PUT  /v1/family/children/{id}   更新孩子
+
+POST /v1/family/pin             设置/修改家长 PIN
+POST /v1/family/pin/verify      校验 PIN
+
+POST /v1/family/members/invite  生成家庭邀请码
+POST /v1/family/members/join    使用邀请码加入
+GET  /v1/family/members         家庭成员
+
+POST /v1/device/activate/code   电视端申请激活码
+POST /v1/family/devices/activate 家长确认绑定
+POST /v1/device/token           电视端兑换设备令牌
+GET  /v1/device/me              设备信息（设备令牌鉴权）
+GET  /v1/family/devices         设备列表
+DELETE /v1/family/devices/{id}  解绑（令牌立即失效）
+```
+
+本地冒烟：`make dev` 后请求验证码，服务端日志会打印 `123456`。
 
 ## 守护端能力边界（重要）
 

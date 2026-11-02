@@ -39,7 +39,7 @@ erDiagram
 | --- | --- | --- |
 | 字典 | `tag_dict` | 学科/类目/学段/年级/难度/题型 |
 | 题库 | `question`、`topic_pack`、`topic_question`、`media_asset` | 单表题库 + 题包关联 |
-| 身份 | `parent_account`、`family`、`family_member`、`child_profile` | 家长、家庭组、孩子档案 |
+| 身份 | `parent_account`、`parent_session`、`family`、`family_member`、`family_invite`、`child_profile` | 家长、登录会话、家庭组、邀请、孩子档案 |
 | 设备 | `device_bind`、`device_capability`、`tamper_event` | 绑定、能力/权限、异常上报 |
 | 规则 | `watch_rule` | 每孩子一条，带版本 |
 | 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话、题目快照、答题记录 |
@@ -60,6 +60,9 @@ erDiagram
 | 答题令牌一次性 | `quiz_session_item.answer_token_jti` UNIQUE |
 | 暂停时长不计额度 | `watch_log.paused_seconds` 单列，结算时排除 |
 | 手机号可查不可逆 | `phone_cipher`（AES-GCM）+ `phone_hash`（HMAC）唯一索引 |
+| 刷新令牌轮换 | `parent_session.token_hash` UNIQUE；刷新时旧令牌立即吊销 |
+| 邀请码一次性 | `family_invite` 未使用邀请码部分唯一索引 |
+| 一个账号一个生效家庭 | `parent_account.active_family_id`，加入新家庭后切换 |
 
 ## 5. 迁移
 

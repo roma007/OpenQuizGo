@@ -10,15 +10,18 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/roma007/OpenQuizGo/internal/identity"
 )
 
 // Deps 是 HTTP 层依赖。
 type Deps struct {
-	Logger  *slog.Logger
-	DB      *pgxpool.Pool
-	Redis   *redis.Client
-	Version string
-	Env     string
+	Logger   *slog.Logger
+	DB       *pgxpool.Pool
+	Redis    *redis.Client
+	Identity *identity.Service
+	Version  string
+	Env      string
 }
 
 // New 构建路由。
@@ -60,6 +63,9 @@ func New(d Deps) http.Handler {
 				"env":     d.Env,
 			})
 		})
+		if d.Identity != nil {
+			d.Identity.Routes(r)
+		}
 	})
 
 	r.NotFound(func(w http.ResponseWriter, req *http.Request) {

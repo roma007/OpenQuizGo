@@ -13,6 +13,31 @@ func TestLoadRequiresDatabaseURL(t *testing.T) {
 	}
 }
 
+func TestLoadProdRequiresSecrets(t *testing.T) {
+	t.Setenv("APP_ENV", "prod")
+	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("JWT_SECRET", "")
+	t.Setenv("DATA_ENCRYPTION_KEY", "")
+	t.Setenv("PHONE_HASH_KEY", "")
+
+	if _, err := Load(); err == nil {
+		t.Fatal("expected error when prod secrets are missing")
+	}
+}
+
+func TestLoadProdRejectsMockSMS(t *testing.T) {
+	t.Setenv("APP_ENV", "prod")
+	t.Setenv("DATABASE_URL", "postgres://example")
+	t.Setenv("JWT_SECRET", "0123456789012345678901234567890123456789")
+	t.Setenv("DATA_ENCRYPTION_KEY", "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
+	t.Setenv("PHONE_HASH_KEY", "prod-phone-hash-key")
+	t.Setenv("SMS_MODE", "mock")
+
+	if _, err := Load(); err == nil {
+		t.Fatal("expected error when SMS_MODE=mock in prod")
+	}
+}
+
 func TestLoadDefaults(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://example")
 	t.Setenv("APP_ENV", "")

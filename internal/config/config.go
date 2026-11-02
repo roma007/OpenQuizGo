@@ -18,6 +18,14 @@ type Config struct {
 	LogLevel        string
 	ShutdownTimeout time.Duration
 	DBMaxConns      int32
+
+	JWTSecret       string
+	AccessTokenTTL  time.Duration
+	RefreshTokenTTL time.Duration
+	EncryptionKey   string
+	PhoneHashKey    string
+	SMSMode         string
+	SMSMockCode     string
 }
 
 // Load 读取环境变量并做最小校验。
@@ -31,6 +39,26 @@ func Load() (Config, error) {
 		LogLevel:        getenv("LOG_LEVEL", "info"),
 		ShutdownTimeout: getDuration("SHUTDOWN_TIMEOUT", 10*time.Second),
 		DBMaxConns:      int32(getInt("DB_MAX_CONNS", 10)),
+
+		JWTSecret:       os.Getenv("JWT_SECRET"),
+		AccessTokenTTL:  getDuration("ACCESS_TOKEN_TTL", 15*time.Minute),
+		RefreshTokenTTL: getDuration("REFRESH_TOKEN_TTL", 720*time.Hour),
+		EncryptionKey:   os.Getenv("DATA_ENCRYPTION_KEY"),
+		PhoneHashKey:    os.Getenv("PHONE_HASH_KEY"),
+		SMSMode:         getenv("SMS_MODE", "mock"),
+		SMSMockCode:     getenv("SMS_MOCK_CODE", "123456"),
+	}
+
+	if cfg.Env == "dev" {
+		if cfg.JWTSecret == "" {
+			cfg.JWTSecret = "dev-insecure-jwt-secret-change-me-please"
+		}
+		if cfg.EncryptionKey == "" {
+			cfg.EncryptionKey = "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
+		}
+		if cfg.PhoneHashKey == "" {
+			cfg.PhoneHashKey = "dev-phone-hash-key-change-me"
+		}
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -41,6 +69,25 @@ func Load() (Config, error) {
 	}
 	if cfg.ShutdownTimeout <= 0 {
 		return Config{}, fmt.Errorf("SHUTDOWN_TIMEOUT must be positive, got %s", cfg.ShutdownTimeout)
+	}
+	if cfg.Env != "dev" {
+		if len(cfg.JWTSecret) < 32 {
+			return Config{}, errors.New("JWT_SECRET must be at least 32 characters outside dev")
+		}
+		if cfg.EncryptionKey == "" || cfg.PhoneHashKey == "" {
+			return Config{}, errors.New("DATA_ENCRYPTION_KEY and PHONE_HASH_KEY are required outside dev")
+		}
+		if cfg.SMSMode == "mock" {
+			return Config{}, errors.New("SMS_MODE=mock is not allowed outside dev")
+		}
+	}
+	if cfg.AccessTokenTTL <= 0 || cfg.RefreshTokenTTL <= 0 {
+		return Config{}, errors.New("token TTLs must be positive")
+	}
+	switch cfg.SMSMode {
+	case "mock", "disabled":
+	default:
+		return Config{}, fmt.Errorf("unsupported SMS_MODE %q", cfg.SMSMode)
 	}
 	return cfg, nil
 }
