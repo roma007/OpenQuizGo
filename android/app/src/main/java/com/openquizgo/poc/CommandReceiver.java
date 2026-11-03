@@ -65,6 +65,18 @@ public class CommandReceiver extends BroadcastReceiver {
             case "acc_open_quiz":
                 PoCState.log(withService(GuardAccessibilityService::openQuiz));
                 break;
+            case "tap_center":
+                PoCState.log(withService(service -> service.tap(640, 360)));
+                break;
+            case "tap_video":
+                PoCState.log(withService(service -> service.tap(320, 180)));
+                break;
+            case "dump_windows":
+                PoCState.log(withService(GuardAccessibilityService::dumpWindows));
+                break;
+            case "dump_nodes":
+                PoCState.log(withService(GuardAccessibilityService::dumpNodes));
+                break;
             case "acc_pause":
                 PoCState.log(withService(service -> service.clickNode("暂停")));
                 break;

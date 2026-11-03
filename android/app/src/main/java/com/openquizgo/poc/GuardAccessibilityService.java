@@ -2,12 +2,17 @@ package com.openquizgo.poc;
 
 import android.accessibilityservice.AccessibilityService;
 import android.graphics.PixelFormat;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.os.Build;
 import android.view.Gravity;
+import android.accessibilityservice.GestureDescription;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -31,7 +36,14 @@ public class GuardAccessibilityService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         instance = this;
-        PoCState.log("无障碍服务已连接");
+        AccessibilityServiceInfo info = getServiceInfo();
+        if (info != null) {
+            info.flags |= AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
+            setServiceInfo(info);
+            PoCState.log("无障碍服务已连接，flags=" + info.flags);
+        } else {
+            PoCState.log("无障碍服务已连接（无 serviceInfo）");
+        }
     }
 
     @Override
@@ -115,6 +127,18 @@ public class GuardAccessibilityService extends AccessibilityService {
         return "拦截模式：" + (enabled ? "开启" : "关闭");
     }
 
+    /** 在屏幕坐标注入一次点击，用于触发播放器的点击暂停/播放。 */
+    public String tap(int x, int y) {
+        Path path = new Path();
+        path.moveTo(x, y);
+        GestureDescription gesture = new GestureDescription.Builder()
+                .addStroke(new GestureDescription.StrokeDescription(path, 0, 60))
+                .build();
+        boolean ok = dispatchGesture(gesture, null, null);
+        PoCState.log("手势点击 (" + x + "," + y + ") -> " + ok);
+        return ok ? "已点击 (" + x + "," + y + ")" : "手势注入失败";
+    }
+
     /** 由无障碍服务直接拉起全屏答题界面。 */
     public String openQuiz() {
         startActivity(new android.content.Intent(this, QuizActivity.class)
@@ -132,9 +156,73 @@ public class GuardAccessibilityService extends AccessibilityService {
         }
         List<String> labels = new ArrayList<>();
         boolean clicked = walk(root, keyword.toLowerCase(), labels);
-        String summary = "节点样本：" + labels.subList(0, Math.min(labels.size(), 12));
-        PoCState.log(summary);
+        PoCState.log("节点样本：" + labels.subList(0, Math.min(labels.size(), 12)));
         return clicked ? "已点击包含「" + keyword + "」的控件" : "未找到包含「" + keyword + "」的控件";
+    }
+
+    /** 遍历所有无障碍窗口，播放器控制条可能在独立窗口里。 */
+    public String dumpWindows() {
+        List<AccessibilityWindowInfo> windows = getWindows();
+        int index = 0;
+        for (AccessibilityWindowInfo window : windows) {
+            AccessibilityNodeInfo root = window.getRoot();
+            String pkg = root == null ? "-" : String.valueOf(root.getPackageName());
+            PoCState.log("window#" + index + " type=" + window.getType()
+                    + " layer=" + window.getLayer() + " pkg=" + pkg);
+            if (root != null) {
+                List<String> lines = new ArrayList<>();
+                collect(root, lines, 0);
+                for (String line : lines) {
+                    PoCState.log("w" + index + " " + line);
+                }
+            }
+            index++;
+        }
+        return "窗口数：" + index;
+    }
+
+    /** 打印当前窗口的可访问节点，便于定位播放/暂停按钮。 */
+    public String dumpNodes() {
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root == null) {
+            return "无法读取当前窗口节点";
+        }
+        List<String> lines = new ArrayList<>();
+        collect(root, lines, 0);
+        for (String line : lines) {
+            PoCState.log(line);
+        }
+        return "节点数：" + lines.size();
+    }
+
+    private void collect(AccessibilityNodeInfo node, List<String> lines, int depth) {
+        if (node == null || lines.size() >= 120) {
+            return;
+        }
+        CharSequence text = node.getText();
+        CharSequence desc = node.getContentDescription();
+        String viewId = node.getViewIdResourceName();
+        String className = String.valueOf(node.getClassName());
+        boolean interesting = (text != null && text.length() > 0)
+                || (desc != null && desc.length() > 0)
+                || (viewId != null && viewId.length() > 0)
+                || node.isClickable()
+                || className.contains("Surface")
+                || className.contains("Video")
+                || className.contains("Image")
+                || className.contains("SeekBar");
+        if (interesting) {
+            Rect rect = new Rect();
+            node.getBoundsInScreen(rect);
+            AccessibilityNodeInfo.RangeInfo range = node.getRangeInfo();
+            String rangeText = range == null ? "" : " range=" + range.getCurrent() + "/" + range.getMax();
+            lines.add("d" + depth + " " + className
+                    + " id=[" + viewId + "] txt=[" + text + "] desc=[" + desc + "]"
+                    + " click=" + node.isClickable() + rangeText + " bounds=" + rect);
+        }
+        for (int i = 0; i < node.getChildCount(); i++) {
+            collect(node.getChild(i), lines, depth + 1);
+        }
     }
 
     private boolean walk(AccessibilityNodeInfo node, String keyword, List<String> labels) {

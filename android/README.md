@@ -98,7 +98,7 @@ adb logcat -s OQG_POC
 | ADB 注入 DPAD_CENTER | ✅ 视频暂停（shell 权限；普通 App 无 INJECT_EVENTS，无法复用） |
 | 设备 root | ❌ 生产版本，无 su |
 | 全屏 QuizActivity 接管 | ✅ 播放器停止并释放 MediaPlayer |
-| 退出 QuizActivity 后恢复 | ✅ 播放器自动恢复播放（`state:started`） |
+| 退出 QuizActivity 后恢复 | ✅ 进度保留、续播；但创维会重播一次片头广告（无可访问的跳过节点） |
 | HOME 逃逸看门狗 | ✅ 拦截模式下 0.5s 内重新拉起答题界面 |
 
 **结论（v4 修订）：悬浮窗与媒体控制路径不可用，但「全屏 Activity 接管」可用——标准模式在该机型成立（受限）。**
@@ -115,13 +115,15 @@ adb logcat -s OQG_POC
 1. 由无障碍服务或后台广播拉起全屏 `QuizActivity`，播放器失焦后停止并释放；
 2. 退出 Activity 后播放器自动恢复播放；
 3. 拦截模式下按 HOME 会被看门狗重新拉起答题界面。
-4. 2026-11-03 12:30 用户实际全屏播放复测：拉起答题界面后 MediaPlayer 消失；返回后焦点回到 `DetailVideoActivity`，`MediaPlayer state:started`，自动续播。
+4. 2026-11-03 12:30 用户实际全屏播放复测：拉起答题界面后 MediaPlayer 消失；返回后焦点回到 `DetailVideoActivity`，`MediaPlayer state:started`。
+5. 2026-11-03 12:50 正片复测：不透明 Activity 退出后**进度保留（续播）**，但会重新播放一次片头广告；广告窗口无可访问的「跳过」控件。
 
 剩余限制：
 
 - 第三方视频 App 无法侧载，只能使用创维商店/预装应用（爱奇艺、腾讯等需从商店安装）；
 - 后台 Activity 启动在 Android 10+ 受限，需逐机型验证；
-- 部分播放器退出后可能不自动续播，需按 App 建立恢复策略。
+- 部分播放器退出后可能不自动续播，需按 App 建立恢复策略；
+- 创维恢复时会重播片头广告（实测无跳过节点），需要厂商白名单或接受该体验。
 
 ### 复测命令
 
