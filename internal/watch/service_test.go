@@ -39,7 +39,7 @@ func TestGrantAndHeartbeat(t *testing.T) {
 	childID := seedWatchChild(t, pool)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	ruleSvc := rule.New(pool, nil, logger)
-	svc, err := New(pool, ruleSvc, "test-secret-0123456789-0123456789", "", logger)
+	svc, err := New(pool, ruleSvc, nil, "test-secret-0123456789-0123456789", "", logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -224,6 +224,75 @@ func seedWatchChild(t *testing.T, pool *pgxpool.Pool, hash ...string) string {
 	return childID
 }
 
+func TestIssueParentGrant(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareWatchDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedWatchChild(t, pool)
+	repo := newRepository(pool)
+	now := time.Now()
+	start := now.Truncate(24 * time.Hour)
+	end := start.Add(24 * time.Hour)
+
+	grant, err := repo.issueParent(ctx, childID, "tv-parent", 15, 60, start, end, now, "parent-jti-1")
+	if err != nil {
+		t.Fatalf("issue parent: %v", err)
+	}
+	if grant.Minutes != 15 || grant.SessionID != "" || grant.Status != "active" {
+		t.Fatalf("unexpected grant: %+v", grant)
+	}
+
+	var source string
+	if err := pool.QueryRow(ctx,
+		`select source from watch_grant where id = $1`, grant.ID).Scan(&source); err != nil {
+		t.Fatalf("source: %v", err)
+	}
+	if source != "parent" {
+		t.Fatalf("source = %s, want parent", source)
+	}
+
+	// 每日额度剩余 45 分钟，请求 60 分钟应被截断到 45。
+	capped, err := repo.issueParent(ctx, childID, "tv-parent", 60, 60, start, end, now, "parent-jti-2")
+	if err != nil {
+		t.Fatalf("issue capped: %v", err)
+	}
+	if capped.Minutes != 45 {
+		t.Fatalf("capped minutes = %d, want 45", capped.Minutes)
+	}
+
+	// 每日额度 10 分钟时，请求 30 分钟应截断到 10（新孩子）。
+	childID2 := seedWatchChild(t, pool, "hash-watch-2")
+	limited, err := repo.issueParent(ctx, childID2, "tv-parent-2", 30, 10, start, end, now, "parent-jti-3")
+	if err != nil {
+		t.Fatalf("issue limited: %v", err)
+	}
+	if limited.Minutes != 10 {
+		t.Fatalf("limited minutes = %d, want 10", limited.Minutes)
+	}
+
+	if err := repo.insertAudit(ctx, "account-1", "tv-parent", grant.ID, grant.Minutes, "127.0.0.1"); err != nil {
+		t.Fatalf("audit: %v", err)
+	}
+	var actions int
+	if err := pool.QueryRow(ctx,
+		`select count(*) from audit_log where action = 'device.unlock'`).Scan(&actions); err != nil {
+		t.Fatalf("audit count: %v", err)
+	}
+	if actions != 1 {
+		t.Fatalf("audit rows = %d, want 1", actions)
+	}
+}
+
 func insertSession(t *testing.T, pool *pgxpool.Pool, childID, deviceID string) string {
 	t.Helper()
 	var id string
@@ -279,7 +348,7 @@ func TestConcurrentIssueRespectsDailyLimit(t *testing.T) {
 	}
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	svc, err := New(pool, rule.New(pool, nil, logger), "test-secret-0123456789-0123456789", "", logger)
+	svc, err := New(pool, rule.New(pool, nil, logger), nil, "test-secret-0123456789-0123456789", "", logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -351,7 +420,7 @@ func TestOfflineLease(t *testing.T) {
 	childID := seedWatchChild(t, pool)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	ruleSvc := rule.New(pool, nil, logger)
-	svc, err := New(pool, ruleSvc, "test-secret-0123456789-0123456789", "", logger)
+	svc, err := New(pool, ruleSvc, nil, "test-secret-0123456789-0123456789", "", logger)
 	if err != nil {
 		t.Fatal(err)
 	}

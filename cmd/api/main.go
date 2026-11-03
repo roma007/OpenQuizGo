@@ -82,7 +82,7 @@ func main() {
 	}, logger)
 
 	ruleService := rule.New(pool, identityService, logger)
-	watchService, err := watch.New(pool, ruleService, cfg.JWTSecret, cfg.OfflineLeaseKey, logger)
+	watchService, err := watch.New(pool, ruleService, identityService, cfg.JWTSecret, cfg.OfflineLeaseKey, logger)
 	if err != nil {
 		logger.Error("init watch service", "error", err)
 		os.Exit(1)

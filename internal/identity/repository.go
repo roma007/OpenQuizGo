@@ -280,6 +280,26 @@ func (r *repository) listDevices(ctx context.Context, accountID string) ([]Devic
 	return devices, rows.Err()
 }
 
+func (r *repository) deviceForAccount(ctx context.Context, accountID, bindID string) (Device, error) {
+	const query = `
+		select d.id, d.device_id, d.platform, d.child_id, c.nickname, d.bound_at
+		from device_bind d
+		join child_profile c on c.id = d.child_id
+		join family_member fm on fm.family_id = c.family_id
+		where fm.account_id = $1 and d.id = $2 and d.status = 'active'
+		  and c.family_id = coalesce(
+		      (select active_family_id from parent_account where id = $1),
+		      fm.family_id)
+		limit 1`
+	var d Device
+	err := r.pool.QueryRow(ctx, query, accountID, bindID).
+		Scan(&d.ID, &d.DeviceID, &d.Platform, &d.ChildID, &d.ChildName, &d.BoundAt)
+	if err != nil {
+		return Device{}, err
+	}
+	return d, nil
+}
+
 func (r *repository) bindDevice(ctx context.Context, accountID, deviceID, childID, platform string) (string, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {

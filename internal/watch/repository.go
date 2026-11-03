@@ -12,8 +12,8 @@ import (
 )
 
 const grantColumns = `
-	id, session_id, child_id, device_id, minutes, valid_from, valid_until,
-	jti, consumed_seconds, status, last_heartbeat_at, created_at`
+	id, coalesce(session_id::text, '') as session_id, child_id, device_id, minutes,
+	valid_from, valid_until, jti, consumed_seconds, status, last_heartbeat_at, created_at`
 
 type grantRecord struct {
 	ID              string
@@ -71,26 +71,10 @@ func (r *repository) issue(ctx context.Context, req IssueRequest, start, end tim
 		return grantRecord{}, false, err
 	}
 
-	var used, reserved int
-	if err := tx.QueryRow(ctx, `
-		select coalesce(sum(watched_seconds), 0)::int
-		from watch_log where child_id = $1 and start_at >= $2 and start_at < $3`,
-		req.ChildID, start, end).Scan(&used); err != nil {
+	available, err := availableSeconds(ctx, tx, req.ChildID, req.Rule.DailyLimit, start, end, now)
+	if err != nil {
 		return grantRecord{}, false, err
 	}
-	if err := tx.QueryRow(ctx, `
-		select coalesce(sum(minutes * 60 - consumed_seconds), 0)::int
-		from watch_grant
-		where child_id = $1 and status = 'active' and valid_until > $2`,
-		req.ChildID, now).Scan(&reserved); err != nil {
-		return grantRecord{}, false, err
-	}
-
-	dailySeconds := req.Rule.DailyLimit * 60
-	if req.Rule.DailyLimit <= 0 {
-		dailySeconds = 60 * 60
-	}
-	available := dailySeconds - used - reserved
 	minutes := req.Rule.UnlockMinutes
 	if minutes <= 0 {
 		minutes = 20
@@ -117,6 +101,88 @@ func (r *repository) issue(ctx context.Context, req IssueRequest, start, end tim
 		return grantRecord{}, false, err
 	}
 	return rec, true, nil
+}
+
+// availableSeconds 计算孩子当日剩余可用秒数（已用 + 有效授权预留）。
+func availableSeconds(ctx context.Context, tx pgx.Tx, childID string, dailyLimit int,
+	start, end, now time.Time) (int, error) {
+	var used, reserved int
+	if err := tx.QueryRow(ctx, `
+		select coalesce(sum(watched_seconds), 0)::int
+		from watch_log where child_id = $1 and start_at >= $2 and start_at < $3`,
+		childID, start, end).Scan(&used); err != nil {
+		return 0, err
+	}
+	if err := tx.QueryRow(ctx, `
+		select coalesce(sum(minutes * 60 - consumed_seconds), 0)::int
+		from watch_grant
+		where child_id = $1 and status = 'active' and valid_until > $2`,
+		childID, now).Scan(&reserved); err != nil {
+		return 0, err
+	}
+	dailySeconds := dailyLimit * 60
+	if dailyLimit <= 0 {
+		dailySeconds = 60 * 60
+	}
+	return dailySeconds - used - reserved, nil
+}
+
+// issueParent 签发家长远程解锁授权（无答题会话）。
+func (r *repository) issueParent(ctx context.Context, childID, deviceID string,
+	minutes, dailyLimit int, start, end, now time.Time, jti string) (grantRecord, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return grantRecord{}, fmt.Errorf("begin: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if _, err := tx.Exec(ctx, `select pg_advisory_xact_lock(hashtext($1))`, childID); err != nil {
+		return grantRecord{}, fmt.Errorf("lock child: %w", err)
+	}
+
+	available, err := availableSeconds(ctx, tx, childID, dailyLimit, start, end, now)
+	if err != nil {
+		return grantRecord{}, err
+	}
+	if minutes <= 0 {
+		minutes = 10
+	}
+	if availMinutes := available / 60; availMinutes < minutes {
+		minutes = availMinutes
+	}
+	if minutes < 1 {
+		return grantRecord{}, newError(403, "RULE_DAILY_LIMIT", "今日观看额度已用完")
+	}
+
+	validUntil := now.Add(time.Duration(minutes) * time.Minute)
+	rec, err := scanGrant(tx.QueryRow(ctx, `
+		insert into watch_grant (
+			child_id, device_id, session_id, source, minutes, valid_from, valid_until, jti,
+			consumed_seconds, status, last_heartbeat_at)
+		values ($1, $2, null, 'parent', $3, $4, $5, $6, 0, 'active', $4)
+		returning `+grantColumns,
+		childID, deviceID, minutes, now, validUntil, jti))
+	if err != nil {
+		return grantRecord{}, fmt.Errorf("insert parent grant: %w", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return grantRecord{}, err
+	}
+	return rec, nil
+}
+
+// insertAudit 记录家长操作审计。
+func (r *repository) insertAudit(ctx context.Context, accountID, deviceID, grantID string,
+	minutes int, ip string) error {
+	after, _ := json.Marshal(map[string]any{
+		"grant_id": grantID,
+		"minutes":  minutes,
+	})
+	_, err := r.pool.Exec(ctx, `
+		insert into audit_log (actor_type, actor_id, action, target_type, target_id, after_data, ip)
+		values ('parent', $1, 'device.unlock', 'device', $2, $3::jsonb, nullif($4, '')::inet)`,
+		accountID, deviceID, string(after), ip)
+	return err
 }
 
 func (r *repository) grantBySession(ctx context.Context, sessionID string) (grantRecord, error) {

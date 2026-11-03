@@ -102,6 +102,8 @@ var (
 	ErrNotFound          = newError("NOT_FOUND", 404, "资源不存在")
 	ErrPINNotSet         = newError("PIN_NOT_SET", 409, "尚未设置家长 PIN")
 	ErrPINInvalid        = newError("PIN_INVALID", 403, "家长 PIN 不正确")
+	ErrPINLocked         = newError("PIN_LOCKED", 429, "PIN 错误次数过多，请 10 分钟后再试")
+	ErrDeviceNotFound    = newError("DEVICE_NOT_FOUND", 404, "设备不存在或未绑定")
 	ErrInviteInvalid     = newError("INVITE_INVALID", 409, "邀请码无效或已过期")
 	ErrChildStageInvalid = newError("VALIDATION_ERROR", 422, "学段取值不合法")
 )

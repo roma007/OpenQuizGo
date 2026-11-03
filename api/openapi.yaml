@@ -348,6 +348,38 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         "200": { description: OK }
+  /v1/family/devices/{deviceID}/unlock:
+    post:
+      tags: [device]
+      summary: 家长远程解锁（签发观看时间）
+      description: 校验家长 PIN、设备归属与每日额度后签发授权；忽略观看时段限制。
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          description: 设备绑定 ID（GET /family/devices 返回的 id）
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pin]
+              properties:
+                pin: { type: string, example: "1234" }
+                minutes: { type: integer, minimum: 5, maximum: 60, default: 10 }
+      responses:
+        "200":
+          description: 已签发的授权
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Grant" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: 设备不存在或不属于本家庭 }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
   /v1/family/children/{childID}/reports:
     parameters:
       - $ref: "#/components/parameters/ChildID"
@@ -899,6 +931,18 @@ components:
         answered: { type: integer }
         total: { type: integer }
         remaining: { type: integer }
+    Grant:
+      type: object
+      properties:
+        grant_id: { type: string, format: uuid }
+        session_id: { type: string }
+        minutes: { type: integer }
+        valid_from: { type: string, format: date-time }
+        valid_until: { type: string, format: date-time }
+        remaining_seconds: { type: integer }
+        status: { type: string, enum: [active, exhausted, expired, revoked] }
+        lease_token: { type: string }
+
     SessionSummary:
       type: object
       properties:

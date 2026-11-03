@@ -29,6 +29,10 @@ const (
 	deviceTokenTTL   = 365 * 24 * time.Hour
 	smsPerHourLimit  = 5
 	activationPerTTL = 10 * time.Second
+	pinMaxFailures   = 5
+	pinLockTTL       = 10 * time.Minute
+	unlockRateLimit  = 3
+	unlockRateTTL    = time.Hour
 )
 
 var (
@@ -334,8 +338,14 @@ func (s *Service) SetPIN(ctx context.Context, accountID, current, next string) e
 	return s.repo.setPIN(ctx, accountID, string(hash))
 }
 
-// VerifyPIN 校验家长 PIN。
+// VerifyPIN 校验家长 PIN；连续错误 5 次锁定 10 分钟。
 func (s *Service) VerifyPIN(ctx context.Context, accountID, pin string) error {
+	key := pinFailKey(accountID)
+	if s.redis != nil {
+		if n, err := s.redis.Get(ctx, key).Int(); err == nil && n >= pinMaxFailures {
+			return ErrPINLocked
+		}
+	}
 	existing, err := s.repo.pinHash(ctx, accountID)
 	if err != nil {
 		return err
@@ -344,7 +354,19 @@ func (s *Service) VerifyPIN(ctx context.Context, accountID, pin string) error {
 		return ErrPINNotSet
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(existing), []byte(pin)); err != nil {
+		if s.redis != nil {
+			n, _ := s.redis.Incr(ctx, key).Result()
+			if n == 1 {
+				s.redis.Expire(ctx, key, pinLockTTL)
+			}
+			if n >= pinMaxFailures {
+				return ErrPINLocked
+			}
+		}
 		return ErrPINInvalid
+	}
+	if s.redis != nil {
+		s.redis.Del(ctx, key)
 	}
 	return nil
 }
@@ -354,6 +376,35 @@ func (s *Service) VerifyPIN(ctx context.Context, accountID, pin string) error {
 // ListDevices 返回家庭当前绑定的设备。
 func (s *Service) ListDevices(ctx context.Context, accountID string) ([]Device, error) {
 	return s.repo.listDevices(ctx, accountID)
+}
+
+// GetActiveDevice 返回家庭内指定设备的绑定信息。
+func (s *Service) GetActiveDevice(ctx context.Context, accountID, deviceID string) (Device, error) {
+	device, err := s.repo.deviceForAccount(ctx, accountID, deviceID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Device{}, ErrDeviceNotFound
+		}
+		return Device{}, err
+	}
+	return device, nil
+}
+
+// AllowDeviceUnlock 限制家长远程解锁频率（3 次/小时/设备）。
+func (s *Service) AllowDeviceUnlock(ctx context.Context, deviceID string) bool {
+	if s.redis == nil {
+		return true
+	}
+	key := unlockRateKey(deviceID)
+	n, err := s.redis.Incr(ctx, key).Result()
+	if err != nil {
+		s.logger.Error("unlock rate limit", "error", err)
+		return true
+	}
+	if n == 1 {
+		s.redis.Expire(ctx, key, unlockRateTTL)
+	}
+	return n <= unlockRateLimit
 }
 
 // CreateActivationCode 电视端申请激活码。
@@ -594,4 +645,8 @@ func activationKey(code string) string     { return "device:code:" + code }
 func activationDeviceKey(id string) string { return "device:code:device:" + id }
 func activationDeviceLockKey(id string) string {
 	return "rl:device:code:" + id
+}
+func pinFailKey(accountID string) string { return "rl:pin:fail:" + accountID }
+func unlockRateKey(deviceID string) string {
+	return "rl:device:unlock:" + deviceID
 }

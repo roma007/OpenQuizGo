@@ -28,18 +28,20 @@ var validTamperTypes = map[string]bool{
 
 // Service 负责授权签发、心跳计量与设备异常上报。
 type Service struct {
-	repo     *repository
-	ruleSvc  *rule.Service
-	secret   []byte
-	leaseKey ed25519.PrivateKey
-	leasePub string
-	logger   *slog.Logger
+	repo        *repository
+	ruleSvc     *rule.Service
+	identitySvc *identity.Service
+	secret      []byte
+	leaseKey    ed25519.PrivateKey
+	leasePub    string
+	logger      *slog.Logger
 }
 
 const devLeaseKey = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXphYmNkZWY="
 
 // New 构造计量服务；leaseKeyBase64 为 Ed25519 32 字节种子。
-func New(pool *pgxpool.Pool, ruleSvc *rule.Service, secret, leaseKeyBase64 string, logger *slog.Logger) (*Service, error) {
+func New(pool *pgxpool.Pool, ruleSvc *rule.Service, identitySvc *identity.Service,
+	secret, leaseKeyBase64 string, logger *slog.Logger) (*Service, error) {
 	if leaseKeyBase64 == "" {
 		leaseKeyBase64 = devLeaseKey
 	}
@@ -50,12 +52,13 @@ func New(pool *pgxpool.Pool, ruleSvc *rule.Service, secret, leaseKeyBase64 strin
 	key := ed25519.NewKeyFromSeed(seed)
 	publicKey := key.Public().(ed25519.PublicKey)
 	return &Service{
-		repo:     newRepository(pool),
-		ruleSvc:  ruleSvc,
-		secret:   []byte(secret),
-		leaseKey: key,
-		leasePub: base64.StdEncoding.EncodeToString(publicKey),
-		logger:   logger,
+		repo:        newRepository(pool),
+		ruleSvc:     ruleSvc,
+		identitySvc: identitySvc,
+		secret:      []byte(secret),
+		leaseKey:    key,
+		leasePub:    base64.StdEncoding.EncodeToString(publicKey),
+		logger:      logger,
 	}, nil
 }
 
@@ -84,6 +87,74 @@ func (s *Service) Issue(ctx context.Context, req IssueRequest) (Grant, error) {
 		metrics.IncGrantIssued()
 	}
 	return s.toGrant(rec), nil
+}
+
+// ParentUnlock 由家长为设备签发一段观看时间（无答题会话）。
+func (s *Service) ParentUnlock(ctx context.Context, accountID, deviceID, pin string,
+	minutes int, ip string) (Grant, error) {
+	if s.identitySvc == nil {
+		return Grant{}, newError(500, "INTERNAL", "身份服务不可用")
+	}
+	device, err := s.identitySvc.GetActiveDevice(ctx, accountID, deviceID)
+	if err != nil {
+		return Grant{}, mapIdentityError(err)
+	}
+	if err := s.identitySvc.VerifyPIN(ctx, accountID, pin); err != nil {
+		return Grant{}, mapIdentityError(err)
+	}
+	if !s.identitySvc.AllowDeviceUnlock(ctx, device.DeviceID) {
+		return Grant{}, newError(429, "UNLOCK_LIMIT", "解锁过于频繁，请稍后再试")
+	}
+	if minutes == 0 {
+		minutes = 10
+	}
+	if minutes < 5 || minutes > 60 {
+		return Grant{}, newError(422, "VALIDATION_ERROR", "解锁时长需在 5–60 分钟")
+	}
+	rul, _, err := s.ruleSvc.GetForChild(ctx, device.ChildID)
+	if err != nil {
+		return Grant{}, mapRuleError(err)
+	}
+
+	now := time.Now()
+	location := time.UTC
+	if rul.Timezone != "" {
+		if loc, lerr := time.LoadLocation(rul.Timezone); lerr == nil {
+			location = loc
+		}
+	}
+	local := now.In(location)
+	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, location)
+	end := start.Add(24 * time.Hour)
+
+	rec, err := s.repo.issueParent(ctx, device.ChildID, device.DeviceID, minutes,
+		rul.DailyLimit, start, end, now, randomToken())
+	if err != nil {
+		return Grant{}, err
+	}
+	grant := s.toGrant(rec)
+	if auditErr := s.repo.insertAudit(ctx, accountID, device.DeviceID, grant.GrantID,
+		grant.Minutes, ip); auditErr != nil {
+		s.logger.Error("audit parent unlock", "error", auditErr, "grant_id", grant.GrantID)
+	}
+	metrics.IncGrantIssued()
+	return grant, nil
+}
+
+func mapIdentityError(err error) error {
+	var idErr *identity.Error
+	if errors.As(err, &idErr) {
+		return newError(idErr.Status, idErr.Code, idErr.Message)
+	}
+	return err
+}
+
+func mapRuleError(err error) error {
+	var ruleErr *rule.Error
+	if errors.As(err, &ruleErr) {
+		return newError(ruleErr.Status, ruleErr.Code, ruleErr.Message)
+	}
+	return err
 }
 
 // GrantForSession 返回会话已签发的授权。

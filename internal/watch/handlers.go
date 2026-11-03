@@ -3,12 +3,18 @@ package watch
 import (
 	"encoding/json"
 	"errors"
+	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
 )
+
+// ParentRoutes 注册家长端设备操作接口。
+func (s *Service) ParentRoutes(r chi.Router) {
+	r.Post("/family/devices/{deviceID}/unlock", s.handleParentUnlock)
+}
 
 // DeviceRoutes 注册电视端计量与设备上报接口。
 func (s *Service) DeviceRoutes(r chi.Router) {
@@ -18,6 +24,38 @@ func (s *Service) DeviceRoutes(r chi.Router) {
 	r.Post("/device/tamper", s.handleTamper)
 	r.Get("/offline/lease", s.handleOfflineLease)
 	r.Post("/watch/logs", s.handleOfflineReport)
+}
+
+func (s *Service) handleParentUnlock(w http.ResponseWriter, r *http.Request) {
+	accountID := identity.AccountIDFrom(r.Context())
+	if accountID == "" {
+		writeWatchError(w, r, newError(401, "AUTH_REQUIRED", "家长未登录"))
+		return
+	}
+	var req struct {
+		PIN     string `json:"pin"`
+		Minutes int    `json:"minutes"`
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeWatchError(w, r, newError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	grant, err := s.ParentUnlock(r.Context(), accountID, chi.URLParam(r, "deviceID"),
+		req.PIN, req.Minutes, clientIP(r))
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, grant)
+}
+
+func clientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
 }
 
 func (s *Service) handleOfflineLease(w http.ResponseWriter, r *http.Request) {

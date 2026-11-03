@@ -105,6 +105,12 @@ func New(d Deps) http.Handler {
 				d.Watch.DeviceRoutes(r)
 			})
 		}
+		if d.Watch != nil && d.Identity != nil {
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.ParentAuth)
+				d.Watch.ParentRoutes(r)
+			})
+		}
 		if d.Report != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.ParentAuth)

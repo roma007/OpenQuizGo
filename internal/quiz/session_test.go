@@ -144,7 +144,7 @@ func TestSessionIssuesGrant(t *testing.T) {
 	seedQuestions(t, pool, childID)
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	watchSvc, err := watch.New(pool, nil, "test-secret-0123456789-0123456789", "", logger)
+	watchSvc, err := watch.New(pool, nil, nil, "test-secret-0123456789-0123456789", "", logger)
 	if err != nil {
 		t.Fatal(err)
 	}
