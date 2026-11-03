@@ -82,6 +82,15 @@ class GuardEngine(
         transition(GuardState.BLOCKED)
     }
 
+    fun onQuizCancelled() {
+        transition(GuardState.QUIZ_REQUIRED)
+    }
+
+    /** 调试/测试入口：立即触发答题。 */
+    fun forceQuizRequired() {
+        transition(GuardState.QUIZ_REQUIRED)
+    }
+
     fun onWatchingStopped() {
         if (_state.value == GuardState.GRANTED || _state.value == GuardState.BLOCKED) {
             transition(GuardState.IDLE)

@@ -8,7 +8,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.widget.Toast
 import com.openquizgo.guard.GuardApplication
 import com.openquizgo.guard.domain.GuardState
 import com.openquizgo.guard.ui.MainActivity
@@ -16,12 +19,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class GuardService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val mainHandler = Handler(Looper.getMainLooper())
     private var stateJob: Job? = null
+    private var promptJob: Job? = null
     private var engine: com.openquizgo.guard.domain.GuardEngine? = null
 
     override fun onCreate() {
@@ -32,6 +39,18 @@ class GuardService : Service() {
         stateJob = scope.launch {
             engine?.state?.collect { state ->
                 updateNotification(label(state))
+                when (state) {
+                    GuardState.QUIZ_REQUIRED -> startPromptLoop()
+                    GuardState.GRANTED -> {
+                        promptJob?.cancel()
+                        GuardAccessibilityService.disarmQuiz()
+                        toast("按确认键继续观看")
+                    }
+                    else -> {
+                        promptJob?.cancel()
+                        GuardAccessibilityService.disarmQuiz()
+                    }
+                }
             }
         }
     }
@@ -46,6 +65,35 @@ class GuardService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun startPromptLoop() {
+        promptJob?.cancel()
+        promptJob = scope.launch {
+            var warned = false
+            while (isActive) {
+                if (Permissions.accessibilityEnabled(this@GuardService) &&
+                    GuardAccessibilityService.isConnected()
+                ) {
+                    toast("按确认键开始答题")
+                    GuardAccessibilityService.armQuiz()
+                    GuardLog.i("quiz required, armed for confirm key")
+                    return@launch
+                }
+                if (!warned) {
+                    toast("请开启无障碍服务以开始答题")
+                    GuardLog.w("quiz required but accessibility not ready")
+                    warned = true
+                }
+                delay(2_000)
+            }
+        }
+    }
+
+    private fun toast(message: String) {
+        mainHandler.post {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
+    }
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return

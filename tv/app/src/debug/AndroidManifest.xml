@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- 仅 debug 构建允许明文 HTTP，便于局域网联调；release 必须使用 HTTPS。 -->
-    <application android:usesCleartextTraffic="true" />
+    <application android:usesCleartextTraffic="true">
+        <receiver
+            android:name=".debug.DebugReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.openquizgo.guard.DEBUG_FORCE_QUIZ" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>

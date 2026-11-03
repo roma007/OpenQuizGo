@@ -53,7 +53,8 @@ adb shell am start -n com.openquizgo.quiz/com.openquizgo.guard.ui.MainActivity
 - P2-T2 设备激活：激活码、轮询绑定、令牌持久化、重置、离线缓存
 - P2-T3 前台识别：无障碍事件 + UsageStats 校正 + 媒体计时 + 诊断页
 - P2-T4 守护状态机：前台服务、启动恢复、60s 演示阈值触发需要答题
-- 下一步 P2-T5：确认键暂停 + 半透明答题 UI
+- P2-T5 答题接管：确认键暂停 + 半透明答题 + 无敌广告/进度保留
+- 下一步 P2-T6：接入服务端答题会话
 
 > 注意：创维机型更新 APK 后会注销无障碍服务，需重启电视或从设置重新开启。
 
