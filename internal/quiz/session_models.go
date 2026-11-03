@@ -3,6 +3,8 @@ package quiz
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/roma007/OpenQuizGo/internal/watch"
 )
 
 const sessionTTL = 10 * time.Minute
@@ -74,6 +76,8 @@ type SessionSummary struct {
 	ExpiresAt     time.Time         `json:"expires_at"`
 	FinishedAt    *time.Time        `json:"finished_at,omitempty"`
 	Questions     []SessionQuestion `json:"questions,omitempty"`
+	Grant         *watch.Grant      `json:"grant,omitempty"`
+	GrantError    string            `json:"grant_error,omitempty"`
 }
 
 // AnswerSubmission 是提交答案的入参。

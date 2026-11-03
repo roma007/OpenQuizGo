@@ -16,6 +16,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/question"
 	"github.com/roma007/OpenQuizGo/internal/quiz"
 	"github.com/roma007/OpenQuizGo/internal/rule"
+	"github.com/roma007/OpenQuizGo/internal/watch"
 )
 
 // Deps 是 HTTP 层依赖。
@@ -28,6 +29,7 @@ type Deps struct {
 	Questions *question.Service
 	Quiz      *quiz.Service
 	Rule      *rule.Service
+	Watch     *watch.Service
 	Version   string
 	Env       string
 }
@@ -87,6 +89,12 @@ func New(d Deps) http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.DeviceAuth)
 				d.Quiz.DeviceRoutes(r)
+			})
+		}
+		if d.Watch != nil && d.Identity != nil {
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.DeviceAuth)
+				d.Watch.DeviceRoutes(r)
 			})
 		}
 		if d.Rule != nil && d.Identity != nil {

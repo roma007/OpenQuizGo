@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 3904947,
-      "output": 201210,
-      "reasoning": 139731,
+      "input": 3938574,
+      "output": 220892,
+      "reasoning": 150124,
       "cache": {
-        "read": 68450560,
+        "read": 79001088,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793671310028,
-      "busy": 1793670996597,
-      "idle": 1793628206775,
-      "viewed": 1793628206775
+      "updated": 1793671614033,
+      "busy": 1793671341240,
+      "idle": 1793671333953,
+      "viewed": 1793671333953
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -31360,6 +31360,1946 @@
         "reasoning": 32,
         "cache": {
           "read": 404736,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f241b6d0011eeB2NLnxuj6f1",
+      "time": {
+        "created": 1793671306098,
+        "streamed": 1793671311334,
+        "completed": 1793671321480
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "All pass.\n\nArchive, commit, push.\n\nCommit message `feat(t7): 加权规则引擎与规则 CRUD`.\n\nBefore, check git status.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671310032,
+            "completed": 1793671311325
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_4hvynri5f2vhaa14iv1t2cpj",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -2 && git add -A && git commit -q -m \"feat(t7): 加权规则引擎与规则 CRUD\n\n- 规则模型/校验独立为 internal/rule（权重、门槛可达、时段、额度）\n- 规则 CRUD：PIN 校验、版本 +1、审计\n- 时段（含跨零点）与每日额度校验，TV 上下文接口\n- 规则 dry-run：题量、配额、最高加权分\n- 会话创建接入规则检查（RULE_TIME_WINDOW/RULE_DAILY_LIMIT）\n- 规则服务集成测试\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git log --oneline -2",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   4f452df..edf4713  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   4f452df..edf4713  main -> master\nedf4713 feat(t7): 加权规则引擎与规则 CRUD\n4f452df feat(t6): 答题会话与判分\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671310349,
+            "ran": 1793671311332,
+            "completed": 1793671321414
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "009c4b734e4ae9fabda2a97273573b594219721b",
+        "end": "7a0da84425404664d80f5815064c54c9b94f61bc",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 409,
+        "output": 252,
+        "reasoning": 32,
+        "cache": {
+          "read": 404992,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f2457a300158s56PapcAmrbv",
+      "time": {
+        "created": 1793671321514,
+        "streamed": 1793671333937,
+        "completed": 1793671333950
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "T7 done. Final response summarizing.\n\nDetails:\n- Rule API, PIN, audit, version.\n- Validation.\n- Context.\n- Enforcement.\n- Preview.\n- Refactor rule package.\n- Tests/smoke evidence.\n\nNext T8: watch_grant issuance, heartbeats, revocation, paused non-accrual, concurrency, offline.\n\nMention remaining T8 closes loop.\n\nKeep concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671326522,
+            "completed": 1793671333933
+          }
+        },
+        {
+          "type": "text",
+          "text": "**T7 完成并推送**（`edf4713`）。规则引擎已接入答题链路，解锁闭环只差 T8 的授权签发与计量。\n\n## 交付内容\n\n| 能力 | 实现 |\n| --- | --- |\n| 规则 CRUD | `GET/PUT /family/children/{id}/rule`，更新需家长 PIN，版本 +1，写审计 |\n| 规则校验 | 权重非负、至少一个学科、趣味权重低于最低学科、门槛可达、时段 ≤4 段、每日 1–720 分钟、时区合法 |\n| 时段判定 | 支持跨零点（如 `20:00–07:00`），按孩子规则时区计算 |\n| 每日额度 | 已观看秒数 + 未消费授权预留，按分钟向上取整；额度用尽拒绝 |\n| TV 上下文 | `GET /child/context` 返回是否可看、原因、剩余分钟、规则版本 |\n| 规则 dry-run | `POST .../rule/preview` 返回题量、配额、最高加权分与风险提示 |\n| 链路拦截 | 创建答题会话前校验时段/额度，返回 `RULE_TIME_WINDOW` / `RULE_DAILY_LIMIT` |\n| 架构整理 | 规则模型/校验抽到 `internal/rule`，组卷与规则共用同一套算法 |\n\n## 验证\n\n- 规则服务集成测试：PIN 错误拒绝、正确更新、预览配额、不可达门槛拒绝、时段拦截、每日额度拦截、审计 3 条。\n- 跨零点时段单元测试通过。\n- 真实接口冒烟：\n\n```text\nGET  rule        → threshold 3, daily 60\nPOST preview     → n=5, quota {math:1,chinese:1,science:1}, fun=2, max=5\nGET  context     → allowed=true, remaining=60\n时段外 context    → allowed=false, reason=time_window\n时段外建会话      → 403 RULE_TIME_WINDOW\n额度用尽         → allowed=false, remaining=0（会话将被 403 RULE_DAILY_LIMIT）\n```\n\n## 当前进度\n\n- ✅ T1–T7\n- 🚧 T0 PoC APK 待实机\n- ⏳ **T8 授权与观看计量**：`watch_grant` 签发、心跳扣减、暂停不计量、吊销、并发防超发\n\nT8 完成后，「答题 → 通过 → 授权 → 观看 → 扣减 → 到期再答题」就真正闭环了。继续我就开工。"
+        }
+      ],
+      "snapshot": {
+        "start": "7a0da84425404664d80f5815064c54c9b94f61bc",
+        "end": "7a0da84425404664d80f5815064c54c9b94f61bc",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 436,
+        "output": 568,
+        "reasoning": 83,
+        "cache": {
+          "read": 405376,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f2488410012tIUQJ4mdcw3AG",
+      "time": {
+        "created": 1793671333953
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_19f24a489001M7vAiU1JbNaK4X",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793671341291
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_19f24a4fd001JnBuAfMPNeUUYa",
+      "time": {
+        "created": 1793671341319,
+        "streamed": 1793671372611,
+        "completed": 1793671372669
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Continue T8: 授权与观看计量. Scope:\n- watch_grant issuance on session finish (passed).\n- Rules: grant minutes = min(unlock_minutes, remaining daily).\n- Signed lease? Design says watch_grant with jti, server-signed; client executes. Could issue JWT-like signed lease token. Currently watch_grant table has jti. We can issue a signed token (HMAC/JWT) with grant claims for client-side enforcement; server heartbeat validates grant id.\n- Heartbeat: POST /watch/grants/{id}/heartbeat with position/foreground app/paused flag; update consumed_seconds; return remaining/revoked.\n- Paused non-accrual: heartbeat with paused=true doesn't consume; quiz session start/finish triggering immediate heartbeat? Client sends. Server also marks.\n- Revocation: manual? time window crossing/daily limit. Heartbeat checks: grant status, expiry, rule window; if crossed → revoke.\n- Concurrency: multi-device no over-issue. Issue grant in transaction with row lock on child's rule/usage; use PostgreSQL advisory lock per child or SELECT ... FOR UPDATE on watch_rule row to serialize. Compute consumed+reserved, remaining; grant minutes = min(unlock, remaining). If 0 → no grant.\n- One grant per session unique.\n- Watch logs: heartbeat upsert? Design has watch_log rows. Simpler: maintain `watch_grant.consumed_seconds`; insert watch_log on heartbeat with delta seconds and target app. Could create one log per heartbeat (many rows). Better aggregate per grant+target per day? For T8, insert a watch_log row per heartbeat with start=last_heartbeat, end=now, watched_seconds=delta, paused_seconds. That gives detailed logs; volume fine.\n- Offline lease is T10, skip.\n- Tamper events T8? Plan T8 includes tamper events (permissions). Device capability/tamper endpoints from T3 not implemented. T8 scope per plan: grant, heartbeat, paused, revoke, offline reconcile, tamper. Offline/T10. Tamper event endpoint can be included: POST /device/tamper.\n- Client contract: heartbeat every 30s with `grant_id`, `foreground_app`, `watched_seconds` (client-measured since last), `paused` bool, `paused_seconds`.\n  - Server should not blindly trust client seconds; but TV is client. Use client-reported delta capped by elapsed server time? Design says server authoritative; heartbeat wall-clock delta can be computed server-side. Better: server computes elapsed since last heartbeat (max 60s) and increments consumed by min(reported_seconds, elapsed). But if TV offline/suspended, elapsed could be huge; cap at 60s per heartbeat. For T8 MVP:\n    - grant has `last_heartbeat_at` column? Not existing. Add migration 00006: `last_heartbeat_at`, maybe `lease_token`? Add.\n    - Heartbeat: compute delta = now - last_heartbeat (cap 60s); if paused → watched=0, paused_delta=delta; else watched=min(reported_seconds or delta, delta, remaining). Using server elapsed avoids inflation. But if client sends heartbeats every 30s, delta≈30.\n    - Simpler: trust `watched_seconds` but cap by remaining and 120. Hmm.\n  - Use server-side elapsed with cap 120s; client `paused` determines accrual. If client crashed and resumes after 10min, only 120s charged (undercharge). Acceptable for MVP? Daily limit fairness. Better cap 300s.\n  - For first heartbeat, last_heartbeat = grant.valid_from.\n  - Add `last_heartbeat_at timestamptz not null default now()` to watch_grant.\n- Grant token/lease: JWT signed with JWT_SECRET:\n  ```json\n  {grant_id, child_id, device_id, exp: valid_until, minutes, jti, typ:\"grant\"}\n  ```\n  Client uses to verify offline? T10. For T8, return `lease_token` for client to present? Heartbeat uses grant_id + device token. Token optional. Implement signed token for future T10; store jti.\n- FinishSession needs to issue grant. Currently quiz.FinishSession returns summary; add issuance:\n  - If passed and score threshold, call grant service? To avoid quiz→watch dependency? quiz already imports rule; T8 package `internal/watch` imports quiz? Could create grant service in `internal/watch` and have quiz call it via interface. Simpler: implement grant issuance within quiz package? Watch logic deserves own package.\n  - `internal/watch` with Service: IssueForSession(ctx, session, rule, child, device) etc. Quiz FinishSession calls `watchSvc.Issue(ctx, ...)`. Dependency: quiz imports watch; watch imports identity? Watch handlers need device auth (identity). watch imports identity; quiz imports watch; no cycle.\n  - But watch needs rule for daily remaining/window. It can take rule.Rule passed from quiz (loaded session rule snapshot). Or watch service imports rule. Fine.\n  - `watch.Service` constructor requires pool, redis?, identity? For handlers; grant signing uses JWT secret.\n  - Quiz FinishSession after setting state passed calls `s.watch.Issue(ctx, IssueRequest{SessionID, ChildID, DeviceID, Rule, RuleVersion})`. Returns grant or error. Error should not fail finish? If grant issuance fails (daily limit), session still passed; response should include grant_error. Add `Grant *GrantInfo` and `GrantError string` to SessionSummary.\n  - Concurrency: Issue in transaction with advisory lock `pg_advisory_xact_lock(hashtext(child_id))`; compute used/reserved; minutes = min(unlock, remaining); if <=0 return error \"RULE_DAILY_LIMIT\"; insert grant unique session → idempotent: on conflict (session_id) do nothing then select existing.\n  - If finish called twice, return existing grant.\n- Heartbeat endpoint:\n  - POST /watch/grants/{id}/heartbeat (device auth).\n  - Body: {foreground_app, paused, reported_seconds?, position?}\n  - Validate grant belongs device+child, status active, valid_until > now.\n  - Check rule time window: if now outside → revoke, return revoked.\n  - Compute delta from last_heartbeat to now, cap 120s; if paused → paused_delta, watched=0; else watched=delta.\n  - If consumed+watched >= minutes*60 → consumed = minutes*60, status exhausted, remaining 0.\n  - Update grant last_heartbeat_at=now, consumed_seconds.\n  - Insert watch_log row with start/end, watched/paused, target app.\n  - Return {status, remaining_seconds, consumed_seconds, revoked?, reason}.\n  - Rate limit heartbeat? 30s cadence; allow 1 per 5s (idempotent)? If client spams, each caps delta small; no overcharge. Add Redis lock optional.\n- Time window revocation: need rule for device/child. Load from watch_rule via repo or rule service. watch imports rule to call AllowedAt and get rule. Construct rule.Service in watch? Pass rule.Service dependency. watch→rule→identity; quiz→watch→rule; no cycle. But watch handlers need identity for device auth in router, not service.\n- Tamper endpoint: POST /device/tamper {type, detail}; insert tamper_event; return 200. Also maybe notify parent later.\n- Device capability: PUT /device/capability {guard_mode, permissions, os_version, app_version} upsert.\n- Get active grant: GET /watch/grants/active (device) returns current grant/remaining; useful for TV on boot.\n- Watch logs: heartbeat writes.\n- Grant expiry: on heartbeat/active query, if valid_until < now → expired.\n\nMigration 00006:\n```sql\nalter table watch_grant add column last_heartbeat_at timestamptz not null default now();\nalter table watch_grant add column lease_token_hash? no.\ncreate index watch_grant_child_status_idx...\n```\nMaybe `watch_grant` already has status/consumed. Add last_heartbeat.\n\nSchemas existing fine.\n\nWatch service needs:\n- repo with issue/query/heartbeat/active.\n- JWT lease signing.\n\nGrant info:\n```go\ntype Grant struct {\n ID, SessionID string\n Minutes int\n ValidFrom, ValidUntil time.Time\n RemainingSeconds int\n Status string\n LeaseToken string `json:\"lease_token,omitempty\"`\n}\n```\n\nLease token claims typ \"grant\", jti, sub grant id, child/device, exp. Use JWT. Reuse per-package token manager? Implement simple.\n\nIssue:\n```go\nfunc (s *Service) Issue(ctx, req IssueRequest) (Grant, error)\n```\n- if req.Rule.UnlockMinutes <=0 default 20.\n- tx; advisory lock.\n- query existing grant by session_id → return (idempotent).\n- compute used seconds today: watch_log for day + active grant consumed? For remaining, used = sum(watch_log.watched_seconds) + sum(active grants consumed_seconds) (avoid double counting if watch_log rows correspond to consumed). Actually heartbeat inserts watch_log and increments grant.consumed; so summing both double counts. Choose: daily used = sum(watch_log.watched_seconds) (includes all heartbeats). Reserved = remaining of active grants (minutes*60 - consumed). Then available = daily_limit*60 - used - reserved.\n  - At issue time, new grant not yet exists. used from logs, reserved from active grants. Good.\n- minutes = min(unlock, floor(available/60)); if <1 → error 403 RULE_DAILY_LIMIT (or grant 0).\n- valid_from now, valid_until now+minutes.\n- jti random.\n- insert.\n- commit.\n- sign lease token.\n- Return.\n\nBut existing watch_grant rows for same session: unique session. If issue after finish retried, return existing with recalculated remaining.\n\nHeartbeat:\n- tx: select grant for update where id=$1 and device/child; check status active; expiry.\n- rule: load watch_rule for child; AllowedAt(now). If not allowed → revoke (status revoked), commit, return revoked reason time_window.\n- delta = now - last_heartbeat; clamp 0..120; if paused → paused delta.\n- watched = 0 if paused else min(delta, remaining).\n- newConsumed = consumed+watched; status exhausted if >= minutes*60.\n- update.\n- insert watch_log if delta>0 (start last_heartbeat, end now).\n- commit.\n- return.\n\nDaily limit check during heartbeat? If consumed reaches minutes*60 stop; consumed cannot exceed grant. Grant was capped at issue. If daily limit changes mid-grant, no effect; design says grant honored. Time window revokes.\n\nActive grant:\n- query status active, valid_until>now for device; if none 404.\n- remaining = minutes*60 - consumed.\n\nRevoke endpoint? Parent could revoke? Not in design. Skip.\n\nTamper/capability:\n- repo methods; handlers under device auth.\n\nSigning lease: JWT secret. Add config? Use cfg.JWTSecret passed to watch.New.\n\nHTTP wiring:\n- httpapi Deps Watch *watch.Service.\n- main constructs ruleService, watchService (needs pool, redis, ruleService, JWT secret, logger), then quiz.New(..., watchService, ...).\n- quiz Service add watch *watch.Service; FinishSession calls Issue on passed.\n- Careful import cycle: watch imports rule + identity? watch service needs identity? Only handlers use identity context, like quiz. watch package imports identity for DeviceFrom in handlers; identity doesn't import watch. quiz imports watch; watch doesn't import quiz. Good.\n- watch service IssueRequest includes rule.Rule and session info; no quiz import.\n- quiz FinishSession already has session + rule snapshot; pass to watch.\n\nSessionSummary add Grant *watch.Grant and GrantError string. That creates quiz models importing watch type; fine (quiz already imports watch). But quiz models used by selector tests; watch import okay.\n\nAlternatively define session grant info in quiz to avoid circular? watch doesn't import quiz, so fine.\n\nBut watch.Grant JSON includes lease; add to summary.\n\n- Router mounts watch.DeviceRoutes with Identity.DeviceAuth.\n\nWatch handlers:\n- POST /watch/grants/{grantID}/heartbeat\n- GET /watch/grants/active\n- POST /watch/logs (bulk offline report) — T10; skip.\n- PUT /device/capability\n- POST /device/tamper\n\nNeed GET grant by id? active enough.\n\nConfig: heartbeat cap constant 120s; heartbeat interval.\n\nImplementation details:\n\nMigration 00006:\n```sql\nalter table watch_grant add column last_heartbeat_at timestamptz not null default now();\ncreate index watch_grant_session_idx already unique.\ncreate index watch_grant_device_active_idx on watch_grant (device_id, status) where status='active'; -- exists watch_grant_active_idx\n```\nIndex exists from init. Only add column.\n\nRepo watch:\n```go\ntype repository struct { pool }\nfunc (r) issue(ctx, req, minutes, jti) (grantRecord, error)\n```\nTransaction logic in service? Put in repo `issue` with advisory lock.\n\n`issue`:\n```sql\nselect pg_advisory_xact_lock(hashtext($1))\nselect existing...\n-- compute used/reserved within tx\n```\nAll in tx.\n\nExisting grant query:\n```sql\nselect ... from watch_grant where session_id=$1\n```\nIf exists return.\n\nUsed:\n```sql\nselect coalesce(sum(watched_seconds),0) from watch_log where child_id=$1 and start_at >= $2 and start_at < $3\n```\nReserved:\n```sql\nselect coalesce(sum(minutes*60 - consumed_seconds),0) from watch_grant where child_id=$1 and status='active' and valid_until > now()\n```\navailable = dailyLimit*60 - used - reserved.\n\nminutes = min(unlock, available/60). If minutes<=0 → error daily.\n\nInsert with jti.\n\nGrant record scanning helper.\n\nHeartbeat repo:\nCould implement in service with SQL via repo methods:\n- `grantForUpdate(ctx, tx, grantID, deviceID, childID)` returns.\n- `updateGrant`.\n- `insertWatchLog`.\n- `revoke`.\n- rule load via rule.Service? Watch service can call `ruleService.GetForDevice(ctx, childID)` — rule service has no public method except Context/CanStart. Add `rule.Service.GetForChild(ctx, childID)` (exported, no account). Or watch queries watch_rule directly. Simpler: add `GetForChild` to rule.Service returning Rule/version.\n- `AllowedAt` from rule package.\n\nWatch service fields: repo, ruleSvc, secret, logger.\n\nIssueRequest:\n```go\ntype IssueRequest struct {\n SessionID, ChildID, DeviceID string\n Rule rule.Rule\n}\n```\n\nIssue needs daily bounds: rule.DayBounds(req.Rule, now) in service, pass start/end to repo.\n\nGrant signing:\n```go\ntype leaseClaims struct { Type string; ChildID, DeviceID, SessionID string; jwt.RegisteredClaims }\n```\nSign with secret 8h? exp = validUntil.\n\nHeartbeat result:\n```go\ntype HeartbeatResult struct {\n GrantID string\n Status string\n ConsumedSeconds, RemainingSeconds int\n Revoked bool\n Reason string\n ServerTime time.Time\n}\n```\nRequest:\n```go\ntype HeartbeatRequest struct {\n ForegroundApp string\n Paused bool\n PositionSeconds int (ignored)\n}\n```\n\nHeartbeat delta: `now.Sub(grant.LastHeartbeatAt)`; cap 120; if paused -> paused.\nIf client heartbeats every 30s, charges 30. If paused quiz for 5 min, paused=true each heartbeat, no charge.\n\nBut during quiz, the client may not send heartbeats if app switched to quiz overlay; then on resume, delta huge and would charge quiz time. T6 quiz session is on same app (guard) with video paused; heartbeat paused flag should be sent while quiz. To ensure no charge, quiz service could mark the grant paused via DB when session starts/finishes? Hard: grant may not exist pre-quiz. Simpler: client sends heartbeat with paused=true at quiz start (design). T8 API supports. For robustness, when a session is active, heartbeat could check quiz_session active for child/device and force paused. Add: in heartbeat, query `exists(select 1 from quiz_session where device_id=$1 and child_id=$2 and state='active')`; if true → treat paused regardless. That enforces no accrual during quiz server-side. Good. Implement repo.hasActiveQuiz.\n\nAlso grant issuance on finish; session state passed. Good.\n\nDaily limit issue math: if remaining <1 min, error.\n\nStatus exhausted when consumed >= minutes*60.\n\nRevocation on time window: heartbeat checks rule; if not AllowedAt → revoke and return.\n\nGrant expiry: if now > valid_until → status expired, return expired.\n\nHeartbeat returns remaining seconds.\n\nActive grant query: if multiple, pick latest; if expired mark? Query status active and valid_until > now; if none, maybe return 404.\n\nTamper/capability repo:\n- upsert device_capability.\n- insert tamper_event.\nHandlers validate types.\n\nLet's implement.\n\nFirst migration 00006.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671344852,
+            "completed": 1793671372554
+          }
+        },
+        {
+          "type": "text",
+          "text": "继续 T8：授权签发与观看计量。先加心跳时间戳字段，再实现授权、心跳、吊销与答题暂停不计量。"
+        },
+        {
+          "type": "tool",
+          "id": "call_00_q3np5dxvlyr4ilwqks3slipl",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "-- +goose Up\n\n-- 上次心跳时间：服务端据此计算计费增量，避免客户端虚报\nalter table watch_grant add column last_heartbeat_at timestamptz not null default now();\n\n-- +goose Down\n\nalter table watch_grant drop column if exists last_heartbeat_at;\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/migrations/00006_grant_heartbeat.sql"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: migrations/00006_grant_heartbeat.sql"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671372257,
+            "ran": 1793671372607,
+            "completed": 1793671372615
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "7a0da84425404664d80f5815064c54c9b94f61bc",
+        "end": "3da6830502193f86fd2f52de18a40ca4121b8aae",
+        "files": [
+          "migrations/00006_grant_heartbeat.sql"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 708,
+        "output": 173,
+        "reasoning": 3791,
+        "cache": {
+          "read": 405760,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f251f98001FIJCPMbS8ze7I0",
+      "time": {
+        "created": 1793671372701,
+        "streamed": 1793671378567,
+        "completed": 1793671378636
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Add rule.Service.GetForChild exported.\n\n```go\nfunc (s *Service) GetForChild(ctx, childID) (Rule,int,error) {\n r,v,err := repo.getForChild; map no rows 404\n}\n```\n\nAdd.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671376485,
+            "completed": 1793671378559
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_nb12140qrgxq7nck77pyccn4",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "// Get 返回孩子规则。\nfunc (s *Service) Get(ctx context.Context, accountID, childID string) (Rule, int, error) {\n\tr, version, err := s.repo.getForParent(ctx, accountID, childID)\n\tif isNoRows(err) {\n\t\treturn Rule{}, 0, newError(404, \"RULE_NOT_FOUND\", \"规则不存在\")\n\t}\n\treturn r, version, err\n}\n\n// GetForChild 返回孩子规则（供设备侧计量使用）。\nfunc (s *Service) GetForChild(ctx context.Context, childID string) (Rule, int, error) {\n\tr, version, err := s.repo.getForChild(ctx, childID)\n\tif isNoRows(err) {\n\t\treturn Rule{}, 0, newError(404, \"RULE_NOT_FOUND\", \"规则不存在\")\n\t}\n\treturn r, version, err\n}",
+              "oldString": "// Get 返回孩子规则。\nfunc (s *Service) Get(ctx context.Context, accountID, childID string) (Rule, int, error) {\n\tr, version, err := s.repo.getForParent(ctx, accountID, childID)\n\tif isNoRows(err) {\n\t\treturn Rule{}, 0, newError(404, \"RULE_NOT_FOUND\", \"规则不存在\")\n\t}\n\treturn r, version, err\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/rule/service.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/rule/service.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/rule/service.go",
+                  "patch": "Index: internal/rule/service.go\n===================================================================\n--- internal/rule/service.go\n+++ internal/rule/service.go\n@@ -67,8 +67,17 @@\n \t}\n \treturn r, version, err\n }\n \n+// GetForChild 返回孩子规则（供设备侧计量使用）。\n+func (s *Service) GetForChild(ctx context.Context, childID string) (Rule, int, error) {\n+\tr, version, err := s.repo.getForChild(ctx, childID)\n+\tif isNoRows(err) {\n+\t\treturn Rule{}, 0, newError(404, \"RULE_NOT_FOUND\", \"规则不存在\")\n+\t}\n+\treturn r, version, err\n+}\n+\n // Update 更新规则（需家长 PIN）。\n func (s *Service) Update(ctx context.Context, accountID, childID, pin string, in Rule, ip string) (Rule, int, error) {\n \tin = Normalize(in)\n \tif err := s.validate(ctx, in); err != nil {\n",
+                  "status": "modified",
+                  "additions": 9,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671376924,
+            "ran": 1793671378565,
+            "completed": 1793671378573
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "3da6830502193f86fd2f52de18a40ca4121b8aae",
+        "end": "177da8491a968e9788f0b690ff0cc4dd89f9a75d",
+        "files": [
+          "internal/rule/service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 4058,
+        "output": 368,
+        "reasoning": 52,
+        "cache": {
+          "read": 406400,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f2536db001pOs3Fn2g3drpMV",
+      "time": {
+        "created": 1793671378655,
+        "streamed": 1793671394500,
+        "completed": 1793671394574
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now watch package.\n\nmodels.go:\n```go\ntype Grant struct { ... LeaseToken }\n```\nGrant JSON:\n```json\n{\"grant_id\",\"session_id\",\"minutes\",\"valid_from\",\"valid_until\",\"remaining_seconds\",\"status\",\"lease_token\"}\n```\nIssue returns.\n\nHeartbeat.\n\nError type.\n\nrepository.go:\n- grantRecord struct.\n- scanGrant.\n- issue(ctx, req, minutes, jti, now) — transaction with advisory lock.\n- grantForHeartbeat(ctx, tx, id, deviceID, childID) with FOR UPDATE.\n- updateHeartbeat(ctx, tx, id, consumed, status, lastHB).\n- insertWatchLog.\n- revoke.\n- activeGrant(ctx, deviceID, childID).\n- hasActiveQuiz.\n- upsertCapability, insertTamper.\n\nLet's design issue transaction:\n\n```go\nfunc (r *repository) issue(ctx, in IssueRequest, rule rule.Rule, now time.Time, jti string) (grantRecord, bool, error)\n```\nReturns record and created bool.\n\nInside tx:\n1. `select pg_advisory_xact_lock(hashtext($1))` childID.\n2. existing by session:\n```sql\nselect ... from watch_grant where session_id=$1\n```\nif found return existing,false.\n3. day bounds passed in (start,end) computed by service.\n4. used := sum watch_log.watched_seconds.\n5. reserved := sum(minutes*60 - consumed_seconds) active grants valid_until>now.\n6. available := dailyLimit*60 - used - reserved.\n7. minutes := min(unlock, available/60); if minutes<1 return ErrDailyLimit.\n8. insert grant with jti, valid_from now, valid_until now+minutes, status active, last_heartbeat_at now.\n9. commit.\nReturn.\n\nNote race with other grant issues serialized by advisory lock. Good.\n\nPotential existing grant status expired → return existing (idempotent). Fine.\n\nGrant record fields: ID, SessionID, ChildID, DeviceID, Minutes, ValidFrom, ValidUntil, JTI, ConsumedSeconds, Status, LastHeartbeatAt, CreatedAt.\n\nHeartbeat transaction:\n- service computes rule first (outside tx) for window; but rule could change mid; okay.\n- begin tx.\n- select grant for update where id/device/child.\n- status active? if not return record.\n- now; if now > validUntil → set expired; commit; return expired.\n- allowed := rule.AllowedAt(rule, now); if !allowed → set status revoked; commit; return revoked time_window.\n- quizActive := exists quiz_session active for child+device.\n- paused := req.Paused || quizActive.\n- delta := now.Sub(lastHB).Seconds int; cap 0..120.\n- watched := 0; pausedSeconds := 0; if paused { pausedSeconds=delta } else { watched=delta }\n- remaining = minutes*60 - consumed; if watched > remaining watched=remaining.\n- newConsumed = consumed + watched.\n- status = active; if newConsumed >= minutes*60 → exhausted.\n- update consumed, status, last_heartbeat_at.\n- insert watch_log if delta>0: grant_id, child, device, target app, start=lastHB, end=now, watched, paused.\n- commit.\nReturn result.\n\nIf quizActive and req.Paused false, paused true but should we record paused? yes.\n\nActive grant:\n- select where device_id and child_id and status='active' and valid_until>now order by created desc limit1.\n- if none ErrNotFound.\n\nCapability/tamper:\n- upsert with permissions JSON (map[string]any? use json.RawMessage).\n- insert tamper type validated in service.\n\nLease signing:\nJWT claims with typ grant, sub grantID, child/device, exp. Use secret.\n\nService:\n```go\ntype Service struct {\n repo *repository\n rule *rule.Service\n secret []byte\n logger *slog.Logger\n}\nfunc New(pool, ruleSvc, secret, logger)\n```\nIssue(ctx, req IssueRequest) (Grant,error):\n- now; day bounds from req.Rule.\n- jti random.\n- repo.issue.\n- sign token with record.\n- build Grant.\n- if existing return with same.\n\nHeartbeat(ctx, principal, grantID, req) (HeartbeatResult,error):\n- rule,_,err := ruleSvc.GetForChild(child); if err → maybe revoke? If no rule, allow? Use default unrestricted; but rule always. If not found, use Rule{Timezone}? Simpler allow: if ruleSvc nil or error, skip window.\n- repo.heartbeat transaction needs rule.AllowedAt; compute allowed in service before tx? Rule could change; fine.\n- repo.heartbeat(ctx, grantID, device, child, allowed, paused, now).\n- return.\n\nBut allowed computed before knowing now? now in service.\n\nIf paused due to quiz, repo checks quiz activity itself (needs no rule).\n\nResult.\n\nErrors: Error type with status/code.\n\nHandlers:\n- Issue isn't exposed directly; called by quiz.\n- Heartbeat, active, capability, tamper.\n\nDeviceRoutes:\n```go\nr.Post(\"/watch/grants/{grantID}/heartbeat\", ...)\nr.Get(\"/watch/grants/active\", ...)\nr.Put(\"/device/capability\", ...)\nr.Post(\"/device/tamper\", ...)\n```\nUses identity.DeviceFrom.\n\nRequest capability:\n```json\n{\"guard_mode\":\"standard\",\"permissions\":{\"accessibility\":true},\"os_version\":\"...\",\"app_version\":\"...\"}\n```\n\nTamper: {\"type\":\"permission_revoked\",\"detail\":{...}}.\n\nWatch admin? no.\n\nQuiz integration:\n- Service field watch *watch.Service; New signature add watch.\n- FinishSession: after set state passed, call watch.Issue with session fields + rule snapshot.\n  - Parse rule snapshot.\n  - `grant, err := s.watch.Issue(ctx, watch.IssueRequest{...})`\n  - If err: set GrantError message (e.g., daily limit). Should finish still return 200 passed. Yes.\n  - summary.Grant = &grant.\n- SessionSummary add `Grant *watch.Grant` and `GrantError string`.\n- For already passed state (idempotent), return existing grant? Add: if session.State==\"passed\", call watch.ActiveForSession? Simpler: on finish when state != active, try `watch.GrantForSession(ctx, sessionID)` and attach. Add method.\n  - watch repo get by session.\n- `FinishSession` when passed issues; when failed no.\n\nImport cycle: quiz imports watch; watch imports rule+identity; watch doesn't import quiz. Fine. But watch handlers use identity; identity no quiz. Good.\n\nSummary struct importing watch in session_models.go.\n\nConstructor order in main: ruleService, watchService (needs rule), quizService (needs watch).\n\nSelector/session tests: New signature add nil for watch. Update tests.\n\nLet's write watch models/repo/service/handlers.\n\nFirst models.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671382409,
+            "completed": 1793671394491
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_9ahm5p4xn6tugfz0dh8v5zkh",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package watch\n\nimport \"time\"\n\n// Grant 是服务端签发的观看授权。\ntype Grant struct {\n\tGrantID         string    `json:\"grant_id\"`\n\tSessionID       string    `json:\"session_id\"`\n\tMinutes         int       `json:\"minutes\"`\n\tValidFrom       time.Time `json:\"valid_from\"`\n\tValidUntil      time.Time `json:\"valid_until\"`\n\tRemainingSeconds int      `json:\"remaining_seconds\"`\n\tStatus          string    `json:\"status\"`\n\tLeaseToken      string    `json:\"lease_token,omitempty\"`\n}\n\n// IssueRequest 是签发授权的入参。\ntype IssueRequest struct {\n\tSessionID string\n\tChildID   string\n\tDeviceID  string\n\tRule      RuleView\n}\n\n// RuleView 是计量所需的规则字段（避免 watch 直接依赖 quiz）。\ntype RuleView struct {\n\tUnlockMinutes int\n\tDailyLimit    int\n\tTimezone      string\n}\n\n// HeartbeatRequest 是心跳入参。\ntype HeartbeatRequest struct {\n\tForegroundApp string `json:\"foreground_app\"`\n\tPaused        bool   `json:\"paused\"`\n\tPositionSec   int    `json:\"position_seconds\"`\n}\n\n// HeartbeatResult 是心跳结果。\ntype HeartbeatResult struct {\n\tGrantID          string    `json:\"grant_id\"`\n\tStatus           string    `json:\"status\"`\n\tConsumedSeconds  int       `json:\"consumed_seconds\"`\n\tRemainingSeconds int       `json:\"remaining_seconds\"`\n\tPaused           bool      `json:\"paused\"`\n\tRevoked          bool      `json:\"revoked\"`\n\tReason           string    `json:\"reason,omitempty\"`\n\tServerTime       time.Time `json:\"server_time\"`\n}\n\n// Error 是计量业务错误。\ntype Error struct {\n\tStatus  int\n\tCode    string\n\tMessage string\n}\n\nfunc (e *Error) Error() string { return e.Message }\n\nfunc newError(status int, code, message string) *Error {\n\treturn &Error{Status: status, Code: code, Message: message}\n}\n\n// Capability 是设备能力上报。\ntype Capability struct {\n\tGuardMode   string          `json:\"guard_mode\"`\n\tPermissions map[string]bool `json:\"permissions\"`\n\tOSVersion   string          `json:\"os_version\"`\n\tAppVersion  string          `json:\"app_version\"`\n}\n\n// TamperEvent 是篡改/权限异常上报。\ntype TamperEvent struct {\n\tType   string          `json:\"type\"`\n\tDetail map[string]any  `json:\"detail\"`\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/watch/models.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/watch/models.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671392013,
+            "ran": 1793671394498,
+            "completed": 1793671394506
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "177da8491a968e9788f0b690ff0cc4dd89f9a75d",
+        "end": "c459461a52403b01747e2c32574f633a9cec6f67",
+        "files": [
+          "internal/watch/models.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 531,
+        "output": 615,
+        "reasoning": 1509,
+        "cache": {
+          "read": 410368,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f25752a001ecKvHfOCV77VRh",
+      "time": {
+        "created": 1793671394607,
+        "streamed": 1793671410975,
+        "completed": 1793671411052
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now watch repository. Need time, context, json, pgx, pgxpool, errors maybe.\n\ngrantRecord.\n\n`issue`:\n```go\nfunc (r *repository) issue(ctx, req IssueRequest, minutes int, jti string, now time.Time) (grantRecord, error)\n```\nBut minutes computed inside tx (needs availability). Pass rule and compute in repo; return ErrDailyLimit if none.\nSignature `issue(ctx, req, rule RuleView, jti, now) (rec, created bool, err error)`.\nDay bounds computed inside using timezone? Watch service can compute; repo can compute with rule.Timezone using rule.DayBounds? That requires rule package; use simple location in service and pass start/end. Pass start,end.\n\nInside:\n- advisory lock.\n- existing by session.\n- used/reserved.\n- available.\n- minutes.\n- insert.\n- scan.\n\n`scanGrant` columns:\nid, session_id, child_id, device_id, minutes, valid_from, valid_until, jti, consumed_seconds, status, last_heartbeat_at, created_at.\n\nHeartbeat repo:\n```go\nfunc (r *repository) heartbeat(ctx, grantID, deviceID, childID string, allowed bool, paused bool, now time.Time) (grantRecord, int, int, error)\n```\nTransaction:\n- select for update.\n- if not active → return rec (status).\n- expiry.\n- if !allowed → revoke.\n- quizActive query.\n- delta.\n- update.\n- insert log.\n- return rec, watched, pausedSec.\n\nBetter return struct heartbeatOutcome.\n\n`active(ctx, deviceID, childID)`.\n\n`grantBySession`.\n\n`hasActiveQuiz(ctx, tx, child, device)`.\n\n`upsertCapability`, `insertTamper`.\n\nLet me write.\n\nFor `insertWatchLog` target_id: foreground app or \"\".\n\nCapability upsert:\n```sql\ninsert into device_capability (device_id, guard_mode, permissions, os_version, app_version, last_reported_at)\nvalues (...) on conflict (device_id) do update ...\n```\n\nTamper insert with detail JSON.\n\nUse `json.Marshal`.\n\nError daily limit as watch.Error 403 RULE_DAILY_LIMIT.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671398632,
+            "completed": 1793671410965
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_v3h51b3gfkmbbn1ogkcrf8un",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package watch\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"errors\"\n\t\"fmt\"\n\t\"time\"\n\n\t\"github.com/jackc/pgx/v5\"\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n)\n\nconst grantColumns = `\n\tid, session_id, child_id, device_id, minutes, valid_from, valid_until,\n\tjti, consumed_seconds, status, last_heartbeat_at, created_at`\n\ntype grantRecord struct {\n\tID               string\n\tSessionID        string\n\tChildID          string\n\tDeviceID         string\n\tMinutes          int\n\tValidFrom        time.Time\n\tValidUntil       time.Time\n\tJTI              string\n\tConsumedSeconds  int\n\tStatus           string\n\tLastHeartbeatAt  time.Time\n\tCreatedAt        time.Time\n}\n\nfunc scanGrant(row pgx.Row) (grantRecord, error) {\n\tvar g grantRecord\n\terr := row.Scan(&g.ID, &g.SessionID, &g.ChildID, &g.DeviceID, &g.Minutes,\n\t\t&g.ValidFrom, &g.ValidUntil, &g.JTI, &g.ConsumedSeconds, &g.Status,\n\t\t&g.LastHeartbeatAt, &g.CreatedAt)\n\treturn g, err\n}\n\ntype repository struct {\n\tpool *pgxpool.Pool\n}\n\nfunc newRepository(pool *pgxpool.Pool) *repository {\n\treturn &repository{pool: pool}\n}\n\n// issue 在事务内串行化同一孩子的授权签发，避免并发超发。\nfunc (r *repository) issue(ctx context.Context, req IssueRequest, start, end time.Time,\n\tjti string, now time.Time) (grantRecord, bool, error) {\n\ttx, err := r.pool.Begin(ctx)\n\tif err != nil {\n\t\treturn grantRecord{}, false, fmt.Errorf(\"begin: %w\", err)\n\t}\n\tdefer func() { _ = tx.Rollback(ctx) }()\n\n\tif _, err := tx.Exec(ctx, `select pg_advisory_xact_lock(hashtext($1))`, req.ChildID); err != nil {\n\t\treturn grantRecord{}, false, fmt.Errorf(\"lock child: %w\", err)\n\t}\n\n\texisting, err := scanGrant(tx.QueryRow(ctx,\n\t\t`select `+grantColumns+` from watch_grant where session_id = $1`, req.SessionID))\n\tif err == nil {\n\t\tif err := tx.Commit(ctx); err != nil {\n\t\t\treturn grantRecord{}, false, err\n\t\t}\n\t\treturn existing, false, nil\n\t}\n\tif !errors.Is(err, pgx.ErrNoRows) {\n\t\treturn grantRecord{}, false, err\n\t}\n\n\tvar used, reserved int\n\tif err := tx.QueryRow(ctx, `\n\t\tselect coalesce(sum(watched_seconds), 0)::int\n\t\tfrom watch_log where child_id = $1 and start_at >= $2 and start_at < $3`,\n\t\treq.ChildID, start, end).Scan(&used); err != nil {\n\t\treturn grantRecord{}, false, err\n\t}\n\tif err := tx.QueryRow(ctx, `\n\t\tselect coalesce(sum(minutes * 60 - consumed_seconds), 0)::int\n\t\tfrom watch_grant\n\t\twhere child_id = $1 and status = 'active' and valid_until > $2`,\n\t\treq.ChildID, now).Scan(&reserved); err != nil {\n\t\treturn grantRecord{}, false, err\n\t}\n\n\tdailySeconds := req.Rule.DailyLimit * 60\n\tif req.Rule.DailyLimit <= 0 {\n\t\tdailySeconds = 60 * 60\n\t}\n\tavailable := dailySeconds - used - reserved\n\tminutes := req.Rule.UnlockMinutes\n\tif minutes <= 0 {\n\t\tminutes = 20\n\t}\n\tif availMinutes := available / 60; availMinutes < minutes {\n\t\tminutes = availMinutes\n\t}\n\tif minutes < 1 {\n\t\treturn grantRecord{}, false, newError(403, \"RULE_DAILY_LIMIT\", \"今日观看额度已用完\")\n\t}\n\n\tvalidUntil := now.Add(time.Duration(minutes) * time.Minute)\n\trec, err := scanGrant(tx.QueryRow(ctx, `\n\t\tinsert into watch_grant (\n\t\t\tchild_id, device_id, session_id, minutes, valid_from, valid_until, jti,\n\t\t\tconsumed_seconds, status, last_heartbeat_at)\n\t\tvalues ($1, $2, $3, $4, $5, $6, $7, 0, 'active', $5)\n\t\treturning `+grantColumns,\n\t\treq.ChildID, req.DeviceID, req.SessionID, minutes, now, validUntil, jti))\n\tif err != nil {\n\t\treturn grantRecord{}, false, fmt.Errorf(\"insert grant: %w\", err)\n\t}\n\tif err := tx.Commit(ctx); err != nil {\n\t\treturn grantRecord{}, false, err\n\t}\n\treturn rec, true, nil\n}\n\nfunc (r *repository) grantBySession(ctx context.Context, sessionID string) (grantRecord, error) {\n\treturn scanGrant(r.pool.QueryRow(ctx,\n\t\t`select `+grantColumns+` from watch_grant where session_id = $1`, sessionID))\n}\n\nfunc (r *repository) activeGrant(ctx context.Context, deviceID, childID string, now time.Time) (grantRecord, error) {\n\treturn scanGrant(r.pool.QueryRow(ctx, `\n\t\tselect `+grantColumns+` from watch_grant\n\t\twhere device_id = $1 and child_id = $2 and status = 'active' and valid_until > $3\n\t\torder by created_at desc limit 1`, deviceID, childID, now))\n}\n\ntype heartbeatOutcome struct {\n\tGrant       grantRecord\n\tWatchedSec  int\n\tPausedSec   int\n\tRevoked     bool\n\tReason      string\n}\n\nfunc (r *repository) heartbeat(ctx context.Context, grantID, deviceID, childID string,\n\tallowedByTime bool, clientPaused bool, now time.Time) (heartbeatOutcome, error) {\n\ttx, err := r.pool.Begin(ctx)\n\tif err != nil {\n\t\treturn heartbeatOutcome{}, fmt.Errorf(\"begin: %w\", err)\n\t}\n\tdefer func() { _ = tx.Rollback(ctx) }()\n\n\trec, err := scanGrant(tx.QueryRow(ctx, `\n\t\tselect `+grantColumns+` from watch_grant\n\t\twhere id = $1 and device_id = $2 and child_id = $3\n\t\tfor update`, grantID, deviceID, childID))\n\tif err != nil {\n\t\treturn heartbeatOutcome{}, err\n\t}\n\n\toutcome := heartbeatOutcome{Grant: rec}\n\tif rec.Status != \"active\" {\n\t\treturn outcome, tx.Commit(ctx)\n\t}\n\tif now.After(rec.ValidUntil) {\n\t\tif _, err := tx.Exec(ctx, `update watch_grant set status = 'expired' where id = $1`, rec.ID); err != nil {\n\t\t\treturn outcome, err\n\t\t}\n\t\trec.Status = \"expired\"\n\t\toutcome.Grant = rec\n\t\toutcome.Reason = \"expired\"\n\t\treturn outcome, tx.Commit(ctx)\n\t}\n\tif !allowedByTime {\n\t\tif _, err := tx.Exec(ctx, `update watch_grant set status = 'revoked' where id = $1`, rec.ID); err != nil {\n\t\t\treturn outcome, err\n\t\t}\n\t\trec.Status = \"revoked\"\n\t\toutcome.Grant = rec\n\t\toutcome.Revoked = true\n\t\toutcome.Reason = \"time_window\"\n\t\treturn outcome, tx.Commit(ctx)\n\t}\n\n\tquizActive := false\n\tif err := tx.QueryRow(ctx, `\n\t\tselect exists (\n\t\t\tselect 1 from quiz_session\n\t\t\twhere device_id = $1 and child_id = $2 and state = 'active'\n\t\t)`, deviceID, childID).Scan(&quizActive); err != nil {\n\t\treturn outcome, err\n\t}\n\n\tdelta := int(now.Sub(rec.LastHeartbeatAt).Seconds())\n\tif delta < 0 {\n\t\tdelta = 0\n\t}\n\tif delta > 120 {\n\t\tdelta = 120\n\t}\n\tpaused := clientPaused || quizActive\n\twatched := 0\n\tpausedSec := 0\n\tif paused {\n\t\tpausedSec = delta\n\t} else {\n\t\twatched = delta\n\t}\n\tremaining := rec.Minutes*60 - rec.ConsumedSeconds\n\tif watched > remaining {\n\t\twatched = remaining\n\t}\n\tconsumed := rec.ConsumedSeconds + watched\n\tstatus := rec.Status\n\tif consumed >= rec.Minutes*60 {\n\t\tstatus = \"exhausted\"\n\t}\n\n\tif _, err := tx.Exec(ctx, `\n\t\tupdate watch_grant\n\t\tset consumed_seconds = $2, status = $3, last_heartbeat_at = $4\n\t\twhere id = $1`, rec.ID, consumed, status, now); err != nil {\n\t\treturn outcome, err\n\t}\n\n\tif delta > 0 {\n\t\tif _, err := tx.Exec(ctx, `\n\t\t\tinsert into watch_log (grant_id, child_id, device_id, target_type, target_id,\n\t\t\t                       start_at, end_at, watched_seconds, paused_seconds)\n\t\t\tvalues ($1, $2, $3, 'app', $4, $5, $6, $7, $8)`,\n\t\t\trec.ID, childID, deviceID, \"\", rec.LastHeartbeatAt, now, watched, pausedSec); err != nil {\n\t\t\treturn outcome, err\n\t\t}\n\t}\n\n\trec.ConsumedSeconds = consumed\n\trec.Status = status\n\trec.LastHeartbeatAt = now\n\toutcome.Grant = rec\n\toutcome.WatchedSec = watched\n\toutcome.PausedSec = pausedSec\n\treturn outcome, tx.Commit(ctx)\n}\n\nfunc (r *repository) upsertCapability(ctx context.Context, deviceID string, c Capability) error {\n\tpermissions, _ := json.Marshal(c.Permissions)\n\t_, err := r.pool.Exec(ctx, `\n\t\tinsert into device_capability (device_id, guard_mode, permissions, os_version, app_version, last_reported_at)\n\t\tvalues ($1, $2, $3::jsonb, $4, $5, now())\n\t\ton conflict (device_id) do update set\n\t\t\tguard_mode = excluded.guard_mode,\n\t\t\tpermissions = excluded.permissions,\n\t\t\tos_version = excluded.os_version,\n\t\t\tapp_version = excluded.app_version,\n\t\t\tlast_reported_at = now()`,\n\t\tdeviceID, c.GuardMode, string(permissions), c.OSVersion, c.AppVersion)\n\treturn err\n}\n\nfunc (r *repository) insertTamper(ctx context.Context, deviceID, childID string, event TamperEvent) error {\n\tdetail, _ := json.Marshal(event.Detail)\n\t_, err := r.pool.Exec(ctx, `\n\t\tinsert into tamper_event (device_id, child_id, type, detail)\n\t\tvalues ($1, $2, $3, $4::jsonb)`, deviceID, childID, event.Type, string(detail))\n\treturn err\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/watch/repository.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/watch/repository.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671401631,
+            "ran": 1793671410972,
+            "completed": 1793671410983
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "c459461a52403b01747e2c32574f633a9cec6f67",
+        "end": "5cbb3f87124404192dc8aecc49e89330a4b6f88d",
+        "files": [
+          "internal/watch/repository.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2163,
+        "output": 2540,
+        "reasoning": 475,
+        "cache": {
+          "read": 410880,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f25b586001NnndujXmKEkhnW",
+      "time": {
+        "created": 1793671411083,
+        "streamed": 1793671424338,
+        "completed": 1793671424412
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now service.go.\n\nFields: repo, ruleSvc (*rule.Service), secret []byte, logger.\n\nNew(pool, ruleSvc, secret, logger).\n\nIssue:\n- compute day bounds using rule.Timezone; fallback location Asia/Shanghai. We only have RuleView (unlock/daily/timezone) — need DayBounds; implement local:\n```go\nloc, err := time.LoadLocation(req.Rule.Timezone); if err... Asia/Shanghai\nstart := time.Date(...)\n```\n- jti random.\n- repo.issue.\n- sign lease.\n- build Grant.\n\nLease claims:\n```go\ntype leaseClaims struct { Type string; ChildID, DeviceID, SessionID string; jwt.RegisteredClaims }\n```\nexp validUntil, id jti, sub grantID.\nSign HMAC secret.\n\nHeartbeat:\n- principal.\n- rule, _, err := ruleSvc.GetForChild; if err and code RULE_NOT_FOUND → allow true; else return.\n- allowed, _ := rule.AllowedAt(r, now).\n- repo.heartbeat.\n- if pgx.ErrNoRows → 404.\n- build result:\n  - remaining = max(0, minutes*60 - consumed).\n  - revoked = status==\"revoked\" or reason set.\n  - status.\n- If expired/exhausted, reason.\n\nActive:\n- repo.activeGrant; no rows → 404; build.\n- Attach lease token? Can't re-sign same jti? Can sign again; fine. `grant.Grant` without lease maybe.\n\nGrantForSession: repo.grantBySession; no rows 404.\n\nCapability/Tamper: validate guard mode; event type whitelist; repo.\n\nErrors.\n\n`Error` mapping.\n\nLease token signing.\n\nUse crypto/rand base64.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671414728,
+            "completed": 1793671424327
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_iwluscbxikwqvqrhpldn83ca",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package watch\n\nimport (\n\t\"context\"\n\t\"crypto/rand\"\n\t\"encoding/base64\"\n\t\"errors\"\n\t\"log/slog\"\n\t\"time\"\n\n\t\"github.com/golang-jwt/jwt/v5\"\n\t\"github.com/jackc/pgx/v5\"\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n)\n\nvar validTamperTypes = map[string]bool{\n\t\"permission_revoked\": true,\n\t\"uninstall_attempt\":  true,\n\t\"package_tampered\":   true,\n\t\"clock_skew\":         true,\n\t\"other\":              true,\n}\n\n// Service 负责授权签发、心跳计量与设备异常上报。\ntype Service struct {\n\trepo    *repository\n\truleSvc *rule.Service\n\tsecret  []byte\n\tlogger  *slog.Logger\n}\n\n// New 构造计量服务。\nfunc New(pool *pgxpool.Pool, ruleSvc *rule.Service, secret string, logger *slog.Logger) *Service {\n\treturn &Service{repo: newRepository(pool), ruleSvc: ruleSvc, secret: []byte(secret), logger: logger}\n}\n\n// Issue 为通过的答题会话签发授权（同一会话幂等）。\nfunc (s *Service) Issue(ctx context.Context, req IssueRequest) (Grant, error) {\n\tif req.SessionID == \"\" || req.ChildID == \"\" || req.DeviceID == \"\" {\n\t\treturn Grant{}, newError(422, \"VALIDATION_ERROR\", \"缺少会话、孩子或设备\")\n\t}\n\tnow := time.Now()\n\tlocation := time.UTC\n\tif req.Rule.Timezone != \"\" {\n\t\tif loc, err := time.LoadLocation(req.Rule.Timezone); err == nil {\n\t\t\tlocation = loc\n\t\t}\n\t}\n\tlocal := now.In(location)\n\tstart := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, location)\n\tend := start.Add(24 * time.Hour)\n\n\tjti := randomToken()\n\trec, _, err := s.repo.issue(ctx, req, start, end, jti, now)\n\tif err != nil {\n\t\treturn Grant{}, err\n\t}\n\treturn s.toGrant(rec), nil\n}\n\n// GrantForSession 返回会话已签发的授权。\nfunc (s *Service) GrantForSession(ctx context.Context, sessionID string) (Grant, error) {\n\trec, err := s.repo.grantBySession(ctx, sessionID)\n\tif err != nil {\n\t\tif errors.Is(err, pgx.ErrNoRows) {\n\t\t\treturn Grant{}, newError(404, \"GRANT_NOT_FOUND\", \"授权不存在\")\n\t\t}\n\t\treturn Grant{}, err\n\t}\n\treturn s.toGrant(rec), nil\n}\n\n// ActiveGrant 返回设备当前有效授权。\nfunc (s *Service) ActiveGrant(ctx context.Context, principal identity.DevicePrincipal) (Grant, error) {\n\trec, err := s.repo.activeGrant(ctx, principal.DeviceID, principal.ChildID, time.Now())\n\tif err != nil {\n\t\tif errors.Is(err, pgx.ErrNoRows) {\n\t\t\treturn Grant{}, newError(404, \"GRANT_NOT_FOUND\", \"当前没有有效授权\")\n\t\t}\n\t\treturn Grant{}, err\n\t}\n\treturn s.toGrant(rec), nil\n}\n\n// Heartbeat 计费心跳：答题期间与客户端暂停时不计入观看时长。\nfunc (s *Service) Heartbeat(ctx context.Context, principal identity.DevicePrincipal,\n\tgrantID string, req HeartbeatRequest) (HeartbeatResult, error) {\n\tnow := time.Now()\n\tallowed := true\n\tif s.ruleSvc != nil {\n\t\tr, _, err := s.ruleSvc.GetForChild(ctx, principal.ChildID)\n\t\tif err == nil {\n\t\t\tallowed, _ = rule.AllowedAt(r, now)\n\t\t} else {\n\t\t\tvar ruleErr *rule.Error\n\t\t\tif !errors.As(err, &ruleErr) || ruleErr.Code != \"RULE_NOT_FOUND\" {\n\t\t\t\treturn HeartbeatResult{}, err\n\t\t\t}\n\t\t}\n\t}\n\n\toutcome, err := s.repo.heartbeat(ctx, grantID, principal.DeviceID, principal.ChildID,\n\t\tallowed, req.Paused, now)\n\tif err != nil {\n\t\tif errors.Is(err, pgx.ErrNoRows) {\n\t\t\treturn HeartbeatResult{}, newError(404, \"GRANT_NOT_FOUND\", \"授权不存在\")\n\t\t}\n\t\treturn HeartbeatResult{}, err\n\t}\n\tremaining := outcome.Grant.Minutes*60 - outcome.Grant.ConsumedSeconds\n\tif remaining < 0 {\n\t\tremaining = 0\n\t}\n\tresult := HeartbeatResult{\n\t\tGrantID:          outcome.Grant.ID,\n\t\tStatus:           outcome.Grant.Status,\n\t\tConsumedSeconds:  outcome.Grant.ConsumedSeconds,\n\t\tRemainingSeconds: remaining,\n\t\tPaused:           req.Paused || outcome.PausedSec > 0,\n\t\tRevoked:          outcome.Revoked || outcome.Grant.Status == \"revoked\",\n\t\tReason:           outcome.Reason,\n\t\tServerTime:       now,\n\t}\n\treturn result, nil\n}\n\n// ReportCapability 记录设备防护模式与权限状态。\nfunc (s *Service) ReportCapability(ctx context.Context, principal identity.DevicePrincipal, c Capability) error {\n\tif c.GuardMode == \"\" {\n\t\tc.GuardMode = \"standard\"\n\t}\n\tif c.GuardMode != \"standard\" && c.GuardMode != \"device_owner\" {\n\t\treturn newError(422, \"VALIDATION_ERROR\", \"guard_mode 不合法\")\n\t}\n\treturn s.repo.upsertCapability(ctx, principal.DeviceID, c)\n}\n\n// ReportTamper 记录权限关闭、卸载尝试等异常。\nfunc (s *Service) ReportTamper(ctx context.Context, principal identity.DevicePrincipal, event TamperEvent) error {\n\tif !validTamperTypes[event.Type] {\n\t\treturn newError(422, \"VALIDATION_ERROR\", \"异常类型不合法\")\n\t}\n\treturn s.repo.insertTamper(ctx, principal.DeviceID, principal.ChildID, event)\n}\n\nfunc (s *Service) toGrant(rec grantRecord) Grant {\n\tremaining := rec.Minutes*60 - rec.ConsumedSeconds\n\tif remaining < 0 {\n\t\tremaining = 0\n\t}\n\ttoken, err := s.signLease(rec)\n\tif err != nil {\n\t\ts.logger.Error(\"sign lease\", \"error\", err, \"grant_id\", rec.ID)\n\t}\n\treturn Grant{\n\t\tGrantID:          rec.ID,\n\t\tSessionID:        rec.SessionID,\n\t\tMinutes:          rec.Minutes,\n\t\tValidFrom:        rec.ValidFrom,\n\t\tValidUntil:       rec.ValidUntil,\n\t\tRemainingSeconds: remaining,\n\t\tStatus:           rec.Status,\n\t\tLeaseToken:       token,\n\t}\n}\n\ntype leaseClaims struct {\n\tType      string `json:\"typ\"`\n\tChildID   string `json:\"child_id\"`\n\tDeviceID  string `json:\"device_id\"`\n\tSessionID string `json:\"session_id\"`\n\tjwt.RegisteredClaims\n}\n\nfunc (s *Service) signLease(rec grantRecord) (string, error) {\n\tclaims := leaseClaims{\n\t\tType:      \"grant\",\n\t\tChildID:   rec.ChildID,\n\t\tDeviceID:  rec.DeviceID,\n\t\tSessionID: rec.SessionID,\n\t\tRegisteredClaims: jwt.RegisteredClaims{\n\t\t\tSubject:   rec.ID,\n\t\t\tID:        rec.JTI,\n\t\t\tIssuedAt:  jwt.NewNumericDate(rec.ValidFrom),\n\t\t\tExpiresAt: jwt.NewNumericDate(rec.ValidUntil),\n\t\t},\n\t}\n\treturn jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(s.secret)\n}\n\nfunc randomToken() string {\n\tb := make([]byte, 18)\n\tif _, err := rand.Read(b); err != nil {\n\t\tpanic(err)\n\t}\n\treturn base64.RawURLEncoding.EncodeToString(b)\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/watch/service.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/watch/service.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671417157,
+            "ran": 1793671424336,
+            "completed": 1793671424347
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "5cbb3f87124404192dc8aecc49e89330a4b6f88d",
+        "end": "a7e10e4bbb1fc3f6ce77afa78c1df71e93ba6ffb",
+        "files": [
+          "internal/watch/service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 3151,
+        "output": 1861,
+        "reasoning": 380,
+        "cache": {
+          "read": 412928,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f25e9ab001Huf05ljjTrtUfT",
+      "time": {
+        "created": 1793671424433,
+        "streamed": 1793671434887,
+        "completed": 1793671434960
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Issue: `IssueRequest.Rule RuleView` lacks Timezone! I defined RuleView with only Unlock/Daily/Timezone? Check models: RuleView has UnlockMinutes, DailyLimit, Timezone — yes I included Timezone? Let me check: I wrote:\n\n```go\ntype RuleView struct {\n\tUnlockMinutes int\n\tDailyLimit    int\n\tTimezone      string\n}\n```\nYes.\n\n`Heartbeat` paused result: `Paused: req.Paused || outcome.PausedSec > 0` — if paused due to quiz but client didn't set, pausedSec>0 true. Good.\n\n`toGrant` signs even for revoked/exhausted; token exp may be past. Fine.\n\n`Grant` field alignment gofmt.\n\nNow handlers.\n\n```go\nfunc (s *Service) DeviceRoutes(r chi.Router) {\n r.Post(\"/watch/grants/{grantID}/heartbeat\", ...)\n r.Get(\"/watch/grants/active\", ...)\n r.Put(\"/device/capability\", ...)\n r.Post(\"/device/tamper\", ...)\n}\n```\nHandlers use identity.DeviceFrom.\n\nResponses; error mapping.\n\nWrite.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671428421,
+            "completed": 1793671434877
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_r6mbuss4o1uvu3d459cz2w83",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package watch\n\nimport (\n\t\"encoding/json\"\n\t\"errors\"\n\t\"net/http\"\n\n\t\"github.com/go-chi/chi/v5\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n)\n\n// DeviceRoutes 注册电视端计量与设备上报接口。\nfunc (s *Service) DeviceRoutes(r chi.Router) {\n\tr.Post(\"/watch/grants/{grantID}/heartbeat\", s.handleHeartbeat)\n\tr.Get(\"/watch/grants/active\", s.handleActiveGrant)\n\tr.Put(\"/device/capability\", s.handleCapability)\n\tr.Post(\"/device/tamper\", s.handleTamper)\n}\n\nfunc (s *Service) handleHeartbeat(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteWatchError(w, r, newError(401, \"AUTH_INVALID_TOKEN\", \"设备未授权\"))\n\t\treturn\n\t}\n\tvar req HeartbeatRequest\n\tr.Body = http.MaxBytesReader(w, r.Body, 1<<20)\n\tif err := json.NewDecoder(r.Body).Decode(&req); err != nil {\n\t\twriteWatchError(w, r, newError(422, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\"))\n\t\treturn\n\t}\n\tresult, err := s.Heartbeat(r.Context(), principal, chi.URLParam(r, \"grantID\"), req)\n\tif err != nil {\n\t\twriteWatchError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleActiveGrant(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteWatchError(w, r, newError(401, \"AUTH_INVALID_TOKEN\", \"设备未授权\"))\n\t\treturn\n\t}\n\tgrant, err := s.ActiveGrant(r.Context(), principal)\n\tif err != nil {\n\t\twriteWatchError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, grant)\n}\n\nfunc (s *Service) handleCapability(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteWatchError(w, r, newError(401, \"AUTH_INVALID_TOKEN\", \"设备未授权\"))\n\t\treturn\n\t}\n\tvar capability Capability\n\tr.Body = http.MaxBytesReader(w, r.Body, 1<<20)\n\tif err := json.NewDecoder(r.Body).Decode(&capability); err != nil {\n\t\twriteWatchError(w, r, newError(422, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\"))\n\t\treturn\n\t}\n\tif err := s.ReportCapability(r.Context(), principal, capability); err != nil {\n\t\twriteWatchError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, map[string]string{\"status\": \"ok\"})\n}\n\nfunc (s *Service) handleTamper(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteWatchError(w, r, newError(401, \"AUTH_INVALID_TOKEN\", \"设备未授权\"))\n\t\treturn\n\t}\n\tvar event TamperEvent\n\tr.Body = http.MaxBytesReader(w, r.Body, 1<<20)\n\tif err := json.NewDecoder(r.Body).Decode(&event); err != nil {\n\t\twriteWatchError(w, r, newError(422, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\"))\n\t\treturn\n\t}\n\tif err := s.ReportTamper(r.Context(), principal, event); err != nil {\n\t\twriteWatchError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, map[string]string{\"status\": \"ok\"})\n}\n\nfunc writeWatchError(w http.ResponseWriter, r *http.Request, err error) {\n\tvar watchErr *Error\n\tif errors.As(err, &watchErr) {\n\t\twriteJSON(w, watchErr.Status, map[string]string{\n\t\t\t\"code\":       watchErr.Code,\n\t\t\t\"message\":    watchErr.Message,\n\t\t\t\"request_id\": w.Header().Get(\"X-Request-Id\"),\n\t\t})\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusInternalServerError, map[string]string{\n\t\t\"code\":       \"INTERNAL\",\n\t\t\"message\":    \"服务端错误\",\n\t\t\"request_id\": w.Header().Get(\"X-Request-Id\"),\n\t})\n}\n\nfunc writeJSON(w http.ResponseWriter, status int, body any) {\n\tw.Header().Set(\"Content-Type\", \"application/json; charset=utf-8\")\n\tw.WriteHeader(status)\n\t_ = json.NewEncoder(w).Encode(body)\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/watch/handlers.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/watch/handlers.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671430194,
+            "ran": 1793671434885,
+            "completed": 1793671434894
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "a7e10e4bbb1fc3f6ce77afa78c1df71e93ba6ffb",
+        "end": "be02bc61fa7f60861dac094098eafbc9641ab807",
+        "files": [
+          "internal/watch/handlers.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2340,
+        "output": 1106,
+        "reasoning": 243,
+        "cache": {
+          "read": 416000,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f2612e1001s1M5o1lR4WRrkY",
+      "time": {
+        "created": 1793671434983,
+        "streamed": 1793671444087,
+        "completed": 1793671444216
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now quiz integration.\n\nSessionSummary add Grant *watch.Grant, GrantError string. session_models.go imports watch. But quiz also imports watch in session_service; type available.\n\nAdd import watch to session_models.go and fields.\n\nQuiz Service add watchSvc *watch.Service. New signature (pool, rdb, ruleSvc, watchSvc, logger). Update tests (add nil).\n\nFinishSession:\n- If state passed and watchSvc != nil: parse rule snapshot; Issue with RuleView. Attach.\n- If already passed (state != active), attach existing grant: `GrantForSession`; if err, GrantError.\n- When issuing error: GrantError = message (watch.Error or generic).\n- Summary builder returns summary; we need to set fields before/after. `s.summary` returns value; set then return.\n\nImplementation:\n```go\nfunc (s *Service) FinishSession(...) (SessionSummary, error) {\n ...\n if session.State != \"active\" {\n   summary, err := s.summary(...)\n   if err == nil { s.attachGrant(ctx, session, &summary) }\n   return summary, err\n }\n ...\n state passed/failed; set\n ...\n summary, err := s.summary(...)\n if state==\"passed\" { s.issueGrant(ctx, session, &summary) } else if state==\"...\" ...\n return summary\n}\n```\n`attachGrant` for already passed: GrantForSession.\n`issueOrAttachGrant`:\n```go\nvar rs ruleSnapshot; json.Unmarshal(session.RuleSnapshot,&rs)\ng, err := s.watchSvc.Issue(ctx, watch.IssueRequest{SessionID:session.ID, ChildID:session.ChildID, DeviceID:session.DeviceID, Rule: watch.RuleView{UnlockMinutes:rs.Rule.UnlockMinutes, DailyLimit:rs.Rule.DailyLimit, Timezone:rs.Rule.Timezone}})\nif err != nil { summary.GrantError = err.Error(); return }\nsummary.Grant = &g\n```\nBut watch.IssueRequest.Rule is watch.RuleView; no cycle.\n\nIf watchSvc nil (tests), skip.\n\nNeed make sure `ruleSnapshot.Rule.DailyLimit` loaded from DB; defaultRule has 0 → watch defaults to 60.\n\nSummary JSON includes grant.\n\nAdd fields.\n\nAlso SessionSummary passed when grant issued.\n\nLet's patch.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671439277,
+            "completed": 1793671444083
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_yv0n4vaaapi1dqpn9fc8ssxt",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/quiz/session_models.go'); s=p.read_text()\ns=s.replace('''import (\n\t\"encoding/json\"\n\t\"time\"\n)''','''import (\n\t\"encoding/json\"\n\t\"time\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n)''')\ns=s.replace('''\tFinishedAt    *time.Time        `json:\"finished_at,omitempty\"`\n\tQuestions     []SessionQuestion `json:\"questions,omitempty\"`\n}''','''\tFinishedAt    *time.Time        `json:\"finished_at,omitempty\"`\n\tQuestions     []SessionQuestion `json:\"questions,omitempty\"`\n\tGrant         *watch.Grant      `json:\"grant,omitempty\"`\n\tGrantError    string            `json:\"grant_error,omitempty\"`\n}''')\np.write_text(s)\n\np=Path('internal/quiz/selector.go'); s=p.read_text()\ns=s.replace('''\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n)''','''\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n)''')\ns=s.replace('''type Service struct {\n\trepo    *repository\n\tredis   *redis.Client\n\truleSvc *rule.Service\n\tlogger  *slog.Logger\n}\n\n// New 构造组卷服务。\nfunc New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, logger *slog.Logger) *Service {\n\treturn &Service{repo: newRepository(pool), redis: rdb, ruleSvc: ruleSvc, logger: logger}\n}''','''type Service struct {\n\trepo     *repository\n\tredis    *redis.Client\n\truleSvc  *rule.Service\n\twatchSvc *watch.Service\n\tlogger   *slog.Logger\n}\n\n// New 构造组卷服务。\nfunc New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, watchSvc *watch.Service, logger *slog.Logger) *Service {\n\treturn &Service{\n\t\trepo:     newRepository(pool),\n\t\tredis:    rdb,\n\t\truleSvc:  ruleSvc,\n\t\twatchSvc: watchSvc,\n\t\tlogger:   logger,\n\t}\n}''')\np.write_text(s)\nprint('patched quiz')\nPY\ngrep -n \"watch\" internal/quiz/selector.go | head"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "patched quiz\n17:\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n41:\twatchSvc *watch.Service\n46:func New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, watchSvc *watch.Service, logger *slog.Logger) *Service {\n51:\t\twatchSvc: watchSvc,\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671441710,
+            "ran": 1793671444085,
+            "completed": 1793671444168
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "be02bc61fa7f60861dac094098eafbc9641ab807",
+        "end": "c80aafb53ed55e5210078b6a894cac80faa0892b",
+        "files": [
+          "internal/quiz/selector.go",
+          "internal/quiz/session_models.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1407,
+        "output": 595,
+        "reasoning": 505,
+        "cache": {
+          "read": 418304,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f263711001sCenWppfjEWnDE",
+      "time": {
+        "created": 1793671444245,
+        "streamed": 1793671458511,
+        "completed": 1793671460078
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now modify FinishSession in session_service.go and add helpers.\n\nCurrent FinishSession:\n```go\nfunc (s *Service) FinishSession(...) (SessionSummary, error) {\n\tsession, err := s.loadSession...\n\tif session.State != \"active\" {\n\t\treturn s.summary(ctx, session, false)\n\t}\n\tif time.Now().After(session.ExpiresAt) { ... return s.summary }\n\tstate := ...\n\tset\n\tsession.State=state; now; FinishedAt\n\treturn s.summary(ctx, session, false)\n}\n```\n\nPatch:\n- state != active: summary, attachGrant, return.\n- expired: summary.\n- passed: summary then issue grant.\n- failed: summary.\n\nAdd helpers:\n```go\nfunc (s *Service) attachGrant(ctx, session, summary *SessionSummary) {\n if s.watchSvc == nil || summary.State != \"passed\" { return }\n g, err := s.watchSvc.GrantForSession(ctx, session.ID)\n if err != nil { summary.GrantError = err.Error(); return }\n summary.Grant = &g\n}\nfunc (s *Service) issueGrant(ctx, session, summary *SessionSummary) {\n if s.watchSvc == nil || summary.State != \"passed\" { return }\n var snap ruleSnapshot; json.Unmarshal\n g, err := s.watchSvc.Issue(... )\n if err != nil { summary.GrantError = err.Error(); return }\n summary.Grant=&g\n}\n```\nFor already passed, GrantForSession.\nFor expired/failed no.\n\nPotential issue: when Finish called twice, second returns existing grant via GrantForSession.\n\nPatch via Python.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671449977,
+            "completed": 1793671458504
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_cj504orwksxi6mvvny5n9ioj",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/quiz/session_service.go'); s=p.read_text()\ns=s.replace('''\tif session.State != \"active\" {\n\t\treturn s.summary(ctx, session, false)\n\t}\n\tif time.Now().After(session.ExpiresAt) {\n\t\t_ = s.repo.setSessionState(ctx, session.ID, \"expired\")\n\t\tsession.State = \"expired\"\n\t\treturn s.summary(ctx, session, false)\n\t}\n\tstate := \"failed\"\n\tif session.Score >= session.PassThreshold {\n\t\tstate = \"passed\"\n\t}\n\tif err := s.repo.setSessionState(ctx, session.ID, state); err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tsession.State = state\n\tnow := time.Now()\n\tsession.FinishedAt = &now\n\treturn s.summary(ctx, session, false)\n}''','''\tif session.State != \"active\" {\n\t\tsummary, err := s.summary(ctx, session, false)\n\t\tif err == nil && session.State == \"passed\" {\n\t\t\ts.attachGrant(ctx, session, &summary)\n\t\t}\n\t\treturn summary, err\n\t}\n\tif time.Now().After(session.ExpiresAt) {\n\t\t_ = s.repo.setSessionState(ctx, session.ID, \"expired\")\n\t\tsession.State = \"expired\"\n\t\treturn s.summary(ctx, session, false)\n\t}\n\tstate := \"failed\"\n\tif session.Score >= session.PassThreshold {\n\t\tstate = \"passed\"\n\t}\n\tif err := s.repo.setSessionState(ctx, session.ID, state); err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tsession.State = state\n\tnow := time.Now()\n\tsession.FinishedAt = &now\n\tsummary, err := s.summary(ctx, session, false)\n\tif err != nil {\n\t\treturn SessionSummary{}, err\n\t}\n\tif state == \"passed\" {\n\t\ts.issueGrant(ctx, session, &summary)\n\t}\n\treturn summary, nil\n}\n\nfunc (s *Service) issueGrant(ctx context.Context, session sessionRecord, summary *SessionSummary) {\n\tif s.watchSvc == nil {\n\t\treturn\n\t}\n\tvar snapshot ruleSnapshot\n\t_ = json.Unmarshal(session.RuleSnapshot, &snapshot)\n\tgrant, err := s.watchSvc.Issue(ctx, watch.IssueRequest{\n\t\tSessionID: session.ID,\n\t\tChildID:   session.ChildID,\n\t\tDeviceID:  session.DeviceID,\n\t\tRule: watch.RuleView{\n\t\t\tUnlockMinutes: snapshot.Rule.UnlockMinutes,\n\t\t\tDailyLimit:    snapshot.Rule.DailyLimit,\n\t\t\tTimezone:      snapshot.Rule.Timezone,\n\t\t},\n\t})\n\tif err != nil {\n\t\tsummary.GrantError = err.Error()\n\t\ts.logger.Error(\"issue watch grant\", \"error\", err, \"session_id\", session.ID)\n\t\treturn\n\t}\n\tsummary.Grant = &grant\n}\n\nfunc (s *Service) attachGrant(ctx context.Context, session sessionRecord, summary *SessionSummary) {\n\tif s.watchSvc == nil {\n\t\treturn\n\t}\n\tgrant, err := s.watchSvc.GrantForSession(ctx, session.ID)\n\tif err != nil {\n\t\tsummary.GrantError = err.Error()\n\t\treturn\n\t}\n\tsummary.Grant = &grant\n}''')\ns=s.replace('''\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n)''','''\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n)''')\np.write_text(s)\nprint('patched finish')\nPY\ngofmt -w internal/quiz internal/watch && go build ./... 2>&1 | head -20",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "patched finish\n# github.com/roma007/OpenQuizGo/cmd/api\ncmd/api/main.go:73:50: not enough arguments in call to quiz.New\n\thave (*pgxpool.Pool, *redis.Client, *rule.Service, *slog.Logger)\n\twant (*pgxpool.Pool, *redis.Client, *rule.Service, *watch.Service, *slog.Logger)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671452738,
+            "ran": 1793671458510,
+            "completed": 1793671460018
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "c80aafb53ed55e5210078b6a894cac80faa0892b",
+        "end": "feb9b9801f5ab9d06d1b641c34057441bd7edfbb",
+        "files": [
+          "internal/quiz/session_service.go",
+          "internal/watch/models.go",
+          "internal/watch/repository.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1322,
+        "output": 926,
+        "reasoning": 347,
+        "cache": {
+          "read": 419584,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f267521001b9TvZaIe8q1M64",
+      "time": {
+        "created": 1793671460134,
+        "streamed": 1793671467550,
+        "completed": 1793671468967
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now wire watchService in main, httpapi Deps, router, update tests (New signature), construct watch before quiz.\n\nmain:\n```go\nwatchService := watch.New(pool, ruleService, cfg.JWTSecret, logger)\nquizService := quiz.New(pool, rdb, ruleService, watchService, logger)\n```\nAdd import watch.\n\nhttpapi Deps Watch *watch.Service; router mount DeviceRoutes with identity.DeviceAuth.\n\nTests: quiz.New calls add nil watch.\n\nLet's patch.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671464207,
+            "completed": 1793671467540
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_jkg11hxb8jh81yf0yl762na0",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('cmd/api/main.go'); s=p.read_text()\ns=s.replace('''\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n)''','''\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n)''')\ns=s.replace('''\truleService := rule.New(pool, identityService, logger)\n\tadminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)\n\tquestionService := question.New(pool, logger)\n\tquizService := quiz.New(pool, rdb, ruleService, logger)''','''\truleService := rule.New(pool, identityService, logger)\n\twatchService := watch.New(pool, ruleService, cfg.JWTSecret, logger)\n\tadminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)\n\tquestionService := question.New(pool, logger)\n\tquizService := quiz.New(pool, rdb, ruleService, watchService, logger)''')\ns=s.replace('''\t\tRule:      ruleService,\n\t\tVersion:   cfg.Version,''','''\t\tRule:      ruleService,\n\t\tWatch:     watchService,\n\t\tVersion:   cfg.Version,''')\np.write_text(s)\n\np=Path('internal/httpapi/router.go'); s=p.read_text()\ns=s.replace('''\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n)''','''\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n)''')\ns=s.replace('''\tRule      *rule.Service\n\tVersion   string''','''\tRule      *rule.Service\n\tWatch     *watch.Service\n\tVersion   string''')\ns=s.replace('''\t\tif d.Rule != nil && d.Identity != nil {''','''\t\tif d.Watch != nil && d.Identity != nil {\n\t\t\tr.Group(func(r chi.Router) {\n\t\t\t\tr.Use(d.Identity.DeviceAuth)\n\t\t\t\td.Watch.DeviceRoutes(r)\n\t\t\t})\n\t\t}\n\t\tif d.Rule != nil && d.Identity != nil {''')\np.write_text(s)\n\nfor name in ['internal/quiz/selector_test.go','internal/quiz/session_test.go']:\n    p=Path(name); s=p.read_text()\n    s=s.replace('New(pool, nil, nil, slog.New', 'New(pool, nil, nil, nil, slog.New')\n    p.write_text(s)\n\nprint('wired watch')\nPY\ngofmt -w cmd/api internal/httpapi && go build ./... 2>&1 | head -20",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "wired watch\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671465072,
+            "ran": 1793671467548,
+            "completed": 1793671468917
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "feb9b9801f5ab9d06d1b641c34057441bd7edfbb",
+        "end": "265be682bbce1ad1a5b129af372e6437e5144c57",
+        "files": [
+          "cmd/api/main.go",
+          "internal/httpapi/router.go",
+          "internal/quiz/selector_test.go",
+          "internal/quiz/session_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1411,
+        "output": 669,
+        "reasoning": 104,
+        "cache": {
+          "read": 420864,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f2697cc001iZMNNzau5x0t6J",
+      "time": {
+        "created": 1793671469009,
+        "streamed": 1793671489421,
+        "completed": 1793671489494
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build ok.\n\nNow tests for watch. Create integration test:\n- Prepare DB truncate watch_grant, watch_log, quiz_session + child.\n- Create child/family, watch_rule (daily 2, unlock 1?); insert quiz_session passed.\n- watch.Service with ruleSvc (identity nil? rule.New requires identity *identity.Service; can pass nil; GetForChild doesn't need identity). watch.New(pool, ruleSvc, secret, logger).\n- Issue: daily_limit 2, unlock 1 → grant 1 min.\n- Heartbeat after 30s? last_heartbeat_at = issue time; we can't wait. Update last_heartbeat_at to now-30s via SQL then heartbeat with paused false → consumed ~30.\n  - Or heartbeat immediately → delta 0 (no charge). To test, set last_heartbeat_at 30s ago.\n  - Test paused: set last HB 60s ago, paused true → consumed unchanged, paused log.\n  - Test quiz active: insert quiz_session active for child/device; heartbeat (not paused) → paused due to active quiz, no charge.\n- Exhaust: set consumed near limit, HB.\n- Time window revoke: rule window excludes now → heartbeat → revoked.\n- Issue daily limit: child daily 1, unlock 1, but used 60s? Could test that second session grants 0 → RULE_DAILY_LIMIT.\n- Active grant.\n- Tamper/capability insert.\n\nSimpler test:\n1. Setup rule daily 60, unlock 20.\n2. Insert passed quiz_session (needed FK for grant session_id).\n3. Issue grant minutes=20.\n4. Active grant returns.\n5. Heartbeat: set last_heartbeat 30s ago; paused=false → consumed ~30; watch_log row.\n6. Paused heartbeat: set last 60s ago; paused=true → consumed unchanged; paused_seconds >=60.\n7. Quiz active: create active quiz_session; heartbeat 30s later paused=false → no charge.\n8. Time window revoke: update rule time_window to exclude now (via SQL), heartbeat → revoked.\n9. Idempotent issue same session → same grant id.\n10. Daily limit: new child with daily 1, issue 20 → minutes=1; then new session issue → RULE_DAILY_LIMIT? With 1 active grant reserved 60, available 0 → error. Test.\n11. Capability/tamper: methods then query rows.\n\nNeed principal identity.DevicePrincipal.\n\nQuiz session insert requires rule_version, pass_threshold, expires_at, rule_snapshot. Insert directly.\n\nUse SQL helper.\n\n`watch.Service.Issue` needs RuleView with Timezone.\n\nTime window rule update: use SQL update watch_rule set time_window='{\"allow\":[{\"start\":\"...\",\"end\":\"...\"}]}'.\n\nCompute excluded window like rule test.\n\n`rule.Service` requires pool and logger; identity nil okay. `rule.New(pool, nil, logger)`.\n\nWatch handlers not tested; service enough.\n\nLet's write `internal/watch/service_test.go`.\n\nAlso update Makefile test-int include watch.\n\nMigration 00006 needs applying in dev/test.\n\nWrite test.\n\nPotential issue: Issue advisory lock uses `hashtext($1)`; fine.\n\nDaily used query: watch_log rows from heartbeat have start_at = previous HB and watched_seconds; issue later counts them.\n\nTest daily limit issue: Could create second child? Reuse same child after first grant consumed? To get available 0, set daily_limit 1 and insert watch_log 60s today. Then new session insert and Issue → minutes 0 → error. Do that after revoke tests by updating rule daily 1 and inserting watch_log 60s. But watch_log insert already from heartbeats. Add explicit.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671472619,
+            "completed": 1793671489413
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_nmq975pzb5e6pkyb3kzdecn4",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "package watch\n\nimport (\n\t\"context\"\n\t\"database/sql\"\n\t\"io\"\n\t\"log/slog\"\n\t\"os\"\n\t\"testing\"\n\t\"time\"\n\n\t_ \"github.com/jackc/pgx/v5/stdlib\"\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n\t\"github.com/pressly/goose/v3\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n\t\"github.com/roma007/OpenQuizGo/migrations\"\n)\n\nfunc TestGrantAndHeartbeat(t *testing.T) {\n\tdbURL := os.Getenv(\"TEST_DATABASE_URL\")\n\tif dbURL == \"\" {\n\t\tt.Skip(\"TEST_DATABASE_URL not set\")\n\t}\n\tctx := context.Background()\n\tprepareWatchDB(t, dbURL)\n\n\tpool, err := pgxpool.New(ctx, dbURL)\n\tif err != nil {\n\t\tt.Fatalf(\"pool: %v\", err)\n\t}\n\tdefer pool.Close()\n\n\tchildID := seedWatchChild(t, pool)\n\tlogger := slog.New(slog.NewTextHandler(io.Discard, nil))\n\truleSvc := rule.New(pool, nil, logger)\n\tsvc := New(pool, ruleSvc, \"test-secret-0123456789-0123456789\", logger)\n\n\tprincipal := identity.DevicePrincipal{DeviceID: \"tv-watch\", ChildID: childID}\n\tsessionID := insertSession(t, pool, childID, principal.DeviceID)\n\n\tgrant, err := svc.Issue(ctx, IssueRequest{\n\t\tSessionID: sessionID,\n\t\tChildID:   childID,\n\t\tDeviceID:  principal.DeviceID,\n\t\tRule:      RuleView{UnlockMinutes: 20, DailyLimit: 60, Timezone: \"Asia/Shanghai\"},\n\t})\n\tif err != nil {\n\t\tt.Fatalf(\"issue: %v\", err)\n\t}\n\tif grant.Minutes != 20 || grant.LeaseToken == \"\" || grant.RemainingSeconds != 1200 {\n\t\tt.Fatalf(\"unexpected grant: %+v\", grant)\n\t}\n\n\tagain, err := svc.Issue(ctx, IssueRequest{\n\t\tSessionID: sessionID,\n\t\tChildID:   childID,\n\t\tDeviceID:  principal.DeviceID,\n\t\tRule:      RuleView{UnlockMinutes: 20, DailyLimit: 60, Timezone: \"Asia/Shanghai\"},\n\t})\n\tif err != nil || again.GrantID != grant.GrantID {\n\t\tt.Fatalf(\"issue should be idempotent: %+v %v\", again, err)\n\t}\n\n\tactive, err := svc.ActiveGrant(ctx, principal)\n\tif err != nil {\n\t\tt.Fatalf(\"active: %v\", err)\n\t}\n\tif active.GrantID != grant.GrantID {\n\t\tt.Fatalf(\"active grant = %s, want %s\", active.GrantID, grant.GrantID)\n\t}\n\n\tshiftHeartbeat(t, pool, grant.GrantID, 30*time.Second)\n\tbeat, err := svc.Heartbeat(ctx, principal, grant.GrantID, HeartbeatRequest{})\n\tif err != nil {\n\t\tt.Fatalf(\"heartbeat: %v\", err)\n\t}\n\tif beat.ConsumedSeconds < 29 || beat.ConsumedSeconds > 31 {\n\t\tt.Fatalf(\"consumed = %d, want ~30\", beat.ConsumedSeconds)\n\t}\n\n\tshiftHeartbeat(t, pool, grant.GrantID, 60*time.Second)\n\tpaused, err := svc.Heartbeat(ctx, principal, grant.GrantID, HeartbeatRequest{Paused: true})\n\tif err != nil {\n\t\tt.Fatalf(\"paused heartbeat: %v\", err)\n\t}\n\tif paused.ConsumedSeconds != beat.ConsumedSeconds {\n\t\tt.Fatalf(\"paused consumed = %d, want %d\", paused.ConsumedSeconds, beat.ConsumedSeconds)\n\t}\n\n\t// 答题会话进行中，即使客户端未标记暂停也不计费。\n\tinsertActiveSession(t, pool, childID, principal.DeviceID)\n\tshiftHeartbeat(t, pool, grant.GrantID, 30*time.Second)\n\tquizPaused, err := svc.Heartbeat(ctx, principal, grant.GrantID, HeartbeatRequest{})\n\tif err != nil {\n\t\tt.Fatalf(\"quiz heartbeat: %v\", err)\n\t}\n\tif quizPaused.ConsumedSeconds != beat.ConsumedSeconds || !quizPaused.Paused {\n\t\tt.Fatalf(\"quiz period should not accrue: %+v\", quizPaused)\n\t}\n\n\t// 时段外心跳吊销授权。\n\tnow := time.Now()\n\tstart := now.Add(2 * time.Hour).Format(\"15:04\")\n\tend := now.Add(2*time.Hour + time.Minute).Format(\"15:04\")\n\tif _, err := pool.Exec(ctx, `\n\t\tupdate watch_rule set time_window = jsonb_build_object('allow', jsonb_build_array(\n\t\t\tjsonb_build_object('start', $2, 'end', $3)))\n\t\twhere child_id = $1`, childID, start, end); err != nil {\n\t\tt.Fatalf(\"update window: %v\", err)\n\t}\n\trevoked, err := svc.Heartbeat(ctx, principal, grant.GrantID, HeartbeatRequest{})\n\tif err != nil {\n\t\tt.Fatalf(\"revoke heartbeat: %v\", err)\n\t}\n\tif !revoked.Revoked || revoked.Status != \"revoked\" {\n\t\tt.Fatalf(\"expected revoked, got %+v\", revoked)\n\t}\n\n\t// 每日额度不足时拒绝签发。\n\tchild2 := seedWatchChild(t, pool, \"hash-watch-2\")\n\tsession2 := insertSession(t, pool, child2, \"tv-watch-2\")\n\tif _, err := pool.Exec(ctx,\n\t\t`update watch_rule set daily_limit = 1 where child_id = $1`, child2); err != nil {\n\t\tt.Fatal(err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tinsert into watch_log (child_id, device_id, start_at, end_at, watched_seconds)\n\t\tvalues ($1, 'tv-watch-2', now(), now(), 60)`, child2); err != nil {\n\t\tt.Fatal(err)\n\t}\n\t_, err = svc.Issue(ctx, IssueRequest{\n\t\tSessionID: session2,\n\t\tChildID:   child2,\n\t\tDeviceID:  \"tv-watch-2\",\n\t\tRule:      RuleView{UnlockMinutes: 20, DailyLimit: 1, Timezone: \"Asia/Shanghai\"},\n\t})\n\twatchErr, ok := err.(*Error)\n\tif !ok || watchErr.Code != \"RULE_DAILY_LIMIT\" {\n\t\tt.Fatalf(\"expected daily limit error, got %v\", err)\n\t}\n\n\tif err := svc.ReportCapability(ctx, principal, Capability{\n\t\tGuardMode:   \"standard\",\n\t\tPermissions: map[string]bool{\"accessibility\": true},\n\t\tOSVersion:   \"14\",\n\t}); err != nil {\n\t\tt.Fatalf(\"capability: %v\", err)\n\t}\n\tif err := svc.ReportTamper(ctx, principal, TamperEvent{\n\t\tType:   \"permission_revoked\",\n\t\tDetail: map[string]any{\"permission\": \"accessibility\"},\n\t}); err != nil {\n\t\tt.Fatalf(\"tamper: %v\", err)\n\t}\n}\n\nfunc prepareWatchDB(t *testing.T, url string) {\n\tt.Helper()\n\tdb, err := sql.Open(\"pgx\", url)\n\tif err != nil {\n\t\tt.Fatalf(\"open: %v\", err)\n\t}\n\tdefer func() { _ = db.Close() }()\n\tgoose.SetBaseFS(migrations.FS)\n\tif err := goose.SetDialect(\"postgres\"); err != nil {\n\t\tt.Fatalf(\"dialect: %v\", err)\n\t}\n\tif err := goose.Up(db, \".\"); err != nil {\n\t\tt.Fatalf(\"migrate: %v\", err)\n\t}\n\tif _, err := db.Exec(`truncate table\n\t\twatch_log, watch_grant, quiz_session_item, quiz_session,\n\t\twatch_rule, child_profile, family_member, family, parent_account, audit_log\n\t\tcascade`); err != nil {\n\t\tt.Fatalf(\"truncate: %v\", err)\n\t}\n}\n\nfunc seedWatchChild(t *testing.T, pool *pgxpool.Pool, hash ...string) string {\n\tt.Helper()\n\tctx := context.Background()\n\tphoneHash := \"hash-watch\"\n\tif len(hash) > 0 {\n\t\tphoneHash = hash[0]\n\t}\n\tvar accountID, familyID, childID string\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into parent_account (phone_cipher, phone_hash) values ('cipher', $1)\n\t\treturning id`, phoneHash).Scan(&accountID); err != nil {\n\t\tt.Fatalf(\"account: %v\", err)\n\t}\n\tif err := pool.QueryRow(ctx,\n\t\t`insert into family (owner_id) values ($1) returning id`, accountID).Scan(&familyID); err != nil {\n\t\tt.Fatalf(\"family: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tinsert into family_member (family_id, account_id, role, second_factor_verified)\n\t\tvalues ($1, $2, 'owner', true)`, familyID, accountID); err != nil {\n\t\tt.Fatalf(\"member: %v\", err)\n\t}\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into child_profile (family_id, nickname, stage_code)\n\t\tvalues ($1, '计量孩子', 'low') returning id`, familyID).Scan(&childID); err != nil {\n\t\tt.Fatalf(\"child: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tinsert into watch_rule (child_id, unlock_minutes, pass_threshold, subject_weight,\n\t\t\tfun_ratio_cap, fun_enabled, time_window, daily_limit, offline_fallback_min,\n\t\t\tscope_mode, allowed_apps, weight_preset, timezone, version)\n\t\tvalues ($1, 20, 3, '{\"math\":2,\"chinese\":1,\"fun\":0.5}'::jsonb, 2, true,\n\t\t        '{\"allow\":[]}'::jsonb, 60, 10, 'media', '[]'::jsonb,\n\t\t        'balanced', 'Asia/Shanghai', 1)`, childID); err != nil {\n\t\tt.Fatalf(\"rule: %v\", err)\n\t}\n\treturn childID\n}\n\nfunc insertSession(t *testing.T, pool *pgxpool.Pool, childID, deviceID string) string {\n\tt.Helper()\n\tvar id string\n\tif err := pool.QueryRow(context.Background(), `\n\t\tinsert into quiz_session (child_id, device_id, rule_version, state,\n\t\t\tquestion_count, pass_threshold, score, correct_count, rule_snapshot,\n\t\t\texpires_at, finished_at)\n\t\tvalues ($1, $2, 1, 'passed', 5, 3, 4, 2, '{}'::jsonb, now() + interval '1 minute', now())\n\t\treturning id`, childID, deviceID).Scan(&id); err != nil {\n\t\tt.Fatalf(\"session: %v\", err)\n\t}\n\treturn id\n}\n\nfunc insertActiveSession(t *testing.T, pool *pgxpool.Pool, childID, deviceID string) {\n\tt.Helper()\n\tif _, err := pool.Exec(context.Background(), `\n\t\tinsert into quiz_session (child_id, device_id, rule_version, state,\n\t\t\tquestion_count, pass_threshold, score, correct_count, rule_snapshot, expires_at)\n\t\tvalues ($1, $2, 1, 'active', 5, 3, 0, 0, '{}'::jsonb, now() + interval '5 minutes')`,\n\t\tchildID, deviceID); err != nil {\n\t\tt.Fatalf(\"active session: %v\", err)\n\t}\n}\n\nfunc shiftHeartbeat(t *testing.T, pool *pgxpool.Pool, grantID string, d time.Duration) {\n\tt.Helper()\n\tif _, err := pool.Exec(context.Background(), `\n\t\tupdate watch_grant set last_heartbeat_at = now() - $2::interval where id = $1`,\n\t\tgrantID, d.String()); err != nil {\n\t\tt.Fatalf(\"shift heartbeat: %v\", err)\n\t}\n}\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/watch/service_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: internal/watch/service_test.go"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671478726,
+            "ran": 1793671489418,
+            "completed": 1793671489430
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "265be682bbce1ad1a5b129af372e6437e5144c57",
+        "end": "a0917a225b5e4ff6a616d34a1ce98804a33b740d",
+        "files": [
+          "internal/watch/service_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 792,
+        "output": 2889,
+        "reasoning": 809,
+        "cache": {
+          "read": 422272,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f26e7e5001kbwti9pj7MQAJz",
+      "time": {
+        "created": 1793671489514,
+        "streamed": 1793671499731,
+        "completed": 1793671499803
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Potential issue: `seedWatchChild` second call with hash \"hash-watch-2\" but phone_hash unique. Good. However it creates another family and child, but `watch_rule` daily default 60 then updated.\n\n`insertSession` needs unique session? no constraint except session_id unique. Fine.\n\n`Issue` second for child2: daily_limit in DB is 1 but `req.Rule.DailyLimit` passed 1. Used 60. available=0 → minutes 0 → error. Good.\n\n`shiftHeartbeat` uses `$2::interval` with string \"30s\"; PG interval accepts \"30s\"? PostgreSQL interval input '30s' is valid? Yes, \"30s\" works? Interval accepts \"30 seconds\"; I think `30s` may fail. Use `d.Seconds()` seconds: `make_interval(secs => $2)` simpler. Or format \"30 seconds\". Use `d.String()` = \"30s\" — PostgreSQL interval '30s' is accepted? Testing in psql: `select interval '30s'` works likely. I believe yes (unit abbreviations supported). To be safe, use `(d.Seconds() || ' seconds')`. Let's modify:\n```go\nseconds := int(d.Seconds())\n... now() - make_interval(secs => $2)\n```\nPass int.\n\nDo that.\n\nAlso event type detail map any marshals.\n\nRun tests after making change.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671493201,
+            "completed": 1793671499721
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_1tde2v1ev5nwylt53a2ebhyp",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "func shiftHeartbeat(t *testing.T, pool *pgxpool.Pool, grantID string, d time.Duration) {\n\tt.Helper()\n\tif _, err := pool.Exec(context.Background(), `\n\t\tupdate watch_grant set last_heartbeat_at = now() - make_interval(secs => $2) where id = $1`,\n\t\tgrantID, int(d.Seconds())); err != nil {\n\t\tt.Fatalf(\"shift heartbeat: %v\", err)\n\t}\n}",
+              "oldString": "func shiftHeartbeat(t *testing.T, pool *pgxpool.Pool, grantID string, d time.Duration) {\n\tt.Helper()\n\tif _, err := pool.Exec(context.Background(), `\n\t\tupdate watch_grant set last_heartbeat_at = now() - $2::interval where id = $1`,\n\t\tgrantID, d.String()); err != nil {\n\t\tt.Fatalf(\"shift heartbeat: %v\", err)\n\t}\n}",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/watch/service_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/watch/service_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/watch/service_test.go",
+                  "patch": "Index: internal/watch/service_test.go\n===================================================================\n--- internal/watch/service_test.go\n+++ internal/watch/service_test.go\n@@ -244,9 +244,9 @@\n \n func shiftHeartbeat(t *testing.T, pool *pgxpool.Pool, grantID string, d time.Duration) {\n \tt.Helper()\n \tif _, err := pool.Exec(context.Background(), `\n-\t\tupdate watch_grant set last_heartbeat_at = now() - $2::interval where id = $1`,\n-\t\tgrantID, d.String()); err != nil {\n+\t\tupdate watch_grant set last_heartbeat_at = now() - make_interval(secs => $2) where id = $1`,\n+\t\tgrantID, int(d.Seconds())); err != nil {\n \t\tt.Fatalf(\"shift heartbeat: %v\", err)\n \t}\n }\n",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 2
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671498095,
+            "ran": 1793671499728,
+            "completed": 1793671499737
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "a0917a225b5e4ff6a616d34a1ce98804a33b740d",
+        "end": "967b9e2a3e0d3a7e37d03fb4450c076cbaec74c2",
+        "files": [
+          "internal/watch/service_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 3743,
+        "output": 292,
+        "reasoning": 303,
+        "cache": {
+          "read": 423040,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f27102b001UwHZCbPlqfeusT",
+      "time": {
+        "created": 1793671499823,
+        "streamed": 1793671505141,
+        "completed": 1793671506744
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Run watch tests + apply migration to test DB (goose in test applies).\n\nNeed import rule.New exists. `rule.New(pool, nil, logger)` signature (pool, identityService, logger) yes.\n\nRun.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671504368,
+            "completed": 1793671505135
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_eha9n34y227k1mtm143wdp42",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && gofmt -w internal/watch && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test -p 1 ./internal/watch -v 2>&1 | tail -25",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "=== RUN   TestGrantAndHeartbeat\n2026/11/03 10:05:06 OK   00006_grant_heartbeat.sql (5.52ms)\n2026/11/03 10:05:06 goose: successfully migrated database to version: 6\n    service_test.go:111: update window: ERROR: could not determine data type of parameter $2 (SQLSTATE 42P18)\n--- FAIL: TestGrantAndHeartbeat (0.09s)\nFAIL\nFAIL\tgithub.com/roma007/OpenQuizGo/internal/watch\t0.717s\nFAIL\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671504784,
+            "ran": 1793671505139,
+            "completed": 1793671506695
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "967b9e2a3e0d3a7e37d03fb4450c076cbaec74c2",
+        "end": "6d37c2786a5df7173ecaaeddc80aa38b45428e8e",
+        "files": [
+          "internal/watch/service_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 647,
+        "output": 146,
+        "reasoning": 45,
+        "cache": {
+          "read": 426752,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f272b48001nk0dgI7TGEUEWO",
+      "time": {
+        "created": 1793671506765,
+        "streamed": 1793671511670,
+        "completed": 1793671511741
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "`jsonb_build_object('start', $2,...)` parameter type unknown. Cast `$2::text` and `$3::text`.\n\nPatch.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671510525,
+            "completed": 1793671511664
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_864o5z4nb38injz72aeyctgk",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "\t\tupdate watch_rule set time_window = jsonb_build_object('allow', jsonb_build_array(\n\t\t\tjsonb_build_object('start', $2::text, 'end', $3::text)))\n\t\twhere child_id = $1`, childID, start, end); err != nil {",
+              "oldString": "\t\tupdate watch_rule set time_window = jsonb_build_object('allow', jsonb_build_array(\n\t\t\tjsonb_build_object('start', $2, 'end', $3)))\n\t\twhere child_id = $1`, childID, start, end); err != nil {",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/internal/watch/service_test.go"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited internal/watch/service_test.go (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "internal/watch/service_test.go",
+                  "patch": "Index: internal/watch/service_test.go\n===================================================================\n--- internal/watch/service_test.go\n+++ internal/watch/service_test.go\n@@ -105,9 +105,9 @@\n \tstart := now.Add(2 * time.Hour).Format(\"15:04\")\n \tend := now.Add(2*time.Hour + time.Minute).Format(\"15:04\")\n \tif _, err := pool.Exec(ctx, `\n \t\tupdate watch_rule set time_window = jsonb_build_object('allow', jsonb_build_array(\n-\t\t\tjsonb_build_object('start', $2, 'end', $3)))\n+\t\t\tjsonb_build_object('start', $2::text, 'end', $3::text)))\n \t\twhere child_id = $1`, childID, start, end); err != nil {\n \t\tt.Fatalf(\"update window: %v\", err)\n \t}\n \trevoked, err := svc.Heartbeat(ctx, principal, grant.GrantID, HeartbeatRequest{})\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671510967,
+            "ran": 1793671511668,
+            "completed": 1793671511677
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "6d37c2786a5df7173ecaaeddc80aa38b45428e8e",
+        "end": "ed47b317467282e0678de6f314eb1d988806f835",
+        "files": [
+          "internal/watch/service_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 336,
+        "output": 217,
+        "reasoning": 33,
+        "cache": {
+          "read": 427392,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f273ecc001NwA5cdau8U0Pp5",
+      "time": {
+        "created": 1793671511761,
+        "streamed": 1793671515865,
+        "completed": 1793671517170
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_dv0mqfebvcdxjxprl05py4wy",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test -p 1 ./internal/watch -v 2>&1 | tail -15",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "=== RUN   TestGrantAndHeartbeat\n2026/11/03 10:05:17 goose: no migrations to run. current version: 6\n--- PASS: TestGrantAndHeartbeat (0.09s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t0.594s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671515537,
+            "ran": 1793671515863,
+            "completed": 1793671517130
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "ed47b317467282e0678de6f314eb1d988806f835",
+        "end": "ed47b317467282e0678de6f314eb1d988806f835",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 351,
+        "output": 139,
+        "reasoning": 0,
+        "cache": {
+          "read": 427648,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f275417001o6Tw0HZ4A1mvlG",
+      "time": {
+        "created": 1793671517213,
+        "streamed": 1793671529933,
+        "completed": 1793671531615
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Good.\n\nNow update quiz tests for watch integration? Session test uses New with nil watch, so no grant. Add a test with watch service to verify Finish issues grant. Could extend `TestSessionFlow` with watch service. But watch requires rule service; test setup. Maybe add separate test `TestSessionIssuesGrant`:\n- prepare DB, child, questions, rule with daily 60/unlock 1? Default rule (child created without watch_rule in seedChild) — quiz loads default and issues grant with RuleView from snapshot: default rule has DailyLimit 0 → watch defaults 60; unlock 20. Fine.\n- New with ruleSvc nil, watchSvc real (watch.New(pool, nil, secret,...)) — watch Issue does not need ruleSvc.\n- Create session, answer enough to pass, finish → summary.Grant != nil minutes 20.\n- Heartbeat with grant id, set last heartbeat 30s → consumed 30.\n- Duplicate finish idempotent returns same grant.\nThis tests integration.\n\nAdd to session_test.go. Need import watch package, and New signature with watch service.\n\nBut `seedChild` creates no watch_rule; quiz loadRule with ruleSvc nil → repo.ruleForChild no rows → defaultRule (DailyLimit 0). watch Issue RuleView DailyLimit 0 → defaults 60. Good.\n\nImplement test:\n```go\nfunc TestSessionIssuesGrant(t *testing.T) { ... }\n```\nUse same helpers (DB prepared each test). Note tests within package run sequentially; each calls prepareQuizDB truncating. Watch test is in another package, sequential due -p1.\n\nTest:\n- svc := New(pool, nil, nil, watch.New(pool, nil, secret, logger), logger)\n- create session, answer all tokens correct, finish.\n- summary.Grant non-nil; grant minutes 20; remaining 1200; lease token non-empty.\n- Finish again → same grant id.\n- heartbeat shift 30s via SQL; svc? Heartbeat is watch service method; call watchSvc.Heartbeat with principal and grant ID.\n- Check consumed ~30.\nNeed import watch + identity.\n\nLet's add.\n\nAlso watch handlers not tested HTTP; service tests suffice.\n\nThen update docs and full tests.\n\nAdd to session_test.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671521254,
+            "completed": 1793671529925
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_u228wrs5vwbnwkgpgodyl49s",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat >> internal/quiz/session_test.go <<'EOF'\n\nfunc TestSessionIssuesGrant(t *testing.T) {\n\tdbURL := os.Getenv(\"TEST_DATABASE_URL\")\n\tif dbURL == \"\" {\n\t\tt.Skip(\"TEST_DATABASE_URL not set\")\n\t}\n\tctx := context.Background()\n\tprepareQuizDB(t, dbURL)\n\n\tpool, err := pgxpool.New(ctx, dbURL)\n\tif err != nil {\n\t\tt.Fatalf(\"pool: %v\", err)\n\t}\n\tdefer pool.Close()\n\n\tchildID := seedChild(t, pool)\n\tseedQuestions(t, pool, childID)\n\n\tlogger := slog.New(slog.NewTextHandler(io.Discard, nil))\n\twatchSvc := watch.New(pool, nil, \"test-secret-0123456789-0123456789\", logger)\n\tsvc := New(pool, nil, nil, watchSvc, logger)\n\tprincipal := identity.DevicePrincipal{DeviceID: \"tv-grant\", ChildID: childID}\n\n\tsession, err := svc.CreateSession(ctx, principal)\n\tif err != nil {\n\t\tt.Fatalf(\"create session: %v\", err)\n\t}\n\tfor _, question := range session.Questions {\n\t\tif _, err := svc.SubmitAnswer(ctx, principal, session.SessionID, AnswerSubmission{\n\t\t\tToken:  question.Token,\n\t\t\tAnswer: json.RawMessage(`[\"a\"]`),\n\t\t}); err != nil {\n\t\t\tt.Fatalf(\"submit: %v\", err)\n\t\t}\n\t}\n\tsummary, err := svc.FinishSession(ctx, principal, session.SessionID)\n\tif err != nil {\n\t\tt.Fatalf(\"finish: %v\", err)\n\t}\n\tif summary.State != \"passed\" || summary.Grant == nil {\n\t\tt.Fatalf(\"expected grant, got %+v\", summary)\n\t}\n\tif summary.Grant.Minutes != 20 || summary.Grant.LeaseToken == \"\" {\n\t\tt.Fatalf(\"unexpected grant: %+v\", summary.Grant)\n\t}\n\n\tagain, err := svc.FinishSession(ctx, principal, session.SessionID)\n\tif err != nil {\n\t\tt.Fatalf(\"finish again: %v\", err)\n\t}\n\tif again.Grant == nil || again.Grant.GrantID != summary.Grant.GrantID {\n\t\tt.Fatalf(\"finish should be idempotent: %+v\", again.Grant)\n\t}\n\n\tif _, err := pool.Exec(ctx, `\n\t\tupdate watch_grant set last_heartbeat_at = now() - make_interval(secs => 30) where id = $1`,\n\t\tsummary.Grant.GrantID); err != nil {\n\t\tt.Fatal(err)\n\t}\n\tbeat, err := watchSvc.Heartbeat(ctx, principal, summary.Grant.GrantID, watch.HeartbeatRequest{})\n\tif err != nil {\n\t\tt.Fatalf(\"heartbeat: %v\", err)\n\t}\n\tif beat.ConsumedSeconds < 29 || beat.ConsumedSeconds > 31 {\n\t\tt.Fatalf(\"consumed = %d, want ~30\", beat.ConsumedSeconds)\n\t}\n}\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/quiz/session_test.go'); s=p.read_text()\ns=s.replace('''\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n)''','''\t\"github.com/roma007/OpenQuizGo/internal/identity\"\n\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n)''')\np.write_text(s)\nprint('added test')\nPY\ngofmt -w internal/quiz && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test -p 1 ./internal/quiz -v 2>&1 | tail -20",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "added test\n=== RUN   TestTargetDifficulty\n--- PASS: TestTargetDifficulty (0.00s)\n=== RUN   TestSelectWithRealPool\n2026/11/03 10:05:31 goose: no migrations to run. current version: 6\n--- PASS: TestSelectWithRealPool (0.16s)\n=== RUN   TestSessionFlow\n2026/11/03 10:05:31 goose: no migrations to run. current version: 6\n--- PASS: TestSessionFlow (0.10s)\n=== RUN   TestSessionIssuesGrant\n2026/11/03 10:05:31 goose: no migrations to run. current version: 6\n--- PASS: TestSessionIssuesGrant (0.08s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t0.856s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671525383,
+            "ran": 1793671529931,
+            "completed": 1793671531566
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "ed47b317467282e0678de6f314eb1d988806f835",
+        "end": "86b61bd8fae95fdfdad8e587a7d3ea683fdca4a2",
+        "files": [
+          "internal/quiz/session_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 318,
+        "output": 936,
+        "reasoning": 483,
+        "cache": {
+          "read": 427904,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f278c7b001eDIAdq4tFBUqoQ",
+      "time": {
+        "created": 1793671531648,
+        "streamed": 1793671541920,
+        "completed": 1793671542057
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now wire httpapi Watch (done), main (done). Need apply migration 00006 to dev DB, rebuild, smoke full flow:\n- create parent/child/device, session, answer all, finish → grant.\n- heartbeat with paused/no; check.\n- active grant.\n- simulate time shift? Can update last heartbeat via SQL, then heartbeat.\n- capability/tamper.\n\nAlso update Makefile test-int include watch.\n\nDocs:\n- README progress T8 done; next T9 report? Plan order T9 report, T10 offline, T11 obs, T12 acceptance. T8 done.\n- API section add watch endpoints + grant in finish.\n- Plan T8 done + log.\n- Data model add last_heartbeat_at maybe.\n- Design changelog? T8 implemented per design; no change. Grant token signing is implementation detail.\n\nLet's update Makefile/README/plan first, then smoke.\n\nMakefile: add ./internal/watch.\nREADME progress: T8 ✅, next T9.\nREADME endpoints: add watch section.\nPlan T8 done + log.\n\nApply.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671536113,
+            "completed": 1793671541912
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_d5hx3jwdu7bdnlfl9vkis8ju",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('Makefile'); s=p.read_text()\ns=s.replace('./internal/quiz ./internal/rule', './internal/quiz ./internal/rule ./internal/watch')\np.write_text(s)\np=Path('README.md'); s=p.read_text()\ns=s.replace('''- ✅ T7 加权规则引擎（规则 CRUD、时段/额度、上下文、dry-run）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n- ⏳ T8 授权与观看计量''','''- ✅ T7 加权规则引擎（规则 CRUD、时段/额度、上下文、dry-run）\n- ✅ T8 授权与观看计量（grant、心跳、吊销、暂停不计量）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n- ⏳ T9 报告聚合''')\ns=s.replace('''- 每题令牌一次性，重放返回 409；答案与解析不下发，判分后才返回。\n- 服务端计时 < 300ms 标记 `suspicious`。''','''- 每题令牌一次性，重放返回 409；答案与解析不下发，判分后才返回。\n- 服务端计时 < 300ms 标记 `suspicious`。\n- 结算 `passed` 时自动签发 `watch_grant`（分钟数受每日剩余额度约束），响应含 `grant` 与签名 `lease_token`。\n\n## 授权与计量（T8，设备令牌）\n\n```text\nGET  /v1/watch/grants/active                当前有效授权\nPOST /v1/watch/grants/{id}/heartbeat        心跳计量（30s 一次）\nPUT  /v1/device/capability                  上报守护模式与权限状态\nPOST /v1/device/tamper                      上报权限关闭/卸载等异常\n```\n\n- 授权分钟数 = `min(unlock_minutes, 当日剩余额度)`；同一会话幂等，不重复签发。\n- 心跳按两次心跳的服务端间隔计费（上限 120s），答题会话进行中强制不计费。\n- 时段外心跳直接吊销授权；额度耗尽状态置为 `exhausted`。''')\np.write_text(s)\np=Path('docs/plans/001-项目总体实施计划.md'); s=p.read_text()\ns=s.replace('''| T8 | 授权与使用 | T7 | `watch_grant` 签发、应用使用心跳、暂停不计量、吊销、离线对账、篡改事件 | 多设备并发不超发（100 并发误差 0）；权限关闭 ≤1 个心跳周期上报 | 4 | todo |''','''| T8 | 授权与使用 | T7 | `watch_grant` 签发、应用使用心跳、暂停不计量、吊销、离线对账、篡改事件 | 多设备并发不超发（100 并发误差 0）；权限关闭 ≤1 个心跳周期上报 | 4 | done |''')\ns=s.replace('''| 2026-11-03 | T7 完成：规则 CRUD（PIN + 审计）、时段/每日额度校验、TV 上下文、规则 dry-run；规则模型抽到 `internal/rule` | 跨零点/时段/额度用例通过；创建会话返回 RULE_TIME_WINDOW / RULE_DAILY_LIMIT |''','''| 2026-11-03 | T7 完成：规则 CRUD（PIN + 审计）、时段/每日额度校验、TV 上下文、规则 dry-run；规则模型抽到 `internal/rule` | 跨零点/时段/额度用例通过；创建会话返回 RULE_TIME_WINDOW / RULE_DAILY_LIMIT |\n| 2026-11-03 | T8 完成：授权签发（会话幂等）、心跳服务端计费、答题暂停不计量、时段吊销、设备能力/异常上报 | 并发签发走 child 级 advisory lock；心跳增量上限 120s；离线租约留待 T10 |''')\np.write_text(s)\nprint('docs updated')\nPY"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "docs updated\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671537603,
+            "ran": 1793671541918,
+            "completed": 1793671542010
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "86b61bd8fae95fdfdad8e587a7d3ea683fdca4a2",
+        "end": "1de7923610e409ba3f458b6287a126c236c976f9",
+        "files": [
+          "Makefile",
+          "README.md",
+          "docs/plans/001-项目总体实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1679,
+        "output": 960,
+        "reasoning": 225,
+        "cache": {
+          "read": 428160,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f27b545001LBSJC1k3gSjENu",
+      "time": {
+        "created": 1793671542090,
+        "streamed": 1793671552504,
+        "completed": 1793671557447
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Plan T8 included \"离线对账\" which we deferred to T10; log notes. Good.\n\nData model note last_heartbeat_at; add? Minor. Update known tradeoffs? Add row maybe not needed.\n\nNow migrate dev DB 00006, rebuild, smoke full flow.\n\nSmoke:\n1. new parent/child/device.\n2. create session, answer all, finish → grant with minutes 20.\n3. active grant.\n4. heartbeat: set last_heartbeat 30s ago via SQL, POST heartbeat → consumed ~30, remaining.\n5. paused heartbeat: set last 60s, paused true → consumed unchanged.\n6. quiz active: create another session (allowed? previous quiz finished, so yes), heartbeat while quiz active → paused no accrual. But creating session requires rule/context; allowed. Then heartbeat with active quiz.\n7. capability/tamper.\n8. time window revoke: update rule via API/PIN to exclude now, heartbeat → revoked.\n\nSimplify: test 1-5, capability/tamper. Time revoke covered by unit test.\n\nRun migration + smoke.\n\nServer port 18080.\n\nLet's write script quickly.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671546044,
+            "completed": 1793671552497
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_uphtvr4pp13hkamc04ovme4f",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a; source .env; set +a; go run ./cmd/migrate up 2>&1 | tail -2 && go build -trimpath -o bin/api ./cmd/api && HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t8-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done\nBASE=http://localhost:18080/v1\nPHONE=\"134$(date +%H%M%S)00\"; DEVICE=\"tv-t8-$(date +%s)\"\ncurl -sS -X POST \"$BASE/auth/sms/code\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\"}\" >/dev/null\nAT=$(curl -sS -X POST \"$BASE/auth/login\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\",\\\"code\\\":\\\"123456\\\"}\" | jq -r .access_token)\nCHILD=$(curl -sS -X POST \"$BASE/family/children\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d '{\"nickname\":\"T8孩子\",\"stage\":\"low\"}' | jq -r .id)\nCODE=$(curl -sS -X POST \"$BASE/device/activate/code\" -H 'Content-Type: application/json' -d \"{\\\"device_id\\\":\\\"$DEVICE\\\",\\\"platform\\\":\\\"tv\\\"}\" | jq -r .code)\ncurl -sS -X POST \"$BASE/family/devices/activate\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"child_id\\\":\\\"$CHILD\\\"}\" >/dev/null\nDT=$(curl -sS -X POST \"$BASE/device/token\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"device_id\\\":\\\"$DEVICE\\\"}\" | jq -r .device_token)\nS=$(curl -sS -X POST \"$BASE/quiz/sessions\" -H \"Authorization: Bearer $DT\"); SID=$(echo \"$S\" | jq -r .session_id)\nfor T in $(echo \"$S\" | jq -r '.questions[].token'); do curl -sS -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$T\\\",\\\"answer\\\":[\\\"a\\\"]}\" >/dev/null; done\necho \"== finish with grant\"\nFIN=$(curl -sS -X POST \"$BASE/quiz/sessions/$SID/finish\" -H \"Authorization: Bearer $DT\")\necho \"$FIN\" | jq -c '{state,score,grant:{id:.grant.grant_id,minutes:.grant.minutes,remaining:.grant.remaining_seconds,status:.grant.status,lease:(.grant.lease_token|length)}}'\nGID=$(echo \"$FIN\" | jq -r .grant.grant_id)\necho \"== active grant\"\ncurl -sS \"$BASE/watch/grants/active\" -H \"Authorization: Bearer $DT\" | jq -c '{grant_id,minutes,remaining_seconds,status}'\necho \"== heartbeat after 30s\"\npsql -d openquizgo -q -c \"update watch_grant set last_heartbeat_at = now() - interval '30 seconds' where id = '$GID'\"\ncurl -sS -X POST \"$BASE/watch/grants/$GID/heartbeat\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"foreground_app\":\"com.example.video\",\"paused\":false}' | jq -c '{status,consumed_seconds,remaining_seconds,paused,revoked}'\necho \"== paused heartbeat 60s\"\npsql -d openquizgo -q -c \"update watch_grant set last_heartbeat_at = now() - interval '60 seconds' where id = '$GID'\"\ncurl -sS -X POST \"$BASE/watch/grants/$GID/heartbeat\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"foreground_app\":\"com.example.video\",\"paused\":true}' | jq -c '{status,consumed_seconds,remaining_seconds,paused,revoked}'\necho \"== capability + tamper\"\ncurl -sS -X PUT \"$BASE/device/capability\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"guard_mode\":\"standard\",\"permissions\":{\"accessibility\":true,\"overlay\":true},\"os_version\":\"14\",\"app_version\":\"0.1\"}' | jq -c .\ncurl -sS -X POST \"$BASE/device/tamper\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"type\":\"permission_revoked\",\"detail\":{\"permission\":\"accessibility\"}}' | jq -c .\nkill $API_PID 2>/dev/null || true",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "2026/11/03 10:05:53 OK   00006_grant_heartbeat.sql (5.37ms)\n2026/11/03 10:05:53 goose: successfully migrated database to version: 6\n== finish with grant\n{\"state\":\"passed\",\"score\":7.5,\"grant\":{\"id\":\"8b4da5ac-58fc-479e-afd7-baa3c8a8476b\",\"minutes\":20,\"remaining\":1200,\"status\":\"active\",\"lease\":428}}\nzsh:15: bad math expression: operator expected at `b4da5ac-58...'\n"
+              },
+              {
+                "type": "text",
+                "text": "Exited with code 1"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 1
+            }
+          },
+          "time": {
+            "created": 1793671547747,
+            "ran": 1793671552502,
+            "completed": 1793671557435
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1de7923610e409ba3f458b6287a126c236c976f9",
+        "end": "1de7923610e409ba3f458b6287a126c236c976f9",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1215,
+        "output": 1273,
+        "reasoning": 244,
+        "cache": {
+          "read": 429824,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f27f166001N6w0z24hGemSK5",
+      "time": {
+        "created": 1793671557483,
+        "streamed": 1793671566704,
+        "completed": 1793671568632
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Zsh interprets `$GID`? Error \"bad math expression\" at `b4da5ac-...` likely because `GID=...` in zsh is special? In zsh, `GID` is a readonly special parameter (group ID)! Assigning GID causes error. Use GRANT_ID variable.\n\nThe script stopped after assignment. Server still running? Command failed, kill not executed. Check process on 18080 and kill, then rerun from active grant with variable rename. But parent/child/device already created; can use same? We don't have variables. Rerun full script with GRANT_ID. The session passed; new tokens fine.\n\nKill old server first.\n\nRerun with `GRANT_ID`.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671561402,
+            "completed": 1793671566696
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_xpltmm2qyw4b1tfsva2ev62b",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && pkill -f 'bin/api' 2>/dev/null || true; sleep 1; set -a; source .env; set +a; HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t8-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done\nBASE=http://localhost:18080/v1\nPHONE=\"133$(date +%H%M%S)00\"; DEVICE=\"tv-t8b-$(date +%s)\"\ncurl -sS -X POST \"$BASE/auth/sms/code\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\"}\" >/dev/null\nAT=$(curl -sS -X POST \"$BASE/auth/login\" -H 'Content-Type: application/json' -d \"{\\\"phone\\\":\\\"$PHONE\\\",\\\"code\\\":\\\"123456\\\"}\" | jq -r .access_token)\nCHILD=$(curl -sS -X POST \"$BASE/family/children\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d '{\"nickname\":\"T8孩子B\",\"stage\":\"low\"}' | jq -r .id)\nCODE=$(curl -sS -X POST \"$BASE/device/activate/code\" -H 'Content-Type: application/json' -d \"{\\\"device_id\\\":\\\"$DEVICE\\\",\\\"platform\\\":\\\"tv\\\"}\" | jq -r .code)\ncurl -sS -X POST \"$BASE/family/devices/activate\" -H \"Authorization: Bearer $AT\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"child_id\\\":\\\"$CHILD\\\"}\" >/dev/null\nDT=$(curl -sS -X POST \"$BASE/device/token\" -H 'Content-Type: application/json' -d \"{\\\"code\\\":\\\"$CODE\\\",\\\"device_id\\\":\\\"$DEVICE\\\"}\" | jq -r .device_token)\nS=$(curl -sS -X POST \"$BASE/quiz/sessions\" -H \"Authorization: Bearer $DT\"); SID=$(echo \"$S\" | jq -r .session_id)\nfor T in $(echo \"$S\" | jq -r '.questions[].token'); do curl -sS -X POST \"$BASE/quiz/sessions/$SID/answers\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d \"{\\\"token\\\":\\\"$T\\\",\\\"answer\\\":[\\\"a\\\"]}\" >/dev/null; done\nFIN=$(curl -sS -X POST \"$BASE/quiz/sessions/$SID/finish\" -H \"Authorization: Bearer $DT\")\necho \"$FIN\" | jq -c '{state,score,grant:{minutes:.grant.minutes,remaining:.grant.remaining_seconds,status:.grant.status,lease:(.grant.lease_token|length)}}'\nGRANT_ID=$(echo \"$FIN\" | jq -r .grant.grant_id)\necho \"== active\"; curl -sS \"$BASE/watch/grants/active\" -H \"Authorization: Bearer $DT\" | jq -c '{minutes,remaining_seconds,status}'\necho \"== heartbeat 30s\"; psql -d openquizgo -q -c \"update watch_grant set last_heartbeat_at = now() - interval '30 seconds' where id = '$GRANT_ID'\"\ncurl -sS -X POST \"$BASE/watch/grants/$GRANT_ID/heartbeat\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"foreground_app\":\"com.example.video\",\"paused\":false}' | jq -c '{status,consumed_seconds,remaining_seconds,paused,revoked}'\necho \"== paused 60s\"; psql -d openquizgo -q -c \"update watch_grant set last_heartbeat_at = now() - interval '60 seconds' where id = '$GRANT_ID'\"\ncurl -sS -X POST \"$BASE/watch/grants/$GRANT_ID/heartbeat\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"foreground_app\":\"com.example.video\",\"paused\":true}' | jq -c '{status,consumed_seconds,remaining_seconds,paused,revoked}'\necho \"== capability/tamper\"\ncurl -sS -X PUT \"$BASE/device/capability\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"guard_mode\":\"standard\",\"permissions\":{\"accessibility\":true,\"overlay\":true},\"os_version\":\"14\",\"app_version\":\"0.1\"}' | jq -c .\ncurl -sS -X POST \"$BASE/device/tamper\" -H \"Authorization: Bearer $DT\" -H 'Content-Type: application/json' -d '{\"type\":\"permission_revoked\",\"detail\":{\"permission\":\"accessibility\"}}' | jq -c .\nkill $API_PID 2>/dev/null || true",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"state\":\"passed\",\"score\":7.5,\"grant\":{\"minutes\":20,\"remaining\":1200,\"status\":\"active\",\"lease\":429}}\n== active\n{\"minutes\":20,\"remaining_seconds\":1200,\"status\":\"active\"}\n== heartbeat 30s\n{\"status\":\"active\",\"consumed_seconds\":30,\"remaining_seconds\":1170,\"paused\":false,\"revoked\":false}\n== paused 60s\n{\"status\":\"active\",\"consumed_seconds\":30,\"remaining_seconds\":1170,\"paused\":true,\"revoked\":false}\n== capability/tamper\n{\"status\":\"ok\"}\n{\"status\":\"ok\"}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671562876,
+            "ran": 1793671566702,
+            "completed": 1793671568622
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1de7923610e409ba3f458b6287a126c236c976f9",
+        "end": "1de7923610e409ba3f458b6287a126c236c976f9",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1734,
+        "output": 1250,
+        "reasoning": 157,
+        "cache": {
+          "read": 430976,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f281d0700132IxBipMdx5hdr",
+      "time": {
+        "created": 1793671568652,
+        "streamed": 1793671577846,
+        "completed": 1793671579774
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "T8 works end-to-end.\n\nNeed concurrency test \"100并发误差0\"? Plan acceptance says multi-device concurrent no over-issue. We implemented advisory lock but no test. Add unit/integration test in watch: spawn N goroutines issuing grants for same child different sessions with daily_limit e.g. 3 and unlock 1 → only 3 grants 1 min each, rest error. That validates concurrency.\n\nCreate test:\n- child with daily_limit 3, unlock 1.\n- create 10 passed sessions.\n- goroutines call Issue concurrently with RuleView unlock1 daily3.\n- count successes = 3 (each 1 min), errors = 7 RULE_DAILY_LIMIT.\n- Verify total granted minutes = 3.\nCould be 3 exactly due advisory lock and reserved computation. Yes.\n\nAdd to watch test file.\n\nNeed helper insertSession for multiple. Already.\n\nTest code:\n```go\nfunc TestConcurrentIssueRespectsDailyLimit(t *testing.T) { ... }\n```\nSet up DB, child, update rule daily 3 (insert rule default 60 then update 3).\nCreate 10 sessions.\nUse sync.WaitGroup + channel results.\nIssue with same RuleView unlock1 daily3.\nCount success/err.\nPotential: watch_log none.\nCheck sum of granted minutes (query).\nFailures should be *Error RULE_DAILY_LIMIT.\n\nLet's add.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671572463,
+            "completed": 1793671577838
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_30a326njl14z2ed3dk9p3kxw",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat >> internal/watch/service_test.go <<'EOF'\n\nfunc TestConcurrentIssueRespectsDailyLimit(t *testing.T) {\n\tdbURL := os.Getenv(\"TEST_DATABASE_URL\")\n\tif dbURL == \"\" {\n\t\tt.Skip(\"TEST_DATABASE_URL not set\")\n\t}\n\tctx := context.Background()\n\tprepareWatchDB(t, dbURL)\n\n\tpool, err := pgxpool.New(ctx, dbURL)\n\tif err != nil {\n\t\tt.Fatalf(\"pool: %v\", err)\n\t}\n\tdefer pool.Close()\n\n\tchildID := seedWatchChild(t, pool)\n\tif _, err := pool.Exec(ctx,\n\t\t`update watch_rule set daily_limit = 3, unlock_minutes = 1 where child_id = $1`, childID); err != nil {\n\t\tt.Fatal(err)\n\t}\n\n\tlogger := slog.New(slog.NewTextHandler(io.Discard, nil))\n\tsvc := New(pool, rule.New(pool, nil, logger), \"test-secret-0123456789-0123456789\", logger)\n\tprincipal := identity.DevicePrincipal{DeviceID: \"tv-concurrent\", ChildID: childID}\n\n\tsessions := make([]string, 10)\n\tfor i := range sessions {\n\t\tsessions[i] = insertSession(t, pool, childID, principal.DeviceID)\n\t}\n\n\ttype result struct {\n\t\tgrant Grant\n\t\terr   error\n\t}\n\tresults := make(chan result, len(sessions))\n\tfor _, sessionID := range sessions {\n\t\tgo func(id string) {\n\t\t\tgrant, err := svc.Issue(ctx, IssueRequest{\n\t\t\t\tSessionID: id,\n\t\t\t\tChildID:   childID,\n\t\t\t\tDeviceID:  principal.DeviceID,\n\t\t\t\tRule:      RuleView{UnlockMinutes: 1, DailyLimit: 3, Timezone: \"Asia/Shanghai\"},\n\t\t\t})\n\t\t\tresults <- result{grant: grant, err: err}\n\t\t}(sessionID)\n\t}\n\n\tsuccess, limited := 0, 0\n\tfor range sessions {\n\t\tres := <-results\n\t\tif res.err == nil {\n\t\t\tsuccess++\n\t\t\tcontinue\n\t\t}\n\t\tif watchErr, ok := res.err.(*Error); ok && watchErr.Code == \"RULE_DAILY_LIMIT\" {\n\t\t\tlimited++\n\t\t\tcontinue\n\t\t}\n\t\tt.Fatalf(\"unexpected error: %v\", res.err)\n\t}\n\tif success != 3 || limited != 7 {\n\t\tt.Fatalf(\"success=%d limited=%d, want 3/7\", success, limited)\n\t}\n\n\tvar totalMinutes int\n\tif err := pool.QueryRow(ctx,\n\t\t`select coalesce(sum(minutes), 0) from watch_grant where child_id = $1`, childID).Scan(&totalMinutes); err != nil {\n\t\tt.Fatal(err)\n\t}\n\tif totalMinutes != 3 {\n\t\tt.Fatalf(\"total granted minutes = %d, want 3\", totalMinutes)\n\t}\n}\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/watch/service_test.go'); s=p.read_text()\ns=s.replace('''\t\"os\"\n\t\"testing\"''','''\t\"os\"\n\t\"sync\"\n\t\"testing\"''')\ns=s.replace('''\tresults := make(chan result, len(sessions))''','''\tresults := make(chan result, len(sessions))\n\t_ = sync.WaitGroup{}''')\np.write_text(s)\nprint('added concurrency test')\nPY\ngofmt -w internal/watch && GOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test -p 1 ./internal/watch -run 'TestConcurrent|TestGrant' -v 2>&1 | tail -12",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "added concurrency test\n=== RUN   TestGrantAndHeartbeat\n2026/11/03 10:06:19 goose: no migrations to run. current version: 6\n--- PASS: TestGrantAndHeartbeat (0.09s)\n=== RUN   TestConcurrentIssueRespectsDailyLimit\n2026/11/03 10:06:19 goose: no migrations to run. current version: 6\n--- PASS: TestConcurrentIssueRespectsDailyLimit (0.06s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t0.635s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671574955,
+            "ran": 1793671577843,
+            "completed": 1793671579720
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1de7923610e409ba3f458b6287a126c236c976f9",
+        "end": "9081fa17c33182dc5880665c494d01ada3cb4d18",
+        "files": [
+          "internal/watch/service_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1624,
+        "output": 921,
+        "reasoning": 295,
+        "cache": {
+          "read": 432640,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f28489b001EUqOO3JVRCpsu6",
+      "time": {
+        "created": 1793671579807,
+        "streamed": 1793671584986,
+        "completed": 1793671591206
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "I added sync import but didn't actually use WaitGroup (used `_ = sync.WaitGroup{}` hack). Remove sync import and hack; we use goroutines and channel counting, no WaitGroup needed.\n\nPatch remove.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671583318,
+            "completed": 1793671584981
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_0d720kfs4b4p3plwy54bdol8",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/watch/service_test.go'); s=p.read_text()\ns=s.replace('''\t\"os\"\n\t\"sync\"\n\t\"testing\"''','''\t\"os\"\n\t\"testing\"''')\ns=s.replace('''\tresults := make(chan result, len(sessions))\n\t_ = sync.WaitGroup{}''','''\tresults := make(chan result, len(sessions))''')\np.write_text(s)\nprint('cleaned')\nPY\ngofmt -w internal/watch && go vet ./... && GOTOOLCHAIN=local go test -p 1 ./... 2>&1 | tail -12",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "cleaned\nok  \tgithub.com/roma007/OpenQuizGo/internal/config\t(cached)\nok  \tgithub.com/roma007/OpenQuizGo/internal/httpapi\t0.480s\nok  \tgithub.com/roma007/OpenQuizGo/internal/identity\t0.507s\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/cache\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/cryptox\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/database\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/logx\t[no test files]\nok  \tgithub.com/roma007/OpenQuizGo/internal/question\t0.521s\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t0.293s\nok  \tgithub.com/roma007/OpenQuizGo/internal/rule\t0.532s\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t0.491s\n?   \tgithub.com/roma007/OpenQuizGo/migrations\t[no test files]\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671584006,
+            "ran": 1793671584985,
+            "completed": 1793671591137
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "9081fa17c33182dc5880665c494d01ada3cb4d18",
+        "end": "4ad43ec7d406823a9b5b909c009eb9ccf77bdabe",
+        "files": [
+          "internal/watch/service_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1448,
+        "output": 218,
+        "reasoning": 46,
+        "cache": {
+          "read": 434176,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f2875500013LF6Dnurdb5gaj",
+      "time": {
+        "created": 1793671591252,
+        "streamed": 1793671598065,
+        "completed": 1793671599349
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "All pass.\n\nUpdate plan log T8 with concurrency: success=3/10, total minutes 3. Add \"100并发\" not literal but 10; acceptance says 100. Could run with 100 sessions but test DB speed fine. Should we do 100 to match? Change 10 → 100, success 3, limited 97; test still fast. The advisory lock serializes 100 transactions, maybe 0.1-0.5s. Do it to match acceptance. Update arrays and expectations.\n\nChange sessions := make([]string, 100), expected 3/97. Total 3.\n\nLet's patch and run.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671594584,
+            "completed": 1793671598056
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_dd788bje90fh91ei12egoc7b",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/watch/service_test.go'); s=p.read_text()\ns=s.replace('sessions := make([]string, 10)', 'sessions := make([]string, 100)')\ns=s.replace('if success != 3 || limited != 7 {', 'if success != 3 || limited != 97 {')\ns=s.replace('t.Fatalf(\"success=%d limited=%d, want 3/7\", success, limited)', 't.Fatalf(\"success=%d limited=%d, want 3/97\", success, limited)')\np.write_text(s)\nprint('100 concurrency')\nPY\nGOTOOLCHAIN=local TEST_DATABASE_URL='postgres://mengfeng@localhost:5432/openquizgo_test?sslmode=disable' TEST_REDIS_URL='redis://localhost:6379/15' go test -p 1 ./internal/watch -run TestConcurrent -v 2>&1 | tail -6",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "100 concurrency\n=== RUN   TestConcurrentIssueRespectsDailyLimit\n2026/11/03 10:06:39 goose: no migrations to run. current version: 6\n--- PASS: TestConcurrentIssueRespectsDailyLimit (0.14s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t0.641s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671596275,
+            "ran": 1793671598063,
+            "completed": 1793671599302
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "4ad43ec7d406823a9b5b909c009eb9ccf77bdabe",
+        "end": "af8cd21f4d772d011d81311d05eb9d3b7e99b294",
+        "files": [
+          "internal/watch/service_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 570,
+        "output": 290,
+        "reasoning": 135,
+        "cache": {
+          "read": 435584,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f289505001s51kWXbvW4L5xq",
+      "time": {
+        "created": 1793671599369,
+        "streamed": 1793671605608,
+        "completed": 1793671605683
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Good.\n\nUpdate plan log T8 to mention 100 concurrency and exact result. Current log says \"并发签发走 child 级 advisory lock; ...\" add \"100 并发仅 3 成功\". Edit.\n\nAlso data-model doc: watch_grant.last_heartbeat_at? Minor add to table description. Not necessary but nice.\n\nREADME: T8 section added.\n\nPlan: T8 done already.\n\nUpdate log.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671603629,
+            "completed": 1793671605597
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_kb72mdxf0vrj1fz1oitu7j7m",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "newString": "| 2026-11-03 | T8 完成：授权签发（会话幂等）、心跳服务端计费、答题暂停不计量、时段吊销、设备能力/异常上报 | 100 并发签发仅 3 成功、总额度 3 分钟；心跳增量上限 120s；离线租约留待 T10 |",
+              "oldString": "| 2026-11-03 | T8 完成：授权签发（会话幂等）、心跳服务端计费、答题暂停不计量、时段吊销、设备能力/异常上报 | 并发签发走 child 级 advisory lock；心跳增量上限 120s；离线租约留待 T10 |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/plans/001-项目总体实施计划.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/plans/001-项目总体实施计划.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/plans/001-项目总体实施计划.md",
+                  "patch": "Index: docs/plans/001-项目总体实施计划.md\n===================================================================\n--- docs/plans/001-项目总体实施计划.md\n+++ docs/plans/001-项目总体实施计划.md\n@@ -167,9 +167,9 @@\n | 2026-11-02 | 偏差：导入采用同步（原设计为异步任务）；管理端权限固化在 8h 令牌内 | 首期数据量小，同步实现更简单；权限变更需重新登录 |\n | 2026-11-02 | T5 完成：加权配额、趣味上限、难度/学段降级、30 天去重、断供重分配与告警；管理端预览接口 | 同 seed 可复现；配额误差 <1；下线/已答题目不入选；题池不足 409 |\n | 2026-11-02 | T6 完成：会话创建/断线恢复、一次性题令牌、服务端判分、防重放、限流、加权累计 | 集成测试覆盖正误、重放 409、过期 410、重复会话 409；快速作答标记 suspicious |\n | 2026-11-03 | T7 完成：规则 CRUD（PIN + 审计）、时段/每日额度校验、TV 上下文、规则 dry-run；规则模型抽到 `internal/rule` | 跨零点/时段/额度用例通过；创建会话返回 RULE_TIME_WINDOW / RULE_DAILY_LIMIT |\n-| 2026-11-03 | T8 完成：授权签发（会话幂等）、心跳服务端计费、答题暂停不计量、时段吊销、设备能力/异常上报 | 并发签发走 child 级 advisory lock；心跳增量上限 120s；离线租约留待 T10 |\n+| 2026-11-03 | T8 完成：授权签发（会话幂等）、心跳服务端计费、答题暂停不计量、时段吊销、设备能力/异常上报 | 100 并发签发仅 3 成功、总额度 3 分钟；心跳增量上限 120s；离线租约留待 T10 |\n \n ## 7. 验收结论\n \n - 结论：待验收\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793671603869,
+            "ran": 1793671605602,
+            "completed": 1793671605625
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_ivmyghvy2o6rhx7em5uhwhof",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "error",
+            "input": {
+              "newString": "| `watch_grant` | id、child_id、device_id、session_id、minutes、valid_from、valid_until、jti、consumed_seconds、last_heartbeat_at、status | 服务端签发的观看许可，心跳按服务端间隔计费 |",
+              "oldString": "| `watch_grant` | id、child_id、device_id、session_id、minutes、valid_from、valid_until、jti、consumed_seconds、status | 服务端签发的观看许可 |",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/data-model.md"
+            },
+            "error": {
+              "type": "tool.execution",
+              "message": "Could not find oldString in /Users/mengfeng/我的文档/源码/OpenQuizGo/docs/data-model.md. It must match exactly, including whitespace and indentation."
+            }
+          },
+          "time": {
+            "created": 1793671604818,
+            "ran": 1793671605605,
+            "completed": 1793671605621
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "af8cd21f4d772d011d81311d05eb9d3b7e99b294",
+        "end": "f7a0968a92e31ace5597f06de89b96daff1bd74d",
+        "files": [
+          "docs/plans/001-项目总体实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 578,
+        "output": 414,
+        "reasoning": 87,
+        "cache": {
+          "read": 436096,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f28adc3001ROs8bRyo8l70yN",
+      "time": {
+        "created": 1793671605703,
+        "streamed": 1793671609708,
+        "completed": 1793671609744
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Check actual watch_grant row in data-model.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793671609426,
+            "completed": 1793671609702
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_p7ia0iczagku895ubzoshgdd",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"watch_grant\" docs/data-model.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "46:| 授权 | `watch_grant`、`watch_log`、`offline_lease` | 使用授权、应用使用、离线租约 |\n58:| 一次会话只能签发一次授权 | `watch_grant.session_id` UNIQUE |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793671609429,
+            "ran": 1793671609706,
+            "completed": 1793671609729
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "f7a0968a92e31ace5597f06de89b96daff1bd74d",
+        "end": "f7a0968a92e31ace5597f06de89b96daff1bd74d",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 656,
+        "output": 64,
+        "reasoning": 10,
+        "cache": {
+          "read": 436608,
           "write": 0
         }
       }

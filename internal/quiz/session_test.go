@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/watch"
 )
 
 func TestSessionFlow(t *testing.T) {
@@ -30,7 +31,7 @@ func TestSessionFlow(t *testing.T) {
 	childID := seedChild(t, pool)
 	seedQuestions(t, pool, childID)
 
-	svc := New(pool, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	svc := New(pool, nil, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	principal := identity.DevicePrincipal{DeviceID: "tv-session", ChildID: childID}
 
 	session, err := svc.CreateSession(ctx, principal)
@@ -122,5 +123,72 @@ func TestSessionFlow(t *testing.T) {
 	expired, ok := err.(*Error)
 	if !ok || expired.Code != "QUIZ_SESSION_EXPIRED" {
 		t.Fatalf("expected expired error, got %v", err)
+	}
+}
+
+func TestSessionIssuesGrant(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareQuizDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedChild(t, pool)
+	seedQuestions(t, pool, childID)
+
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	watchSvc := watch.New(pool, nil, "test-secret-0123456789-0123456789", logger)
+	svc := New(pool, nil, nil, watchSvc, logger)
+	principal := identity.DevicePrincipal{DeviceID: "tv-grant", ChildID: childID}
+
+	session, err := svc.CreateSession(ctx, principal)
+	if err != nil {
+		t.Fatalf("create session: %v", err)
+	}
+	for _, question := range session.Questions {
+		if _, err := svc.SubmitAnswer(ctx, principal, session.SessionID, AnswerSubmission{
+			Token:  question.Token,
+			Answer: json.RawMessage(`["a"]`),
+		}); err != nil {
+			t.Fatalf("submit: %v", err)
+		}
+	}
+	summary, err := svc.FinishSession(ctx, principal, session.SessionID)
+	if err != nil {
+		t.Fatalf("finish: %v", err)
+	}
+	if summary.State != "passed" || summary.Grant == nil {
+		t.Fatalf("expected grant, got %+v", summary)
+	}
+	if summary.Grant.Minutes != 20 || summary.Grant.LeaseToken == "" {
+		t.Fatalf("unexpected grant: %+v", summary.Grant)
+	}
+
+	again, err := svc.FinishSession(ctx, principal, session.SessionID)
+	if err != nil {
+		t.Fatalf("finish again: %v", err)
+	}
+	if again.Grant == nil || again.Grant.GrantID != summary.Grant.GrantID {
+		t.Fatalf("finish should be idempotent: %+v", again.Grant)
+	}
+
+	if _, err := pool.Exec(ctx, `
+		update watch_grant set last_heartbeat_at = now() - make_interval(secs => 30) where id = $1`,
+		summary.Grant.GrantID); err != nil {
+		t.Fatal(err)
+	}
+	beat, err := watchSvc.Heartbeat(ctx, principal, summary.Grant.GrantID, watch.HeartbeatRequest{})
+	if err != nil {
+		t.Fatalf("heartbeat: %v", err)
+	}
+	if beat.ConsumedSeconds < 29 || beat.ConsumedSeconds > 31 {
+		t.Fatalf("consumed = %d, want ~30", beat.ConsumedSeconds)
 	}
 }

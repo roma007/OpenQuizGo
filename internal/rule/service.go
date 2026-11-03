@@ -68,6 +68,15 @@ func (s *Service) Get(ctx context.Context, accountID, childID string) (Rule, int
 	return r, version, err
 }
 
+// GetForChild 返回孩子规则（供设备侧计量使用）。
+func (s *Service) GetForChild(ctx context.Context, childID string) (Rule, int, error) {
+	r, version, err := s.repo.getForChild(ctx, childID)
+	if isNoRows(err) {
+		return Rule{}, 0, newError(404, "RULE_NOT_FOUND", "规则不存在")
+	}
+	return r, version, err
+}
+
 // Update 更新规则（需家长 PIN）。
 func (s *Service) Update(ctx context.Context, accountID, childID, pin string, in Rule, ip string) (Rule, int, error) {
 	in = Normalize(in)

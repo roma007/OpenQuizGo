@@ -15,8 +15,9 @@
 - ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）
 - ✅ T6 答题会话与判分（一次性令牌、服务端判分、防重放）
 - ✅ T7 加权规则引擎（规则 CRUD、时段/额度、上下文、dry-run）
+- ✅ T8 授权与观看计量（grant、心跳、吊销、暂停不计量）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T8 授权与观看计量
+- ⏳ T9 报告聚合
 
 ## 技术栈
 
@@ -172,6 +173,20 @@ POST /v1/quiz/sessions/{id}/finish        结算（加权分 ≥ 门槛 → pass
 - 会话有效期 10 分钟；同一设备同时只能有一个进行中的会话。
 - 每题令牌一次性，重放返回 409；答案与解析不下发，判分后才返回。
 - 服务端计时 < 300ms 标记 `suspicious`。
+- 结算 `passed` 时自动签发 `watch_grant`（分钟数受每日剩余额度约束），响应含 `grant` 与签名 `lease_token`。
+
+## 授权与计量（T8，设备令牌）
+
+```text
+GET  /v1/watch/grants/active                当前有效授权
+POST /v1/watch/grants/{id}/heartbeat        心跳计量（30s 一次）
+PUT  /v1/device/capability                  上报守护模式与权限状态
+POST /v1/device/tamper                      上报权限关闭/卸载等异常
+```
+
+- 授权分钟数 = `min(unlock_minutes, 当日剩余额度)`；同一会话幂等，不重复签发。
+- 心跳按两次心跳的服务端间隔计费（上限 120s），答题会话进行中强制不计费。
+- 时段外心跳直接吊销授权；额度耗尽状态置为 `exhausted`。
 
 状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。
 

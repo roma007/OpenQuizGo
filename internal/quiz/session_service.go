@@ -10,6 +10,7 @@ import (
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/rule"
+	"github.com/roma007/OpenQuizGo/internal/watch"
 )
 
 const (
@@ -207,7 +208,11 @@ func (s *Service) FinishSession(ctx context.Context, principal identity.DevicePr
 		return SessionSummary{}, err
 	}
 	if session.State != "active" {
-		return s.summary(ctx, session, false)
+		summary, err := s.summary(ctx, session, false)
+		if err == nil && session.State == "passed" {
+			s.attachGrant(ctx, session, &summary)
+		}
+		return summary, err
 	}
 	if time.Now().After(session.ExpiresAt) {
 		_ = s.repo.setSessionState(ctx, session.ID, "expired")
@@ -224,7 +229,50 @@ func (s *Service) FinishSession(ctx context.Context, principal identity.DevicePr
 	session.State = state
 	now := time.Now()
 	session.FinishedAt = &now
-	return s.summary(ctx, session, false)
+	summary, err := s.summary(ctx, session, false)
+	if err != nil {
+		return SessionSummary{}, err
+	}
+	if state == "passed" {
+		s.issueGrant(ctx, session, &summary)
+	}
+	return summary, nil
+}
+
+func (s *Service) issueGrant(ctx context.Context, session sessionRecord, summary *SessionSummary) {
+	if s.watchSvc == nil {
+		return
+	}
+	var snapshot ruleSnapshot
+	_ = json.Unmarshal(session.RuleSnapshot, &snapshot)
+	grant, err := s.watchSvc.Issue(ctx, watch.IssueRequest{
+		SessionID: session.ID,
+		ChildID:   session.ChildID,
+		DeviceID:  session.DeviceID,
+		Rule: watch.RuleView{
+			UnlockMinutes: snapshot.Rule.UnlockMinutes,
+			DailyLimit:    snapshot.Rule.DailyLimit,
+			Timezone:      snapshot.Rule.Timezone,
+		},
+	})
+	if err != nil {
+		summary.GrantError = err.Error()
+		s.logger.Error("issue watch grant", "error", err, "session_id", session.ID)
+		return
+	}
+	summary.Grant = &grant
+}
+
+func (s *Service) attachGrant(ctx context.Context, session sessionRecord, summary *SessionSummary) {
+	if s.watchSvc == nil {
+		return
+	}
+	grant, err := s.watchSvc.GrantForSession(ctx, session.ID)
+	if err != nil {
+		summary.GrantError = err.Error()
+		return
+	}
+	summary.Grant = &grant
 }
 
 // GetSession 返回会话状态（用于断线重连）。

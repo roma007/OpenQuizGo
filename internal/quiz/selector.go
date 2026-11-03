@@ -14,6 +14,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/roma007/OpenQuizGo/internal/rule"
+	"github.com/roma007/OpenQuizGo/internal/watch"
 )
 
 // Rule 是规则子集别名，统一由 rule 包校验。
@@ -34,15 +35,22 @@ var (
 
 // Service 是组卷服务。
 type Service struct {
-	repo    *repository
-	redis   *redis.Client
-	ruleSvc *rule.Service
-	logger  *slog.Logger
+	repo     *repository
+	redis    *redis.Client
+	ruleSvc  *rule.Service
+	watchSvc *watch.Service
+	logger   *slog.Logger
 }
 
 // New 构造组卷服务。
-func New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, logger *slog.Logger) *Service {
-	return &Service{repo: newRepository(pool), redis: rdb, ruleSvc: ruleSvc, logger: logger}
+func New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, watchSvc *watch.Service, logger *slog.Logger) *Service {
+	return &Service{
+		repo:     newRepository(pool),
+		redis:    rdb,
+		ruleSvc:  ruleSvc,
+		watchSvc: watchSvc,
+		logger:   logger,
+	}
 }
 
 // Select 按规则组卷。
