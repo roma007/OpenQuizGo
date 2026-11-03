@@ -1,0 +1,36 @@
+name: parent-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "parent/**"
+      - ".github/workflows/parent-ci.yml"
+  pull_request:
+    paths:
+      - "parent/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: parent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: dart analyze lib test
+
+      - name: Test
+        run: flutter test
+
+      - name: Build debug APK
+        run: flutter build apk --debug
