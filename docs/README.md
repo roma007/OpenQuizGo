@@ -33,6 +33,6 @@ node scripts/archive-conversation.mjs --all
 | --- | --- | --- | --- | --- |
 | — | 项目规范与文档机制建立 | — | — | done |
 | 001 | 项目总体设计（答题解锁电视使用时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | in-progress（T1–T12 完成，T0 首台通过） |
-| 002 | Android TV 守护端 | [设计](design/002-Android TV 守护端设计.md) | [计划](plans/002-Android TV 守护端实施计划.md) | review |
+| 002 | Android TV 守护端 | [设计](design/002-Android TV 守护端设计.md) | [计划](plans/002-Android TV 守护端实施计划.md) | in-progress（T1 完成） |
 
 > 新增设计/计划后，请同步更新此表。

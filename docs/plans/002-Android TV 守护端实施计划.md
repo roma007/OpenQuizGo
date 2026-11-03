@@ -4,7 +4,7 @@
 | --- | --- |
 | 编号 | 002 |
 | 版本 | v1 |
-| 状态 | review |
+| 状态 | in-progress |
 | 负责人 | 待定 |
 | 创建日期 | 2026-11-03 |
 | 最后更新 | 2026-11-03 |
@@ -42,7 +42,7 @@
 
 | 序号 | 任务 | 依赖 | 产出 | 验收 | 估算(人日) | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
-| P2-T1 | 工程骨架 | — | Kotlin/Compose TV 工程、DI、网络层、DataStore、CI | 可编译安装；`./gradlew test` 通过 | 3 | todo |
+| P2-T1 | 工程骨架 | — | Kotlin/Compose TV 工程、DI、网络层、DataStore、CI | 可编译安装；`./gradlew test` 通过 | 3 | done |
 | P2-T2 | 激活与设备身份 | T1 | 激活码 UI、设备令牌、Keystore、绑定/解绑 | 电视激活→绑定→令牌持久化；解绑立即失效 | 3 | todo |
 | P2-T3 | 前台识别与计时 | T1 | AccessibilityService、UsageStats、前台包名/播放状态 | 识别延迟 ≤1s；30s 采样校正 | 4 | todo |
 | P2-T4 | 守护状态机 | T2、T3 | GuardEngine、前台服务、开机自启、状态持久化 | 重启/待机后恢复；状态可观测 | 4 | todo |
@@ -107,6 +107,8 @@
 | 日期 | 内容 | 结果/偏差 |
 | --- | --- | --- |
 | 2026-11-03 | 计划创建，状态 review | 等待 G1/G4 |
+| 2026-11-03 | G1 批准，进入 T1；新建 `tv/` 正式工程 | Compose TV 骨架、DataStore、Retrofit、手工 DI、CI |
+| 2026-11-03 | T1 完成：创维安装/启动/渲染通过，单测通过 | 包名 `com.openquizgo.quiz`（guard/tv 被创维拦截） |
 
 ## 7. 验收结论
 

@@ -21,7 +21,7 @@
 - ✅ T11 可观测性与压测（指标、追踪、告警、k6、压测工具）
 - ✅ T12 验收与文档（OpenAPI、部署手册、验收报告）
 - ✅ T0 设备管控 PoC（创维：全屏 Activity 方案通过，接受片头广告）
-- 📐 002 Android TV 守护端设计/计划（review）
+- 🚧 002 Android TV 守护端（T1 工程骨架完成）
 
 **第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。
 
@@ -53,6 +53,7 @@ internal/httpapi  路由、中间件、统一响应
 internal/platform 数据库 / Redis / 日志适配
 migrations        SQL 迁移（goose）
 android           T0 设备管控 PoC（Java，见 android/README.md）
+tv                正式 Android TV 守护端（Kotlin/Compose TV，见 tv/README.md）
 docs              设计、计划、对话归档
 ```
 

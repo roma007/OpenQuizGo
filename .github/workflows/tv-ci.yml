@@ -1,0 +1,33 @@
+name: tv-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tv/**"
+      - ".github/workflows/tv-ci.yml"
+  pull_request:
+    paths:
+      - "tv/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tv
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+
+      - name: Assemble debug
+        run: ./gradlew :app:assembleDebug --no-daemon

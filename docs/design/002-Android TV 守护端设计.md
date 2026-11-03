@@ -4,7 +4,7 @@
 | --- | --- |
 | 编号 | 002 |
 | 版本 | v1 |
-| 状态 | review |
+| 状态 | approved |
 | 作者 | AI |
 | 创建日期 | 2026-11-03 |
 | 最后更新 | 2026-11-03 |
@@ -53,6 +53,7 @@
 | 第三方 App | 只用商店/预装应用；不做侧载引导 | 创维拦截 |
 | 权限最小化 | 使用情况访问 + 无障碍为主；悬浮窗/通知使用权可选 | 合规 |
 | 技术栈 | Kotlin + Jetpack Compose for TV + Coroutines/Flow | 001 设计 |
+| 包名 | `com.openquizgo.quiz`（namespace `com.openquizgo.guard`） | 创维拦截 `guard`/`tv` 包名，实测 `quiz` 可安装 |
 | 最低系统 | Android TV 9（API 28） | 创维实测 |
 
 ## 3. 总体架构
