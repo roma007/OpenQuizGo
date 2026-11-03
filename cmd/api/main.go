@@ -70,7 +70,11 @@ func main() {
 	}, logger)
 
 	ruleService := rule.New(pool, identityService, logger)
-	watchService := watch.New(pool, ruleService, cfg.JWTSecret, logger)
+	watchService, err := watch.New(pool, ruleService, cfg.JWTSecret, cfg.OfflineLeaseKey, logger)
+	if err != nil {
+		logger.Error("init watch service", "error", err)
+		os.Exit(1)
+	}
 	adminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)
 	questionService := question.New(pool, logger)
 	reportService := report.New(pool, logger)

@@ -16,6 +16,42 @@ func (s *Service) DeviceRoutes(r chi.Router) {
 	r.Get("/watch/grants/active", s.handleActiveGrant)
 	r.Put("/device/capability", s.handleCapability)
 	r.Post("/device/tamper", s.handleTamper)
+	r.Get("/offline/lease", s.handleOfflineLease)
+	r.Post("/watch/logs", s.handleOfflineReport)
+}
+
+func (s *Service) handleOfflineLease(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeWatchError(w, r, newError(401, "AUTH_INVALID_TOKEN", "设备未授权"))
+		return
+	}
+	lease, err := s.IssueOfflineLease(r.Context(), principal)
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, lease)
+}
+
+func (s *Service) handleOfflineReport(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeWatchError(w, r, newError(401, "AUTH_INVALID_TOKEN", "设备未授权"))
+		return
+	}
+	var req OfflineReportRequest
+	r.Body = http.MaxBytesReader(w, r.Body, 2<<20)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeWatchError(w, r, newError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	result, err := s.ReportOffline(r.Context(), principal, req)
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 func (s *Service) handleHeartbeat(w http.ResponseWriter, r *http.Request) {

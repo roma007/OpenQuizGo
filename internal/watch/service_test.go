@@ -2,13 +2,17 @@ package watch
 
 import (
 	"context"
+	"crypto/ed25519"
 	"database/sql"
+	"encoding/base64"
+	"errors"
 	"io"
 	"log/slog"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -35,7 +39,10 @@ func TestGrantAndHeartbeat(t *testing.T) {
 	childID := seedWatchChild(t, pool)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	ruleSvc := rule.New(pool, nil, logger)
-	svc := New(pool, ruleSvc, "test-secret-0123456789-0123456789", logger)
+	svc, err := New(pool, ruleSvc, "test-secret-0123456789-0123456789", "", logger)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	principal := identity.DevicePrincipal{DeviceID: "tv-watch", ChildID: childID}
 	sessionID := insertSession(t, pool, childID, principal.DeviceID)
@@ -272,7 +279,10 @@ func TestConcurrentIssueRespectsDailyLimit(t *testing.T) {
 	}
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	svc := New(pool, rule.New(pool, nil, logger), "test-secret-0123456789-0123456789", logger)
+	svc, err := New(pool, rule.New(pool, nil, logger), "test-secret-0123456789-0123456789", "", logger)
+	if err != nil {
+		t.Fatal(err)
+	}
 	principal := identity.DevicePrincipal{DeviceID: "tv-concurrent", ChildID: childID}
 
 	sessions := make([]string, 100)
@@ -321,5 +331,123 @@ func TestConcurrentIssueRespectsDailyLimit(t *testing.T) {
 	}
 	if totalMinutes != 3 {
 		t.Fatalf("total granted minutes = %d, want 3", totalMinutes)
+	}
+}
+
+func TestOfflineLease(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareWatchDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedWatchChild(t, pool)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	ruleSvc := rule.New(pool, nil, logger)
+	svc, err := New(pool, ruleSvc, "test-secret-0123456789-0123456789", "", logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	principal := identity.DevicePrincipal{DeviceID: "tv-offline", ChildID: childID}
+
+	lease, err := svc.IssueOfflineLease(ctx, principal)
+	if err != nil {
+		t.Fatalf("issue lease: %v", err)
+	}
+	if lease.MaxMinutes != 10 || lease.Token == "" || lease.PublicKey == "" {
+		t.Fatalf("unexpected lease: %+v", lease)
+	}
+
+	publicKey, err := base64.StdEncoding.DecodeString(lease.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := jwt.Parse(lease.Token, func(token *jwt.Token) (any, error) {
+		if token.Method.Alg() != "EdDSA" {
+			return nil, errors.New("unexpected alg")
+		}
+		return ed25519.PublicKey(publicKey), nil
+	})
+	if err != nil || !parsed.Valid {
+		t.Fatalf("verify lease token: %v", err)
+	}
+	claims := parsed.Claims.(jwt.MapClaims)
+	if claims["typ"] != "offline_lease" || claims["device_id"] != principal.DeviceID {
+		t.Fatalf("unexpected claims: %+v", claims)
+	}
+
+	now := time.Now()
+	result, err := svc.ReportOffline(ctx, principal, OfflineReportRequest{
+		LeaseID: lease.LeaseID,
+		Entries: []OfflineEntry{{
+			StartAt:        now.Add(-4 * time.Minute),
+			EndAt:          now.Add(-1 * time.Second),
+			WatchedSeconds: 239,
+			PausedSeconds:  5,
+			TargetApp:      "com.example.video",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("report offline: %v", err)
+	}
+	if result.ReportedMinutes != 4 || result.Clamped {
+		t.Fatalf("unexpected report: %+v", result)
+	}
+
+	var watched int
+	if err := pool.QueryRow(ctx, `
+		select coalesce(sum(watched_seconds), 0)::int from watch_log
+		where child_id = $1 and target_id = 'com.example.video'`, childID).Scan(&watched); err != nil {
+		t.Fatal(err)
+	}
+	if watched != 239 {
+		t.Fatalf("watched = %d, want 239", watched)
+	}
+
+	_, err = svc.ReportOffline(ctx, principal, OfflineReportRequest{
+		LeaseID: lease.LeaseID,
+		Entries: []OfflineEntry{{
+			StartAt: now.Add(-2 * time.Minute), EndAt: now, WatchedSeconds: 60,
+		}},
+	})
+	reportedErr, ok := err.(*Error)
+	if !ok || reportedErr.Code != "LEASE_ALREADY_REPORTED" {
+		t.Fatalf("expected already reported, got %v", err)
+	}
+
+	// 超过租约额度的部分被截断。
+	child2 := seedWatchChild(t, pool, "hash-offline-2")
+	if _, err := pool.Exec(ctx,
+		`update watch_rule set offline_fallback_min = 1 where child_id = $1`, child2); err != nil {
+		t.Fatal(err)
+	}
+	principal2 := identity.DevicePrincipal{DeviceID: "tv-offline-2", ChildID: child2}
+	lease2, err := svc.IssueOfflineLease(ctx, principal2)
+	if err != nil {
+		t.Fatalf("issue lease 2: %v", err)
+	}
+	if lease2.MaxMinutes != 1 {
+		t.Fatalf("max minutes = %d, want 1", lease2.MaxMinutes)
+	}
+	now2 := time.Now()
+	clamped, err := svc.ReportOffline(ctx, principal2, OfflineReportRequest{
+		LeaseID: lease2.LeaseID,
+		Entries: []OfflineEntry{{
+			StartAt: now2.Add(-4 * time.Minute), EndAt: now2,
+			WatchedSeconds: 240, TargetApp: "com.example.video",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("clamped report: %v", err)
+	}
+	if !clamped.Clamped || clamped.ReportedMinutes != 1 {
+		t.Fatalf("unexpected clamped result: %+v", clamped)
 	}
 }

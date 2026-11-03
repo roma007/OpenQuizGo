@@ -25,6 +25,7 @@ type Config struct {
 	RefreshTokenTTL time.Duration
 	EncryptionKey   string
 	PhoneHashKey    string
+	OfflineLeaseKey string
 	SMSMode         string
 	SMSMockCode     string
 }
@@ -47,6 +48,7 @@ func Load() (Config, error) {
 		RefreshTokenTTL: getDuration("REFRESH_TOKEN_TTL", 720*time.Hour),
 		EncryptionKey:   os.Getenv("DATA_ENCRYPTION_KEY"),
 		PhoneHashKey:    os.Getenv("PHONE_HASH_KEY"),
+		OfflineLeaseKey: os.Getenv("OFFLINE_LEASE_KEY"),
 		SMSMode:         getenv("SMS_MODE", "mock"),
 		SMSMockCode:     getenv("SMS_MOCK_CODE", "123456"),
 	}
@@ -60,6 +62,9 @@ func Load() (Config, error) {
 		}
 		if cfg.PhoneHashKey == "" {
 			cfg.PhoneHashKey = "dev-phone-hash-key-change-me"
+		}
+		if cfg.OfflineLeaseKey == "" {
+			cfg.OfflineLeaseKey = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXphYmNkZWY="
 		}
 	}
 
@@ -79,8 +84,8 @@ func Load() (Config, error) {
 		if len(cfg.JWTSecret) < 32 {
 			return Config{}, errors.New("JWT_SECRET must be at least 32 characters outside dev")
 		}
-		if cfg.EncryptionKey == "" || cfg.PhoneHashKey == "" {
-			return Config{}, errors.New("DATA_ENCRYPTION_KEY and PHONE_HASH_KEY are required outside dev")
+		if cfg.EncryptionKey == "" || cfg.PhoneHashKey == "" || cfg.OfflineLeaseKey == "" {
+			return Config{}, errors.New("DATA_ENCRYPTION_KEY, PHONE_HASH_KEY and OFFLINE_LEASE_KEY are required outside dev")
 		}
 		if cfg.SMSMode == "mock" {
 			return Config{}, errors.New("SMS_MODE=mock is not allowed outside dev")

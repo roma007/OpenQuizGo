@@ -2,6 +2,7 @@ package watch
 
 import (
 	"context"
+	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -26,15 +27,35 @@ var validTamperTypes = map[string]bool{
 
 // Service 负责授权签发、心跳计量与设备异常上报。
 type Service struct {
-	repo    *repository
-	ruleSvc *rule.Service
-	secret  []byte
-	logger  *slog.Logger
+	repo     *repository
+	ruleSvc  *rule.Service
+	secret   []byte
+	leaseKey ed25519.PrivateKey
+	leasePub string
+	logger   *slog.Logger
 }
 
-// New 构造计量服务。
-func New(pool *pgxpool.Pool, ruleSvc *rule.Service, secret string, logger *slog.Logger) *Service {
-	return &Service{repo: newRepository(pool), ruleSvc: ruleSvc, secret: []byte(secret), logger: logger}
+const devLeaseKey = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXphYmNkZWY="
+
+// New 构造计量服务；leaseKeyBase64 为 Ed25519 32 字节种子。
+func New(pool *pgxpool.Pool, ruleSvc *rule.Service, secret, leaseKeyBase64 string, logger *slog.Logger) (*Service, error) {
+	if leaseKeyBase64 == "" {
+		leaseKeyBase64 = devLeaseKey
+	}
+	seed, err := base64.StdEncoding.DecodeString(leaseKeyBase64)
+	if err != nil || len(seed) != ed25519.SeedSize {
+		return nil, errors.New("OFFLINE_LEASE_KEY must be base64 of 32 bytes")
+	}
+	key := ed25519.NewKeyFromSeed(seed)
+	publicKey := key.Public().(ed25519.PublicKey)
+	return &Service{
+		repo:     newRepository(pool),
+		ruleSvc:  ruleSvc,
+		secret:   []byte(secret),
+		leaseKey: key,
+		leasePub: base64.StdEncoding.EncodeToString(publicKey),
+		logger:   logger,
+	}, nil
 }
 
 // Issue 为通过的答题会话签发授权（同一会话幂等）。
@@ -197,4 +218,162 @@ func randomToken() string {
 		panic(err)
 	}
 	return base64.RawURLEncoding.EncodeToString(b)
+}
+
+// IssueOfflineLease 预签发离线租约（24 小时有效，最大离线分钟数受规则限制）。
+func (s *Service) IssueOfflineLease(ctx context.Context, principal identity.DevicePrincipal) (OfflineLease, error) {
+	if s.ruleSvc == nil {
+		return OfflineLease{}, newError(500, "INTERNAL", "规则服务不可用")
+	}
+	state, err := s.ruleSvc.Context(ctx, principal.ChildID)
+	if err != nil {
+		var ruleErr *rule.Error
+		if errors.As(err, &ruleErr) {
+			return OfflineLease{}, newError(ruleErr.Status, ruleErr.Code, ruleErr.Message)
+		}
+		return OfflineLease{}, err
+	}
+	if !state.Allowed {
+		code := "RULE_TIME_WINDOW"
+		message := "当前不在允许观看时段"
+		if state.Reason == "daily_limit" {
+			code = "RULE_DAILY_LIMIT"
+			message = "今日观看额度已用完"
+		}
+		return OfflineLease{}, newError(403, code, message)
+	}
+	maxMinutes := state.Rule.OfflineFallbackMin
+	if maxMinutes <= 0 {
+		return OfflineLease{}, newError(403, "OFFLINE_DISABLED", "未开启离线观看")
+	}
+	if maxMinutes > state.RemainingMinutes {
+		maxMinutes = state.RemainingMinutes
+	}
+	if maxMinutes < 1 {
+		return OfflineLease{}, newError(403, "RULE_DAILY_LIMIT", "今日剩余额度不足")
+	}
+	allowedApps := []string{}
+	if state.Rule.ScopeMode == "custom" {
+		allowedApps = state.Rule.AllowedApps
+	}
+
+	now := time.Now()
+	expiresAt := now.Add(24 * time.Hour)
+	lease, err := s.repo.issueLease(ctx, principal.ChildID, principal.DeviceID,
+		maxMinutes, allowedApps, randomToken(), now, expiresAt)
+	if err != nil {
+		return OfflineLease{}, err
+	}
+	token, err := s.signOfflineLease(lease)
+	if err != nil {
+		return OfflineLease{}, err
+	}
+	return OfflineLease{
+		LeaseID:     lease.ID,
+		Token:       token,
+		PublicKey:   s.leasePub,
+		MaxMinutes:  lease.MaxMinutes,
+		AllowedApps: lease.AllowedApps,
+		IssuedAt:    lease.IssuedAt,
+		ExpiresAt:   lease.ExpiresAt,
+	}, nil
+}
+
+// ReportOffline 对账离线观看记录，超出额度的部分会被截断。
+func (s *Service) ReportOffline(ctx context.Context, principal identity.DevicePrincipal,
+	req OfflineReportRequest) (OfflineReportResult, error) {
+	if req.LeaseID == "" || len(req.Entries) == 0 {
+		return OfflineReportResult{}, newError(422, "VALIDATION_ERROR", "缺少租约或观看记录")
+	}
+	lease, err := s.repo.leaseByID(ctx, req.LeaseID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return OfflineReportResult{}, newError(404, "LEASE_NOT_FOUND", "离线租约不存在")
+		}
+		return OfflineReportResult{}, err
+	}
+	if lease.DeviceID != principal.DeviceID || lease.ChildID != principal.ChildID {
+		return OfflineReportResult{}, newError(404, "LEASE_NOT_FOUND", "离线租约不存在")
+	}
+	if lease.Status == "reported" {
+		return OfflineReportResult{}, newError(409, "LEASE_ALREADY_REPORTED", "该租约已对账")
+	}
+
+	now := time.Now()
+	capSeconds := lease.MaxMinutes * 60
+	inserted := 0
+	clamped := false
+	for _, entry := range req.Entries {
+		if entry.WatchedSeconds < 0 || entry.PausedSeconds < 0 || !entry.EndAt.After(entry.StartAt) {
+			return OfflineReportResult{}, newError(422, "VALIDATION_ERROR", "观看记录时间或秒数不合法")
+		}
+		if entry.StartAt.Before(lease.IssuedAt.Add(-5*time.Minute)) ||
+			entry.EndAt.After(lease.ExpiresAt.Add(5*time.Minute)) ||
+			entry.EndAt.After(now.Add(5*time.Minute)) {
+			return OfflineReportResult{}, newError(422, "VALIDATION_ERROR", "观看记录不在租约有效期内")
+		}
+		duration := int(entry.EndAt.Sub(entry.StartAt).Seconds())
+		if entry.WatchedSeconds+entry.PausedSeconds > duration+60 {
+			return OfflineReportResult{}, newError(422, "VALIDATION_ERROR", "观看时长超过记录区间")
+		}
+		watched := entry.WatchedSeconds
+		if inserted+watched > capSeconds {
+			watched = capSeconds - inserted
+			clamped = true
+		}
+		if watched < 0 {
+			watched = 0
+		}
+		if watched == 0 && entry.PausedSeconds == 0 {
+			continue
+		}
+		if err := s.repo.insertOfflineLog(ctx, lease.ChildID, lease.DeviceID, entry.TargetApp,
+			entry.StartAt, entry.EndAt, watched, entry.PausedSeconds); err != nil {
+			return OfflineReportResult{}, err
+		}
+		inserted += watched
+	}
+
+	minutes := (inserted + 59) / 60
+	if err := s.repo.markLeaseReported(ctx, lease.ID, minutes); err != nil {
+		return OfflineReportResult{}, err
+	}
+
+	remaining := 0
+	if s.ruleSvc != nil {
+		if state, err := s.ruleSvc.Context(ctx, lease.ChildID); err == nil {
+			remaining = state.RemainingMinutes
+		}
+	}
+	return OfflineReportResult{
+		ReportedMinutes:  minutes,
+		RemainingMinutes: remaining,
+		Clamped:          clamped,
+	}, nil
+}
+
+type offlineClaims struct {
+	Type        string   `json:"typ"`
+	ChildID     string   `json:"child_id"`
+	DeviceID    string   `json:"device_id"`
+	MaxMinutes  int      `json:"max_minutes"`
+	AllowedApps []string `json:"allowed_apps,omitempty"`
+	jwt.RegisteredClaims
+}
+
+func (s *Service) signOfflineLease(lease leaseRecord) (string, error) {
+	claims := offlineClaims{
+		Type:        "offline_lease",
+		ChildID:     lease.ChildID,
+		DeviceID:    lease.DeviceID,
+		MaxMinutes:  lease.MaxMinutes,
+		AllowedApps: lease.AllowedApps,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   lease.ID,
+			ID:        lease.JTI,
+			IssuedAt:  jwt.NewNumericDate(lease.IssuedAt),
+			ExpiresAt: jwt.NewNumericDate(lease.ExpiresAt),
+		},
+	}
+	return jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims).SignedString(s.leaseKey)
 }

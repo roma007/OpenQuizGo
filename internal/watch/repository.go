@@ -261,3 +261,82 @@ func (r *repository) insertTamper(ctx context.Context, deviceID, childID string,
 		values ($1, $2, $3, $4::jsonb)`, deviceID, childID, event.Type, string(detail))
 	return err
 }
+
+type leaseRecord struct {
+	ID              string
+	DeviceID        string
+	ChildID         string
+	JTI             string
+	MaxMinutes      int
+	AllowedApps     []string
+	IssuedAt        time.Time
+	ExpiresAt       time.Time
+	ReportedMinutes int
+	Status          string
+}
+
+const leaseColumns = `
+	id, device_id, child_id, jti, max_minutes, allowed_apps::text,
+	issued_at, expires_at, reported_minutes, status`
+
+func scanLease(row pgx.Row) (leaseRecord, error) {
+	var lease leaseRecord
+	var apps string
+	err := row.Scan(&lease.ID, &lease.DeviceID, &lease.ChildID, &lease.JTI,
+		&lease.MaxMinutes, &apps, &lease.IssuedAt, &lease.ExpiresAt,
+		&lease.ReportedMinutes, &lease.Status)
+	if err != nil {
+		return leaseRecord{}, err
+	}
+	_ = json.Unmarshal([]byte(apps), &lease.AllowedApps)
+	return lease, nil
+}
+
+func (r *repository) issueLease(ctx context.Context, childID, deviceID string, maxMinutes int,
+	apps []string, jti string, issued, expires time.Time) (leaseRecord, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return leaseRecord{}, fmt.Errorf("begin: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if _, err := tx.Exec(ctx, `
+		update offline_lease set status = 'expired'
+		where device_id = $1 and status = 'active'`, deviceID); err != nil {
+		return leaseRecord{}, err
+	}
+	encodedApps, _ := json.Marshal(apps)
+	lease, err := scanLease(tx.QueryRow(ctx, `
+		insert into offline_lease (device_id, child_id, jti, max_minutes, allowed_apps, issued_at, expires_at)
+		values ($1, $2, $3, $4, $5::jsonb, $6, $7)
+		returning `+leaseColumns,
+		deviceID, childID, jti, maxMinutes, string(encodedApps), issued, expires))
+	if err != nil {
+		return leaseRecord{}, fmt.Errorf("insert lease: %w", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return leaseRecord{}, err
+	}
+	return lease, nil
+}
+
+func (r *repository) leaseByID(ctx context.Context, id string) (leaseRecord, error) {
+	return scanLease(r.pool.QueryRow(ctx,
+		`select `+leaseColumns+` from offline_lease where id = $1`, id))
+}
+
+func (r *repository) markLeaseReported(ctx context.Context, id string, minutes int) error {
+	_, err := r.pool.Exec(ctx, `
+		update offline_lease set reported_minutes = $2, status = 'reported' where id = $1`, id, minutes)
+	return err
+}
+
+func (r *repository) insertOfflineLog(ctx context.Context, childID, deviceID, target string,
+	start, end time.Time, watched, paused int) error {
+	_, err := r.pool.Exec(ctx, `
+		insert into watch_log (child_id, device_id, target_type, target_id,
+		                       start_at, end_at, watched_seconds, paused_seconds)
+		values ($1, $2, 'app', $3, $4, $5, $6, $7)`,
+		childID, deviceID, target, start, end, watched, paused)
+	return err
+}

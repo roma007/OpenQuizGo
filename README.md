@@ -17,8 +17,9 @@
 - ✅ T7 加权规则引擎（规则 CRUD、时段/额度、上下文、dry-run）
 - ✅ T8 授权与观看计量（grant、心跳、吊销、暂停不计量）
 - ✅ T9 报告聚合（周/月、趣味单列、定时 worker）
+- ✅ T10 离线租约（Ed25519 签名、离线对账、额度截断）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T10 离线租约
+- ⏳ T11 可观测性与压测
 
 ## 技术栈
 
@@ -99,6 +100,7 @@ docker compose up --build
 | `REFRESH_TOKEN_TTL` | `720h` | 刷新令牌有效期 |
 | `DATA_ENCRYPTION_KEY` | dev 默认值 | 手机号字段加密密钥（base64 32 字节） |
 | `PHONE_HASH_KEY` | dev 默认值 | 手机号查询哈希密钥 |
+| `OFFLINE_LEASE_KEY` | dev 默认值 | 离线租约 Ed25519 种子（base64 32 字节） |
 | `SMS_MODE` | `mock` | `mock` 固定验证码；`disabled` 关闭 |
 | `SMS_MOCK_CODE` | `123456` | mock 模式验证码 |
 
@@ -201,6 +203,17 @@ GET /v1/family/children/{id}/reports?period=week|month&limit=8
 - `fun_stats` 单列趣味题统计。
 - `watch_minutes` 为周期内实际观看分钟数。
 - `cmd/worker` 启动时生成一次，之后按 `REPORT_INTERVAL`（默认 1h）幂等重跑，覆盖当前/前一周、当前/前一月。
+
+## 离线租约（T10）
+
+```text
+GET  /v1/offline/lease      预签发离线租约（24h，EdDSA 签名）
+POST /v1/watch/logs         恢复网络后上报离线观看记录
+```
+
+- `max_minutes = min(offline_fallback_min, 当日剩余额度)`；额度不足时不签发。
+- 返回 `lease_token` 与 `public_key`，电视端用 Ed25519 公钥验签。
+- 上报超出额度自动截断（`clamped=true`）；同一租约只能对账一次。
 
 状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。
 

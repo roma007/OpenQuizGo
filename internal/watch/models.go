@@ -74,3 +74,36 @@ type TamperEvent struct {
 	Type   string         `json:"type"`
 	Detail map[string]any `json:"detail"`
 }
+
+// OfflineLease 是可离线播放的签名租约。
+type OfflineLease struct {
+	LeaseID     string    `json:"lease_id"`
+	Token       string    `json:"lease_token"`
+	PublicKey   string    `json:"public_key"`
+	MaxMinutes  int       `json:"max_minutes"`
+	AllowedApps []string  `json:"allowed_apps,omitempty"`
+	IssuedAt    time.Time `json:"issued_at"`
+	ExpiresAt   time.Time `json:"expires_at"`
+}
+
+// OfflineEntry 是一次离线观看记录。
+type OfflineEntry struct {
+	StartAt        time.Time `json:"start_at"`
+	EndAt          time.Time `json:"end_at"`
+	WatchedSeconds int       `json:"watched_seconds"`
+	PausedSeconds  int       `json:"paused_seconds"`
+	TargetApp      string    `json:"target_app"`
+}
+
+// OfflineReportRequest 是离线使用上报。
+type OfflineReportRequest struct {
+	LeaseID string         `json:"lease_id"`
+	Entries []OfflineEntry `json:"entries"`
+}
+
+// OfflineReportResult 是对账结果。
+type OfflineReportResult struct {
+	ReportedMinutes  int  `json:"reported_minutes"`
+	RemainingMinutes int  `json:"remaining_minutes"`
+	Clamped          bool `json:"clamped"`
+}
