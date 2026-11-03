@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,9 +30,11 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import androidx.tv.material3.darkColorScheme
+import com.openquizgo.guard.BuildConfig
 import com.openquizgo.guard.GuardApplication
 import com.openquizgo.guard.data.foreground.ForegroundState
 import com.openquizgo.guard.domain.GuardState
+import com.openquizgo.guard.platform.GuardAccessibilityService
 import com.openquizgo.guard.platform.GuardService
 import com.openquizgo.guard.platform.Permissions
 import kotlinx.coroutines.delay
@@ -58,6 +61,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private enum class Dashboard { HOME, WIZARD, DIAGNOSTICS }
+
 @Composable
 private fun GuardScreen(viewModel: GuardViewModel) {
     val state by viewModel.state.collectAsState()
@@ -65,20 +70,42 @@ private fun GuardScreen(viewModel: GuardViewModel) {
     val guardState by viewModel.guardState.collectAsState()
     val watchSeconds by viewModel.watchSeconds.collectAsState()
     val grantSeconds by viewModel.grantSeconds.collectAsState()
+    var dashboard by remember { mutableStateOf(Dashboard.HOME) }
     when (val current = state) {
         is GuardUiState.Loading -> CenterMessage("正在连接服务端…")
         is GuardUiState.Activation -> ActivationScreen(
             state = current,
             onRegenerate = viewModel::regenerate,
         )
-        is GuardUiState.Bound -> BoundScreen(
-            childName = current.childName,
-            foreground = foreground,
-            guardState = guardState,
-            watchSeconds = watchSeconds,
-            grantSeconds = grantSeconds,
-            onReset = viewModel::resetBinding,
-        )
+        is GuardUiState.Bound -> when (dashboard) {
+            Dashboard.HOME -> BoundScreen(
+                childName = current.childName,
+                foreground = foreground,
+                guardState = guardState,
+                watchSeconds = watchSeconds,
+                grantSeconds = grantSeconds,
+                onWizard = { dashboard = Dashboard.WIZARD },
+                onDiagnostics = { dashboard = Dashboard.DIAGNOSTICS },
+                onReset = viewModel::resetBinding,
+            )
+            Dashboard.WIZARD -> PermissionWizardScreen(
+                childName = current.childName,
+                foreground = foreground,
+                guardState = guardState,
+                grantSeconds = grantSeconds,
+                viewModel = viewModel,
+                onBack = { dashboard = Dashboard.HOME },
+            )
+            Dashboard.DIAGNOSTICS -> DiagnosticsScreen(
+                childName = current.childName,
+                foreground = foreground,
+                guardState = guardState,
+                watchSeconds = watchSeconds,
+                grantSeconds = grantSeconds,
+                viewModel = viewModel,
+                onBack = { dashboard = Dashboard.HOME },
+            )
+        }
         is GuardUiState.Failure -> FailureScreen(
             message = current.message,
             onRetry = viewModel::regenerate,
@@ -150,6 +177,8 @@ private fun BoundScreen(
     guardState: GuardState,
     watchSeconds: Long,
     grantSeconds: Long,
+    onWizard: () -> Unit,
+    onDiagnostics: () -> Unit,
     onReset: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -198,18 +227,14 @@ private fun BoundScreen(
             color = if (grantSeconds > 0) Color(0xFF7CFF9B) else Color(0xFFFFC107),
         )
         Spacer(Modifier.height(20.dp))
-        Button(onClick = {
-            context.startActivity(Permissions.accessibilitySettingsIntent())
-        }) {
-            Text("无障碍设置", fontSize = 18.sp)
+        Button(onClick = onWizard) {
+            Text("权限向导 / 自检", fontSize = 18.sp)
         }
         Spacer(Modifier.height(10.dp))
-        Button(onClick = {
-            context.startActivity(Permissions.usageSettingsIntent())
-        }) {
-            Text("使用情况设置", fontSize = 18.sp)
+        Button(onClick = onDiagnostics) {
+            Text("诊断信息", fontSize = 18.sp)
         }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(10.dp))
         Button(onClick = onReset) {
             Text("重置绑定", fontSize = 18.sp)
         }
@@ -224,6 +249,172 @@ private fun guardStateLabel(state: GuardState): String = when (state) {
     GuardState.QUIZZING -> "答题中"
     GuardState.GRANTED -> "已授权"
     GuardState.BLOCKED -> "已锁定"
+}
+
+@Composable
+private fun PermissionWizardScreen(
+    childName: String,
+    foreground: ForegroundState,
+    guardState: GuardState,
+    grantSeconds: Long,
+    viewModel: GuardViewModel,
+    onBack: () -> Unit,
+) {
+    val context = LocalContext.current
+    var accessibility by remember { mutableStateOf(Permissions.accessibilityEnabled(context)) }
+    var usage by remember { mutableStateOf(Permissions.usageAccessEnabled(context)) }
+    var notifications by remember { mutableStateOf(Permissions.notificationsEnabled(context)) }
+    var serviceRunning by remember { mutableStateOf(Permissions.foregroundServiceRunning(context)) }
+    val server by viewModel.serverStatus.collectAsState()
+    val report by viewModel.reportStatus.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.pingServer()
+        while (true) {
+            accessibility = Permissions.accessibilityEnabled(context)
+            usage = Permissions.usageAccessEnabled(context)
+            notifications = Permissions.notificationsEnabled(context)
+            serviceRunning = Permissions.foregroundServiceRunning(context)
+            delay(2_000)
+        }
+    }
+
+    val passed = listOf(accessibility, usage, notifications, serviceRunning).count { it }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(48.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(text = "权限向导 / 自检", fontSize = 32.sp, color = Color.White)
+        Text(
+            text = "孩子：$childName ｜ 权限 $passed / 4",
+            fontSize = 18.sp,
+            color = if (passed == 4) Color(0xFF7CFF9B) else Color(0xFFFFC107),
+        )
+        Spacer(Modifier.height(14.dp))
+        CheckRow("无障碍服务", accessibility, if (accessibility) null else "去开启") {
+            context.startActivity(Permissions.accessibilitySettingsIntent())
+        }
+        CheckRow("使用情况访问", usage, if (usage) null else "去开启") {
+            context.startActivity(Permissions.usageSettingsIntent())
+        }
+        CheckRow("通知权限", notifications, null, null)
+        CheckRow("前台守护服务", serviceRunning, null, null)
+        CheckRow(
+            "服务端连接",
+            server.ok == true,
+            if (server.checking) "检测中…" else if (server.ok == false) "重试" else "检测",
+        ) { viewModel.pingServer() }
+        Text(
+            text = "服务端：${server.message}",
+            fontSize = 14.sp,
+            color = if (server.ok == false) Color(0xFFFF7A7A) else Color(0xFF808080),
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = "守护状态：${guardStateLabel(guardState)} ｜ 剩余授权：${grantSeconds / 60} 分 ${grantSeconds % 60} 秒",
+            fontSize = 16.sp,
+            color = Color(0xFF7CC7FF),
+        )
+        Text(
+            text = "前台：${foreground.packageName ?: "—"} ｜ 媒体：${if (foreground.mediaActive) "播放中" else "无"}",
+            fontSize = 16.sp,
+            color = Color(0xFFB0B0B0),
+        )
+        Spacer(Modifier.height(18.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(onClick = viewModel::reportCapabilityNow) {
+                Text("上报设备能力", fontSize = 16.sp)
+            }
+            Button(onClick = onBack) {
+                Text("返回", fontSize = 16.sp)
+            }
+        }
+        report?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(text = it, fontSize = 14.sp, color = Color(0xFF7CFF9B))
+        }
+    }
+}
+
+@Composable
+private fun CheckRow(
+    label: String,
+    ok: Boolean,
+    action: String?,
+    onAction: (() -> Unit)?,
+) {
+    Row(
+        modifier = Modifier.padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "${if (ok) "✓" else "✗"} $label",
+            fontSize = 20.sp,
+            color = if (ok) Color(0xFF7CFF9B) else Color(0xFFFFC107),
+        )
+        if (action != null && onAction != null) {
+            Button(onClick = onAction) {
+                Text(action, fontSize = 14.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DiagnosticsScreen(
+    childName: String,
+    foreground: ForegroundState,
+    guardState: GuardState,
+    watchSeconds: Long,
+    grantSeconds: Long,
+    viewModel: GuardViewModel,
+    onBack: () -> Unit,
+) {
+    val logs by viewModel.logs.collectAsState()
+    val report by viewModel.reportStatus.collectAsState()
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(40.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Text(text = "诊断信息", fontSize = 28.sp, color = Color.White)
+        Spacer(Modifier.height(8.dp))
+        Text(text = "孩子：$childName ｜ 版本：${BuildConfig.VERSION_NAME}", fontSize = 15.sp, color = Color(0xFFB0B0B0))
+        Text(text = "服务端：${BuildConfig.API_BASE_URL}", fontSize = 15.sp, color = Color(0xFFB0B0B0))
+        Text(
+            text = "状态：${guardStateLabel(guardState)} ｜ 本次观看 ${watchSeconds}s ｜ 剩余 ${grantSeconds}s",
+            fontSize = 15.sp,
+            color = Color(0xFF7CC7FF),
+        )
+        Text(
+            text = "前台：${foreground.packageName ?: "—"} ｜ 媒体：${if (foreground.mediaActive) "是" else "否"}",
+            fontSize = 15.sp,
+            color = Color(0xFFB0B0B0),
+        )
+        Text(
+            text = "无障碍：${if (GuardAccessibilityService.isConnected()) "已连接" else "未连接"}",
+            fontSize = 15.sp,
+            color = Color(0xFFB0B0B0),
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = viewModel::reportCapabilityNow) { Text("上报能力", fontSize = 14.sp) }
+            Button(onClick = onBack) { Text("返回", fontSize = 14.sp) }
+        }
+        report?.let {
+            Spacer(Modifier.height(6.dp))
+            Text(text = it, fontSize = 14.sp, color = Color(0xFF7CFF9B))
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(text = "最近日志", fontSize = 16.sp, color = Color(0xFF7CFF9B))
+        logs.takeLast(10).forEach { line ->
+            Text(text = line, fontSize = 12.sp, color = Color(0xFF909090))
+        }
+    }
 }
 
 @Composable

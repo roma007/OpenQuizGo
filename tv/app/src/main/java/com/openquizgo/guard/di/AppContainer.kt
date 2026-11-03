@@ -9,6 +9,7 @@ import com.openquizgo.guard.data.remote.GuardApi
 import com.openquizgo.guard.data.quiz.QuizRepository
 import com.openquizgo.guard.data.watch.WatchRepository
 import com.openquizgo.guard.domain.GuardEngine
+import com.openquizgo.guard.platform.DiagnosticsReporter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -19,6 +20,8 @@ class AppContainer(context: Context) {
     val api: GuardApi = ApiFactory.create(BuildConfig.API_BASE_URL)
     val quizRepository: QuizRepository = QuizRepository(api, preferences)
     val watchRepository: WatchRepository = WatchRepository(api, preferences)
+    val diagnosticsReporter: DiagnosticsReporter =
+        DiagnosticsReporter(context, preferences, watchRepository, scope)
     val foregroundDetector: ForegroundDetector = ForegroundDetector(context, scope)
     val guardEngine: GuardEngine = GuardEngine(
         preferences,

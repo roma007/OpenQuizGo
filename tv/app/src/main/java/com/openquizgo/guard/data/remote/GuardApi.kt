@@ -6,6 +6,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 data class MetaResponse(
@@ -73,6 +74,18 @@ interface GuardApi {
         @Header("Authorization") authorization: String,
         @Body request: OfflineReportRequest,
     ): Response<OfflineReportResult>
+
+    @PUT("v1/device/capability")
+    suspend fun reportCapability(
+        @Header("Authorization") authorization: String,
+        @Body request: CapabilityReport,
+    ): Response<Unit>
+
+    @POST("v1/device/tamper")
+    suspend fun reportTamper(
+        @Header("Authorization") authorization: String,
+        @Body request: TamperReport,
+    ): Response<Unit>
 }
 
 data class ActivationCodeRequest(
@@ -229,4 +242,16 @@ data class OfflineReportResult(
     @SerializedName("reported_minutes") val reportedMinutes: Int,
     @SerializedName("remaining_minutes") val remainingMinutes: Int,
     @SerializedName("clamped") val clamped: Boolean,
+)
+
+data class CapabilityReport(
+    @SerializedName("guard_mode") val guardMode: String = "standard",
+    @SerializedName("permissions") val permissions: Map<String, Boolean>,
+    @SerializedName("os_version") val osVersion: String,
+    @SerializedName("app_version") val appVersion: String,
+)
+
+data class TamperReport(
+    @SerializedName("type") val type: String,
+    @SerializedName("detail") val detail: Map<String, String?>,
 )

@@ -41,7 +41,12 @@ class GuardService : Service() {
         super.onCreate()
         createChannel()
         startForeground(NOTIFICATION_ID, buildNotification("守护端启动中"))
-        engine = (application as GuardApplication).container.guardEngine
+        val container = (application as GuardApplication).container
+        engine = container.guardEngine
+        scope.launch {
+            delay(1_500)
+            container.diagnosticsReporter.reportCapabilityNow()
+        }
         stateJob = scope.launch {
             engine?.state?.collect { state ->
                 updateNotification(label(state))

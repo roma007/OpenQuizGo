@@ -12,6 +12,8 @@ import com.openquizgo.guard.data.remote.GuardApi
 import com.openquizgo.guard.domain.GuardEngine
 import com.openquizgo.guard.domain.GuardState
 import com.openquizgo.guard.di.AppContainer
+import com.openquizgo.guard.platform.DiagnosticsReporter
+import com.openquizgo.guard.platform.GuardLog
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,11 +36,18 @@ sealed interface GuardUiState {
     data class Failure(val message: String) : GuardUiState
 }
 
+data class ServerStatus(
+    val checking: Boolean = false,
+    val ok: Boolean? = null,
+    val message: String = "未检测",
+)
+
 class GuardViewModel(
     private val preferences: GuardPreferences,
     private val api: GuardApi,
     foregroundDetector: ForegroundDetector,
     guardEngine: GuardEngine,
+    private val diagnostics: DiagnosticsReporter,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<GuardUiState>(GuardUiState.Loading)
@@ -47,6 +56,13 @@ class GuardViewModel(
     val guardState: StateFlow<GuardState> = guardEngine.state
     val watchSeconds: StateFlow<Long> = guardEngine.watchSeconds
     val grantSeconds: StateFlow<Long> = guardEngine.grantSeconds
+    val logs: StateFlow<List<String>> = GuardLog.recent
+
+    private val _serverStatus = MutableStateFlow(ServerStatus())
+    val serverStatus: StateFlow<ServerStatus> = _serverStatus.asStateFlow()
+
+    private val _reportStatus = MutableStateFlow<String?>(null)
+    val reportStatus: StateFlow<String?> = _reportStatus.asStateFlow()
 
     private var pollJob: Job? = null
 
@@ -56,6 +72,34 @@ class GuardViewModel(
 
     fun regenerate() {
         startActivation()
+    }
+
+    fun pingServer() {
+        if (_serverStatus.value.checking) return
+        _serverStatus.value = ServerStatus(checking = true, message = "检测中…")
+        viewModelScope.launch {
+            runCatching { api.meta() }
+                .onSuccess {
+                    _serverStatus.value = ServerStatus(
+                        ok = true,
+                        message = "正常 · ${it.service} ${it.version}",
+                    )
+                }
+                .onFailure {
+                    _serverStatus.value = ServerStatus(
+                        ok = false,
+                        message = it.message ?: "连接失败",
+                    )
+                }
+        }
+    }
+
+    fun reportCapabilityNow() {
+        viewModelScope.launch {
+            _reportStatus.value = "上报中…"
+            val result = diagnostics.reportCapabilityNow()
+            _reportStatus.value = if (result.isSuccess) "能力已上报" else "上报失败：${result.exceptionOrNull()?.message}"
+        }
     }
 
     fun resetBinding() {
@@ -153,6 +197,7 @@ class GuardViewModel(
                 container.api,
                 container.foregroundDetector,
                 container.guardEngine,
+                container.diagnosticsReporter,
             ) as T
         }
     }

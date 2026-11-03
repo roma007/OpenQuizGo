@@ -3,6 +3,7 @@ package com.openquizgo.guard.data.watch
 import com.google.gson.Gson
 import com.openquizgo.guard.data.local.GuardPreferences
 import com.openquizgo.guard.data.remote.ApiErrorBody
+import com.openquizgo.guard.data.remote.CapabilityReport
 import com.openquizgo.guard.data.remote.GuardApi
 import com.openquizgo.guard.data.remote.HeartbeatRequest
 import com.openquizgo.guard.data.remote.HeartbeatResult
@@ -10,6 +11,7 @@ import com.openquizgo.guard.data.remote.OfflineEntry
 import com.openquizgo.guard.data.remote.OfflineLease
 import com.openquizgo.guard.data.remote.OfflineReportRequest
 import com.openquizgo.guard.data.remote.OfflineReportResult
+import com.openquizgo.guard.data.remote.TamperReport
 import com.openquizgo.guard.data.remote.WatchGrant
 import kotlinx.coroutines.flow.first
 import retrofit2.Response
@@ -66,6 +68,14 @@ class WatchRepository(
             OfflineReportRequest(leaseId = leaseId, entries = entries),
         ),
     )
+
+    suspend fun reportCapability(report: CapabilityReport) {
+        bodyOrThrow(api.reportCapability(authorization(), report))
+    }
+
+    suspend fun reportTamper(report: TamperReport) {
+        bodyOrThrow(api.reportTamper(authorization(), report))
+    }
 
     private suspend fun authorization(): String {
         val token = preferences.deviceToken.first()
