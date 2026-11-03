@@ -50,6 +50,29 @@ interface GuardApi {
         @Header("Authorization") authorization: String,
         @Path("sessionID") sessionId: String,
     ): Response<SessionSummary>
+
+    @GET("v1/watch/grants/active")
+    suspend fun activeGrant(
+        @Header("Authorization") authorization: String,
+    ): Response<WatchGrant>
+
+    @POST("v1/watch/grants/{grantID}/heartbeat")
+    suspend fun heartbeat(
+        @Header("Authorization") authorization: String,
+        @Path("grantID") grantId: String,
+        @Body request: HeartbeatRequest,
+    ): Response<HeartbeatResult>
+
+    @GET("v1/offline/lease")
+    suspend fun offlineLease(
+        @Header("Authorization") authorization: String,
+    ): Response<OfflineLease>
+
+    @POST("v1/watch/logs")
+    suspend fun reportOfflineUsage(
+        @Header("Authorization") authorization: String,
+        @Body request: OfflineReportRequest,
+    ): Response<OfflineReportResult>
 }
 
 data class ActivationCodeRequest(
@@ -149,4 +172,61 @@ data class ApiErrorBody(
     @SerializedName("code") val code: String?,
     @SerializedName("message") val message: String?,
     @SerializedName("session_id") val sessionId: String?,
+)
+
+data class WatchGrant(
+    @SerializedName("grant_id") val grantId: String,
+    @SerializedName("session_id") val sessionId: String?,
+    @SerializedName("minutes") val minutes: Int,
+    @SerializedName("valid_from") val validFrom: String?,
+    @SerializedName("valid_until") val validUntil: String?,
+    @SerializedName("remaining_seconds") val remainingSeconds: Int,
+    @SerializedName("status") val status: String,
+    @SerializedName("lease_token") val leaseToken: String?,
+)
+
+data class HeartbeatRequest(
+    @SerializedName("foreground_app") val foregroundApp: String?,
+    @SerializedName("paused") val paused: Boolean,
+    @SerializedName("position_seconds") val positionSeconds: Int = 0,
+)
+
+data class HeartbeatResult(
+    @SerializedName("grant_id") val grantId: String?,
+    @SerializedName("status") val status: String?,
+    @SerializedName("consumed_seconds") val consumedSeconds: Int?,
+    @SerializedName("remaining_seconds") val remainingSeconds: Int?,
+    @SerializedName("paused") val paused: Boolean?,
+    @SerializedName("revoked") val revoked: Boolean?,
+    @SerializedName("reason") val reason: String?,
+    @SerializedName("server_time") val serverTime: String?,
+)
+
+data class OfflineLease(
+    @SerializedName("lease_id") val leaseId: String,
+    @SerializedName("lease_token") val leaseToken: String?,
+    @SerializedName("public_key") val publicKey: String?,
+    @SerializedName("max_minutes") val maxMinutes: Int,
+    @SerializedName("allowed_apps") val allowedApps: List<String>?,
+    @SerializedName("issued_at") val issuedAt: String?,
+    @SerializedName("expires_at") val expiresAt: String?,
+)
+
+data class OfflineEntry(
+    @SerializedName("start_at") val startAt: String,
+    @SerializedName("end_at") val endAt: String,
+    @SerializedName("watched_seconds") val watchedSeconds: Int,
+    @SerializedName("paused_seconds") val pausedSeconds: Int,
+    @SerializedName("target_app") val targetApp: String?,
+)
+
+data class OfflineReportRequest(
+    @SerializedName("lease_id") val leaseId: String,
+    @SerializedName("entries") val entries: List<OfflineEntry>,
+)
+
+data class OfflineReportResult(
+    @SerializedName("reported_minutes") val reportedMinutes: Int,
+    @SerializedName("remaining_minutes") val remainingMinutes: Int,
+    @SerializedName("clamped") val clamped: Boolean,
 )

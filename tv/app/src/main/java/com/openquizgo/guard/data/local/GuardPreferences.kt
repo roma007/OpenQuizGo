@@ -5,6 +5,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
+import com.openquizgo.guard.data.watch.PendingOffline
+import com.openquizgo.guard.data.watch.StoredGrant
+import com.openquizgo.guard.data.watch.StoredLease
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -14,6 +18,7 @@ private val Context.guardDataStore by preferencesDataStore(name = "guard")
 class GuardPreferences(private val context: Context) {
 
     private val cipher = TokenCipher()
+    private val gson = Gson()
 
     val deviceToken: Flow<String?> = context.guardDataStore.data.map { prefs ->
         prefs[KEY_DEVICE_TOKEN]?.let { cipher.decrypt(it) ?: it }
@@ -56,6 +61,36 @@ class GuardPreferences(private val context: Context) {
         }
     }
 
+    suspend fun storedGrant(): StoredGrant? = readJson(KEY_STORED_GRANT, StoredGrant::class.java)
+
+    suspend fun saveStoredGrant(grant: StoredGrant?) {
+        writeJson(KEY_STORED_GRANT, grant)
+    }
+
+    suspend fun storedLease(): StoredLease? = readJson(KEY_STORED_LEASE, StoredLease::class.java)
+
+    suspend fun saveStoredLease(lease: StoredLease?) {
+        writeJson(KEY_STORED_LEASE, lease)
+    }
+
+    suspend fun pendingOffline(): PendingOffline? =
+        readJson(KEY_PENDING_OFFLINE, PendingOffline::class.java)
+
+    suspend fun savePendingOffline(pending: PendingOffline?) {
+        writeJson(KEY_PENDING_OFFLINE, pending)
+    }
+
+    private suspend fun <T> readJson(key: androidx.datastore.preferences.core.Preferences.Key<String>, type: Class<T>): T? {
+        val raw = context.guardDataStore.data.first()[key] ?: return null
+        return runCatching { gson.fromJson(raw, type) }.getOrNull()
+    }
+
+    private suspend fun writeJson(key: androidx.datastore.preferences.core.Preferences.Key<String>, value: Any?) {
+        context.guardDataStore.edit { prefs ->
+            if (value == null) prefs.remove(key) else prefs[key] = gson.toJson(value)
+        }
+    }
+
     suspend fun clearBinding() {
         context.guardDataStore.edit { prefs ->
             prefs.remove(KEY_DEVICE_TOKEN)
@@ -83,5 +118,8 @@ class GuardPreferences(private val context: Context) {
         val KEY_DEVICE_ID = stringPreferencesKey("device_id")
         val KEY_GUARD_STATE = stringPreferencesKey("guard_state")
         val KEY_WATCH_SECONDS = longPreferencesKey("watch_seconds")
+        val KEY_STORED_GRANT = stringPreferencesKey("stored_grant")
+        val KEY_STORED_LEASE = stringPreferencesKey("stored_lease")
+        val KEY_PENDING_OFFLINE = stringPreferencesKey("pending_offline")
     }
 }

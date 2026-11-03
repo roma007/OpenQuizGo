@@ -64,6 +64,7 @@ private fun GuardScreen(viewModel: GuardViewModel) {
     val foreground by viewModel.foregroundState.collectAsState()
     val guardState by viewModel.guardState.collectAsState()
     val watchSeconds by viewModel.watchSeconds.collectAsState()
+    val grantSeconds by viewModel.grantSeconds.collectAsState()
     when (val current = state) {
         is GuardUiState.Loading -> CenterMessage("正在连接服务端…")
         is GuardUiState.Activation -> ActivationScreen(
@@ -75,6 +76,7 @@ private fun GuardScreen(viewModel: GuardViewModel) {
             foreground = foreground,
             guardState = guardState,
             watchSeconds = watchSeconds,
+            grantSeconds = grantSeconds,
             onReset = viewModel::resetBinding,
         )
         is GuardUiState.Failure -> FailureScreen(
@@ -147,6 +149,7 @@ private fun BoundScreen(
     foreground: ForegroundState,
     guardState: GuardState,
     watchSeconds: Long,
+    grantSeconds: Long,
     onReset: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -188,6 +191,11 @@ private fun BoundScreen(
             text = "守护状态：${guardStateLabel(guardState)} ｜ 本次观看：${watchSeconds}s",
             fontSize = 18.sp,
             color = Color(0xFF7CC7FF),
+        )
+        Text(
+            text = "剩余授权：${grantSeconds / 60} 分 ${grantSeconds % 60} 秒",
+            fontSize = 18.sp,
+            color = if (grantSeconds > 0) Color(0xFF7CFF9B) else Color(0xFFFFC107),
         )
         Spacer(Modifier.height(20.dp))
         Button(onClick = {

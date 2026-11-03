@@ -46,6 +46,7 @@ class GuardViewModel(
     val foregroundState: StateFlow<ForegroundState> = foregroundDetector.state
     val guardState: StateFlow<GuardState> = guardEngine.state
     val watchSeconds: StateFlow<Long> = guardEngine.watchSeconds
+    val grantSeconds: StateFlow<Long> = guardEngine.grantSeconds
 
     private var pollJob: Job? = null
 

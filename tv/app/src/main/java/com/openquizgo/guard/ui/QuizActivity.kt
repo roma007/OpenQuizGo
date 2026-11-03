@@ -35,6 +35,7 @@ import com.openquizgo.guard.data.quiz.QuizSession
 import com.openquizgo.guard.data.remote.AnswerResult
 import com.openquizgo.guard.data.remote.SessionQuestion
 import com.openquizgo.guard.domain.GuardEngine
+import com.openquizgo.guard.domain.GrantInfo
 import com.openquizgo.guard.platform.GuardLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -204,7 +205,17 @@ class QuizActivity : ComponentActivity() {
                     )
                     outcomeApplied = true
                     if (passed) {
-                        engine.onQuizPassed(summary.grant?.minutes ?: 0)
+                        val grant = summary.grant
+                        val info = grant?.grantId?.let { id ->
+                            GrantInfo(
+                                grantId = id,
+                                minutes = grant.minutes,
+                                remainingSeconds = grant.remainingSeconds ?: (grant.minutes * 60),
+                                validUntilMillis = GuardEngine.parseMillis(grant.validUntil)
+                                    ?: (System.currentTimeMillis() + grant.minutes * 60_000L),
+                            )
+                        }
+                        engine.onQuizPassed(info)
                     } else {
                         engine.onQuizFailed()
                     }
