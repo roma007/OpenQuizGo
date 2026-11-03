@@ -29,6 +29,9 @@ class GuardEngine(
     private val _watchSeconds = MutableStateFlow(0L)
     val watchSeconds: StateFlow<Long> = _watchSeconds.asStateFlow()
 
+    private val _grantMinutes = MutableStateFlow(0)
+    val grantMinutes: StateFlow<Int> = _grantMinutes.asStateFlow()
+
     init {
         scope.launch { restore() }
         scope.launch {
@@ -73,8 +76,9 @@ class GuardEngine(
         transition(GuardState.QUIZZING)
     }
 
-    fun onQuizPassed() {
+    fun onQuizPassed(grantedMinutes: Int = 0) {
         _watchSeconds.value = 0
+        _grantMinutes.value = grantedMinutes
         transition(GuardState.GRANTED)
     }
 
