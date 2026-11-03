@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 4122406,
-      "output": 300022,
-      "reasoning": 205475,
+      "input": 4128763,
+      "output": 301816,
+      "reasoning": 206824,
       "cache": {
-        "read": 180018560,
+        "read": 183691136,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793680037537,
-      "busy": 1793676416653,
-      "idle": 1793675831754,
-      "viewed": 1793675831754
+      "updated": 1793680296414,
+      "busy": 1793680236131,
+      "idle": 1793680083156,
+      "viewed": 1793680083156
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -47855,6 +47855,477 @@
         "reasoning": 397,
         "cache": {
           "read": 606848,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19fa932e6001yXs7b3UIk3srYo",
+      "time": {
+        "created": 1793680028398,
+        "streamed": 1793680041181,
+        "completed": 1793680052017
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Also update root README progress: T0 status \"Activity 方案在创维验证可用\". Currently:\n`- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）`\nChange to `（创维实测：全屏 Activity 方案可用；待更多机型）`.\n\nAlso update acceptance \"结论\" maybe says T0 not blocking; fine.\n\nSecurity? no.\n\nUpdate plan T0 status: from doing to \"doing (创维 Activity 可用)\"? Keep doing.\n\nDesign status: v4 approved. Plan overall in-progress.\n\nCommit the PoC source changes + docs. Then final response.\n\nBefore commit, test that `dist` APK 0.1.6 is built and source builds. We already built. Need maybe copy latest APK manifest notes; fine.\n\nCheck git status, commit, push.\n\nAlso update AGENTS? The TV method section: \"答题时按 MediaSession→...\" should now mention full-screen Activity first. Update AGENTS section 5 TV line:\n`答题时优先拉起全屏答题 Activity（实测创维可用），MediaSession/音频焦点/媒体键作为补充`.\nDo.\n\nREADME progress update.\n\nThen commit/push.\n\nLet's patch quickly.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793680037542,
+            "completed": 1793680041177
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_qpdhji90y78073vadnt0xjvn",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('AGENTS.md'); s=p.read_text()\ns=s.replace('''- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/悬浮窗/UsageStats），定位为**守护端**，不承载内容播放；答题时按「MediaSession → 音频焦点 → 媒体按键」组合暂停/恢复第三方播放（尽力而为）。''','''- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/UsageStats），定位为**守护端**，不承载内容播放；答题时**优先拉起全屏答题 Activity** 使播放器失焦停止（创维实测可用），MediaSession/音频焦点/媒体键作为支持机型上的补充。''')\np.write_text(s)\np=Path('README.md'); s=p.read_text()\ns=s.replace('- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）','- 🚧 T0 设备管控 PoC（创维实测：全屏 Activity 方案可用；待更多机型）')\np.write_text(s)\nprint('updated')\nPY\nnode scripts/archive-conversation.mjs 2>&1 | tail -2 && git add -A && git commit -q -m \"feat(t0): 创维实机验证全屏 Activity 方案\n\n- PoC 增加 QuizActivity、后台拉起、拦截看门狗、ADB 指令入口\n- 实测创维 3T223_P31：悬浮窗/媒体控制不可用；全屏 Activity 暂停、退出自动恢复、HOME 逃逸 0.5s 重拉\n- 设计修订 v4：暂停策略改为全屏 Activity 接管\n- 更新 T0 记录、验收与计划状态\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "updated\n\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   5e6ef9e..4f50f7b  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   5e6ef9e..4f50f7b  main -> master\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793680039304,
+            "ran": 1793680041180,
+            "completed": 1793680051914
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8ca0c78d3ca4249db7075b629267a75f581e09de",
+        "end": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "files": [
+          "AGENTS.md",
+          "README.md",
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1940,
+        "output": 497,
+        "reasoning": 256,
+        "cache": {
+          "read": 608896,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19fa98f3b001NfNKp845znRbvO",
+      "metadata": {
+        "notice": "instructions",
+        "instructionSources": [
+          "core/instructions"
+        ]
+      },
+      "time": {
+        "created": 1793680052027
+      },
+      "type": "system",
+      "text": "The instructions from /Users/mengfeng/我的文档/源码/OpenQuizGo/AGENTS.md changed. Here's the diff:\n```diff\n@@ -83,7 +83,7 @@\n ## 五、当前技术栈与约定\n \n - **服务端**：Go（模块化单体）、PostgreSQL 16、Redis 7、S3 兼容对象存储。\n-- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/悬浮窗/UsageStats），定位为**守护端**，不承载内容播放；答题时按「MediaSession → 音频焦点 → 媒体按键」组合暂停/恢复第三方播放（尽力而为）。\n+- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/UsageStats），定位为**守护端**，不承载内容播放；答题时**优先拉起全屏答题 Activity** 使播放器失焦停止（创维实测可用），MediaSession/音频焦点/媒体键作为支持机型上的补充。\n - **家长端**：Flutter（Android / iOS）。\n - **管控对象**：第三方视频 App（播放器不可控），设备级管控方案见设计 001 第 4.6 节。\n - 构建/测试：`make build`、`make test`、`make test-int`（需 `TEST_DATABASE_URL` / `TEST_REDIS_URL`）。\n```",
+      "description": "Instructions updated: core/instructions"
+    },
+    {
+      "id": "msg_19fa98f92001Vu0RBnF4DBbIpn",
+      "time": {
+        "created": 1793680052127,
+        "streamed": 1793680083120,
+        "completed": 1793680083151
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now final response. Summarize the successful T0 validation with the user's approach, evidence, remaining limitations, and next steps. Important: revise previous conclusion.\n\nKey points:\n- 全屏 Activity 方案在创维 3T223_P31 验证通过:\n  - Background launch from accessibility/receiver → video player stops/releases MediaPlayer.\n  - Exit Activity → video auto-resumes (state started).\n  - HOME escape → watchdog relaunches in ~0.5s.\n- Overlay/MediaSession/audio focus/media keys fail (documented).\n- Third-party video apps still blocked from sideload (VLC), so product must use store/preinstalled apps.\n- Android 10+ background activity restrictions need per-device validation.\n- Design v4 updated; PoC 0.1.6 APK built.\n- Next: decide product path: Activity-based TV client (phase 2) with allowed app detection via UsageStats/accessibility; test on other devices if possible; OEM/store for third-party app installation.\n\nAlso mention what still needs work on this TV:\n- Trigger logic: when to launch quiz (time threshold/interval), allowed app detection, avoid launching over non-video apps (Settings).\n- Auto-resume reliability per player; need verify with 爱奇艺/腾讯 from store (not installed).\n- Third-party app install: user can install from Coocaa store; after that, test pause/resume with those apps. We can help via adb if store install allowed.\n\nAsk user: install 爱奇艺/腾讯 from TV store so we can test the Activity approach against real target apps? Since no third-party video apps installed. The user may be able to install from the Coocaa app store. That's the next high-value test.\n\nOffer to continue: implement trigger logic in PoC (e.g., auto-quiz after N seconds of video playback, allowed app list), then test.\n\nKeep response concise but detailed enough. Use a table for results.\n\nNo need for question tool? Could ask one: install target app from store? Plain text is fine.\n\nMention commit `4f50f7b` and APK `dist/OpenQuizGo-PoC-0.1.6.apk`.\n\nAlso note video currently paused/resumed during testing; harmless.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793680075814,
+            "completed": 1793680083114
+          }
+        },
+        {
+          "type": "text",
+          "text": "**你的方案在创维上验证通过**，这比悬浮窗路线可靠得多。已推送（`4f50f7b`），设计同步升级为 **v4：全屏 Activity 接管**。\n\n## 实测结果（创维 3T223_P31 / Android 9）\n\n| 场景 | 结果 |\n| --- | --- |\n| 后台拉起全屏 `QuizActivity`（无障碍服务触发） | ✅ 播放器停止并释放 MediaPlayer |\n| 退出 Activity | ✅ 视频自动恢复播放（`state:started`） |\n| 拦截模式按 HOME 逃逸 | ✅ 约 0.5s 内被看门狗重新拉起答题界面 |\n| 悬浮窗覆盖视频 | ❌ 被 `inAddViewBlackList` 拦截 |\n| MediaSession / 音频焦点 / 媒体键 | ❌ 播放器全部不响应 |\n| 第三方视频 App 侧载（VLC） | ❌ `INSTALL_FAILED_USER_RESTRICTED` |\n\n关键证据：\n\n```text\n拉起 QuizActivity 后：\n  mCurrentFocus=...QuizActivity\n  （MediaPlayer 消失，播放器已释放）\n\n按返回退出后：\n  mCurrentFocus=...DetailVideoActivity\n  MediaPlayer state:started   ← 自动恢复\n```\n\n## 现在的产品路径\n\n- **电视端核心机制**：检测到目标视频 App 在前台且需要答题时，直接拉起全屏答题/阻挡 Activity；答题结束 `finish()`，播放器自动恢复。\n- **防逃逸**：无障碍监听前台应用，非本应用时重新拉起阻挡界面。\n- **悬浮窗、MediaSession、媒体键**：降为“支持机型上的增强”，不再是主路径。\n\n## 剩余限制\n\n1. **第三方视频 App 仍无法侧载**：创维只放行商店/预装应用。需要你从电视应用商店安装爱奇艺/腾讯/云视听等，才能测真实目标 App 的“暂停/恢复”表现。\n2. **Android 10+ 后台启动限制**：这台是 Android 9，实测可用；后续机型需逐台验证。\n3. **不同播放器恢复策略不同**：有的会自动续播，有的可能停在首页/广告，需要按 App 配置恢复动作。\n4. **触发时机**：PoC 目前靠 ADB 指令触发，正式版要接「观看时长阈值/答题间隔/额度用尽」。\n\n## 下一步建议\n\n最有价值的验证是：**从创维应用商店装一个爱奇艺/腾讯视频，再跑一次 Activity 接管测试**。如果目标 App 也能“拉起即停、退出即播”，二期电视端方案就确定了。\n\n安装好后告诉我 App 名称，我用 `adb` 触发并记录结果；同时我可以把 PoC 的触发逻辑改成“检测到视频 App 前台 N 秒后自动弹题”，更接近真实产品。"
+        }
+      ],
+      "snapshot": {
+        "start": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "end": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 1190,
+        "output": 632,
+        "reasoning": 480,
+        "cache": {
+          "read": 610816,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19faa08d4001THGlJP7OQfBmfG",
+      "time": {
+        "created": 1793680083156
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_19fac5df5001HjPhah6p45VluS",
+      "metadata": {
+        "displayText": "我现在全屏播放了，你再试试",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793680236228
+      },
+      "text": "我现在全屏播放了，你再试试",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_19fac5ee2001uWPc4bkfgsD8Mp",
+      "time": {
+        "created": 1793680236266,
+        "streamed": 1793680246784,
+        "completed": 1793680247455
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The user says they're now playing a video in fullscreen. We need to locate the video app and test the Activity takeover: trigger QuizActivity and see if the video stops; then exit and see if it resumes.\n\nFirst check current focus, audio state, media session, then trigger `open_quiz` (receiver) or `acc_open_quiz`, verify player stops, screenshot, then back and verify resume.\n\nImportant: currently app may not have accessibility/notification granted after last reinstall (we regranted accessibility after 0.1.6? We regranted before watchdog test; then installed 0.1.6 and regranted? Yes, after 0.1.6 install we regranted accessibility at the start of the block test. Good.)\n\nBut the user may be playing a different app (maybe installed from store). Check foreground package via accessibility logs or `dumpsys window`.\n\nSteps:\n1. `dumpsys window | grep mCurrentFocus` → package/activity.\n2. `dumpsys audio | grep MediaPlayer` → state started.\n3. `dumpsys media_session | grep sessions`.\n4. Trigger quiz via broadcast `open_quiz`.\n5. Check focus QuizActivity + audio state (player gone).\n6. Screenshot (quiz UI).\n7. Press BACK, wait 3, check focus/audio → resumed.\n\nLet's run first three to identify.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793680244120,
+            "completed": 1793680246781
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_0uvszbtewsrabq17bl92tcm7",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "TV=192.168.1.207:5555; echo \"== focus ==\"; adb -s $TV shell dumpsys window | grep mCurrentFocus | head -1; echo \"== media ==\"; adb -s $TV shell dumpsys audio | grep -A6 'players:' | grep MediaPlayer; echo \"== sessions ==\"; adb -s $TV shell dumpsys media_session | grep -E 'sessions|package=' | head -5",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "== focus ==\n  mCurrentFocus=Window{d629ba5 u0 com.tianci.movieplatform/com.ccos.cooui.detail.DetailVideoActivity}\n== media ==\n  ID:159 -- type:android.media.MediaPlayer -- u/pid:1000/4128 -- state:started -- attr:AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_MUSIC flags=0x0 tags= bundle=null\n== sessions ==\n0 sessions listeners.\n  Sessions Stack - have 0 sessions:\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793680246099,
+            "ran": 1793680246783,
+            "completed": 1793680247436
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "end": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1162,
+        "output": 159,
+        "reasoning": 293,
+        "cache": {
+          "read": 611968,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19fac8ada001E58VrNjfcYIsHT",
+      "time": {
+        "created": 1793680247522,
+        "streamed": 1793680258266,
+        "completed": 1793680263497
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "It's the Coocaa movieplatform DetailVideoActivity, playing (state started), fullscreen. Good. Now trigger open_quiz via receiver (foreground? app background; receiver works). Check state.\n\nAlso ensure accessibility service connected (for trigger alternative); receiver path is enough.\n\nRun:\n- logcat -c\n- broadcast open_quiz\n- wait 3\n- focus/audio\n- screenshot\nThen exit and check resume.\n\nLet's do trigger + verify pause.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793680256277,
+            "completed": 1793680258262
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_6kd2qtdg02lx3hawoz0rsgy6",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "TV=192.168.1.207:5555; adb -s $TV logcat -c; adb -s $TV shell am broadcast -n com.openquizgo.poc/.CommandReceiver -a com.openquizgo.poc.CMD --es cmd open_quiz >/dev/null; sleep 3; echo \"== after quiz ==\"; adb -s $TV shell dumpsys window | grep mCurrentFocus | head -1; adb -s $TV shell dumpsys audio | grep -A6 'players:' | grep MediaPlayer; adb -s $TV logcat -d | grep OQG_POC | tail -3; adb -s $TV shell screencap -p /data/local/tmp/q2.png; adb -s $TV pull /data/local/tmp/q2.png /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/q2.png >/dev/null",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "== after quiz ==\n  mCurrentFocus=Window{83aebe4 u0 com.tianci.system}\n11-03 12:30:57.814   432   432 I OQG_POC : ADB 指令：open_quiz\n11-03 12:30:57.888   432   432 I OQG_POC : 已请求打开答题界面\n11-03 12:30:58.056   432   432 I OQG_POC : 答题界面已打开\n/data/local/tmp/q2.png: 1 file pulled, 0 skipped. 1.4 MB/s (25992 bytes in 0.018s)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793680257329,
+            "ran": 1793680258265,
+            "completed": 1793680263477
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "end": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 590,
+        "output": 275,
+        "reasoning": 98,
+        "cache": {
+          "read": 613120,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19facc9830018hpb4Dfc8vYPUF",
+      "time": {
+        "created": 1793680263563,
+        "streamed": 1793680271467,
+        "completed": 1793680271684
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Interesting: focus is `com.tianci.system`, not QuizActivity. MediaPlayer line gone (player stopped). A system dialog may have appeared on top of QuizActivity? Or the system dialog is a \"应用停止/权限\" dialog. Screenshot q2 (26KB) — view.\n\nMaybe a system dialog appeared because starting an activity from background triggered a \"后台弹出界面\" permission prompt on Coocaa (system dialog asking allow?). Focus com.tianci.system could be a permission dialog. Let's view screenshot.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793680270206,
+            "completed": 1793680271463
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_7b27theszvpxz11a8uu45r0b",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/q2.png"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Image read successfully"
+              },
+              {
+                "type": "file",
+                "uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABQAAAALQCAYAAADPfd1WAAAABHNCSVQICAgIfAhkiAAAIABJREFUeJzs3XeQV/W9//HX0jur5lLsYkwso8QGsUAKttiNomI3AWyR/IKFWFByRYMBNYolxhglakjBcoMldg2xoF6VKKgBEQUNIiCgEmBh9/eH416JILDs8l0Oj8fMjt/l+zmf816ZnWGec873lLVs2bIqAAAAAEAhNSj1AAAAAABA3REAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAKi3dthhh1rZZ4sttsgmm2xSK3sBAMDaRgAEAOqlPfbYI0899VQmTpyY7373u6u110UXXZQJEyZk9OjRtTQdte0f//hH3n///VxyySWrtU/nzp1raSIAgOIQAAGAeumUU05JWVlZkuTpp5+u8T7NmjVLjx49UlZWlldffbW2xqOWNW/ePC1btkzTpk1rdPwWW2yRv/71r3niiSfSp0+fWp4OAGDt1qjUAwAA/KeNNtoo++23X5Jk5MiRWbBgQY33OuKII7L++utn8eLFGTFiRG2N+AW9evXKTTfdVOPjb7nllpx55plJkmnTpqW8vLy2RvvC/kU0bdq0LFy4MI0bN87QoUPToEGD3Hjjjctd36VLlzRv3rzO53ryySfr/BwAACsiAAIA9U6/fv3SokWLfPTRR7n++utXa68f/OAHSZLnn38+r7/+em2M96UqKyszc+bMlV7ftm3bGl/1xv+pqKhIr169cvfdd2ePPfbI5ZdfnrKysvzqV79a5vrrr78+W2+9dZ3P1apVqzo/BwDAigiAAEC90qlTp5x44olJkr/+9a9p0KBBNtxww5U+fsGCBZk9e3aS5KCDDkqXLl2SJHfddVftD7sM8+bNS6dOnVZ6/aOPPpquXbsu9Wff/va3q29/Xpb/+q//yoMPPpiysrJceumlGTVq1ArPM3fu3OW+N3LkyBx00EErPfNnbrzxxpx11lmrfFxdmT9/fo466qjcc8892WWXXTJkyJB88MEHufPOO0s9GgBASQmAAEC9ctFFF1VfNdWzZ8/07NlzlY5/4okncuCBByZJ+vfvX/3nQ4cOzdChQ2s00+uvv55ddtmlRsfWxKRJk770/c8+03Dx4sX5/e9/n7fffnsNTVb/zZkzJ0ceeWQeeuihfPWrX80vf/nLTJw4Mf/4xz+WWleXf599+vTJVVddVWf7AwCsKgEQAKg3unfvnkMPPbRW9vrJT36SXXfdtVb2qm923333JMm4ceNqNf499dRTKxVJhwwZskZun62pGTNm5LTTTsv//M//ZL311svNN9+cvffeO3PmzCn1aAAAJSEAAgD1Qps2bXL11VenUaNGeeutt7Lffvvl3//+d5Jkp512yl133ZUGDRqkd+/eeeihh5a7z+LFi7PVVlvlnHPOSZKMHTs2p5566lJrLr744hx66KGpqKjICSecsMLPBqyoqFjNn6527bTTTkk+vdqxNs2dOzePPPLICtd99vdSnz3zzDMZPHhwLrvssmy66abp1q1bRo8eXeqxAABKQgAEAOqFYcOGZauttsrixYtz9tln5913361+75FHHsnjjz+eHj165Iwzzsgf/vCH5e7TqlWr/OY3v0mbNm3yySefpH///pk4ceJSa/r3758uXbpkww03zE9/+tN8+9vfrrXI17p16y/cbvplOnTosEr7b7vtttlss81SVVWVe+65Z1XHW6dcc8012WCDDXLPPffkpZdeKvU4AAAlIwACACV30kknpVevXkmSW2+9NQ8++OAX1lxxxRX5zne+kx133DHHHnts7rjjjmXu9Zvf/CY777xzkuQXv/hFxo0b94U1M2bMyPnnn59bbrklnTt3zkUXXZSBAwfWys/SsGHDVXoIyKraZ599UlZWlokTJ4paK+Hiiy8u9QgAACXXoNQDAADrtsMOOyxDhw5NWVlZXnvttZx//vnLXPe3v/0tY8aMSZL07t17mWvatGmThg0bJkluv/32XHHFFcs976hRo6pvCe3bt28233zz1fgp/s+cOXPSqlWrlf4aO3bscvd6+umn8/HHHy/1NXjw4CTJVltt9YX3/vNr2rRptfIzrUiXLl1WOMuKvjp27JgkOf3005f5/gsvvLDc8zdr1iwjR47MyJEj06NHjzXyMwMArE0EQACgZPbdd9/86le/SvPmzTNjxoyceOKJmT9//nLX//73v0/y6RNcu3Tp8oX3582bl+effz4///nPc+aZZ67w/MOGDUtFRUVatmyZs846q+Y/SB1bvHhxFi1atNJfixcvLvXIa1SDBg1y0EEH5aCDDspmm21W6nEAAOodtwADACXz2a2y8+fPT58+fTJhwoQvXf+nP/0pF198cdq2bZtdd901zz333FLvn3vuubnooouSJO3bt0+/fv2+dL8XX3wx999/f/bee++0aNFiNX6SunXppZeu1NN5P9OrV6/cdNNNdTjR0qZMmVL90JWauuCCC1JeXp6HHnooDz/88Bfe//DDD1drfwCAdZkACACUzA033JCnn346W265ZR599NEVrq+oqMhxxx2XCRMm5OOPP17qvYMOOigDBgyo/n5lH8Tx05/+ND/+8Y8zc+bMVRueajNmzMgNN9ywWnv0798/5eXlmTRp0mrv9WU6dOiQZs2ardYe8+bNy+zZs2tpIgCAuicAAgAlNW7cuGU+qGN5/vOqvyTZf//9c9NNN6Vp06bVf3bFFVdk6623znnnnfelT/idOnXqqg1cT3zrW9/KiSeemPfeey8XXnhhqcdZa9x4442r/TmBN998c3784x/X0kQAAHXPZwACAGu1Aw88MDfffHNatWqVOXPmpHfv3nnqqafSsGHDnHrqqXnooYey9dZbr7F5ysvLV+nhF127dq3ReTp37pwjjzzSQy8AAFghARAAWGudeeaZGTFiRFq3bp3p06enZ8+e+cMf/pB99903V111VSoqKrLrrrvmoYceSt++fet0lgULFmTGjBk1/vroo49W6Xxt2rRJkvz73/+uix9ntfTo0SNf//rXSz3Gl7rttttW6WnNrVq1qn4KNQDA2sYtwADAWqdFixa5/PLLc9JJJ6WsrCxvvfVWjjnmmLzyyivVawYOHJhnn302v/zlL9OxY8dceeWVOeqoozJw4MA8/fTTtT7T3XffnbvvvrvW912etm3bJkkWLly4xs65Mq677rqccMIJGTNmTPbff/9SjwMAQFwBCACsZbp27ZrHH388J598csrKyvLKK6/k4IMPXir+fea+++7Ld7/73TzwwAOpqqpK165dc9999+X6669Pu3btSjB97WnVqlWS2r0CcP/991+p25Z33HHH5e7x2f/r7t27r/ApzAAArBkCIACwVmjVqlUuueSSjB49Otttt12WLFmSm2++OT169Mhbb7213OOmTp2anj175qSTTsrkyZPTuHHjnHDCCXn22WfTv3//1X4ibKl8dgvw/PnzSzzJ0u69996MGjUqyadPWF6Tn78IAMCyuQUYAKj3evfunbPOOiubbLJJkuTdd9/N2WefndGjR6/0HnfeeWceeOCBnHfeeenbt2/atWuX//7v/07fvn1zyy235LrrrsvHH39cVz9CrfvsCsCZM2fW2p5PPvlkfvazn61w3bXXXpttt912ue+ff/75+da3vpX27dvnl7/8Zfbbb79amxEAgFUnAAIA9da+++6bCy+8cKlbTkePHp2f/OQnmT59+irvN3/+/AwcODAjR47M4MGDs/fee2fjjTfOwIED07dv39x6660ZPnx45syZs1L7XXHFFTnllFNWeY4V6dmzZx544IEvXfNZAJwxY0atnfeTTz7Jc889t8J1K/rcwenTp2fw4MEZPnx49txzz/zkJz/JVVddVVtjAgCwigRAAKDe6dKlS84666zsv//+KSsrS5JMnjw55eXlOeigg3LQQQfVynlGjBiRrbfeOl27dk379u0zYMCA/PCHP8ydd96Z3/3udxk3btyXHl9ZWZlFixat8DwNGjRIo0aNUlVVlYqKihWur6ysXOGali1bJqndAFibbrnllhxyyCHZa6+9cu655+ahhx7K+PHjSz0WAMA6yWcAAgD1QuPGjXPSSSflkUceyaOPPpoDDjggZWVl+de//pWBAwdm5513zqxZs2r1nK+++mp69OiRXr16ZezYsUmSr3zlKznllFPy97//PU8++WTOOuus5T4w5Jxzzsn666+/wq+BAwcmSd54442VWv/ggw+ucPYNNtggSWp0JeSaMmDAgMybNy+tW7fOZZddVupxltKgQYO0aNFilb4aNPBPZwBg7eQKQACgpDbffPP06dMnRxxxRDbaaKPqP589e3ZuvvnmXHHFFdWfzXfYYYelcePGtXbuDz74IMmntxWPHj06Bx54YH70ox9lt912S8OGDbPzzjtn5513zoABA/Lwww+nT58+9eKhGx06dEiHDh1SVVWVF198sdTjLNcbb7yR6667Luedd1569OiRo446Kn/84x9LPVaS5Nhjj82xxx5b6jEAANYIARAAKJkzzjgjP/vZz5Z6Eu8777yTkSNH5oYbbvjCAy6mTJlSp/Pce++9uffee9O5c+f07t07Bx98cDbYYIO0aNEiU6ZMWWH869ChQ7p3754ZM2bkiSeeqLM5u3TpkrKyskybNi3vvfdenZ2nNlxxxRU5+uijs8UWW+TCCy/M6NGj60VEBQBYl7iPAQAomTvuuCOTJk1KVVVVXnjhhZx55pnZdtttc8kll9Tq021X1bhx43LmmWdmm222yVlnnZWbb745F1xwwQqP23XXXfPb3/42N910U53Ot8MOOyT59HMR67sFCxZkyJAhSZItttgi5513Xokn+tRtt92WVq1ardLXmDFjSj02AECNuAIQACiZOXPm5Pjjj88mm2ySxx57rNTjfMH8+fNz4403rvT6zz4rcPbs2XU1UpJkzz33TJJMmDChTs9TW+64446cdNJJ2W233dK3b9/ccccdef3110s9FgDAOsMVgABASU2cOLFexr+a+OzBHHUZADt06JBdd901SXL33XfX2Xlq26BBg7J48eK0bNmy3lwFCACwrnAFIABQbw0fPjwnn3zyGjnXjBkz0qlTp9XaY0UBcOutt65+oMnynHfeeRk+fPhy3+/Zs2eaNm2ayZMn56mnnkqStGnTJvPmzavh1GvGU089lVGjRqVFixa5+OKLSz0OAMA6RQAEAKgl6623XpL/e7rwf6qqqkpFRcWX7lFZWVn9etiwYdlggw3ywgsvJEkaN26c3r17J0keeeSRJMn555+f008/PZdcckn17crPPPNM+vTpk0WLFq3eD1TLPpsdAIA1SwAEAOq9iRMn5pRTTqmTvU888cSceOKJtbLXxhtvnGT5AfCNN97ILrvsstL73XXXXUt9f9ZZZ2XLLbfMvHnzcvXVVydJysvL06ZNmwwbNiw777xz/t//+3+ZMmVKnT8xGQCAtYcACADUe4sWLcpzzz1XJ3sfeuihtbbXZ7cQd+/ePZdeemmt7ZsknTt3zhlnnJEk+fWvf5233347SXLuuedm/Pjxufzyy3PMMcdk++23T9++ffPKK6+s8jlat26db33rWytc17x581XeGwCA0hEAAQBqQbt27bLhhhsmSfbYY4/069cv11xzTa3s/dWvfjW///3vs9566+Wf//xnfvGLXyz1/ogRI/LPf/4zN910U7bffvs88MAD6d+/f/70pz+t0nm6deuWbt261crM9d3xxx+f448/vtRjAACsEZ4CDABQC7p27ZoGDRpk/vz5qayszLnnnputttpqtfft3Llz/vznP2ezzTbLu+++m2OOOSbz58//wrpnnnkm++yzT8aMGZPy8vLccMMNPnMPAIAkrgAEAKgVO+20U5JPQ9ykSZNyyimnZNSoUTnqqKNqvOeAAQPSv3//tGzZMjNnzszxxx+f119/fbnr33vvvRx88MG59dZbc8ghh2TYsGFp27ZtrrjiipU63/33358jjzyyxvOuDY4//vg0arR6/wResGBBLU0DALBmCIAAALVg7733TpI8//zzufzyy9O5c+d885vfzD333JN77rlnpfdp3LhxjjvuuJx88snVUXHMmDHp169fJk6cuMLjKyoqcuyxx+bWW2/NEUcckUGDBqVNmza5+OKLa/aDFcy8efNKPQIAwBrnFmAAgNXUuXPndO7cOUny8MMPp6KiIieccEKee+65bLzxxjn99NNXap8LL7ww48ePz/Dhw7PTTjtl7ty5GTRoUL73ve+tVPz7vJNOOil33HFHysrK0rdv32y77bar/HMBAFAMAiAAwGo65phjUlZWltdeey1jx45N8untuAceeGDuu+++NGjw6T+52rdvn9NOOy1t2rRZ5j4fffRRNtxww7z99tv5+c9/ns6dO2fYsGE1nuuUU07J8OHD06tXr0yYMKHG+wAAsHZzCzAAUO81adIkO+64Y53s3bp169U6vnHjxjnggAOSfPoZep83f/78HHXUUTnttNNy9tlnp3379hk6dGguuuiiPPbYY3nwwQfz9NNPZ9KkSUmSq6++Oq+99loeeuih1Zrp884777wVrhk6dGh+97vfZcaMGbV2XgAA6g8BEACo97baaquMGTOm1GMsU//+/bP55ptn7ty5ueGGG5a55oYbbsif//znDBgwIIccckg23HDDHHLIITnkkEOSJDNmzMibb76ZKVOmZPbs2fnGN76RWbNm5YMPPsiCBQuyaNGiVFRUpKKiIosXL05VVdUqz7lw4cLlXgX44osvrvJ+talZs2bVV0UuXLiwpLPUhrKyslKPAACwFAEQAKCGtt9++5x55plJkjvuuCPTp09f7tqZM2fmnHPOyTnnnJOjjjoqBx98cHbYYYdsvvnmadeuXdq1a5fddtutzmb99a9/nf79+9fZ/svTq1evtGvXLlVVVamsrFzqv1VVVSkrK8vuu++eli1bJvn01um1RXl5efbdd99UVlZmyZIlqaysTGVlZfbbb78kn/6dAwDUBwIgAFDvjR8/Pl27dq2TvS+77LL069evRsdeeeWVKS8vz9tvv51f/OIXK33cH//4x/zxj39MknTq1Cndu3fPFltskU033TQbbrhhWrRokebNm6dp06bVX82aNUuTJk3SuHHjVZ5z8eLFueaaa1b5uNrwjW98I2ecccZKrZ05c2buvPPOOp6o9nzyySe59NJL06FDh2W+/+abb67hiQAAlk0ABADWaVVVVVmyZEmWLFmyyscOGDAgV199dYYMGVLjq70mT56cyZMn1+jYtcFNN92U3r17p2nTpkmy1O3L8+fPz8yZM/PBBx9k8uTJGT58+Fr1OYQVFRW577778oMf/KD6CsCFCxfmX//6VyZNmpQhQ4aUekQAgCRJWcuWLVf9Q2QAANaA3XffPVtvvXU+/PDD3H333aUeh3qsV69eSZKxY8cWOqgCANSEAAgAAAAABdag1AMAAAAAAHVHAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwARAAAAAACkwABAAAAIACEwABAAAAoMAEQAAAAAAoMAEQAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKrFGpBwAAKKVGjRrl6KOPTvfu3bPlllumVatWqayszJw5c/LGG2/k3nvvzSOPPFLqMevU1ltvndNPPz1lZWW566678vjjj5d6pBrp2LFjjjvuuHTp0iUdO3ZMkyZN8vHHH+fNN9/Mgw8+mFGjRpV6RACAkihr2bJlVamHAAAoha5du2bQoEHZdNNNkyQVFRWZN29eGjRokLZt26ZBg09vlnjmmWcycODA/Otf/yrluHXm9ttvz4477pgkGTp0aG699dbSDlQD3//+93POOeekTZs2SZIlS5Zk8eLFadq0afWasWPH5uyzz87s2bNLNSYAQEm4BRgAWCftueeeufbaa7PpppvmzTffzKBBg9KtW7d07949e+65Z/baa69ceeWVmTVrVnbbbbdcf/31KS8vL/XYta5Pnz7V8W9tdfDBB+fiiy9OmzZtMm7cuJx99tnp0qVLdtppp+y333656aabsmDBgnTt2jWDBw8u9bgAAGtcwyZNmgwq9RAAAGtS69at8+tf/zrrrbdennzyyfTu3Tv/+Mc/smjRouo1n3zySV566aU89dRT2WeffbLxxhunefPmGTNmTAknr11bbbVVBg8enIqKinz44Ydp1apVnn766bz88sulHm2lNWvWLMOHD0+bNm3y+OOP54c//GEmTZqUxYsXJ0nmzZuXZ599NtOmTctee+2VLbbYIq+//nreeuutEk8OALDmuAIQAFjnHHfccWnfvn2mT5+ec845JwsWLFju2n/+85/57W9/myTZf//9a32WRo0aZa+99spee+2Vli1b1vr+X+aCCy5Iq1at8oc//CGffPLJGj13benRo0fat2+f+fPn55JLLlnuuvvvvz/PP/98kuR73/vemhoPAKBeEAABgHXObrvtliR5+OGHVyp8jRo1KosWLUp5eXm6dOlSq7O0adMmV199da6++uq0b9++Vvf+MieffHJ23XXXvPnmm7nuuuvW2Hlr2zbbbJMkeeONN/L+++9/6drPAuCWW25Z53MBANQnngIMAKxzPgttkyZNWqn1H330UT744INstNFG2XDDDetytDWiU6dOOfXUU7N48eIMGTIkCxcuLPVINfbCCy/kk08+ydtvv73CtR9++GGSrPErLQEASk0ABADWOf3790/jxo0zZcqUlT6mqqoqSdKkSZM6mmrNufDCC6tv/X366adLPc5qeeKJJ/LEE0+s1NrPHuKyNgdPAICaEAABgHXO+PHjV2l9+/btq68anDBhQl2MtMaccMIJ6dq1a955551ceeWVpR5njdpss83KA8UrAAAgAElEQVSSJFOnTi3xJAAAa5YACACwAj/84Q/TuHHjvPbaa3n11VdLPU6Nbb755jnttNNSWVmZyy+/vE4e/PHNb34z3bt3r9GxDz/8cF566aVanuhT7du3z3e/+90kyeOPP14n5wAAqK8EQACAL3HkkUfm6KOPTkVFRa699tpSj7NaLrjggrRp0yb33HPPSt82u6o6d+6cE088sUbHTp06tc4C4ODBg9OqVau8/vrrGTVqVJ2cAwCgvhIAAQD+Q/v27dOlS5d873vfS/fu3bNo0aIMHTq0zqLZmtCrV6/svvvuee+993L55ZfX2Xleeuml3HzzzTU69rXXXqvlaT516aWXZvfdd8+8efNy4YUX1sk5AADqMwEQACDJY489lvLy8jRs2DCNGv3fP5GeeeaZXHfddat1ZVrr1q3TuHHjZb7XokWL6tfNmzfP+uuvv8x1lZWVmTNnTo3Ov8kmm+RHP/pRqqqqMmzYsMybN69G+6yM5557Ls8991yd7b+qLrjgghx66KFZuHBhLrnkkjqLjAAA9ZkACACQZO7cuSkrK0vDhg3TsmXLNGvWLEmy3Xbb5bDDDst7772X999/v0Z7X3311enatesK1/3pT39a7nuzZs2q8WfrnX/++SkvL8/999+fBx98sEZ7rI1OP/30HHPMMVm0aFEGDRqU+++/v9QjAQCUhAAIAJDksMMOW+r77bbbLj169Mihhx6aww8/PLvvvnt+9KMf5fXXX1/lvRctWpSFCxcu9/2mTZsmyZeu+bL3vkzPnj3TvXv3zJgxI0OGDKnRHmujb3/72znttNOyZMmSXHbZZfnLX/5S6pEAAEpGAAQAWIbx48dn/PjxueWWW3LllVdm9913z5AhQ3LEEUdk8eLFq7TXqaeeutz31l9//YwZMyZJcsQRR2Ty5MmrNffnbbTRRunXr1+qqqpy1VVXZdasWbW2d33Xr1+/NGjQIH/5y1/y5z//udTjAACUlAAIAPAlPvroo5xzzjm55557stVWW6Vnz54ZOXJkqcdaKeedd17WX3/9PPLII2vsCrhOnTrla1/7Wo2OHT9+fKZOnbraM3z961/P1772tVRVVWXEiBGrvR8AwNpOAAQAWIE5c+ZkzJgx+f73v59u3bqtFQHw8MMPz3e+850sWrQo//u//5vDDz/8S9c3b948yacB7/NrX3755bz55psrfd699947/fr1q9HMgwcPrpX/t9tvv33Kysoyffr0Gt2yDQBQNAIgAMBKeOedd5IkHTt2LPEkK+e4445LkjRp0iQDBgxY6eMOP/zwpQLgkCFDVikATps2LWPHjl35QT9n+vTpNTruPzVr1iyzZs3K22+/XSv7AQCs7QRAAGCdst9++2Xw4MGZPXt29tlnn5U+rqKiog6nqn1jxoxZpavfunfvnvLy8rz44ouZNm1a9Z+vSvxLkvvuuy/33XffKh1T226//fbcfvvtJZ0BAKA+EQABgHXK+++/n+bNm6djx47ZaKON8u67767Uce3bt0+SfPjhh3U5Xq258sorV2n96NGjU15enkcffTS33npr3QwFAEBJNCj1AAAAa9JLL72U2bNnp0GDBunZs+dKH7fLLrskSV599dW6Gg0AAOqEAAgArHPuvffeJEmvXr2y6667rnD90UcfnW233TYLFy7M6NGj63o8AACoVQIgALDOufbaa/Pyyy+nVatWueaaa3Lssccuc12jRo1yyimn5Nxzz02S3HbbbZk4cWKtzjJ//vyMGDEiI0aMyJw5c2p173VVly5dct111+WCCy4o9SgAAPVCWcuWLatKPQQAwJpWXl6eYcOGZbfddkvy6RNoX3nllcycOTNJ0q5du2y//fZp165dKisrM3LkyFx22WWlHLlOjR49Op06dcrQoUPX+s8A/NWvfpVu3bolSU477bT87W9/K/FEAACl5SEgAMA6ac6cOendu3cOPfTQHHXUUdluu+2y9957L7VmyZIleeGFFzJixIg89thjJZqUVfXWW2+lW7du+eSTTzJ16tRSjwMAUHKuAAQASNKxY8fssMMOadeuXcrKyjJz5syMHTs2s2bNKvVo1MB2222XmTNn5v333y/1KAAAJScAAgAAAECBeQgIAAAAABSYAAgAAAAABSYAAgAAAECBCYAAAAAAUGACIAAAAAAUmAAIAAAAAAUmAAIAAABAgQmAAAAAAFBgAiAAAAAAFJgACAAAAAAFJgACAAAAQIEJgAAAAABQYAIgAAAAABSYAAgAAAAABSYAAgAAAECBCYAAAAAAUGACIAAAAAAUmAAIAAAAAAUmAAIAAABAgQmAAAAAAFBgAiAAAAAAFJgACAAAAAAFJgACAAAAQIEJgAAAAABQYAIgAAAAABSYAAgAAAAABSYAAgAAAECBCYAAAAAAUGACIAAAAAAUmAAIAAAAAAUmAAIAAABAgQmAAAAAAFBgAiAAAAAAFJgACAAAAAAFJgACAAAAQIEJgAAAAABQYAIgAAAAABSYAAgAAAAABSYAAgAAAECBCYAAAAAAUGACIAAAAAAUmAAIAAAAAAUmAAIAAABAgQmAAAAAAFBgAiAAAAAAFJgACAAAAAAFJgACAAAAQIEJgAAAAABQYAIgAAAAABSYAAgAAAAABSYAAgAAAECBCYAAAAAAUGACIAAAAAAUmAAIAAAAAAUmAAIAAABAgQmAAAAAAFBgAiAAAAAAFJgACAAAAAAFJgACAAAAQIEJgAAAAABQYAIgAAAAABSYAAgAAAAABSYAAgAAAECBCYAAAAAAUGACIAAAAAAUmAAIAAAAAAUmAAIAAABAgQmAAAAAAFBgAiAAAAAAFJgACAAAAAAFJgACAAAAQIEJgAAAAABQYAIgAAAAABRYo1IPwLJVVVWVegQAAACAVVJWVlbqEVgGAbCe6dRpy3Tu3DnNmjYr9SgAAAAAq2TBwgUZN25cJk9+s9Sj8DluAa5nxD8AAABgbdWsabN07ty51GPwHwTAeqKqqiqVlZXiHwAAALBWa9a0WSorK328WT0iANYjfjEAAACAItA46hcBsB7wSwEAAAAUkeZRPwiAAAAAAFBgAiAAAAAAFJgACAAAAAAFJgACAAAAQIEJgAAAAABQYAIgAAAAABSYAAgAAAAABSYAAgAAAECBCYAAAAAAUGCNSj0AAAB1p3fvH2b7HbZfqbXXXXtd/vnPiXU8EQAAa5oACABQYF/5r6+kRYsWK7W2YcOGdTwNAAClIAACABRY61atq18vXrw4VVVVy137Ze8BALD2EgABAAqsVetW1a+vufqavPba6yWcBgCAUvAQEACAgmrevHmaN29e/f2/pk8v4TQAAJSKAAgAUFAdO3ZMWVlZkmThwoWZ8+GcEk8EAEApCIAAAAX1la9sUP36o48+qn7dtm3bpa4MBACg2HwGIABAQZWvt17167KUpd+Pz8xXv/rV6vg3Z86cvPrKqxk9+t7Mnj27VGMCAFDHBEAAgIIqb9u2+vUGX9kgG3zuisAkKS8vz57d9sw2226T6669LlOnTlvTIwIAsAa4BRgAoKDafC4AJsns2bMzYcKEvPHGG5k/f371n2+wwQY58aQT1/R4AACsIa4ABAAoqMcefSyzZs7MFp06ZdrUqbnzzruyZMmSJEnr1q3Tp2+fbLPN1kmSzTbbLF2/2TVjnx1bypEBAKgDAiAAQEFNnjw5kydPXuZ7H330UW6/7fZcdPHANG3aNEmy/fbbC4AAAAXkFmAAgHXUjBkzMmXKlOrv27X7r9INAwBAnREAAQDWYXPnzq1+3bRpsxJOAgBAXXELMABAAXXs2DFdunZJklRVVeWvD/w1ixYt+sK6li1bVb9e1vsAAKz9BEAAgAJq3LhxDjzwgOrv33vvvbzw/AtLrWnSpEk23nij6u8/+GDGGpsPAIA1xy3AAAAF9M4772TWrFnV339vv/3SrNnSt/gecMD+adu2bfX3/xj3yhqbDwCANccVgAAABfXEE0/m8MO/nyTZdLNNM2jQxZkwYUI+mT8/m266SbbZZpvqte+8806effbZUo0KAEAdEgABAArqrw/8NR06tM8ee+yRJNngKxukW/duX1g3d+7c3Pa729b0eAAArCECIABAgd16y4hMmjgpPfbqkY022ihlZWXV71VUVGTC+Am5++578u6775ZwSgAA6pIACABQcH//+1P5+9+fSvv27bPZZpumUaNGmffRR3lz0pv597//XerxAACoYwIgAMA64v3338/7779f6jEAAFjDPAUYAAAAAApMAAQAAACAAhMAAQAAAKDABEAAAAAAKDABEAAAAAAKTAAEAAAAgAITAAEAAACgwARAAAAAACgwAbAeKSsry4IFC0o9BgAAAECNLViwIGVlZaUeg88RAOuZl15+SQQEAAAA1koLFizISy+/VOox+A9lLVu2rCr1EOu6qqqq6v9+/jUAAADA2uSzK//KysqWek1pNSr1ACzNLwcAAAAAtUkArAfKyspSVVUl+gEAAACFonXUDwJgPfHZL4RbfwEAAIC1nfBXvwiA9YxfEAAAAABqk6cAAwAAAECBCYAAAAAAUGACIAAAAAAUmAAIAAAAAAUmAAIAAABAgQmA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",
+                "mime": "image/png",
+                "name": "/private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/q2.png"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793680271160,
+            "ran": 1793680271465,
+            "completed": 1793680271672
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "end": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 606,
+        "output": 74,
+        "reasoning": 108,
+        "cache": {
+          "read": 613632,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19face9830016aoByVO7M3Pa1d",
+      "time": {
+        "created": 1793680271752,
+        "streamed": 1793680281375,
+        "completed": 1793680287897
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "QuizActivity is displayed (fullscreen, no video). The focus `com.tianci.system` is likely a small system toast/overlay (\"设备未激活...\") from the TV. The player is stopped (no MediaPlayer). Great.\n\nNow press BACK to exit quiz, wait, check if video resumes. The user is watching; back will return to movie detail and auto-play. Let's do it and verify `MediaPlayer state:started` + focus DetailVideoActivity. Also screenshot maybe video plane black due capture; use audio state.\n\nDo.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793680280290,
+            "completed": 1793680281369
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_wy3cpkbchobfoo0runoe9e8n",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "TV=192.168.1.207:5555; adb -s $TV shell input keyevent 4; sleep 4; echo \"== after back ==\"; adb -s $TV shell dumpsys window | grep mCurrentFocus | head -1; adb -s $TV shell dumpsys audio | grep -A6 'players:' | grep MediaPlayer; adb -s $TV logcat -d | grep OQG_POC | tail -3",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "== after back ==\n  mCurrentFocus=Window{d629ba5 u0 com.tianci.movieplatform/com.ccos.cooui.detail.DetailVideoActivity}\n  ID:167 -- type:android.media.MediaPlayer -- u/pid:1000/4128 -- state:started -- attr:AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_MUSIC flags=0x0 tags= bundle=null\n11-03 12:30:57.888   432   432 I OQG_POC : 已请求打开答题界面\n11-03 12:30:58.056   432   432 I OQG_POC : 答题界面已打开\n11-03 12:31:21.947   432   432 I OQG_POC : 前台应用：com.tianci.movieplatform / com.ccos.cooui.detail.DetailVideoActivity\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793680280921,
+            "ran": 1793680281373,
+            "completed": 1793680287874
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "end": "fd2f5ce6e57c905bd1c59ff9ab0e78cf67a5e377",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 869,
+        "output": 157,
+        "reasoning": 114,
+        "cache": {
+          "read": 614144,
           "write": 0
         }
       }

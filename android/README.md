@@ -115,6 +115,7 @@ adb logcat -s OQG_POC
 1. 由无障碍服务或后台广播拉起全屏 `QuizActivity`，播放器失焦后停止并释放；
 2. 退出 Activity 后播放器自动恢复播放；
 3. 拦截模式下按 HOME 会被看门狗重新拉起答题界面。
+4. 2026-11-03 12:30 用户实际全屏播放复测：拉起答题界面后 MediaPlayer 消失；返回后焦点回到 `DetailVideoActivity`，`MediaPlayer state:started`，自动续播。
 
 剩余限制：
 
