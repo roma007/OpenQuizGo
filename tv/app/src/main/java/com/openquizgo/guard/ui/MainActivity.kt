@@ -10,8 +10,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +30,9 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import androidx.tv.material3.darkColorScheme
 import com.openquizgo.guard.GuardApplication
+import com.openquizgo.guard.data.foreground.ForegroundState
+import com.openquizgo.guard.platform.Permissions
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
@@ -49,6 +57,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun GuardScreen(viewModel: GuardViewModel) {
     val state by viewModel.state.collectAsState()
+    val foreground by viewModel.foregroundState.collectAsState()
     when (val current = state) {
         is GuardUiState.Loading -> CenterMessage("正在连接服务端…")
         is GuardUiState.Activation -> ActivationScreen(
@@ -57,6 +66,7 @@ private fun GuardScreen(viewModel: GuardViewModel) {
         )
         is GuardUiState.Bound -> BoundScreen(
             childName = current.childName,
+            foreground = foreground,
             onReset = viewModel::resetBinding,
         )
         is GuardUiState.Failure -> FailureScreen(
@@ -124,18 +134,61 @@ private fun ActivationScreen(
 }
 
 @Composable
-private fun BoundScreen(childName: String, onReset: () -> Unit) {
+private fun BoundScreen(
+    childName: String,
+    foreground: ForegroundState,
+    onReset: () -> Unit,
+) {
+    val context = LocalContext.current
+    var accessibility by remember { mutableStateOf(Permissions.accessibilityEnabled(context)) }
+    var usage by remember { mutableStateOf(Permissions.usageAccessEnabled(context)) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            accessibility = Permissions.accessibilityEnabled(context)
+            usage = Permissions.usageAccessEnabled(context)
+            delay(2000)
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(64.dp),
+        modifier = Modifier.fillMaxSize().padding(48.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = "设备已绑定", fontSize = 32.sp, color = Color(0xFF7CFF9B))
+        Text(text = "设备已绑定", fontSize = 26.sp, color = Color(0xFF7CFF9B))
+        Text(text = "孩子：$childName", fontSize = 34.sp, color = Color.White)
         Spacer(Modifier.height(16.dp))
-        Text(text = "孩子：$childName", fontSize = 40.sp, color = Color.White)
-        Spacer(Modifier.height(40.dp))
+        Text(
+            text = "前台应用：${foreground.packageName ?: "—"}",
+            fontSize = 18.sp,
+            color = Color(0xFFB0B0B0),
+        )
+        Text(
+            text = "媒体播放：${if (foreground.mediaActive) "是" else "否"} ｜ 计时：${foreground.mediaSeconds}s",
+            fontSize = 18.sp,
+            color = Color(0xFFB0B0B0),
+        )
+        Text(
+            text = "无障碍：${if (accessibility) "✓" else "✗"} ｜ 使用情况访问：${if (usage) "✓" else "✗"}",
+            fontSize = 18.sp,
+            color = if (accessibility && usage) Color(0xFF7CFF9B) else Color(0xFFFFC107),
+        )
+        Spacer(Modifier.height(20.dp))
+        Button(onClick = {
+            context.startActivity(Permissions.accessibilitySettingsIntent())
+        }) {
+            Text("无障碍设置", fontSize = 18.sp)
+        }
+        Spacer(Modifier.height(10.dp))
+        Button(onClick = {
+            context.startActivity(Permissions.usageSettingsIntent())
+        }) {
+            Text("使用情况设置", fontSize = 18.sp)
+        }
+        Spacer(Modifier.height(20.dp))
         Button(onClick = onReset) {
-            Text("重置绑定", fontSize = 22.sp)
+            Text("重置绑定", fontSize = 18.sp)
         }
     }
 }

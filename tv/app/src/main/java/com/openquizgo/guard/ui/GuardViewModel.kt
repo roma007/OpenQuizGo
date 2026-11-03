@@ -3,6 +3,8 @@ package com.openquizgo.guard.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.openquizgo.guard.data.foreground.ForegroundDetector
+import com.openquizgo.guard.data.foreground.ForegroundState
 import com.openquizgo.guard.data.local.GuardPreferences
 import com.openquizgo.guard.data.remote.ActivationCodeRequest
 import com.openquizgo.guard.data.remote.DeviceTokenRequest
@@ -33,10 +35,12 @@ sealed interface GuardUiState {
 class GuardViewModel(
     private val preferences: GuardPreferences,
     private val api: GuardApi,
+    foregroundDetector: ForegroundDetector,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<GuardUiState>(GuardUiState.Loading)
     val state: StateFlow<GuardUiState> = _state.asStateFlow()
+    val foregroundState: StateFlow<ForegroundState> = foregroundDetector.state
 
     private var pollJob: Job? = null
 
@@ -138,7 +142,11 @@ class GuardViewModel(
     class Factory(private val container: AppContainer) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return GuardViewModel(container.preferences, container.api) as T
+            return GuardViewModel(
+                container.preferences,
+                container.api,
+                container.foregroundDetector,
+            ) as T
         }
     }
 }

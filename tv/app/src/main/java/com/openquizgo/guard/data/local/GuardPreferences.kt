@@ -12,8 +12,10 @@ private val Context.guardDataStore by preferencesDataStore(name = "guard")
 
 class GuardPreferences(private val context: Context) {
 
+    private val cipher = TokenCipher()
+
     val deviceToken: Flow<String?> = context.guardDataStore.data.map { prefs ->
-        prefs[KEY_DEVICE_TOKEN]
+        prefs[KEY_DEVICE_TOKEN]?.let { cipher.decrypt(it) ?: it }
     }
 
     val childName: Flow<String?> = context.guardDataStore.data.map { prefs ->
@@ -33,8 +35,9 @@ class GuardPreferences(private val context: Context) {
     }
 
     suspend fun saveBinding(token: String, childId: String?, childName: String?) {
+        val stored = cipher.encrypt(token) ?: token
         context.guardDataStore.edit { prefs ->
-            prefs[KEY_DEVICE_TOKEN] = token
+            prefs[KEY_DEVICE_TOKEN] = stored
             if (childId.isNullOrBlank()) prefs.remove(KEY_CHILD_ID) else prefs[KEY_CHILD_ID] = childId
             if (childName.isNullOrBlank()) prefs.remove(KEY_CHILD_NAME) else prefs[KEY_CHILD_NAME] = childName
         }
