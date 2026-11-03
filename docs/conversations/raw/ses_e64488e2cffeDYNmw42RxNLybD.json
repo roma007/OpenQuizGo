@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 7824576,
-      "output": 476976,
-      "reasoning": 358847,
+      "input": 7839808,
+      "output": 483501,
+      "reasoning": 361339,
       "cache": {
-        "read": 388029184,
+        "read": 390740736,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793703658846,
-      "busy": 1793703299523,
-      "idle": 1793702655801,
-      "viewed": 1793702655801
+      "updated": 1793705938866,
+      "busy": 1793705825600,
+      "idle": 1793703698790,
+      "viewed": 1793703698790
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -84998,6 +84998,864 @@
         "reasoning": 160,
         "cache": {
           "read": 265344,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a111b483001tP3bd1nMpNFOCs",
+      "time": {
+        "created": 1793703654535,
+        "streamed": 1793703660423,
+        "completed": 1793703661679
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "dist is gitignored (like phase1 artifacts). Deliverable is local only, documented. That's consistent with prior PoC APKs. Fine.\n\nBut then the commit won't include the APK; the acceptance report references dist path that exists locally. In CI, build produces it. Acceptable.\n\nNow commit + tag + push. But before, run a final `git status` to see changes. Then archive (includes this conversation). Commit message \"chore(p2-t11): 发布 v0.2.0 与验收报告\" or feat.\n\nTag v0.2.0 annotated.\n\nPush: git push github main; gitee main:master; tags to both remotes.\n\nLet's do.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793703658851,
+            "completed": 1793703660416
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_iri3js7piyfp7qttu0sr3ib5",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -2; git add -A && git status --porcelain | head -15",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nM  .gitignore\nM  README.md\nM  docs/README.md\nA  docs/acceptance/phase2.md\nM  \"docs/conversations/2026-11-02-001-\\351\\241\\271\\347\\233\\256\\351\\223\\201\\345\\276\\213-\\347\\225\\231\\346\\241\\243\\344\\270\\216\\345\\274\\200\\345\\217\\221\\350\\256\\241\\345\\210\\222.md\"\nM  docs/conversations/INDEX.md\nM  docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json\nM  docs/deployment.md\nM  \"docs/plans/002-Android TV \\345\\256\\210\\346\\212\\244\\347\\253\\257\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\nM  tv/app/build.gradle.kts\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793703660020,
+            "ran": 1793703660421,
+            "completed": 1793703661569
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "71750887f6cd5f848d749f06cea892923c012569",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 425,
+        "output": 102,
+        "reasoning": 149,
+        "cache": {
+          "read": 267008,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a111d07b001xafDh6VsshEKDe",
+      "time": {
+        "created": 1793703661695,
+        "streamed": 1793703669412,
+        "completed": 1793703688886
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Hmm only shows up to tv/app/build.gradle.kts in head -15; also GuardService change etc? Wait the T9 service change was committed already (08fd5c4). The only code change now is build.gradle.kts (signing/version) — but version bump changes BuildConfig, and release APK built. Also `docs/design` not changed this round. Good.\n\nWait: `GuardService` T9 report change was in commit 08fd5c4? We added it after the archive but before commit? Sequence: added service report → built → installed → then plan note → archive → commit 08fd5c4. Yes included.\n\nNow commit and tag.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793703665635,
+            "completed": 1793703669405
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_0lytyyc8ytszqnyzhyr53d75",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git commit -q -m \"chore(p2-t11): 发布 v0.2.0 与第二期验收报告\n\n- versionCode 2 / versionName 0.2.0\n- release 签名配置（keystore.properties，缺失时回退 debug 仅内部验收）\n- 新增 docs/acceptance/phase2.md（单机型验收结论与指标）\n- 部署手册补充 Android TV 构建/安装/升级/联调\n- 计划 T10（仅创维）、T11 完成\" && git tag -a v0.2.0 -m \"OpenQuizGo TV 守护端 v0.2.0（单机型验收）\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git push github v0.2.0 2>&1 | tail -1 && git push gitee v0.2.0 2>&1 | tail -1",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "To github.com:roma007/OpenQuizGo.git\n   08fd5c4..bac180b  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   08fd5c4..bac180b  main -> master\n * [new tag]         v0.2.0 -> v0.2.0\n * [new tag]         v0.2.0 -> v0.2.0\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793703667350,
+            "ran": 1793703669410,
+            "completed": 1793703688780
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 554,
+        "output": 287,
+        "reasoning": 146,
+        "cache": {
+          "read": 267392,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a1123ad4001XFTVZlbaA8GObo",
+      "time": {
+        "created": 1793703688919,
+        "streamed": 1793703698715,
+        "completed": 1793703698788
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Done. Report T10/T11 completion.\n\nSummary:\n- T10: single-device matrix report (deferred second device/apps) in phase2.md.\n- T11: version 0.2.0, signing config, release APK verified (versionCode 2, debug-key fallback), upgrade 0.1.0→0.2.0 preserving binding, diagnostics shows 0.2.0. Artifact dist + sha256.\n- Tag v0.2.0 pushed both remotes.\n- Caveats: release requires HTTPS + production keystore; debug-signed internal build.\n- Device state: left on debug 0.2.0, accessibility enabled, server reachable? At 19:00 capability PUT succeeded; yes.\n- Next steps suggestions: second device, third-party apps, parent app 003, logs persistence, Device Owner.\n\nMention that dist/ is gitignored so artifact is local; to publish attach to release manually.\n\nKeep concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793703693491,
+            "completed": 1793703698707
+          }
+        },
+        {
+          "type": "text",
+          "text": "**P2-T10 / P2-T11 完成，v0.2.0 已发布并推送**（`bac180b`，标签 `v0.2.0`）。\n\n## T10 机型矩阵（仅创维）\n\n验收报告已写入 `docs/acceptance/phase2.md`，明确记录：\n\n- 创维 `3T223_P31`（Android 9 / SDK 28）全链路通过；\n- 第二机型（G4）未提供，**待补**；\n- 爱奇艺/腾讯/云视听等第三方 App 测试按你的要求**延后**；\n- 当前只验证创维影视与本地媒体。\n\n## T11 发布验收\n\n| 项 | 结果 |\n| --- | --- |\n| 版本 | `versionCode 2 / versionName 0.2.0` |\n| 安装包 | `dist/OpenQuizGo-TV-0.2.0.apk`（6.2MB，sha256 已生成） |\n| 签名 | 支持 `keystore.properties` 生产签名；未配置时回退 debug 签名，仅内部验收 |\n| 升级 | 0.1.0 → 0.2.0 `pm install -r` 成功，绑定数据保留 |\n| 验证 | 诊断页显示「版本：0.2.0」，电视已重新装回可联调的 debug 0.2.0 |\n\n## 验收指标（实机）\n\n```text\n接管延迟       0.58s     （要求 ≤1s）\n恢复进度       100%      （同一播放器实例）\n恢复广告       无\n看门狗         0.84s     （要求 ≤2s）\n心跳           30s\n暂停计量       60s 不扣减\n断网补报       reported=3m\n超时兜底       90.4s 自动接管\n升级保留数据   0.1.0 → 0.2.0 通过\n```\n\n## 重要限制（报告中已列）\n\n1. 第二台电视未测，第三方视频 App 矩阵未测。\n2. 正式发布必须使用 HTTPS 地址 + 生产 keystore；当前 `dist` 包是 debug 签名、指向示例 HTTPS 域名，仅供内部验收。\n3. 创维安装/升级 APK 后需重启电视并重设无障碍。\n4. 家长端 PIN 解锁、日志落盘、Device Owner 防卸载仍待后续。\n\n## 建议下一步\n\n- 拿到第二台电视后补 T10 矩阵；\n- 第三方视频 App 逐个验证（暂停/广告/切集）；\n- 开始 **003 家长端 App**（激活确认、规则配置、临时解锁、报告查看）。\n\n需要我开始 003 家长端的设计与计划吗？"
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 584,
+        "output": 602,
+        "reasoning": 206,
+        "cache": {
+          "read": 267904,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a1126166001kB2sKt5RHONZ0n",
+      "time": {
+        "created": 1793703698790
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1a132d4db001jtqYIHgLksvW3y",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793705825651
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_1a132d5860014jkgh3uz4U7K72",
+      "time": {
+        "created": 1793705825678,
+        "streamed": 1793705833495,
+        "completed": 1793705833578
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "User says continue. Next step: start 003 parent app design + plan. Per iron rules, write design/plan first (no code). Need to create `docs/design/003-...md` and `docs/plans/003-...md` following templates. Let's inspect templates and existing 001/002 for style, and determine whether a 003 design/plan already exists.\n\nCheck docs/design and docs/plans listing.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793705831886,
+            "completed": 1793705833469
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_dw8hu4sqoqr840k19aim5lpa",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && ls docs/design docs/plans; echo \"--- template ---\"; sed -n '1,80p' docs/design/TEMPLATE.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "docs/design:\n001-项目总体设计方案.md\n002-Android TV 守护端设计.md\nTEMPLATE.md\n\ndocs/plans:\n001-项目总体实施计划.md\n002-Android TV 守护端实施计划.md\nBACKLOG.md\nTEMPLATE.md\n--- template ---\n# NNN-<主题> 设计方案\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | NNN |\n| 状态 | draft / review / approved / in-progress / done / cancelled |\n| 作者 | |\n| 创建日期 | YYYY-MM-DD |\n| 最后更新 | YYYY-MM-DD |\n| 对应计划 | [NNN-<主题>](../plans/NNN-<主题>.md) |\n\n## 1. 背景与目标\n\n- 现状与问题：\n- 本次目标（可验证）：\n- 非目标（明确不做什么）：\n\n## 2. 需求与验收标准\n\n| 编号 | 需求 | 验收标准 | 优先级 |\n| --- | --- | --- | --- |\n| R1 | | | P0 |\n\n## 3. 方案对比与选型\n\n| 方案 | 优点 | 缺点 | 结论 |\n| --- | --- | --- | --- |\n| A | | | |\n| B | | | |\n\n选型理由：\n\n## 4. 总体架构\n\n- 模块划分与职责：\n- 关键流程（可附时序/流程图）：\n- 目录结构影响：\n\n## 5. 数据模型\n\n- 实体与字段：\n- 存储选型与迁移策略：\n- 索引与约束：\n\n## 6. 接口设计\n\n| 类型 | 名称 | 入参 | 出参 | 说明 |\n| --- | --- | --- | --- | --- |\n| HTTP | | | | |\n\n错误码与异常约定：\n\n## 7. 非功能要求\n\n- 性能：\n- 安全与权限：\n- 可观测性（日志/指标）：\n- 兼容性与可维护性：\n\n## 8. 风险与对策\n\n| 风险 | 影响 | 概率 | 对策 |\n| --- | --- | --- | --- |\n| | | | |\n\n## 9. 未决问题\n\n- [ ]\n\n## 10. 变更记录\n\n| 日期 | 变更内容 | 原因 |\n| --- | --- | --- |\n| | | |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705832647,
+            "ran": 1793705833474,
+            "completed": 1793705833532
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_1639ueoq9nws3l557l3917r4",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '1,80p' docs/plans/TEMPLATE.md; echo \"=== 001 design head ===\"; sed -n '1,40p' docs/design/001-项目总体设计方案.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# NNN-<主题> 实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | NNN |\n| 状态 | draft / review / approved / in-progress / done / cancelled |\n| 负责人 | |\n| 创建日期 | YYYY-MM-DD |\n| 最后更新 | YYYY-MM-DD |\n| 对应设计 | [NNN-<主题>](../design/NNN-<主题>.md) |\n\n## 1. 目标与范围\n\n- 交付目标：\n- 范围边界：\n- 前置条件：\n\n## 2. 任务拆分\n\n| 序号 | 任务 | 依赖 | 产出物 | 验收标准 | 状态 |\n| --- | --- | --- | --- | --- | --- |\n| T1 | | — | | | todo |\n| T2 | | T1 | | | todo |\n\n状态取值：`todo` / `doing` / `done` / `blocked` / `cancelled`\n\n## 3. 里程碑\n\n| 里程碑 | 包含任务 | 完成标准 | 计划日期 | 实际日期 |\n| --- | --- | --- | --- | --- |\n| M1 | | | | |\n\n## 4. 验证方式\n\n- 单元测试：\n- 集成/端到端测试：\n- 手工验收步骤：\n\n## 5. 回滚方案\n\n- 触发条件：\n- 回滚步骤：\n- 数据兼容性：\n\n## 6. 执行记录\n\n> 每完成一项任务或发生偏差时追加，不删除历史记录。\n\n| 日期 | 内容 | 结果/偏差 |\n| --- | --- | --- |\n| | | |\n\n## 7. 验收结论\n\n- 结论：通过 / 不通过\n- 遗留问题：\n- 后续建议：\n=== 001 design head ===\n# 001-项目总体设计方案\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 001 |\n| 版本 | v4（暂停策略改为全屏 Activity 接管） |\n| 状态 | approved |\n| 作者 | AI（基于 `docs/idea.txt`） |\n| 创建日期 | 2026-11-02 |\n| 最后更新 | 2026-11-02 |\n| 对应计划 | [001-项目总体实施计划](../plans/001-项目总体实施计划.md) |\n| 需求来源 | [`docs/idea.txt`](../idea.txt)（草案第 4–8 节） |\n\n## 0. 摘要\n\nOpenQuizGo 是面向家庭的儿童电视使用管理产品：孩子观看的是**第三方视频 App**，需先在电视守护端答题；答对累计**加权分**达到门槛后，由**服务端**签发一段可用时长；家长通过手机端配置规则（时长、加权门槛、学科权重、时段、每日上限、趣味题开关），并查看成长报告。题库按「学科标签 + 学段 + 难度 + 题型」组织，配套治理、覆盖率看板、难度校准与推荐。\n\n核心架构判断：**模块化单体（Go）+ PostgreSQL + Redis + 对象存储**，服务端为唯一裁决者；电视端是**守护端**（识别前台应用、遮罩拦截、计时上报），不是内容播放器；家长端独立 App。答题弹出时守护端尝试自动暂停当前播放的视频、答完恢复，并**不计入使用时长**；该能力依赖第三方播放器的媒体会话，属「尽力而为」，需按 App 实测。因管控对象是第三方 App，**设备级管控能力（无障碍 / 悬浮窗 / Device Owner）是本项目最大的技术风险**，必须先做第 0 期可行性验证。\n\n## 1. 背景与目标\n\n### 1.1 背景\n\n- `docs/idea.txt` 给出了功能需求（第 4 节）、数据与架构（第 5 节）、非功能要求（第 6 节）、分期建议（第 7 节）与硬约束（第 8 节）。\n- 该文件**缺少第 1–3 节**（产品定位、目标用户画像、竞品与差异化），本设计基于现有内容做合理假设，未确认项统一列入「12. 未决问题」。\n- 2026-11-02 决策：观看内容为**第三方 App**，播放器不可控；管控改由电视守护端实现（见 4.6），原「平台自有内容」假设作废。\n- 项目从零开始，尚无代码。\n\n### 1.2 本次目标\n\n1. 固化产品边界与硬约束，形成可评审的总体架构。\n2. 给出可落地的数据模型、接口契约、规则引擎与安全方案。\n3. 明确分期与第一期范围，作为后续子系统设计（002+）与开发计划的基线。\n\n### 1.3 非目标\n\n- 不在本设计内完成具体编码。\n- 不解决第三方视频 App 的版权、会员账号与合作事宜。\n- 不做运营活动（节日题包内容、IP 合作）的具体策划。\n\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705833093,
+            "ran": 1793705833476,
+            "completed": 1793705833529
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 885,
+        "output": 172,
+        "reasoning": 93,
+        "cache": {
+          "read": 268416,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a132f490001Zf3zljEHCzDsi8",
+      "time": {
+        "created": 1793705833620,
+        "streamed": 1793705844695,
+        "completed": 1793705844818
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Need to create 003 design + plan. Also mark design/plan status approved? Iron rule: plan must be approved before implementation. The user said continue, implying proceed with 003 design/plan; but implementation shouldn't start until approved. I'll produce design + plan with status `review` and ask for approval. Actually previous 002 went review→approved quickly with user. To make progress, write both, set design status `review`, plan status `draft`/`review`, then ask user to confirm approval. The user's \"继续\" means continue working; producing docs is appropriate.\n\nNeed to know parent app requirements from 001 design and current server APIs. Key features for 003 parent app (Flutter):\n- Login (SMS mock), family/child management\n- Device binding confirmation (activation code)\n- Rules config (daily limit, unlock minutes, pass threshold, subject weights, time windows, allowed apps, fun ratio)\n- Reports (growth report)\n- Remote unlock (T8 dependency): new parent endpoint to issue grant? Currently no API for parent unlock! Server has no endpoint. The TV polls active grant. For 003 to unlock, server needs `POST /v1/family/devices/{deviceID}/unlock` or similar. This is a design+server gap to include in 003 plan (server work).\n- PIN set/verify\n- Question bank? Parent doesn't manage questions (admin).\n- Push notifications? later.\n\nLet's inventory existing API from openapi to scope 003 accurately. Check paths list.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793705838616,
+            "completed": 1793705844691
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_5bjpweerj7x2vmtdz4x5f0hz",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -nE \"^  /v1/\" api/openapi.yaml | sed 's/:$//' | head -60"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "49:  /v1/meta\n66:  /v1/auth/sms/code\n83:  /v1/auth/login\n105:  /v1/auth/refresh\n124:  /v1/auth/logout\n139:  /v1/family/me\n150:  /v1/family/children\n178:  /v1/family/children/{childID}\n206:  /v1/family/pin\n221:  /v1/family/pin/verify\n236:  /v1/family/members\n243:  /v1/family/members/invite\n250:  /v1/family/members/join\n264:  /v1/family/children/{childID}/rule\n299:  /v1/family/children/{childID}/rule/preview\n316:  /v1/family/devices\n323:  /v1/family/devices/activate\n339:  /v1/family/devices/{deviceID}\n351:  /v1/family/children/{childID}/reports\n368:  /v1/device/activate/code\n384:  /v1/device/token\n401:  /v1/device/me\n408:  /v1/device/capability\n415:  /v1/device/tamper\n423:  /v1/child/context\n430:  /v1/quiz/sessions\n443:  /v1/quiz/sessions/{sessionID}\n455:  /v1/quiz/sessions/{sessionID}/answers\n483:  /v1/quiz/sessions/{sessionID}/finish\n500:  /v1/watch/grants/active\n508:  /v1/watch/grants/{grantID}/heartbeat\n529:  /v1/offline/lease\n537:  /v1/watch/logs\n564:  /v1/admin/auth/login\n581:  /v1/admin/me\n588:  /v1/admin/questions\n617:  /v1/admin/questions/import\n637:  /v1/admin/questions/{id}\n666:  /v1/admin/questions/{id}/submit-review\n675:  /v1/admin/questions/{id}/review\n691:  /v1/admin/questions/{id}/publish\n700:  /v1/admin/questions/{id}/offline\n709:  /v1/admin/questions/{id}/resubmit\n718:  /v1/admin/audit\n728:  /v1/admin/quiz/preview\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705843340,
+            "ran": 1793705844693,
+            "completed": 1793705844714
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_to43nhwquey2nwgz7172sypb",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"growth_report\\|/reports\\|report\" api/openapi.yaml | head -20; grep -n \"003\\|家长端\" docs/design/001-项目总体设计方案.md | head -15"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "23:  - name: report\n351:  /v1/family/children/{childID}/reports:\n355:      tags: [report]\n18:核心架构判断：**模块化单体（Go）+ PostgreSQL + Redis + 对象存储**，服务端为唯一裁决者；电视端是**守护端**（识别前台应用、遮罩拦截、计时上报），不是内容播放器；家长端独立 App。答题弹出时守护端尝试自动暂停当前播放的视频、答完恢复，并**不计入使用时长**；该能力依赖第三方播放器的媒体会话，属「尽力而为」，需按 App 实测。因管控对象是第三方 App，**设备级管控能力（无障碍 / 悬浮窗 / Device Owner）是本项目最大的技术风险**，必须先做第 0 期可行性验证。\n46:| A2 | 首发电视端为 Android TV（Android 9+），家长端为 Android/iOS 手机 | 决定客户端技术选型与人力 |\n72:| R13 | 家长端：规则设置、报告、推送、离线查看 | 关键操作需二次验证；规则变更实时下发 | P0 |\n78:| R19 | 加权计分：每学科答对一题折算权重分，`pass_threshold` 为加权总分门槛，保存时做可达性校验 | 权重示例可复现；不可达配置被拒；家长端提供预设档位 | P0 |\n100:| 家长端 | Flutter（Android/iOS 一套代码） | **选用**：表单与报表为主，跨端收益高 |\n101:| 家长端 | 原生双端 | 备选：团队 Flutter 能力不足时启用 |\n183:│  Android TV 守护端    │        │  家长端 App (Flutter) │\n230:2. 家长端登录后扫描/输入激活码，选择孩子，调用 `POST /v1/family/devices/activate`。\n269:- 离线期间守护端被强制停止时无法拦截，属于已知边界，需通过家长端告警与权限守护缓解。\n401:- 鉴权：`Authorization: Bearer <token>`；电视端使用设备令牌，家长端使用短期 access token + 轮换 refresh token，管理端 JWT + RBAC。\n433:### 7.4 家长端\n550:#### 8.3.5 家长端预设档位\n558:家长端默认只选预设，进阶模式才逐科调整；保存时执行 8.3.4 校验，避免「永远解锁不了」。\n570:| 守护权限存活 | 检测无障碍/悬浮窗/使用统计是否被关闭，立即上报家长端 |\n633:| 2 | Android TV 守护端 + 家长端 App（设置/报告） | 真机拦截主流视频 App；权限关闭可告警；家长改规则 ≤30s 生效 |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705843874,
+            "ran": 1793705844695,
+            "completed": 1793705844719
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2013,
+        "output": 165,
+        "reasoning": 318,
+        "cache": {
+          "read": 269184,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a133206c001DO1dsZBhksLHEQ",
+      "time": {
+        "created": 1793705844855,
+        "streamed": 1793705849833,
+        "completed": 1793705849913
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Read 001 §7.4 家长端 and rules API schema/reports, to scope 003. Also check what \"reports\" returns and rule shape.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793705848885,
+            "completed": 1793705849824
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_59c1tg3qi1mnzf6sf9k3b6fn",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '433,460p' docs/design/001-项目总体设计方案.md; sed -n '255,370p' api/openapi.yaml"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "### 7.4 家长端\n\n| 方法 | 路径 | 说明 |\n| --- | --- | --- |\n| GET/POST | `/family/children` | 孩子列表/新增 |\n| PUT | `/family/children/{id}` | 修改档案（生日、学段、年级） |\n| GET/PUT | `/family/children/{id}/rule` | 读取/更新规则（需 PIN） |\n| POST | `/family/pin` | 设置/修改家长 PIN |\n| POST | `/family/pin/verify` | 校验家长 PIN |\n| GET | `/family/children/{id}/reports` | 周/月报告 |\n| GET | `/family/devices` | 设备列表 |\n| DELETE | `/family/devices/{id}` | 解绑（即时失效） |\n| POST | `/family/members/invite` | 邀请另一位家长（生成邀请码） |\n| POST | `/family/members/join` | 使用邀请码加入家庭 |\n\n### 7.5 管理端\n\n| 方法 | 路径 | 说明 |\n| --- | --- | --- |\n| GET/POST/PUT | `/admin/questions` | 四维检索与维护 |\n| POST | `/admin/questions/import` | 批量导入（JSON/CSV，异步任务） |\n| POST | `/admin/questions/{id}/submit-review` | 提交审核 |\n| POST | `/admin/questions/{id}/review` | 审核通过/驳回 |\n| POST | `/admin/questions/{id}/publish` | 上线 |\n| POST | `/admin/questions/{id}/offline` | 下线 |\n| GET | `/admin/coverage` | 覆盖率热力图 |\n| GET | `/admin/calibration/preview` | 难度校准预览 |\n| POST | `/admin/calibration/apply` | 应用校准（写审计） |\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                code: { type: string }\n      responses:\n        \"200\": { description: OK }\n  /v1/family/children/{childID}/rule:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    get:\n      tags: [family]\n      summary: 读取孩子规则\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  rule: { $ref: \"#/components/schemas/Rule\" }\n                  version: { type: integer }\n    put:\n      tags: [family]\n      summary: 更新规则（需 PIN）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [pin, rule]\n              properties:\n                pin: { type: string }\n                rule: { $ref: \"#/components/schemas/Rule\" }\n      responses:\n        \"200\": { description: OK }\n        \"403\": { $ref: \"#/components/responses/Forbidden\" }\n        \"422\": { $ref: \"#/components/responses/ValidationError\" }\n  /v1/family/children/{childID}/rule/preview:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    post:\n      tags: [family]\n      summary: 规则 dry-run（题量/配额/最高加权分）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                rule: { $ref: \"#/components/schemas/Rule\" }\n      responses:\n        \"200\": { description: OK }\n\n  /v1/family/devices:\n    get:\n      tags: [device]\n      summary: 已绑定设备\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/family/devices/activate:\n    post:\n      tags: [device]\n      summary: 家长凭激活码绑定孩子\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [code, child_id]\n              properties:\n                code: { type: string }\n                child_id: { type: string, format: uuid }\n      responses:\n        \"200\": { description: OK }\n  /v1/family/devices/{deviceID}:\n    delete:\n      tags: [device]\n      summary: 解绑设备（令牌立即失效）\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: deviceID\n          in: path\n          required: true\n          schema: { type: string, format: uuid }\n      responses:\n        \"200\": { description: OK }\n  /v1/family/children/{childID}/reports:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    get:\n      tags: [report]\n      summary: 周/月成长报告\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: period\n          in: query\n          schema: { type: string, enum: [week, month], default: week }\n        - name: limit\n          in: query\n          schema: { type: integer, default: 8 }\n      responses:\n        \"200\": { description: OK }\n\n  /v1/device/activate/code:\n    post:\n      tags: [device]\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705849075,
+            "ran": 1793705849831,
+            "completed": 1793705849846
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_fkkbt2ubxwwrogp35sicuapq",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '351,367p' api/openapi.yaml; grep -n \"GrowthReport\\|Report\" api/openapi.yaml | head -10; grep -n \"type Rule\\|type .*Report\" internal/rule/domain.go internal/report/*.go | head -10"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "  /v1/family/children/{childID}/reports:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    get:\n      tags: [report]\n      summary: 周/月成长报告\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: period\n          in: query\n          schema: { type: string, enum: [week, month], default: week }\n        - name: limit\n          in: query\n          schema: { type: integer, default: 8 }\n      responses:\n        \"200\": { description: OK }\n\ninternal/rule/domain.go:28:type Rule struct {\ninternal/report/models.go:21:type Report struct {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705849324,
+            "ran": 1793705849832,
+            "completed": 1793705849853
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1774,
+        "output": 187,
+        "reasoning": 34,
+        "cache": {
+          "read": 271104,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a13334470015mz1SxKxU7H9L6",
+      "time": {
+        "created": 1793705849932,
+        "streamed": 1793705855592,
+        "completed": 1793705855661
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Need report shape and rule view for design doc. Read rule domain and report models quickly. Also device list response shape.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793705854526,
+            "completed": 1793705855588
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_i9yupnq9njw8sjq6m6mcubtk",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '20,60p' internal/rule/domain.go; echo \"=== report ===\"; sed -n '1,60p' internal/report/models.go; echo \"=== devices ===\"; grep -rn \"type Device\\|type Child\" internal/identity/*.go | head -5"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "}\n\n// TimeWindow 是规则中的时段配置；allow 为空表示不限时段。\ntype TimeWindow struct {\n\tAllow []Window `json:\"allow\"`\n}\n\n// Rule 是孩子观看规则。\ntype Rule struct {\n\tUnlockMinutes      int                `json:\"unlock_minutes\"`\n\tPassThreshold      float64            `json:\"pass_threshold\"`\n\tSubjectWeight      map[string]float64 `json:\"subject_weight\"`\n\tFunRatioCap        int                `json:\"fun_ratio_cap\"`\n\tFunEnabled         bool               `json:\"fun_enabled\"`\n\tWeightPreset       string             `json:\"weight_preset,omitempty\"`\n\tTimeWindow         TimeWindow         `json:\"time_window\"`\n\tDailyLimit         int                `json:\"daily_limit\"`\n\tOfflineFallbackMin int                `json:\"offline_fallback_min\"`\n\tScopeMode          string             `json:\"scope_mode\"`\n\tAllowedApps        []string           `json:\"allowed_apps\"`\n\tTimezone           string             `json:\"timezone\"`\n}\n\n// ValidationError 是规则校验错误。\ntype ValidationError struct {\n\tField   string\n\tMessage string\n}\n\nfunc (e *ValidationError) Error() string { return e.Field + \": \" + e.Message }\n\nfunc invalid(field, message string) error {\n\treturn &ValidationError{Field: field, Message: message}\n}\n\nvar (\n\tclockPattern = regexp.MustCompile(`^([01]\\d|2[0-3]):[0-5]\\d$`)\n\tvalidScopes  = map[string]bool{\"media\": true, \"custom\": true, \"all_apps\": true}\n\tvalidPresets = map[string]bool{\"balanced\": true, \"math\": true, \"literacy\": true, \"custom\": true}\n)\n\n=== report ===\npackage report\n\nimport \"time\"\n\n// DailyStat 是单日答题统计。\ntype DailyStat struct {\n\tDate     string `json:\"date\"`\n\tAnswered int    `json:\"answered\"`\n\tCorrect  int    `json:\"correct\"`\n}\n\n// SubjectStat 是单学科统计。\ntype SubjectStat struct {\n\tAnswered int         `json:\"answered\"`\n\tCorrect  int         `json:\"correct\"`\n\tAccuracy float64     `json:\"accuracy\"`\n\tTrend    []DailyStat `json:\"trend,omitempty\"`\n}\n\n// Report 是成长报告。\ntype Report struct {\n\tID           string                 `json:\"id\"`\n\tChildID      string                 `json:\"child_id\"`\n\tPeriod       string                 `json:\"period\"`\n\tPeriodStart  time.Time              `json:\"period_start\"`\n\tPeriodEnd    time.Time              `json:\"period_end\"`\n\tSubjectStats map[string]SubjectStat `json:\"subject_stats\"`\n\tFunStats     SubjectStat            `json:\"fun_stats\"`\n\tWatchMinutes int                    `json:\"watch_minutes\"`\n\tGeneratedAt  time.Time              `json:\"generated_at\"`\n}\n\n// Error 是报告业务错误。\ntype Error struct {\n\tStatus  int\n\tCode    string\n\tMessage string\n}\n\nfunc (e *Error) Error() string { return e.Message }\n\nfunc newError(status int, code, message string) *Error {\n\treturn &Error{Status: status, Code: code, Message: message}\n}\n=== devices ===\ninternal/identity/models.go:14:type Child struct {\ninternal/identity/models.go:26:type Device struct {\ninternal/identity/models.go:60:type DeviceToken struct {\ninternal/identity/models.go:75:type DevicePrincipal struct {\ninternal/identity/service.go:53:type ChildInput struct {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705854652,
+            "ran": 1793705855590,
+            "completed": 1793705855616
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_9mqh0cgbtpksx5rp6sw1l687",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"    Rule:\" -A 60 api/openapi.yaml | head -70"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "812:    Rule:\n813-      type: object\n814-      required: [unlock_minutes, pass_threshold, subject_weight, daily_limit]\n815-      properties:\n816-        unlock_minutes: { type: integer, example: 20 }\n817-        pass_threshold: { type: number, format: double, example: 3 }\n818-        subject_weight:\n819-          type: object\n820-          additionalProperties: { type: number }\n821-          example: { math: 2, chinese: 1, science: 1, fun: 0.5 }\n822-        fun_ratio_cap: { type: integer, example: 2 }\n823-        fun_enabled: { type: boolean }\n824-        weight_preset: { type: string, enum: [balanced, math, literacy, custom] }\n825-        daily_limit: { type: integer, example: 60 }\n826-        offline_fallback_min: { type: integer, example: 10 }\n827-        scope_mode: { type: string, enum: [media, custom, all_apps] }\n828-        allowed_apps:\n829-          type: array\n830-          items: { type: string }\n831-        timezone: { type: string, example: Asia/Shanghai }\n832-        time_window:\n833-          type: object\n834-          properties:\n835-            allow:\n836-              type: array\n837-              items:\n838-                type: object\n839-                properties:\n840-                  start: { type: string, example: \"07:00\" }\n841-                  end: { type: string, example: \"21:00\" }\n842-    LoginResult:\n843-      type: object\n844-      properties:\n845-        account: { $ref: \"#/components/schemas/Account\" }\n846-        access_token: { type: string }\n847-        refresh_token: { type: string }\n848-        expires_in: { type: integer }\n849-        expires_at: { type: string, format: date-time }\n850-    QuestionInput:\n851-      type: object\n852-      required: [subject, category, stage, difficulty, type, stem, answer]\n853-      properties:\n854-        subject: { type: string, example: math }\n855-        category: { type: string, enum: [core, literacy, topic, fun] }\n856-        stage: { type: string, enum: [preschool, low, mid, high] }\n857-        grade_tag: { type: string, example: g2 }\n858-        difficulty: { type: integer, minimum: 1, maximum: 5 }\n859-        type: { type: string, enum: [choice, voice, image, fill, sort, match] }\n860-        stem: { type: string }\n861-        stem_media: {}\n862-        options: {}\n863-        answer: {}\n864-        answer_alias: {}\n865-        explain: { type: string }\n866-        duration_limit: { type: integer }\n867-        topic_id: { type: string, format: uuid }\n868-        schema_ver: { type: integer }\n869-    CreateSessionResponse:\n870-      type: object\n871-      properties:\n872-        session_id: { type: string, format: uuid }\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705855315,
+            "ran": 1793705855591,
+            "completed": 1793705855607
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1711,
+        "output": 178,
+        "reasoning": 24,
+        "cache": {
+          "read": 272768,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a1334abb0014KfpAOxL9XzNrQ",
+      "time": {
+        "created": 1793705855679,
+        "streamed": 1793705862890,
+        "completed": 1793705862970
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now design 003. Also need to decide remote unlock API (server gap). Design should include:\n- New endpoint `POST /v1/family/devices/{deviceID}/unlock` with PIN (or verify PIN token) → issue grant (reuse watch.Issue with a synthetic session?). Since watch_grant.session_id FK → requires quiz_session. Need a synthetic session or make session_id nullable. Better: create a \"parent unlock\" grant with a new `source` column? That's a DB migration (00007). Design decision:\n  - Add `watch_grant.source` column ('quiz'|'parent') and make `session_id` nullable for parent grants; or create a minimal quiz_session row with state 'passed', 0 questions, source parent. Cleaner: nullable session_id + source.\n  - Remote unlock request: `{pin, minutes?}`. Server validates family PIN, daily limit, time window? Parent override should bypass time window? Probably allow but respect daily limit; design: 5–60 min, default rule.offline_fallback_min? Use 10 min default, capped by remaining daily.\n  - Response: Grant JSON.\n  - TV blocker polls active grant (already implemented) → auto adopt. TV end doesn't need change (except maybe refresh faster 5s already).\n\nPin required for unlock (parent auth already but PIN adds confirmation) — yes use pin.\n\n- Also parent needs \"device list\" with status: `GET /v1/family/devices` currently returns what? Check models Device/handlers.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793705859547,
+            "completed": 1793705862879
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_kgs9ne24c2agvuqfa3otxrpo",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '14,45p' internal/identity/models.go; grep -n \"func (s \\*Service) ListDevices\\|ListDevices\" -A 30 internal/identity/service.go | head -40"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "type Child struct {\n\tID         string    `json:\"id\"`\n\tNickname   string    `json:\"nickname\"`\n\tBirthYear  *int16    `json:\"birth_year,omitempty\"`\n\tBirthMonth *int16    `json:\"birth_month,omitempty\"`\n\tStage      string    `json:\"stage\"`\n\tGradeTag   string    `json:\"grade_tag,omitempty\"`\n\tAvatarURL  string    `json:\"avatar_url,omitempty\"`\n\tCreatedAt  time.Time `json:\"created_at\"`\n}\n\n// Device 是已绑定设备的对外视图。\ntype Device struct {\n\tID        string     `json:\"id\"`\n\tDeviceID  string     `json:\"device_id\"`\n\tPlatform  string     `json:\"platform\"`\n\tChildID   string     `json:\"child_id\"`\n\tChildName string     `json:\"child_name\"`\n\tBoundAt   time.Time  `json:\"bound_at\"`\n\tUnboundAt *time.Time `json:\"unbound_at,omitempty\"`\n}\n\n// Member 是家庭成员视图（手机号脱敏）。\ntype Member struct {\n\tAccountID string    `json:\"account_id\"`\n\tPhone     string    `json:\"phone\"`\n\tRole      string    `json:\"role\"`\n\tJoinedAt  time.Time `json:\"joined_at\"`\n}\n\n// LoginResult 是登录/刷新令牌的返回。\ntype LoginResult struct {\n354:// ListDevices 返回家庭当前绑定的设备。\n355:func (s *Service) ListDevices(ctx context.Context, accountID string) ([]Device, error) {\n356-\treturn s.repo.listDevices(ctx, accountID)\n357-}\n358-\n359-// CreateActivationCode 电视端申请激活码。\n360-func (s *Service) CreateActivationCode(ctx context.Context, deviceID, platform string) (ActivationCode, error) {\n361-\tdeviceID = strings.TrimSpace(deviceID)\n362-\tif deviceID == \"\" || len(deviceID) > 128 {\n363-\t\treturn ActivationCode{}, newError(\"VALIDATION_ERROR\", 422, \"device_id 不合法\")\n364-\t}\n365-\tif !validPlat[platform] {\n366-\t\treturn ActivationCode{}, newError(\"VALIDATION_ERROR\", 422, \"platform 不合法\")\n367-\t}\n368-\tif ok, err := s.redis.SetNX(ctx, activationDeviceLockKey(deviceID), \"1\", activationPerTTL).Result(); err != nil {\n369-\t\treturn ActivationCode{}, err\n370-\t} else if !ok {\n371-\t\treturn ActivationCode{}, ErrRateLimited\n372-\t}\n373-\n374-\toldCode, _ := s.redis.Get(ctx, activationDeviceKey(deviceID)).Result()\n375-\tif oldCode != \"\" {\n376-\t\t_ = s.redis.Del(ctx, activationKey(oldCode)).Err()\n377-\t}\n378-\n379-\trecord := activationRecord{DeviceID: deviceID, Platform: platform, Status: \"pending\"}\n380-\tpayload, _ := json.Marshal(record)\n381-\n382-\tvar code string\n383-\tfor i := 0; i < 5; i++ {\n384-\t\tcandidate, err := randomDigits(6)\n385-\t\tif err != nil {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793705862372,
+            "ran": 1793705862889,
+            "completed": 1793705862919
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1752,
+        "output": 99,
+        "reasoning": 324,
+        "cache": {
+          "read": 274432,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a133675a001SrT00d8Nm8yHgK",
+      "time": {
+        "created": 1793705863008,
+        "streamed": 1793705916579,
+        "completed": 1793705916795
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "OK. Design 003 scope:\n- Flutter app (Android/iOS) MVP:\n  - Auth: SMS code login (mock), token refresh.\n  - Family: children CRUD, member invite/join.\n  - Device: list, bind via activation code, unbind, **remote unlock** (new endpoint).\n  - Rules: preset + advanced, preview (dry-run), PIN confirmation.\n  - Reports: weekly/monthly by subject, watch minutes.\n  - PIN: set/change/verify.\n  - Settings/about/logout.\n  - Push notifications: out of scope phase 1 (need FCM/APNs + device tokens).\n- Offline read cache for reports/rules? P0 maybe cache last data.\n- i18n zh-CN only.\n\nNon-functional: Flutter 3.x, state management Riverpod, go_router, dio, secure storage, fl_chart, intl. Android minSdk? 23? iOS 13.\n\nArchitecture: feature-first modules; repository pattern; generated API client? Use openapi generator? Simpler hand-written dio API.\n\nServer gaps (must implement in 003 plan):\n1. Remote unlock endpoint + DB migration (source/nullable session).\n2. Device list include online status / last heartbeat / current grant? Nice for UI: add `last_seen`, `remaining_seconds`? Could compute via watch tables but identity module dependency. Keep device list as-is; add child context endpoint? For MVP, device list plus unlock.\n3. Rule preview returns fields; use.\n4. Reports exist.\n5. Revoke tokens / device unbind exists.\n\nAlso remote unlock needs rate limits and audit log.\n\nTasks T1–T10:\n- T1 Flutter skeleton, theme, i18n, routing, networking\n- T2 auth & session/refresh, secure storage\n- T3 family/children profiles\n- T4 device binding (activation) & list/unbind\n- T5 rules view/edit preset/advanced + preview + PIN\n- T6 reports\n- T7 remote unlock (server endpoint + UI)\n- T8 settings/PIN/members\n- T9 offline cache & error handling\n- T10 build/test/release (APK/iOS build notes)\n\nEstimates.\n\nAcceptance: login → bind device → set rule → TV applies ≤30s → report shows → remote unlock TV within 5s; PIN required; token refresh; Android APK installs; iOS builds.\n\nServer tasks included: S1 migration, S2 endpoint, S3 tests, S4 openapi.\n\nSince user said continue, produce design + plan docs with status `review` and ask approval before coding. That matches iron rule. But they may expect code; we should state plan awaiting approval.\n\nActually maybe \"继续\" means continue to 003 implementation? But iron rule requires approved plan. Previous flow: I wrote design/plan for 002 then user approved. Here I can write docs, set status review, and ask \"批准后开始 T1\". That's correct.\n\nLet me write design 003 in Chinese, thorough but not enormous (~200 lines), and plan 003 (~120 lines).\n\nNumbering: 003.\n\nName: `003-家长端 App 设计.md` and `003-家长端 App 实施计划.md`.\n\nInclude open questions: iOS build env, push, admin of allowed apps list (package names), remote unlock duration policy.\n\nRemote unlock design details:\n- API `POST /v1/family/devices/{deviceID}/unlock` body `{pin, minutes}`.\n- Validate device belongs to family; PIN; minutes 5–60 default 10; check time window? Parent override: allow even outside window? Decide: parent unlock respects `daily_limit` but ignores `time_window` (emergency override), logs audit. Hmm, maybe safer to respect both except parent can unlock outside window intentionally? Emergency unlock should work anytime. Design: ignores time window, consumes daily limit.\n- Server creates grant with `source='parent'`, `session_id NULL`; migration 00007 alters watch_grant (session_id drop not null, add source text default 'quiz').\n- watch.issue currently requires session id and dedup by session; add `IssueParentGrant(ctx, child, device, minutes)` with daily limit check, insert.\n- Rate limit: 3/hour per device; audit log.\n- Response Grant (as watch.Grant).\n- TV already polls `/watch/grants/active` every 5s in blocker; no TV change. Outside blocker, grant adopted on next heartbeat? Not needed.\n\nAlso need server to return \"current remaining minutes\" in device list for parent UI? Optional P1. Add `GET /v1/family/devices` extension fields: `last_seen_at`, `active_grant_minutes` — cross-module query in identity repo could join watch_grant. Design as P1. For MVP, show device bound + child; unlock button.\n\nReports query param period/limit exists.\n\nPIN: `POST /family/pin` set/change; rule update requires pin; unlock requires pin.\n\nRules: preset mapping balanced/math/literacy/custom; advanced fields all; validation via preview.\n\nNow write files.\n\nAlso update docs/README table with 003 row and README bullet \"🚧 003 家长端（设计/计划待评审）\".\n\nPlan status \"draft\"? Iron rule statuses: draft→review→approved. I'll set both `review`.\n\nLet's write design doc.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793705869299,
+            "completed": 1793705916566
+          }
+        },
+        {
+          "type": "text",
+          "text": "按铁律先出 **003 家长端** 的设计与计划（评审通过后再写代码）。"
+        },
+        {
+          "type": "tool",
+          "id": "call_00_4w71b1bsnzoapm79y0ywjv3b",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "# 003-家长端 App 设计方案\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 003 |\n| 版本 | v1 |\n| 状态 | review |\n| 作者 | AI |\n| 创建日期 | 2026-11-03 |\n| 最后更新 | 2026-11-03 |\n| 对应计划 | [003-家长端 App 实施计划](../plans/003-家长端 App 实施计划.md) |\n| 前置 | 服务端 v0.1.0、TV 守护端 v0.2.0 |\n\n## 1. 背景与目标\n\n### 1.1 现状\n\n- 服务端已完成：登录、家庭/孩子、规则、设备激活/解绑、报告、答题与授权计量。\n- TV 守护端 v0.2.0 已实机验收：答题解锁、心跳计量、阻挡页、家长解锁**等待页**（轮询新授权）。\n- 目前家长只能通过接口/数据库操作，缺少可用手机端；电视端「家长解锁」尚无签发入口。\n\n### 1.2 本次目标\n\n交付家长端 App MVP（Android APK + iOS 可构建），覆盖：\n\n1. 手机号验证码登录、令牌自动刷新、退出登录；\n2. 家庭与孩子档案管理；\n3. 电视设备激活绑定、解绑、设备列表；\n4. 观看规则配置（预设 + 进阶），保存前 dry-run，PIN 二次确认；\n5. 周/月成长报告；\n6. **远程解锁**：家长输入 PIN 为电视签发一段观看时间，电视阻挡页 5s 内自动放行（补齐 TV v0.2.0 的家长解锁闭环）；\n7. 家长 PIN 设置/修改、家庭成员邀请。\n\n### 1.3 非目标\n\n- 不做管理端题库维护（已有 CLI/API）。\n- 不做推送通知（FCM/APNs）与消息中心，留到下一期。\n- 不做 iPad/平板专门布局、深色模式之外的主题定制。\n- 不做应用商店上架流程（仅内部测试包）。\n\n## 2. 需求与验收标准\n\n| 编号 | 需求 | 验收标准 | 优先级 |\n| --- | --- | --- | --- |\n| R1 | 登录 | 手机号 + 短信码（dev mock 123456）登录；杀进程后仍保持登录；access token 过期自动刷新 | P0 |\n| R2 | 孩子档案 | 列表/新增/编辑昵称、生日、学段；保存后服务端可见 | P0 |\n| R3 | 设备绑定 | 输入电视 6 位激活码并选择孩子，绑定成功；设备列表显示孩子与绑定时间 | P0 |\n| R4 | 设备解绑 | 二次确认后解绑；TV 令牌失效（下次心跳 401） | P0 |\n| R5 | 规则配置 | 读取当前规则；预设档位一键套用；进阶可改时长/门槛/权重/时段/每日上限/离线分钟/范围；保存需 PIN | P0 |\n| R6 | 规则校验 | 保存前调用 preview，展示题量/最高加权分/是否可达；不可达时禁止保存并提示 | P0 |\n| R7 | 报告 | 周/月切换，展示答题数、正确率、学科分布、观看时长 | P0 |\n| R8 | 远程解锁 | 设备页选择设备 → 输入 PIN + 分钟数 → 签发成功；电视阻挡页 ≤10s 自动放行 | P0 |\n| R9 | PIN | 首次设置、修改需旧 PIN；错误 5 次锁定 10 分钟（服务端） | P0 |\n| R10 | 成员邀请 | 生成邀请码、输入邀请码加入家庭 | P1 |\n| R11 | 离线体验 | 断网时展示缓存的孩子/规则/报告，标注「离线数据」；写操作给出明确错误 | P1 |\n| R12 | 多端适配 | Android 7+ 手机、iPhone iOS 13+；横竖屏不崩 | P1 |\n\n## 3. 方案对比与选型\n\n| 方案 | 优点 | 缺点 | 结论 |\n| --- | --- | --- | --- |\n| A. Flutter 单代码库 | 与 001 设计一致；表单/报表开发快；双端一致 | 需 Flutter 环境；包体较大 | **选用** |\n| B. Android 原生 + iOS 原生 | 体验最佳 | 双倍工作量 | 不选 |\n| C. 微信小程序/H5 | 分发轻 | 推送/后台/系统能力弱，家长端需长期使用 | 不选 |\n\n技术栈：\n\n| 能力 | 选型 |\n| --- | --- |\n| 框架 | Flutter 3.x（stable），Dart 3 |\n| 状态管理 | Riverpod 2 |\n| 路由 | go_router |\n| 网络 | dio + 自写 ApiClient（拦截器：鉴权、刷新、错误映射） |\n| 本地存储 | flutter_secure_storage（令牌）+ shared_preferences（缓存） |\n| 图表 | fl_chart |\n| 国际化 | 仅 zh-CN，预留 intl |\n| 测试 | flutter_test + mocktail；关键流程 widget test |\n\n## 4. 总体架构\n\n```\n┌──────────────────────────────┐\n│ Flutter 家长端                │\n│  features/                   │\n│   auth / family / device /   │\n│   rule / report / unlock /   │\n│   settings                   │\n│  core/ (api, storage, ui)    │\n└──────────────┬───────────────┘\n               │ HTTPS + JWT\n┌──────────────▼───────────────┐\n│ Go 服务端（v0.1.0 + 003 增补）│\n│  identity / rule / report /  │\n│  watch / quiz                │\n└──────────────┬───────────────┘\n               │\n        PostgreSQL / Redis\n```\n\n模块职责：\n\n- `core/api`：dio、token 拦截器、401 自动刷新、错误码到中文提示；\n- `core/storage`：安全令牌、离线缓存（孩子/规则/报告 JSON + 时间戳）；\n- `features/auth`：登录、验证码倒计时、退出；\n- `features/family`：孩子列表/编辑、成员邀请；\n- `features/device`：设备列表、激活绑定、解绑、远程解锁；\n- `features/rule`：预设/进阶表单、可达性预览、PIN 确认；\n- `features/report`：周/月报告图表；\n- `features/settings`：PIN、关于、退出。\n\n关键流程（远程解锁）：\n\n```\n家长点「临时解锁」→ 输入 PIN 与分钟数\n  → POST /v1/family/devices/{deviceID}/unlock\n  → 服务端校验家庭/设备/PIN/每日额度\n  → 插入 watch_grant(source=parent, session_id=NULL)\n  → 返回 Grant\n  → 电视阻挡页每 5s GET /watch/grants/active\n  → adoptGrant → BLOCKED → GRANTED\n```\n\n## 5. 数据模型\n\n家长端不新增本地业务实体，仅缓存服务端视图；服务端需一处迁移：\n\n### 5.1 迁移 00007_parent_unlock.sql\n\n```sql\nalter table watch_grant alter column session_id drop not null;\nalter table watch_grant add column if not exists source text not null default 'quiz';\nalter table watch_grant add constraint watch_grant_source_chk\n  check (source in ('quiz', 'parent'));\n```\n\n- `source='parent'` 时 `session_id` 为空；\n- 现有数据保持 `source='quiz'`；\n- 唯一约束 `session_id` 允许多个 NULL（Postgres 默认行为）。\n\n### 5.2 客户端缓存\n\n| Key | 内容 | 失效 |\n| --- | --- | --- |\n| `children_cache` | 孩子列表 JSON | 5 分钟 / 写操作后刷新 |\n| `rule_cache:<childID>` | 规则 + 版本 | 5 分钟 |\n| `report_cache:<childID>:<period>` | 报告 JSON | 10 分钟 |\n\n## 6. 接口设计\n\n### 6.1 复用现有接口\n\n| 类型 | 名称 | 说明 |\n| --- | --- | --- |\n| POST | `/v1/auth/sms/code` | 发送验证码（dev 固定 123456） |\n| POST | `/v1/auth/login` | 登录，返回 access/refresh token |\n| POST | `/v1/auth/refresh` | 刷新令牌 |\n| POST | `/v1/auth/logout` | 退出 |\n| GET | `/v1/family/me` | 当前账号/家庭 |\n| GET/POST | `/v1/family/children` | 孩子列表/新增 |\n| GET/PUT | `/v1/family/children/{id}` | 孩子详情/修改 |\n| GET/PUT | `/v1/family/children/{id}/rule` | 规则读取/更新（PUT 需 PIN） |\n| POST | `/v1/family/children/{id}/rule/preview` | 规则 dry-run |\n| GET | `/v1/family/children/{id}/reports` | 周/月报告 |\n| GET | `/v1/family/devices` | 设备列表 |\n| POST | `/v1/family/devices/activate` | 激活码绑定 |\n| DELETE | `/v1/family/devices/{id}` | 解绑 |\n| POST | `/v1/family/pin` | 设置/修改 PIN |\n| POST | `/v1/family/pin/verify` | 校验 PIN |\n| POST | `/v1/family/members/invite` | 邀请码 |\n| POST | `/v1/family/members/join` | 加入家庭 |\n\n### 6.2 新增接口（003 服务端增补）\n\n| 类型 | 名称 | 入参 | 出参 | 说明 |\n| --- | --- | --- | --- | --- |\n| POST | `/v1/family/devices/{deviceID}/unlock` | `{pin, minutes}` | `Grant` | 家长远程解锁；校验 PIN/设备归属/每日额度；忽略时段限制；限流 3 次/小时/设备 |\n\n约定：\n\n- `minutes` 范围 5–60，默认 `offline_fallback_min`（10）；\n- 签发受 `daily_limit` 约束，额度不足返回 `403 RULE_DAILY_LIMIT`；\n- PIN 错误返回 `403 PIN_INVALID`；设备不属于本家庭 `404 DEVICE_NOT_FOUND`；\n- 每次解锁写入 `audit_log`（actor=account, action=`device.unlock`, target=deviceID）；\n- 返回与 `/watch/grants/active` 相同的 `Grant` 结构，电视端无需改动。\n\n### 6.3 报告出参（现有）\n\n`period`、`period_start/end`、`subject_stats{answered,correct,accuracy}`、`fun_stats`、`watch_minutes`、`generated_at`。\n\n## 7. 非功能要求\n\n- 性能：首屏 ≤2s（缓存命中 ≤500ms）；列表滚动 60fps；\n- 安全：token 仅存 Keychain/Keystore；日志不打印 token/PIN；PIN 错误锁定由服务端保证；\n- 可观测：统一错误上报（可选 Sentry，MVP 先本地日志）；\n- 兼容：Android 7+、iOS 13+；刘海屏/横屏安全区；\n- 可维护：feature-first 目录；API 模型集中；新增接口补 widget/unit test。\n\n## 8. 风险与对策\n\n| 风险 | 影响 | 概率 | 对策 |\n| --- | --- | --- | --- |\n| 远程解锁绕过时段限制被滥用 | 规则失效 | 中 | PIN + 每日额度 + 限流 + 审计；后续加家长端二次确认 |\n| Flutter 环境/iOS 构建缺失 | 无法出 iOS 包 | 高 | 先交付 Android APK；iOS 提供可构建工程与说明 |\n| 报告数据为空（新家庭） | 页面空白 | 高 | 空态文案与引导答题 |\n| 规则配置不可达 | 孩子永远无法解锁 | 中 | 保存前 preview + 预设档位 |\n| 设备离线时远程解锁无效 | 家长困惑 | 中 | 解锁页提示「电视需联网，最多 10 秒生效」 |\n| 激活码过期/已被使用 | 绑定失败 | 中 | 错误提示 + 重新生成指引 |\n\n## 9. 未决问题\n\n- [ ] iOS 签名与 TestFlight 由谁提供证书？\n- [ ] 推送通知（答题提醒/权限告警）是否进入 003 后续迭代？\n- [ ] 远程解锁是否需要「忽略时段」开关，还是固定允许？\n- [ ] 家长端是否需要查看实时「电视正在看什么」？\n- [ ] 应用名与图标（暂定 OpenQuizGo 家长端）。\n\n## 10. 变更记录\n\n| 日期 | 变更内容 | 原因 |\n| --- | --- | --- |\n| 2026-11-03 | 初稿 | 家长端 MVP + 远程解锁闭环 |\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/design/003-家长端 App 设计.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/design/003-家长端 App 设计.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793705886831,
+            "ran": 1793705916575,
+            "completed": 1793705916599
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "17992330e122da2b224c6a73fa1d88d5224863d6",
+        "end": "2b06a2d223e79f0672886521ce8d61ae72f628bd",
+        "files": [
+          "docs/design/003-家长端 App 设计.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1221,
+        "output": 3067,
+        "reasoning": 1149,
+        "cache": {
+          "read": 276096,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a13439b0001KpL1g9uS67Otyu",
+      "time": {
+        "created": 1793705916852,
+        "streamed": 1793705934888,
+        "completed": 1793705934947
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now plan 003. Include tasks including server work S1-S3 and client T1-T10.\n\nNote: plan \"对应设计\". Status review. Tasks with dependencies, acceptance, estimates. Milestones. Verification. Rollback.\n\nWrite.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793705921538,
+            "completed": 1793705934883
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_zttlac6q8pam183wpi24xg08",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "# 003-家长端 App 实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 003 |\n| 状态 | review |\n| 负责人 | 待定 |\n| 创建日期 | 2026-11-03 |\n| 最后更新 | 2026-11-03 |\n| 对应设计 | [003-家长端 App 设计](../design/003-家长端%20App%20设计.md) |\n\n## 1. 目标与范围\n\n### 1.1 交付目标\n\n交付可安装的 Flutter 家长端 MVP，与服务端 v0.1.0、TV 守护端 v0.2.0 联调通过：\n\n- 登录 → 绑定电视 → 配置规则 → 查看报告；\n- 远程解锁：家长签发观看时间，电视阻挡页 5–10s 内自动放行；\n- Android APK 可安装；iOS 工程可构建（签名另议）。\n\n### 1.2 范围边界\n\n**包含**：家长端 App、远程解锁服务端接口与迁移、接口文档更新、联调与验收。\n\n**不包含**：推送通知、应用商店上架、管理端题库、iPad 专版、多语言。\n\n### 1.3 前置条件\n\n| 编号 | 条件 | 状态 |\n| --- | --- | --- |\n| G1 | 003 设计与计划批准 | 待确认 |\n| G2 | 服务端 v0.1.0 可运行 | ✅ |\n| G3 | TV 守护端 v0.2.0 已验收 | ✅ |\n| G4 | Flutter SDK + Android 构建环境 | 待确认 |\n| G5 | 测试家长账号（dev mock 短信） | ✅ |\n\n## 2. 任务拆分\n\n| 序号 | 任务 | 依赖 | 产出物 | 验收标准 | 估算(人日) | 状态 |\n| --- | --- | --- | --- | --- | --- | --- |\n| S1 | 服务端迁移 00007 | — | `watch_grant.source`、`session_id` 可空 | 迁移 up/down 可重复执行；旧数据 source=quiz | 0.5 | todo |\n| S2 | 远程解锁接口 | S1 | `POST /v1/family/devices/{deviceID}/unlock` | PIN 校验、额度/限流/审计；返回 Grant | 1.5 | todo |\n| S3 | 接口契约与测试 | S2 | OpenAPI、服务端集成测试 | `go test ./...` 通过；契约测试覆盖 200/403/404/429 | 1 | todo |\n| T1 | Flutter 工程骨架 | G4 | 路由、主题、网络层、安全存储、CI | `flutter analyze`、`flutter test` 通过；可跑空壳 | 2 | todo |\n| T2 | 登录与会话 | T1 | 验证码登录、token 刷新、退出 | 杀进程保持登录；401 自动刷新；过期回登录页 | 2 | todo |\n| T3 | 孩子档案 | T2 | 列表、新增、编辑 | 保存后服务端可见；校验生日/学段 | 1.5 | todo |\n| T4 | 设备绑定 | T2 | 激活码输入、设备列表、解绑 | 绑定成功；解绑后 TV 心跳 401；列表显示孩子 | 2 | todo |\n| T5 | 规则配置 | T3 | 预设/进阶表单、preview、PIN 确认 | 不可达规则被拦截；保存后电视 30s 内生效 | 3 | todo |\n| T6 | 成长报告 | T3 | 周/月切换、学科分布、观看时长 | 空态/有数据两种展示；切换不重复请求 | 2 | todo |\n| T7 | 远程解锁 | T4、S2 | 解锁页（PIN + 分钟）、结果反馈 | 签发成功后电视阻挡页 ≤10s 放行 | 1.5 | todo |\n| T8 | PIN 与成员 | T2 | 设置/修改 PIN、邀请/加入家庭 | 修改需旧 PIN；邀请码可加入 | 1.5 | todo |\n| T9 | 离线缓存与错误处理 | T4–T7 | 缓存层、统一错误提示 | 断网展示缓存并标注；写操作失败有明确提示 | 1.5 | todo |\n| T10 | 联调、构建与验收 | 全部 | APK、iOS 构建说明、验收报告 | Android 实机全流程通过；iOS `flutter build ios --no-codesign` 成功 | 2 | todo |\n\n**合计估算：约 21 人日**（服务端 3 + 客户端 18）。\n\n## 3. 里程碑\n\n| 里程碑 | 包含任务 | 完成标准 | 计划日期 | 实际日期 |\n| --- | --- | --- | --- | --- |\n| M1 服务端就绪 | S1–S3 | 远程解锁接口可用、契约更新 | 第 1 周 | |\n| M2 可登录可绑定 | T1–T4 | 手机登录、绑定电视、设备列表 | 第 2 周 | |\n| M3 可配置可查看 | T5、T6、T8 | 规则保存、报告、PIN | 第 3 周 | |\n| M4 解锁闭环 | T7、T9 | 家长解锁 → 电视放行 | 第 3 周 | |\n| M5 可验收 | T10 | APK、报告 | 第 4 周 | |\n\n## 4. 验证方式\n\n- 单元/组件测试：`flutter test`；服务端 `go test ./...`；\n- 接口联调：curl + App；\n- 手工验收：\n  1. dev 短信登录；\n  2. 新增孩子「测试孩子」；\n  3. 输入电视激活码绑定；\n  4. 设置规则（20 分钟 / 门槛 3 / 均衡），PIN 确认；\n  5. TV 播放 → 答题 → 授权 → 心跳扣减；\n  6. 家长改每日上限，TV 30s 内生效；\n  7. 制造 BLOCKED（答题失败），家长远程解锁 → TV ≤10s 恢复；\n  8. 解绑设备 → TV 进入未激活；\n  9. 查看周报。\n\n## 5. 回滚方案\n\n- 触发条件：远程解锁被滥用或迁移异常；\n- 服务端：关闭解锁路由开关（配置项）→ 回滚迁移（先确认无 parent 授权数据）；\n- 客户端：保留上一版 APK；远程解锁入口可远程配置隐藏（P1）；\n- 数据：`watch_grant.source='parent'` 可批量置为 revoked。\n\n## 6. 执行记录\n\n| 日期 | 内容 | 结果/偏差 |\n| --- | --- | --- |\n| 2026-11-03 | 计划创建，状态 review | 等待 G1/G4 确认 |\n\n## 7. 验收结论\n\n- 结论：待验收\n- 遗留问题：\n- 后续建议：\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/plans/003-家长端 App 实施计划.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/plans/003-家长端 App 实施计划.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793705922287,
+            "ran": 1793705934887,
+            "completed": 1793705934893
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2b06a2d223e79f0672886521ce8d61ae72f628bd",
+        "end": "0b8ab4e16e1b3a3c3156a2faadfcab6c9d9566b3",
+        "files": [
+          "docs/plans/003-家长端 App 实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 4313,
+        "output": 1666,
+        "reasoning": 49,
+        "cache": {
+          "read": 277248,
           "write": 0
         }
       }
