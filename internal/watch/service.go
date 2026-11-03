@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
 	"github.com/roma007/OpenQuizGo/internal/rule"
 )
 
@@ -75,9 +76,12 @@ func (s *Service) Issue(ctx context.Context, req IssueRequest) (Grant, error) {
 	end := start.Add(24 * time.Hour)
 
 	jti := randomToken()
-	rec, _, err := s.repo.issue(ctx, req, start, end, jti, now)
+	rec, created, err := s.repo.issue(ctx, req, start, end, jti, now)
 	if err != nil {
 		return Grant{}, err
+	}
+	if created {
+		metrics.IncGrantIssued()
 	}
 	return s.toGrant(rec), nil
 }
@@ -131,6 +135,7 @@ func (s *Service) Heartbeat(ctx context.Context, principal identity.DevicePrinci
 		}
 		return HeartbeatResult{}, err
 	}
+	metrics.AddWatchedSeconds(outcome.WatchedSec)
 	remaining := outcome.Grant.Minutes*60 - outcome.Grant.ConsumedSeconds
 	if remaining < 0 {
 		remaining = 0

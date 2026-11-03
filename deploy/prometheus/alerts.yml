@@ -1,0 +1,58 @@
+groups:
+  - name: openquizgo
+    rules:
+      - alert: OpenQuizGoDown
+        expr: up{job="openquizgo"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "OpenQuizGo API 不可用"
+          description: "Prometheus 已连续 2 分钟抓取失败。"
+
+      - alert: OpenQuizGoHigh5xxRate
+        expr: |
+          sum(rate(openquizgo_http_requests_total{status=~"5.."}[5m]))
+          /
+          clamp_min(sum(rate(openquizgo_http_requests_total[5m])), 1)
+          > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "5xx 比例超过 1%"
+          description: "当前 5xx 比例 {{ $value | humanizePercentage }}。"
+
+      - alert: OpenQuizGoHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(openquizgo_http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP p95 超过 200ms"
+          description: "当前 p95 = {{ $value }}s。"
+
+      - alert: OpenQuizGoInFlightSaturation
+        expr: openquizgo_http_in_flight_requests > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "并发请求积压"
+          description: "当前处理中请求 {{ $value }}。"
+
+      - alert: OpenQuizGoQuizErrorBurst
+        expr: |
+          sum(rate(openquizgo_quiz_answers_total{result="wrong"}[5m]))
+          /
+          clamp_min(sum(rate(openquizgo_quiz_answers_total[5m])), 1)
+          > 0.95
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "答题正确率异常偏低"
+          description: "可能题目难度配置或判分异常，请检查。"

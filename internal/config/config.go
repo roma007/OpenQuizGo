@@ -26,6 +26,7 @@ type Config struct {
 	EncryptionKey   string
 	PhoneHashKey    string
 	OfflineLeaseKey string
+	OTELEndpoint    string
 	SMSMode         string
 	SMSMockCode     string
 }
@@ -49,6 +50,7 @@ func Load() (Config, error) {
 		EncryptionKey:   os.Getenv("DATA_ENCRYPTION_KEY"),
 		PhoneHashKey:    os.Getenv("PHONE_HASH_KEY"),
 		OfflineLeaseKey: os.Getenv("OFFLINE_LEASE_KEY"),
+		OTELEndpoint:    os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"),
 		SMSMode:         getenv("SMS_MODE", "mock"),
 		SMSMockCode:     getenv("SMS_MOCK_CODE", "123456"),
 	}

@@ -8,7 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
 )
 
 type contextKey int
@@ -38,6 +41,23 @@ func RequestIDFrom(ctx context.Context) string {
 		return v
 	}
 	return ""
+}
+
+// Metrics 记录 Prometheus HTTP 指标。
+func Metrics(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		metrics.IncInFlight()
+		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+		next.ServeHTTP(ww, r)
+		metrics.DecInFlight()
+
+		route := chi.RouteContext(r.Context()).RoutePattern()
+		if route == "" {
+			route = "unmatched"
+		}
+		metrics.ObserveHTTP(r.Method, route, ww.Status(), time.Since(start))
+	})
 }
 
 // Logger 记录访问日志。

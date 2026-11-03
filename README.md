@@ -18,8 +18,9 @@
 - ✅ T8 授权与观看计量（grant、心跳、吊销、暂停不计量）
 - ✅ T9 报告聚合（周/月、趣味单列、定时 worker）
 - ✅ T10 离线租约（Ed25519 签名、离线对账、额度截断）
+- ✅ T11 可观测性与压测（指标、追踪、告警、k6、压测工具）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T11 可观测性与压测
+- ⏳ T12 验收与文档
 
 ## 技术栈
 
@@ -35,6 +36,7 @@ cmd/api           HTTP 服务入口
 cmd/migrate       数据库迁移入口
 cmd/admin         管理端账号 CLI
 cmd/worker        报告聚合定时任务
+cmd/loadtest      本地压测工具
 internal/config   环境变量配置
 internal/httpapi  路由、中间件、统一响应
 internal/platform 数据库 / Redis / 日志适配
@@ -95,6 +97,7 @@ docker compose up --build
 | `LOG_LEVEL` | `info` | debug / info / warn / error |
 | `SHUTDOWN_TIMEOUT` | `10s` | 优雅退出超时 |
 | `REPORT_INTERVAL` | `1h` | 报告 worker 聚合间隔 |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | 空 | OTLP HTTP 追踪端点，留空关闭 |
 | `JWT_SECRET` | dev 默认值 | 访问令牌签名密钥，生产必须替换且 ≥32 字符 |
 | `ACCESS_TOKEN_TTL` | `15m` | 访问令牌有效期 |
 | `REFRESH_TOKEN_TTL` | `720h` | 刷新令牌有效期 |
@@ -227,6 +230,20 @@ go run ./cmd/admin list
 角色：`super_admin`（全部）、`editor`（读写+导入）、`reviewer`（查看+审核）、`ops`（查看+上下线+审计）。
 
 本地冒烟：`make dev` 后请求验证码，服务端日志会打印 `123456`。
+
+## 可观测性与压测（T11）
+
+- Prometheus 指标：`GET /metrics`
+  - `openquizgo_http_requests_total` / `_duration_seconds` / `_in_flight_requests`
+  - `openquizgo_quiz_sessions_created_total` / `_quiz_answers_total`
+  - `openquizgo_watch_grants_issued_total` / `_watch_heartbeat_seconds_total`
+  - `openquizgo_reports_generated_total`
+- 追踪：设置 `OTEL_EXPORTER_OTLP_ENDPOINT` 后启用 OTLP/HTTP，自动透传 `traceparent`。
+- 告警规则：[`deploy/prometheus/alerts.yml`](deploy/prometheus/alerts.yml)
+- k6 脚本：[`deploy/k6/load.js`](deploy/k6/load.js)
+- 安全自查：[`docs/security-checklist.md`](docs/security-checklist.md)
+- 压测工具：`go run ./cmd/loadtest -token <设备令牌> -rate 1000 -duration 10s`
+- 本地实测（2026-11-03）：997.6 QPS，p95 0.96ms，0 错误，详见 [`docs/load-test-2026-11-03.md`](docs/load-test-2026-11-03.md)。
 
 ## 守护端能力边界（重要）
 

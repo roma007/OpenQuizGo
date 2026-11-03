@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
 )
 
 // Service 负责成长报告聚合与查询。
@@ -120,6 +122,7 @@ func (s *Service) Generate(ctx context.Context, childID, period string, start ti
 	if err != nil {
 		return Report{}, err
 	}
+	metrics.IncReportGenerated()
 	return Report{
 		ID:           id,
 		ChildID:      childID,

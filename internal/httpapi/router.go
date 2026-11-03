@@ -13,6 +13,8 @@ import (
 
 	"github.com/roma007/OpenQuizGo/internal/admin"
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
+	"github.com/roma007/OpenQuizGo/internal/platform/tracing"
 	"github.com/roma007/OpenQuizGo/internal/question"
 	"github.com/roma007/OpenQuizGo/internal/quiz"
 	"github.com/roma007/OpenQuizGo/internal/report"
@@ -42,9 +44,13 @@ func New(d Deps) http.Handler {
 
 	r.Use(middleware.RealIP)
 	r.Use(RequestID)
+	r.Use(tracing.Middleware)
 	r.Use(Logger(d.Logger))
+	r.Use(Metrics)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(15 * time.Second))
+
+	r.Handle("/metrics", metrics.Handler())
 
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})

@@ -18,6 +18,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/platform/cryptox"
 	"github.com/roma007/OpenQuizGo/internal/platform/database"
 	"github.com/roma007/OpenQuizGo/internal/platform/logx"
+	"github.com/roma007/OpenQuizGo/internal/platform/tracing"
 	"github.com/roma007/OpenQuizGo/internal/question"
 	"github.com/roma007/OpenQuizGo/internal/quiz"
 	"github.com/roma007/OpenQuizGo/internal/report"
@@ -40,6 +41,17 @@ func main() {
 
 	initCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
+	shutdownTracing, err := tracing.Init(initCtx, "openquizgo-api", cfg.OTELEndpoint)
+	if err != nil {
+		logger.Error("init tracing", "error", err)
+		os.Exit(1)
+	}
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = shutdownTracing(shutdownCtx)
+	}()
 
 	pool, err := database.Open(initCtx, cfg.DatabaseURL, cfg.DBMaxConns)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
 	"github.com/roma007/OpenQuizGo/internal/rule"
 	"github.com/roma007/OpenQuizGo/internal/watch"
 )
@@ -108,6 +109,7 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 	if err != nil {
 		return CreateSessionResponse{}, err
 	}
+	metrics.IncQuizSession()
 	return CreateSessionResponse{
 		SessionID:     sessionID,
 		ExpiresAt:     expiresAt,
@@ -166,6 +168,7 @@ func (s *Service) SubmitAnswer(ctx context.Context, principal identity.DevicePri
 	if !marked {
 		return AnswerResult{}, newError(409, "QUIZ_TOKEN_USED", "该题已作答，令牌已失效")
 	}
+	metrics.IncQuizAnswer(correct)
 
 	var rule ruleSnapshot
 	_ = json.Unmarshal(session.RuleSnapshot, &rule)
