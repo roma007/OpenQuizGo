@@ -50,7 +50,8 @@ adb shell am start -n com.openquizgo.quiz/com.openquizgo.guard.ui.MainActivity
 ## 当前进度
 
 - P2-T1 工程骨架：Compose for TV、DataStore、Retrofit、手工 DI、CI
-- 下一步 P2-T2：设备激活与令牌
+- P2-T2 设备激活：激活码、轮询绑定、令牌持久化、重置、离线缓存
+- 下一步 P2-T3：前台识别与计时
 
 ## 目录
 

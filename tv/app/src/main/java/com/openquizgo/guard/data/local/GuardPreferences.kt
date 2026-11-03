@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.guardDataStore by preferencesDataStore(name = "guard")
@@ -17,6 +18,34 @@ class GuardPreferences(private val context: Context) {
 
     val childName: Flow<String?> = context.guardDataStore.data.map { prefs ->
         prefs[KEY_CHILD_NAME]
+    }
+
+    val childId: Flow<String?> = context.guardDataStore.data.map { prefs ->
+        prefs[KEY_CHILD_ID]
+    }
+
+    suspend fun deviceId(): String {
+        val existing = context.guardDataStore.data.map { it[KEY_DEVICE_ID] }.first()
+        if (!existing.isNullOrBlank()) return existing
+        val generated = java.util.UUID.randomUUID().toString()
+        context.guardDataStore.edit { it[KEY_DEVICE_ID] = generated }
+        return generated
+    }
+
+    suspend fun saveBinding(token: String, childId: String?, childName: String?) {
+        context.guardDataStore.edit { prefs ->
+            prefs[KEY_DEVICE_TOKEN] = token
+            if (childId.isNullOrBlank()) prefs.remove(KEY_CHILD_ID) else prefs[KEY_CHILD_ID] = childId
+            if (childName.isNullOrBlank()) prefs.remove(KEY_CHILD_NAME) else prefs[KEY_CHILD_NAME] = childName
+        }
+    }
+
+    suspend fun clearBinding() {
+        context.guardDataStore.edit { prefs ->
+            prefs.remove(KEY_DEVICE_TOKEN)
+            prefs.remove(KEY_CHILD_ID)
+            prefs.remove(KEY_CHILD_NAME)
+        }
     }
 
     suspend fun setDeviceToken(token: String?) {
@@ -34,5 +63,7 @@ class GuardPreferences(private val context: Context) {
     private companion object {
         val KEY_DEVICE_TOKEN = stringPreferencesKey("device_token")
         val KEY_CHILD_NAME = stringPreferencesKey("child_name")
+        val KEY_CHILD_ID = stringPreferencesKey("child_id")
+        val KEY_DEVICE_ID = stringPreferencesKey("device_id")
     }
 }
