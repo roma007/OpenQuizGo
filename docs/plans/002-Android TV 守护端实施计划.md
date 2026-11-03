@@ -45,7 +45,7 @@
 | P2-T1 | 工程骨架 | — | Kotlin/Compose TV 工程、DI、网络层、DataStore、CI | 可编译安装；`./gradlew test` 通过 | 3 | done |
 | P2-T2 | 激活与设备身份 | T1 | 激活码 UI、设备令牌、Keystore、绑定/解绑 | 电视激活→绑定→令牌持久化；解绑立即失效 | 3 | done |
 | P2-T3 | 前台识别与计时 | T1 | AccessibilityService、UsageStats、前台包名/播放状态 | 识别延迟 ≤1s；30s 采样校正 | 4 | done |
-| P2-T4 | 守护状态机 | T2、T3 | GuardEngine、前台服务、开机自启、状态持久化 | 重启/待机后恢复；状态可观测 | 4 | todo |
+| P2-T4 | 守护状态机 | T2、T3 | GuardEngine、前台服务、开机自启、状态持久化 | 重启/待机后恢复；状态可观测 | 4 | done |
 | P2-T5 | 接管与答题 UI | T4 | 确认键暂停流程、半透明 QuizActivity、Toast/TTS 提示、全屏接管兜底 | 物理 OK→暂停→弹题→OK→续播；无广告、进度保留 | 5 | todo |
 | P2-T6 | 答题流程 | T5 | 会话创建、拉题、提交、结算、解析、失败重试 | 与 v0.1.0 服务端联调通过 | 4 | todo |
 | P2-T7 | 授权与心跳 | T4、T6 | 活跃授权、心跳、暂停不计量、离线租约/补报 | 心跳 30s；断网恢复对账 | 4 | todo |
@@ -133,6 +133,8 @@
 | 2026-11-03 | T2 偏差：令牌当前存 DataStore 明文，尚未接入 Keystore 加密 | 记录为安全待办，T3 前补 |
 | 2026-11-03 | T3 完成：无障碍前台监听、UsageStats 校正、诊断页、令牌 Keystore 加密 | 切到创维影视日志显示 `foreground=com.tianci.movieplatform`；无障碍/使用情况均 ✓ |
 | 2026-11-03 | T3 偏差：媒体播放计时需实际播放验证；App 更新后创维需重启电视重新注册无障碍服务 | 记录为部署注意点 |
+| 2026-11-03 | T4 完成：GuardEngine 状态机、前台服务、启动恢复、媒体播放计时 | 实测 `WATCHING -> 60s -> QUIZ_REQUIRED`；服务 isForeground=true；重启恢复 IDLE |
+| 2026-11-03 | T4 待补：开机自启（BootReceiver）需重启验证；创维可能将后台应用置 stopped | 与 T5 一起做一次重启+拉起测试 |
 
 ## 7. 验收结论
 

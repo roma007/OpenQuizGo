@@ -2,6 +2,7 @@ package com.openquizgo.guard.data.local
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +44,18 @@ class GuardPreferences(private val context: Context) {
         }
     }
 
+    suspend fun guardSnapshot(): Pair<String, Long> {
+        val prefs = context.guardDataStore.data.first()
+        return (prefs[KEY_GUARD_STATE] ?: "IDLE") to (prefs[KEY_WATCH_SECONDS] ?: 0L)
+    }
+
+    suspend fun saveGuardSnapshot(state: String, watchSeconds: Long) {
+        context.guardDataStore.edit { prefs ->
+            prefs[KEY_GUARD_STATE] = state
+            prefs[KEY_WATCH_SECONDS] = watchSeconds
+        }
+    }
+
     suspend fun clearBinding() {
         context.guardDataStore.edit { prefs ->
             prefs.remove(KEY_DEVICE_TOKEN)
@@ -68,5 +81,7 @@ class GuardPreferences(private val context: Context) {
         val KEY_CHILD_NAME = stringPreferencesKey("child_name")
         val KEY_CHILD_ID = stringPreferencesKey("child_id")
         val KEY_DEVICE_ID = stringPreferencesKey("device_id")
+        val KEY_GUARD_STATE = stringPreferencesKey("guard_state")
+        val KEY_WATCH_SECONDS = longPreferencesKey("watch_seconds")
     }
 }

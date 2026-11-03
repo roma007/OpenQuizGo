@@ -9,6 +9,8 @@ import com.openquizgo.guard.data.local.GuardPreferences
 import com.openquizgo.guard.data.remote.ActivationCodeRequest
 import com.openquizgo.guard.data.remote.DeviceTokenRequest
 import com.openquizgo.guard.data.remote.GuardApi
+import com.openquizgo.guard.domain.GuardEngine
+import com.openquizgo.guard.domain.GuardState
 import com.openquizgo.guard.di.AppContainer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,11 +38,14 @@ class GuardViewModel(
     private val preferences: GuardPreferences,
     private val api: GuardApi,
     foregroundDetector: ForegroundDetector,
+    guardEngine: GuardEngine,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<GuardUiState>(GuardUiState.Loading)
     val state: StateFlow<GuardUiState> = _state.asStateFlow()
     val foregroundState: StateFlow<ForegroundState> = foregroundDetector.state
+    val guardState: StateFlow<GuardState> = guardEngine.state
+    val watchSeconds: StateFlow<Long> = guardEngine.watchSeconds
 
     private var pollJob: Job? = null
 
@@ -146,6 +151,7 @@ class GuardViewModel(
                 container.preferences,
                 container.api,
                 container.foregroundDetector,
+                container.guardEngine,
             ) as T
         }
     }

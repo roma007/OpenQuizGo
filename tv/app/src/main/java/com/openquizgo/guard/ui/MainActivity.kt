@@ -31,6 +31,8 @@ import androidx.tv.material3.Text
 import androidx.tv.material3.darkColorScheme
 import com.openquizgo.guard.GuardApplication
 import com.openquizgo.guard.data.foreground.ForegroundState
+import com.openquizgo.guard.domain.GuardState
+import com.openquizgo.guard.platform.GuardService
 import com.openquizgo.guard.platform.Permissions
 import kotlinx.coroutines.delay
 
@@ -43,6 +45,8 @@ class MainActivity : ComponentActivity() {
             this,
             GuardViewModel.Factory(container),
         )[GuardViewModel::class.java]
+
+        GuardService.start(this)
 
         setContent {
             MaterialTheme(colorScheme = darkColorScheme()) {
@@ -58,6 +62,8 @@ class MainActivity : ComponentActivity() {
 private fun GuardScreen(viewModel: GuardViewModel) {
     val state by viewModel.state.collectAsState()
     val foreground by viewModel.foregroundState.collectAsState()
+    val guardState by viewModel.guardState.collectAsState()
+    val watchSeconds by viewModel.watchSeconds.collectAsState()
     when (val current = state) {
         is GuardUiState.Loading -> CenterMessage("正在连接服务端…")
         is GuardUiState.Activation -> ActivationScreen(
@@ -67,6 +73,8 @@ private fun GuardScreen(viewModel: GuardViewModel) {
         is GuardUiState.Bound -> BoundScreen(
             childName = current.childName,
             foreground = foreground,
+            guardState = guardState,
+            watchSeconds = watchSeconds,
             onReset = viewModel::resetBinding,
         )
         is GuardUiState.Failure -> FailureScreen(
@@ -137,6 +145,8 @@ private fun ActivationScreen(
 private fun BoundScreen(
     childName: String,
     foreground: ForegroundState,
+    guardState: GuardState,
+    watchSeconds: Long,
     onReset: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -174,6 +184,11 @@ private fun BoundScreen(
             fontSize = 18.sp,
             color = if (accessibility && usage) Color(0xFF7CFF9B) else Color(0xFFFFC107),
         )
+        Text(
+            text = "守护状态：${guardStateLabel(guardState)} ｜ 本次观看：${watchSeconds}s",
+            fontSize = 18.sp,
+            color = Color(0xFF7CC7FF),
+        )
         Spacer(Modifier.height(20.dp))
         Button(onClick = {
             context.startActivity(Permissions.accessibilitySettingsIntent())
@@ -191,6 +206,16 @@ private fun BoundScreen(
             Text("重置绑定", fontSize = 18.sp)
         }
     }
+}
+
+private fun guardStateLabel(state: GuardState): String = when (state) {
+    GuardState.UNBOUND -> "未激活"
+    GuardState.IDLE -> "空闲"
+    GuardState.WATCHING -> "观看中"
+    GuardState.QUIZ_REQUIRED -> "需要答题"
+    GuardState.QUIZZING -> "答题中"
+    GuardState.GRANTED -> "已授权"
+    GuardState.BLOCKED -> "已锁定"
 }
 
 @Composable
