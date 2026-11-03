@@ -139,6 +139,39 @@ public class GuardAccessibilityService extends AccessibilityService {
         return ok ? "已点击 (" + x + "," + y + ")" : "手势注入失败";
     }
 
+    /** 在指定坐标寻找最深层可点击节点并点击，模拟确认键。 */
+    public String clickAt(int x, int y) {
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root == null) {
+            return "无法读取当前窗口节点";
+        }
+        AccessibilityNodeInfo target = findClickable(root, x, y);
+        if (target == null) {
+            return "该坐标没有可点击节点";
+        }
+        boolean ok = target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+        PoCState.log("点击节点 " + target.getClassName() + " -> " + ok);
+        return ok ? "已点击视频区域" : "点击失败";
+    }
+
+    private AccessibilityNodeInfo findClickable(AccessibilityNodeInfo node, int x, int y) {
+        if (node == null) {
+            return null;
+        }
+        Rect rect = new Rect();
+        node.getBoundsInScreen(rect);
+        if (!rect.contains(x, y)) {
+            return null;
+        }
+        for (int i = 0; i < node.getChildCount(); i++) {
+            AccessibilityNodeInfo found = findClickable(node.getChild(i), x, y);
+            if (found != null) {
+                return found;
+            }
+        }
+        return node.isClickable() ? node : null;
+    }
+
     /** 由无障碍服务直接拉起全屏答题界面。 */
     public String openQuiz() {
         startActivity(new android.content.Intent(this, QuizActivity.class)
