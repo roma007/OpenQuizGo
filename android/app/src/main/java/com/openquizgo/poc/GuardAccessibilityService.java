@@ -5,7 +5,10 @@ import android.graphics.PixelFormat;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.accessibilityservice.GestureDescription;
 import android.view.View;
 import android.view.WindowManager;
@@ -26,7 +29,9 @@ public class GuardAccessibilityService extends AccessibilityService {
     private static GuardAccessibilityService instance;
     private View overlayView;
     private volatile boolean blocking;
+    private volatile boolean quizArmed;
     private volatile long lastLaunchAt;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public static GuardAccessibilityService getInstance() {
         return instance;
@@ -39,6 +44,8 @@ public class GuardAccessibilityService extends AccessibilityService {
         AccessibilityServiceInfo info = getServiceInfo();
         if (info != null) {
             info.flags |= AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
+            info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+            info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
             setServiceInfo(info);
             PoCState.log("无障碍服务已连接，flags=" + info.flags);
         } else {
@@ -118,6 +125,31 @@ public class GuardAccessibilityService extends AccessibilityService {
         } catch (Exception ignored) {
         }
         overlayView = null;
+    }
+
+    /** 准备答题：等待用户按确认键暂停播放器后再拉起答题界面。 */
+    public String armQuiz() {
+        quizArmed = true;
+        PoCState.log("已进入待答题状态，等待确认键");
+        return "已进入待答题状态，等待确认键";
+    }
+
+    public String disarmQuiz() {
+        quizArmed = false;
+        return "已取消待答题状态";
+    }
+
+    @Override
+    public boolean onKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_UP
+                && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER) {
+            PoCState.log("监听到确认键（armed=" + quizArmed + "）");
+            if (quizArmed) {
+                quizArmed = false;
+                handler.postDelayed(this::openQuiz, 500);
+            }
+        }
+        return false;
     }
 
     /** 开启/关闭拦截模式：非本应用前台时自动拉起答题界面。 */

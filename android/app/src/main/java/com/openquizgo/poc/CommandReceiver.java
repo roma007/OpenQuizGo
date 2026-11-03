@@ -56,6 +56,12 @@ public class CommandReceiver extends BroadcastReceiver {
                 context.startActivity(quiz);
                 PoCState.log("已请求打开答题界面");
                 break;
+            case "arm_quiz":
+                PoCState.log(withService(GuardAccessibilityService::armQuiz));
+                break;
+            case "disarm_quiz":
+                PoCState.log(withService(GuardAccessibilityService::disarmQuiz));
+                break;
             case "block_on":
                 PoCState.log(withService(service -> service.setBlocking(true)));
                 break;
