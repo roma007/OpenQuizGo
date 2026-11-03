@@ -50,6 +50,21 @@ public class CommandReceiver extends BroadcastReceiver {
                     return "无障碍遮罩已关闭";
                 }));
                 break;
+            case "open_quiz":
+                Intent quiz = new Intent(context, QuizActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                context.startActivity(quiz);
+                PoCState.log("已请求打开答题界面");
+                break;
+            case "block_on":
+                PoCState.log(withService(service -> service.setBlocking(true)));
+                break;
+            case "block_off":
+                PoCState.log(withService(service -> service.setBlocking(false)));
+                break;
+            case "acc_open_quiz":
+                PoCState.log(withService(GuardAccessibilityService::openQuiz));
+                break;
             case "acc_pause":
                 PoCState.log(withService(service -> service.clickNode("暂停")));
                 break;

@@ -20,6 +20,8 @@ import java.util.List;
 public class GuardAccessibilityService extends AccessibilityService {
     private static GuardAccessibilityService instance;
     private View overlayView;
+    private volatile boolean blocking;
+    private volatile long lastLaunchAt;
 
     public static GuardAccessibilityService getInstance() {
         return instance;
@@ -106,6 +108,22 @@ public class GuardAccessibilityService extends AccessibilityService {
         overlayView = null;
     }
 
+    /** 开启/关闭拦截模式：非本应用前台时自动拉起答题界面。 */
+    public String setBlocking(boolean enabled) {
+        blocking = enabled;
+        PoCState.log("拦截模式：" + (enabled ? "开启" : "关闭"));
+        return "拦截模式：" + (enabled ? "开启" : "关闭");
+    }
+
+    /** 由无障碍服务直接拉起全屏答题界面。 */
+    public String openQuiz() {
+        startActivity(new android.content.Intent(this, QuizActivity.class)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                        | android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        PoCState.log("无障碍服务已拉起答题界面");
+        return "无障碍服务已拉起答题界面";
+    }
+
     /** 遍历当前窗口，尝试点击包含指定关键词的控件。 */
     public String clickNode(String keyword) {
         AccessibilityNodeInfo root = getRootInActiveWindow();
@@ -163,6 +181,12 @@ public class GuardAccessibilityService extends AccessibilityService {
         if (!value.equals(PoCState.foregroundApp)) {
             PoCState.foregroundApp = value;
             PoCState.log("前台应用：" + value + " / " + (cls == null ? "-" : cls));
+        }
+        if (blocking && !value.equals(getPackageName())
+                && System.currentTimeMillis() - lastLaunchAt > 1500) {
+            lastLaunchAt = System.currentTimeMillis();
+            PoCState.log("拦截模式：拉起答题界面");
+            openQuiz();
         }
     }
 

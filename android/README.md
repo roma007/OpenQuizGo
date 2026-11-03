@@ -97,22 +97,30 @@ adb logcat -s OQG_POC
 | 无障碍读取播放器节点 | ❌ `getRootInActiveWindow()` 返回 null，无法点击暂停按钮 |
 | ADB 注入 DPAD_CENTER | ✅ 视频暂停（shell 权限；普通 App 无 INJECT_EVENTS，无法复用） |
 | 设备 root | ❌ 生产版本，无 su |
+| 全屏 QuizActivity 接管 | ✅ 播放器停止并释放 MediaPlayer |
+| 退出 QuizActivity 后恢复 | ✅ 播放器自动恢复播放（`state:started`） |
+| HOME 逃逸看门狗 | ✅ 拦截模式下 0.5s 内重新拉起答题界面 |
 
-**结论：该机型标准模式（无障碍 + 悬浮窗 + 媒体控制）不可用。**
+**结论（v4 修订）：悬浮窗与媒体控制路径不可用，但「全屏 Activity 接管」可用——标准模式在该机型成立（受限）。**
 
-原因：
+失败路径：
 
-1. 创维系统维护 `CooCaaWhiteList` / `inAddViewBlackList`，非白名单包不能在视频播放时添加悬浮窗；
-2. 播放器不暴露 MediaSession，也忽略音频焦点与媒体键；
+1. 创维 `CooCaaWhiteList` / `inAddViewBlackList` 拦截非白名单应用的悬浮窗（含无障碍悬浮层），视频上无法加遮罩；
+2. 播放器不暴露 MediaSession，忽略音频焦点与媒体键；
 3. 播放器窗口不可被无障碍读取，无法用节点点击兜底；
-4. 第三方视频 App 被系统安装策略拦截。
+4. 第三方视频 App 被系统安装策略拦截（VLC 实测）。
 
-可行路径只剩：
+成功路径：
 
-- 厂商预装 / 系统白名单（CooCaa 合作）；
-- Device Owner / 系统签名权限（需恢复出厂或厂商配合）；
-- 换目标机型（小米、TCL、索尼等）验证标准模式；
-- 若坚持创维，需要重新定义管控方式（系统级 API 或与厂商合作）。
+1. 由无障碍服务或后台广播拉起全屏 `QuizActivity`，播放器失焦后停止并释放；
+2. 退出 Activity 后播放器自动恢复播放；
+3. 拦截模式下按 HOME 会被看门狗重新拉起答题界面。
+
+剩余限制：
+
+- 第三方视频 App 无法侧载，只能使用创维商店/预装应用（爱奇艺、腾讯等需从商店安装）；
+- 后台 Activity 启动在 Android 10+ 受限，需逐机型验证；
+- 部分播放器退出后可能不自动续播，需按 App 建立恢复策略。
 
 ### 复测命令
 
@@ -123,5 +131,8 @@ adb shell appops set com.openquizgo.poc SYSTEM_ALERT_WINDOW allow
 adb shell appops set com.openquizgo.poc GET_USAGE_STATS allow
 adb shell settings put secure enabled_accessibility_services com.openquizgo.poc/com.openquizgo.poc.GuardAccessibilityService
 adb shell settings put secure accessibility_enabled 1
-adb shell am broadcast -n com.openquizgo.poc/.CommandReceiver -a com.openquizgo.poc.CMD --es cmd acc_pause
+# 打开全屏答题界面（视频会停止，返回后恢复）
+adb shell am broadcast -n com.openquizgo.poc/.CommandReceiver -a com.openquizgo.poc.CMD --es cmd open_quiz
+# 拦截模式：非本应用前台时自动拉起答题界面
+adb shell am broadcast -n com.openquizgo.poc/.CommandReceiver -a com.openquizgo.poc.CMD --es cmd block_on
 ```

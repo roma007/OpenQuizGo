@@ -20,7 +20,7 @@
 - ✅ T10 离线租约（Ed25519 签名、离线对账、额度截断）
 - ✅ T11 可观测性与压测（指标、追踪、告警、k6、压测工具）
 - ✅ T12 验收与文档（OpenAPI、部署手册、验收报告）
-- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
+- 🚧 T0 设备管控 PoC（创维实测：全屏 Activity 方案可用；待更多机型）
 
 **第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。
 

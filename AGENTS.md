@@ -83,7 +83,7 @@ docs/
 ## 五、当前技术栈与约定
 
 - **服务端**：Go（模块化单体）、PostgreSQL 16、Redis 7、S3 兼容对象存储。
-- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/悬浮窗/UsageStats），定位为**守护端**，不承载内容播放；答题时按「MediaSession → 音频焦点 → 媒体按键」组合暂停/恢复第三方播放（尽力而为）。
+- **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/UsageStats），定位为**守护端**，不承载内容播放；答题时**优先拉起全屏答题 Activity** 使播放器失焦停止（创维实测可用），MediaSession/音频焦点/媒体键作为支持机型上的补充。
 - **家长端**：Flutter（Android / iOS）。
 - **管控对象**：第三方视频 App（播放器不可控），设备级管控方案见设计 001 第 4.6 节。
 - 构建/测试：`make build`、`make test`、`make test-int`（需 `TEST_DATABASE_URL` / `TEST_REDIS_URL`）。
