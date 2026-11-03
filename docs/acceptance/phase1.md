@@ -32,7 +32,7 @@
 
 | 任务 | 内容 | 状态 | 证据 |
 | --- | --- | --- | --- |
-| T0 | 设备管控 PoC | 🚧 首台实测：创维机型 Activity 方案可用（受限） | `android/README.md` 实测记录；待第二机型 |
+| T0 | 设备管控 PoC | ✅ 首台通过（创维，接受片头广告） | `android/README.md` 实测记录；第二机型待补 |
 | T1 | 工程骨架 | ✅ | `go vet`、`go test`、健康检查 |
 | T2 | 数据模型与迁移 | ✅ | 空库 up/down/up，28 表 + 35 标签 |
 | T3 | 身份/家庭/设备 | ✅ | `TestIdentityFlow` |
