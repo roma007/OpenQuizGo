@@ -109,6 +109,7 @@
 | 2026-11-03 | 计划创建，状态 review | 等待 G1/G4 |
 | 2026-11-03 | G1 批准，进入 T1；新建 `tv/` 正式工程 | Compose TV 骨架、DataStore、Retrofit、手工 DI、CI |
 | 2026-11-03 | T1 完成：创维安装/启动/渲染通过，单测通过 | 包名 `com.openquizgo.quiz`（guard/tv 被创维拦截） |
+| 2026-11-03 | T1 联调：修复明文 HTTP 限制，使用 adb reverse 打通网络 | 电视显示「服务端正常：openquizgo dev」 |
 
 ## 7. 验收结论
 

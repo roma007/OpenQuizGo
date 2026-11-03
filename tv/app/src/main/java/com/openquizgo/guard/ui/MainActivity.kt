@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +59,16 @@ private fun GuardHome(
     val token by tokenFlow.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
     var status by remember { mutableStateOf("尚未检测服务端") }
+
+    LaunchedEffect(Unit) {
+        status = "正在检测服务端..."
+        status = runCatching {
+            val meta = checkServer()
+            "服务端正常：${meta.service} ${meta.version}"
+        }.getOrElse {
+            "连接失败：${it.message}"
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(64.dp),

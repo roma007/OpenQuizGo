@@ -13,11 +13,19 @@ cd tv
 # 产物：app/build/outputs/apk/debug/app-debug.apk
 ```
 
-API 地址默认 `http://192.168.1.27:8080/`，可通过 Gradle 属性覆盖：
+API 地址默认 `http://192.168.1.27:8080/`，可通过 Gradle 属性覆盖。
+
+### 本地联调（推荐 adb reverse）
+
+部分电视/防火墙会阻止电视反向访问开发机，用 `adb reverse` 把电视的
+localhost 映射到开发机，可绕过该问题：
 
 ```bash
-./gradlew :app:assembleDebug -PapiBaseUrl=http://192.168.1.27:18080/
+adb reverse tcp:18080 tcp:18080
+./gradlew :app:assembleDebug -PapiBaseUrl=http://127.0.0.1:18080/
 ```
+
+debug 构建通过 `src/debug/AndroidManifest.xml` 允许明文 HTTP；release 必须使用 HTTPS。
 
 ## 测试
 
