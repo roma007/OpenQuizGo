@@ -53,6 +53,10 @@ class GuardEngine(
     private val _grantSeconds = MutableStateFlow(0L)
     val grantSeconds: StateFlow<Long> = _grantSeconds.asStateFlow()
 
+    /** 进入 BLOCKED 的原因（quiz_failed / time_window / revoked）。 */
+    private val _blockReason = MutableStateFlow<String?>(null)
+    val blockReason: StateFlow<String?> = _blockReason.asStateFlow()
+
     private var grantId: String? = null
     private var grantValidUntilMillis: Long = 0
     private var lastHeartbeatMillis: Long = 0
@@ -125,40 +129,65 @@ class GuardEngine(
     fun onQuizPassed(grant: GrantInfo?) {
         _watchSeconds.value = 0
         if (grant != null) {
-            grantId = grant.grantId
-            grantValidUntilMillis = grant.validUntilMillis
-            _grantSeconds.value = grant.remainingSeconds.toLong().coerceAtLeast(0)
-            _grantMinutes.value = grant.minutes
-            lastHeartbeatMillis = System.currentTimeMillis()
-            offline = false
-            scope.launch {
-                preferences.saveStoredGrant(
-                    StoredGrant(
-                        grantId = grant.grantId,
-                        minutes = grant.minutes,
-                        remainingSeconds = grant.remainingSeconds,
-                        validUntilMillis = grant.validUntilMillis,
-                    ),
-                )
-            }
-            GuardLog.i(
-                "grant accepted id=${grant.grantId} minutes=${grant.minutes} " +
-                    "remaining=${grant.remainingSeconds}",
-            )
+            adoptGrantInternal(grant)
         } else {
             grantId = null
             _grantSeconds.value = 0
             _grantMinutes.value = 0
         }
+        _blockReason.value = null
         transition(GuardState.GRANTED)
     }
 
+    /** 家长端/后台签发新授权后由阻挡页调用，直接恢复观看。 */
+    fun adoptGrant(grant: GrantInfo) {
+        GuardLog.i("adopt grant id=${grant.grantId} minutes=${grant.minutes}")
+        _watchSeconds.value = 0
+        adoptGrantInternal(grant)
+        _blockReason.value = null
+        transition(GuardState.GRANTED)
+        if (foregroundDetector.state.value.mediaActive) {
+            transition(GuardState.WATCHING)
+        }
+    }
+
+    private fun adoptGrantInternal(grant: GrantInfo) {
+        grantId = grant.grantId
+        grantValidUntilMillis = grant.validUntilMillis
+        _grantSeconds.value = grant.remainingSeconds.toLong().coerceAtLeast(0)
+        _grantMinutes.value = grant.minutes
+        lastHeartbeatMillis = System.currentTimeMillis()
+        offline = false
+        scope.launch {
+            preferences.saveStoredGrant(
+                StoredGrant(
+                    grantId = grant.grantId,
+                    minutes = grant.minutes,
+                    remainingSeconds = grant.remainingSeconds,
+                    validUntilMillis = grant.validUntilMillis,
+                ),
+            )
+        }
+        GuardLog.i(
+            "grant accepted id=${grant.grantId} minutes=${grant.minutes} " +
+                "remaining=${grant.remainingSeconds}",
+        )
+    }
+
     fun onQuizFailed() {
+        _blockReason.value = "quiz_failed"
         transition(GuardState.BLOCKED)
     }
 
     fun onQuizCancelled() {
-        transition(GuardState.QUIZ_REQUIRED)
+        if (hasUsableGrant()) {
+            transition(GuardState.GRANTED)
+            if (foregroundDetector.state.value.mediaActive) {
+                transition(GuardState.WATCHING)
+            }
+        } else {
+            transition(GuardState.QUIZ_REQUIRED)
+        }
     }
 
     /** 调试/测试入口：立即触发答题。 */
@@ -195,8 +224,10 @@ class GuardEngine(
 
         val restored = runCatching { GuardState.valueOf(snapshot.first) }.getOrNull()
         var state = when (restored) {
+            // 重启后答题界面已不存在，QUIZZING 视为待答题，后续按授权/媒体状态恢复。
+            GuardState.QUIZZING -> GuardState.QUIZ_REQUIRED
             GuardState.WATCHING, GuardState.QUIZ_REQUIRED,
-            GuardState.QUIZZING, GuardState.GRANTED, GuardState.BLOCKED -> restored
+            GuardState.GRANTED, GuardState.BLOCKED -> restored
             else -> GuardState.IDLE
         }
         if (!hasUsableGrant() && (state == GuardState.GRANTED || state == GuardState.WATCHING)) {
@@ -266,6 +297,7 @@ class GuardEngine(
             when {
                 result.revoked == true -> {
                     clearGrant()
+                    _blockReason.value = result.reason ?: "revoked"
                     transition(GuardState.BLOCKED)
                 }
                 !active -> {

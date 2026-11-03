@@ -13,8 +13,11 @@ import android.os.IBinder
 import android.os.Looper
 import android.widget.Toast
 import com.openquizgo.guard.GuardApplication
+import com.openquizgo.guard.data.foreground.ForegroundState
 import com.openquizgo.guard.domain.GuardState
+import com.openquizgo.guard.ui.BlockerActivity
 import com.openquizgo.guard.ui.MainActivity
+import com.openquizgo.guard.ui.QuizActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,7 +32,10 @@ class GuardService : Service() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var stateJob: Job? = null
     private var promptJob: Job? = null
+    private var watchdogJob: Job? = null
     private var engine: com.openquizgo.guard.domain.GuardEngine? = null
+    private var quizRequiredSince = 0L
+    private var lastGuardLaunchAt = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -40,19 +46,99 @@ class GuardService : Service() {
             engine?.state?.collect { state ->
                 updateNotification(label(state))
                 when (state) {
-                    GuardState.QUIZ_REQUIRED -> startPromptLoop()
+                    GuardState.QUIZ_REQUIRED -> {
+                        if (quizRequiredSince == 0L) quizRequiredSince = System.currentTimeMillis()
+                        startPromptLoop()
+                    }
+                    GuardState.BLOCKED -> {
+                        quizRequiredSince = 0L
+                        promptJob?.cancel()
+                        GuardAccessibilityService.disarmQuiz()
+                        launchBlocker()
+                    }
                     GuardState.GRANTED -> {
+                        quizRequiredSince = 0L
                         promptJob?.cancel()
                         GuardAccessibilityService.disarmQuiz()
                         toast("按确认键继续观看")
                     }
                     else -> {
+                        quizRequiredSince = 0L
                         promptJob?.cancel()
                         GuardAccessibilityService.disarmQuiz()
                     }
                 }
             }
         }
+        watchdogJob = scope.launch {
+            while (isActive) {
+                delay(WATCHDOG_INTERVAL_MS)
+                watchdogTick()
+            }
+        }
+    }
+
+    private fun watchdogTick() {
+        val current = engine?.state?.value ?: return
+        val foreground = (application as GuardApplication).container.foregroundDetector.state.value
+        when (current) {
+            GuardState.BLOCKED -> {
+                if (blockerEscaped(foreground) && !BlockerActivity.isShowing &&
+                    nowSinceLaunch() > GUARD_RELAUNCH_GAP_MS
+                ) {
+                    GuardLog.w("watchdog: blocker missing pkg=${foreground.packageName}")
+                    launchBlocker()
+                }
+            }
+            GuardState.QUIZ_REQUIRED -> {
+                if (!Permissions.accessibilityEnabled(this) ||
+                    !GuardAccessibilityService.isConnected()
+                ) {
+                    return
+                }
+                GuardAccessibilityService.armQuiz()
+                val waited = System.currentTimeMillis() - quizRequiredSince
+                if (waited > QUIZ_FALLBACK_MS && guardTarget(foreground) &&
+                    nowSinceLaunch() > GUARD_RELAUNCH_GAP_MS
+                ) {
+                    GuardLog.w("watchdog: quiz fallback after ${waited}ms")
+                    launchQuiz()
+                }
+            }
+            else -> Unit
+        }
+    }
+
+    /** 阻挡态：除家长需要的系统设置外，任何前台都重新拉起阻挡页。 */
+    private fun blockerEscaped(foreground: ForegroundState): Boolean {
+        val pkg = foreground.packageName ?: return false
+        if (pkg == packageName) return false
+        return pkg !in ALLOWED_WHILE_BLOCKED
+    }
+
+    private fun guardTarget(foreground: ForegroundState): Boolean {
+        val pkg = foreground.packageName ?: return false
+        if (pkg == packageName) return false
+        if (pkg in IGNORED_PACKAGES) return false
+        return foreground.mediaActive || pkg in MEDIA_PACKAGES
+    }
+
+    private fun nowSinceLaunch(): Long = System.currentTimeMillis() - lastGuardLaunchAt
+
+    private fun launchBlocker() {
+        lastGuardLaunchAt = System.currentTimeMillis()
+        val intent = Intent(this, BlockerActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        runCatching { startActivity(intent) }
+            .onFailure { GuardLog.e("blocker launch failed", it) }
+    }
+
+    private fun launchQuiz() {
+        lastGuardLaunchAt = System.currentTimeMillis()
+        val intent = Intent(this, QuizActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        runCatching { startActivity(intent) }
+            .onFailure { GuardLog.e("quiz launch failed", it) }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -61,6 +147,7 @@ class GuardService : Service() {
 
     override fun onDestroy() {
         stateJob?.cancel()
+        watchdogJob?.cancel()
         super.onDestroy()
     }
 
@@ -145,6 +232,38 @@ class GuardService : Service() {
     companion object {
         private const val CHANNEL_ID = "guard_service"
         private const val NOTIFICATION_ID = 1001
+        private const val WATCHDOG_INTERVAL_MS = 1_500L
+        private const val GUARD_RELAUNCH_GAP_MS = 2_000L
+        private const val QUIZ_FALLBACK_MS = 90_000L
+
+        private val MEDIA_PACKAGES = setOf(
+            "com.tianci.movieplatform",
+            "com.tianci.localmedia",
+            "com.tianci.videoplayer",
+            "com.qiyi.video",
+            "com.tencent.qqlive",
+            "com.youku.tv",
+            "tv.danmaku.bili",
+        )
+
+        private val IGNORED_PACKAGES = setOf(
+            "com.tianci.system",
+            "com.android.settings",
+            "com.android.systemui",
+            "com.android.tv.settings",
+            "com.skyworth.setting",
+            "com.skyworth.settings",
+            "com.tianci.launcher",
+        )
+
+        private val ALLOWED_WHILE_BLOCKED = setOf(
+            "com.android.settings",
+            "com.android.systemui",
+            "com.android.tv.settings",
+            "com.skyworth.setting",
+            "com.skyworth.settings",
+            "com.tianci.system",
+        )
 
         fun start(context: Context) {
             val intent = Intent(context, GuardService::class.java)
