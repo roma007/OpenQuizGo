@@ -15,31 +15,6 @@ import (
 	"github.com/roma007/OpenQuizGo/migrations"
 )
 
-func TestAllocate(t *testing.T) {
-	quota := allocate(map[string]float64{"math": 2, "chinese": 1, "science": 1}, 6)
-	if quota["math"] != 3 || quota["chinese"] != 2 || quota["science"] != 1 {
-		t.Fatalf("unexpected quota: %+v", quota)
-	}
-	total := 0
-	for _, count := range quota {
-		total += count
-	}
-	if total != 6 {
-		t.Fatalf("total = %d, want 6", total)
-	}
-}
-
-func TestSessionSize(t *testing.T) {
-	rule := Rule{PassThreshold: 3, SubjectWeight: map[string]float64{"math": 2, "chinese": 1}}
-	n, err := sessionSize(rule, 12)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if n != 5 {
-		t.Fatalf("n = %d, want 5", n)
-	}
-}
-
 func TestTargetDifficulty(t *testing.T) {
 	if got := targetDifficulty("low", "g2", nil); got != 1 {
 		t.Fatalf("low/g2 = %d, want 1", got)
@@ -49,16 +24,6 @@ func TestTargetDifficulty(t *testing.T) {
 	}
 	if got := targetDifficulty("mid", "", map[int]float64{4: 0.7}); got != 4 {
 		t.Fatalf("stats target = %d, want 4", got)
-	}
-}
-
-func TestValidateRuleRejectsFunWeight(t *testing.T) {
-	err := validateRule(Rule{
-		PassThreshold: 3,
-		SubjectWeight: map[string]float64{"math": 1, "fun": 1},
-	})
-	if err == nil {
-		t.Fatal("expected error when fun weight >= subject weight")
 	}
 }
 
@@ -79,7 +44,7 @@ func TestSelectWithRealPool(t *testing.T) {
 	childID := seedChild(t, pool)
 	offlineID, answeredID := seedQuestions(t, pool, childID)
 
-	svc := New(pool, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	svc := New(pool, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	rule := Rule{
 		UnlockMinutes: 20,
 		PassThreshold: 3,
@@ -148,8 +113,11 @@ func TestSelectWithRealPool(t *testing.T) {
 	}
 
 	emptyRule := Rule{
+		UnlockMinutes: 20,
 		PassThreshold: 3,
 		SubjectWeight: map[string]float64{"english": 2},
+		DailyLimit:    60,
+		Timezone:      "Asia/Shanghai",
 	}
 	_, err = svc.Select(ctx, SelectRequest{Stage: "low", Rule: emptyRule, Seed: 1})
 	quizErr, ok := err.(*Error)

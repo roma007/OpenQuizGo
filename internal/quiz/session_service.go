@@ -5,9 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/rule"
 )
 
 const (
@@ -29,17 +31,14 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 		return CreateSessionResponse{}, conflict
 	}
 
-	rule, err := s.repo.ruleForChild(ctx, principal.ChildID)
+	ruleSnapshot, err := s.loadRule(ctx, principal.ChildID)
 	if err != nil {
-		if !isNoRows(err) {
-			return CreateSessionResponse{}, err
-		}
-		rule = defaultRule()
+		return CreateSessionResponse{}, err
 	}
 
 	result, err := s.Select(ctx, SelectRequest{
 		ChildID: principal.ChildID,
-		Rule:    rule.Rule,
+		Rule:    ruleSnapshot.Rule,
 		Seed:    time.Now().UnixNano(),
 	})
 	if err != nil {
@@ -104,15 +103,15 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 	}
 
 	sessionID, err := s.repo.createSession(ctx, principal.ChildID, principal.DeviceID,
-		rule, rule.Rule.PassThreshold, expiresAt, items)
+		ruleSnapshot, ruleSnapshot.Rule.PassThreshold, expiresAt, items)
 	if err != nil {
 		return CreateSessionResponse{}, err
 	}
 	return CreateSessionResponse{
 		SessionID:     sessionID,
 		ExpiresAt:     expiresAt,
-		PassThreshold: rule.Rule.PassThreshold,
-		RuleVersion:   rule.Version,
+		PassThreshold: ruleSnapshot.Rule.PassThreshold,
+		RuleVersion:   ruleSnapshot.Version,
 		Questions:     questions,
 	}, nil
 }
@@ -313,6 +312,31 @@ func (s *Service) allow(ctx context.Context, key string, limit int, window time.
 		_ = s.redis.Expire(ctx, key, window).Err()
 	}
 	return count <= int64(limit)
+}
+
+func (s *Service) loadRule(ctx context.Context, childID string) (ruleSnapshot, error) {
+	if s.ruleSvc != nil {
+		r, version, err := s.ruleSvc.CanStart(ctx, childID)
+		if err == nil {
+			return ruleSnapshot{Version: version, Rule: r}, nil
+		}
+		var ruleErr *rule.Error
+		if errors.As(err, &ruleErr) {
+			if ruleErr.Code == "RULE_NOT_FOUND" {
+				return defaultRule(), nil
+			}
+			return ruleSnapshot{}, newError(ruleErr.Status, ruleErr.Code, ruleErr.Message)
+		}
+		return ruleSnapshot{}, err
+	}
+	snap, err := s.repo.ruleForChild(ctx, childID)
+	if err != nil {
+		if isNoRows(err) {
+			return defaultRule(), nil
+		}
+		return ruleSnapshot{}, err
+	}
+	return snap, nil
 }
 
 func defaultRule() ruleSnapshot {

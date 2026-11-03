@@ -12,12 +12,14 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/roma007/OpenQuizGo/internal/rule"
 )
 
-const (
-	maxSessionQuestions = 12
-	defaultPoolLimit    = 2000
-)
+// Rule 是规则子集别名，统一由 rule 包校验。
+type Rule = rule.Rule
+
+const defaultPoolLimit = 2000
 
 var (
 	stageRanks = map[string]int{"preschool": 0, "low": 1, "mid": 2, "high": 3}
@@ -32,14 +34,15 @@ var (
 
 // Service 是组卷服务。
 type Service struct {
-	repo   *repository
-	redis  *redis.Client
-	logger *slog.Logger
+	repo    *repository
+	redis   *redis.Client
+	ruleSvc *rule.Service
+	logger  *slog.Logger
 }
 
 // New 构造组卷服务。
-func New(pool *pgxpool.Pool, rdb *redis.Client, logger *slog.Logger) *Service {
-	return &Service{repo: newRepository(pool), redis: rdb, logger: logger}
+func New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, logger *slog.Logger) *Service {
+	return &Service{repo: newRepository(pool), redis: rdb, ruleSvc: ruleSvc, logger: logger}
 }
 
 // Select 按规则组卷。
@@ -56,8 +59,8 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 	if !validStages[stage] {
 		return Result{}, newError(422, "VALIDATION_ERROR", "学段不合法")
 	}
-	if err := validateRule(req.Rule); err != nil {
-		return Result{}, err
+	if err := rule.Validate(req.Rule); err != nil {
+		return Result{}, newError(422, "VALIDATION_ERROR", err.Error())
 	}
 
 	seed := req.Seed
@@ -72,13 +75,12 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 	}
 	target := targetDifficulty(stage, grade, stats)
 
-	maxQuestions := maxSessionQuestions
-	if req.MaxQuestions > 0 && req.MaxQuestions < maxQuestions {
-		maxQuestions = req.MaxQuestions
-	}
-	n, err := sessionSize(req.Rule, maxQuestions)
+	n, err := rule.SessionSize(req.Rule)
 	if err != nil {
-		return Result{}, err
+		return Result{}, newError(422, "VALIDATION_ERROR", err.Error())
+	}
+	if req.MaxQuestions > 0 && req.MaxQuestions < n {
+		n = max(3, req.MaxQuestions)
 	}
 
 	subjectWeights := make(map[string]float64)
@@ -97,7 +99,7 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 		funSlots = min(req.Rule.FunRatioCap, max(1, n-1))
 	}
 	subjectSlots := n - funSlots
-	quota := allocate(subjectWeights, subjectSlots)
+	quota := rule.Allocate(subjectWeights, subjectSlots)
 
 	selected := make([]Selected, 0, n)
 	chosen := map[string]bool{}
@@ -134,7 +136,7 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 
 	// 配额未满时，按权重从高到低再分配。
 	if len(selected) < n {
-		ordered := subjectsByWeight(subjectWeights)
+		ordered := rule.SubjectsByWeight(subjectWeights)
 		for pass := 0; pass < 2 && len(selected) < n; pass++ {
 			progress := false
 			for _, subject := range ordered {
@@ -286,121 +288,6 @@ func sortCandidates(items []Candidate, rng *rand.Rand, primaryRank, target int) 
 		}
 		return false
 	})
-}
-
-func validateRule(rule Rule) error {
-	if rule.PassThreshold <= 0 {
-		return newError(422, "VALIDATION_ERROR", "加权门槛必须大于 0")
-	}
-	if len(rule.SubjectWeight) == 0 {
-		return newError(422, "VALIDATION_ERROR", "学科权重不能为空")
-	}
-	minSubjectWeight := math.MaxFloat64
-	hasSubject := false
-	for subject, weight := range rule.SubjectWeight {
-		if weight < 0 {
-			return newError(422, "VALIDATION_ERROR", "学科权重不能为负")
-		}
-		if subject == "fun" {
-			continue
-		}
-		if weight > 0 {
-			hasSubject = true
-			if weight < minSubjectWeight {
-				minSubjectWeight = weight
-			}
-		}
-	}
-	if !hasSubject {
-		return newError(422, "VALIDATION_ERROR", "至少需要一个非趣味学科权重")
-	}
-	if funWeight := rule.SubjectWeight["fun"]; funWeight > 0 && funWeight >= minSubjectWeight {
-		return newError(422, "VALIDATION_ERROR", "趣味题权重必须低于最低学科权重")
-	}
-	if rule.FunRatioCap < 0 || rule.FunRatioCap > 10 {
-		return newError(422, "VALIDATION_ERROR", "趣味题上限需在 0–10 之间")
-	}
-	return nil
-}
-
-func sessionSize(rule Rule, maxQuestions int) (int, error) {
-	maxWeight := 0.0
-	for subject, weight := range rule.SubjectWeight {
-		if subject == "fun" {
-			continue
-		}
-		if weight > maxWeight {
-			maxWeight = weight
-		}
-	}
-	if maxWeight <= 0 {
-		return 0, newError(422, "VALIDATION_ERROR", "至少需要一个非趣味学科权重")
-	}
-	nMin := int(math.Ceil(rule.PassThreshold / maxWeight))
-	if nMin < 3 {
-		nMin = 3
-	}
-	n := nMin + 2
-	if n > maxQuestions {
-		n = maxQuestions
-	}
-	if n < 3 {
-		n = 3
-	}
-	return n, nil
-}
-
-// allocate 使用最大余数法分配题量。
-func allocate(weights map[string]float64, total int) map[string]int {
-	quota := map[string]int{}
-	if total <= 0 {
-		return quota
-	}
-	subjects := subjectsByWeight(weights)
-	sum := 0.0
-	for _, subject := range subjects {
-		sum += weights[subject]
-	}
-	type remainder struct {
-		subject string
-		value   float64
-	}
-	remainders := make([]remainder, 0, len(subjects))
-	allocated := 0
-	for _, subject := range subjects {
-		exact := float64(total) * weights[subject] / sum
-		base := int(math.Floor(exact))
-		quota[subject] = base
-		allocated += base
-		remainders = append(remainders, remainder{subject, exact - float64(base)})
-	}
-	sort.SliceStable(remainders, func(i, j int) bool {
-		if remainders[i].value != remainders[j].value {
-			return remainders[i].value > remainders[j].value
-		}
-		return weights[remainders[i].subject] > weights[remainders[j].subject]
-	})
-	for i := 0; allocated < total; i++ {
-		quota[remainders[i%len(remainders)].subject]++
-		allocated++
-	}
-	return quota
-}
-
-func subjectsByWeight(weights map[string]float64) []string {
-	subjects := make([]string, 0, len(weights))
-	for subject, weight := range weights {
-		if weight > 0 {
-			subjects = append(subjects, subject)
-		}
-	}
-	sort.Slice(subjects, func(i, j int) bool {
-		if weights[subjects[i]] != weights[subjects[j]] {
-			return weights[subjects[i]] > weights[subjects[j]]
-		}
-		return subjects[i] < subjects[j]
-	})
-	return subjects
 }
 
 func sortedKeys(quota map[string]int) []string {

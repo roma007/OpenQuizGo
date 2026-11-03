@@ -2,16 +2,6 @@ package quiz
 
 import "time"
 
-// Rule 是组卷所需的规则子集。
-type Rule struct {
-	UnlockMinutes int                `json:"unlock_minutes"`
-	PassThreshold float64            `json:"pass_threshold"`
-	SubjectWeight map[string]float64 `json:"subject_weight"`
-	FunRatioCap   int                `json:"fun_ratio_cap"`
-	FunEnabled    bool               `json:"fun_enabled"`
-	WeightPreset  string             `json:"weight_preset,omitempty"`
-}
-
 // SelectRequest 是组卷请求。
 type SelectRequest struct {
 	ChildID      string `json:"child_id"`

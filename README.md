@@ -14,8 +14,9 @@
 - ✅ T4 题库与治理 API（CRUD、检索、状态机、导入、RBAC、审计）
 - ✅ T5 组卷 v0（权重配额、趣味上限、去重、降级兜底）
 - ✅ T6 答题会话与判分（一次性令牌、服务端判分、防重放）
+- ✅ T7 加权规则引擎（规则 CRUD、时段/额度、上下文、dry-run）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T7 加权规则引擎
+- ⏳ T8 授权与观看计量
 
 ## 技术栈
 
@@ -147,6 +148,17 @@ POST /v1/admin/questions/{id}/resubmit
 GET  /v1/admin/audit                 审计日志
 POST /v1/admin/quiz/preview          组卷 dry-run（查看配额、题目、警告）
 ```
+
+## 规则与上下文（T7）
+
+```text
+GET  /v1/family/children/{id}/rule          读取规则
+PUT  /v1/family/children/{id}/rule          更新规则（需 PIN，写审计，版本 +1）
+POST /v1/family/children/{id}/rule/preview  规则 dry-run（题量、配额、最高加权分）
+GET  /v1/child/context                      电视端可看状态（时段/每日剩余）
+```
+
+规则校验：权重非负且至少一个学科、趣味权重低于最低学科、门槛可达、时段最多 4 段（支持跨零点）、每日上限 1–720 分钟。
 
 ## 电视端答题（T6，设备令牌）
 

@@ -30,7 +30,7 @@ func TestSessionFlow(t *testing.T) {
 	childID := seedChild(t, pool)
 	seedQuestions(t, pool, childID)
 
-	svc := New(pool, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	svc := New(pool, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	principal := identity.DevicePrincipal{DeviceID: "tv-session", ChildID: childID}
 
 	session, err := svc.CreateSession(ctx, principal)
