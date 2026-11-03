@@ -30,12 +30,15 @@ public class OverlayService extends Service {
 
     public static void show(Context context) {
         Intent intent = new Intent(context, OverlayService.class).setAction(ACTION_SHOW);
-        context.startService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
+        }
     }
 
     public static void hide(Context context) {
-        Intent intent = new Intent(context, OverlayService.class).setAction(ACTION_HIDE);
-        context.startService(intent);
+        context.stopService(new Intent(context, OverlayService.class));
     }
 
     @Override

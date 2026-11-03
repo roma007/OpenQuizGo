@@ -73,3 +73,55 @@ adb logcat -s OQG_POC
 - 仅验证标准模式（无障碍 + 悬浮窗 + 使用统计），不含 Device Owner。
 - 部分 App 不暴露 MediaSession 或不响应媒体键，需在表中如实记录。
 - 系统设置、HDMI 输入、投屏不在本 PoC 覆盖范围。
+
+---
+
+## 实测记录
+
+### 2026-11-03 · 创维 3T223_P31（Android 9 / SDK 28 / MT9255 / armv7）
+
+| 项 | 结果 |
+| --- | --- |
+| PoC 安装 | ✅ `adb install` 成功 |
+| 第三方视频 App 安装（VLC 3.7.1） | ❌ `INSTALL_FAILED_USER_RESTRICTED`（创维拦截，PoC 本身可装） |
+| 悬浮窗权限 | ✅ appops allow |
+| 无障碍服务 | ✅ 已绑定，前台包名识别正常 |
+| 使用情况访问 | ✅ |
+| 通知使用权 | ❌ 系统无该设置页，`enabled_notification_listeners` 写入后不生效 |
+| MediaSession | ❌ 播放中 `dumpsys media_session` 为 0 个会话 |
+| 音频焦点 | ❌ 播放器收到 `LOSS_TRANSIENT` 但仍为 `state:started` |
+| 媒体键 PAUSE/PLAY | ❌ `dispatchMediaKeyEvent` 后仍为 `state:started` |
+| 普通悬浮窗覆盖桌面 | ✅ 可覆盖创维桌面 |
+| 普通悬浮窗覆盖视频 | ❌ 系统日志：`sky_black: inAddViewBlackList pkg:com.openquizgo.poc`，窗口未添加，声音继续 |
+| 无障碍悬浮层（TYPE_ACCESSIBILITY_OVERLAY） | ❌ 同样被系统拦截 |
+| 无障碍读取播放器节点 | ❌ `getRootInActiveWindow()` 返回 null，无法点击暂停按钮 |
+| ADB 注入 DPAD_CENTER | ✅ 视频暂停（shell 权限；普通 App 无 INJECT_EVENTS，无法复用） |
+| 设备 root | ❌ 生产版本，无 su |
+
+**结论：该机型标准模式（无障碍 + 悬浮窗 + 媒体控制）不可用。**
+
+原因：
+
+1. 创维系统维护 `CooCaaWhiteList` / `inAddViewBlackList`，非白名单包不能在视频播放时添加悬浮窗；
+2. 播放器不暴露 MediaSession，也忽略音频焦点与媒体键；
+3. 播放器窗口不可被无障碍读取，无法用节点点击兜底；
+4. 第三方视频 App 被系统安装策略拦截。
+
+可行路径只剩：
+
+- 厂商预装 / 系统白名单（CooCaa 合作）；
+- Device Owner / 系统签名权限（需恢复出厂或厂商配合）；
+- 换目标机型（小米、TCL、索尼等）验证标准模式；
+- 若坚持创维，需要重新定义管控方式（系统级 API 或与厂商合作）。
+
+### 复测命令
+
+```bash
+adb connect <TV_IP>:5555
+adb install -r dist/OpenQuizGo-PoC-0.1.3.apk
+adb shell appops set com.openquizgo.poc SYSTEM_ALERT_WINDOW allow
+adb shell appops set com.openquizgo.poc GET_USAGE_STATS allow
+adb shell settings put secure enabled_accessibility_services com.openquizgo.poc/com.openquizgo.poc.GuardAccessibilityService
+adb shell settings put secure accessibility_enabled 1
+adb shell am broadcast -n com.openquizgo.poc/.CommandReceiver -a com.openquizgo.poc.CMD --es cmd acc_pause
+```
