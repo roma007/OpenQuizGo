@@ -42,5 +42,20 @@ services:
       redis:
         condition: service_healthy
 
+  worker:
+    build: .
+    command: ["sh", "-c", "/app/migrate up && /app/worker"]
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: postgres://openquizgo:openquizgo@postgres:5432/openquizgo?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: info
+      REPORT_INTERVAL: 1h
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   pgdata:

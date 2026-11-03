@@ -15,6 +15,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/question"
 	"github.com/roma007/OpenQuizGo/internal/quiz"
+	"github.com/roma007/OpenQuizGo/internal/report"
 	"github.com/roma007/OpenQuizGo/internal/rule"
 	"github.com/roma007/OpenQuizGo/internal/watch"
 )
@@ -30,6 +31,7 @@ type Deps struct {
 	Quiz      *quiz.Service
 	Rule      *rule.Service
 	Watch     *watch.Service
+	Report    *report.Service
 	Version   string
 	Env       string
 }
@@ -95,6 +97,12 @@ func New(d Deps) http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.DeviceAuth)
 				d.Watch.DeviceRoutes(r)
+			})
+		}
+		if d.Report != nil && d.Identity != nil {
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.ParentAuth)
+				d.Report.ParentRoutes(r)
 			})
 		}
 		if d.Rule != nil && d.Identity != nil {

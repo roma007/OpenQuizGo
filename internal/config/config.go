@@ -18,6 +18,7 @@ type Config struct {
 	LogLevel        string
 	ShutdownTimeout time.Duration
 	DBMaxConns      int32
+	ReportInterval  time.Duration
 
 	JWTSecret       string
 	AccessTokenTTL  time.Duration
@@ -39,6 +40,7 @@ func Load() (Config, error) {
 		LogLevel:        getenv("LOG_LEVEL", "info"),
 		ShutdownTimeout: getDuration("SHUTDOWN_TIMEOUT", 10*time.Second),
 		DBMaxConns:      int32(getInt("DB_MAX_CONNS", 10)),
+		ReportInterval:  getDuration("REPORT_INTERVAL", time.Hour),
 
 		JWTSecret:       os.Getenv("JWT_SECRET"),
 		AccessTokenTTL:  getDuration("ACCESS_TOKEN_TTL", 15*time.Minute),
@@ -69,6 +71,9 @@ func Load() (Config, error) {
 	}
 	if cfg.ShutdownTimeout <= 0 {
 		return Config{}, fmt.Errorf("SHUTDOWN_TIMEOUT must be positive, got %s", cfg.ShutdownTimeout)
+	}
+	if cfg.ReportInterval <= 0 {
+		return Config{}, fmt.Errorf("REPORT_INTERVAL must be positive, got %s", cfg.ReportInterval)
 	}
 	if cfg.Env != "dev" {
 		if len(cfg.JWTSecret) < 32 {

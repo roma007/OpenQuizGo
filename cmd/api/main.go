@@ -20,6 +20,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/platform/logx"
 	"github.com/roma007/OpenQuizGo/internal/question"
 	"github.com/roma007/OpenQuizGo/internal/quiz"
+	"github.com/roma007/OpenQuizGo/internal/report"
 	"github.com/roma007/OpenQuizGo/internal/rule"
 	"github.com/roma007/OpenQuizGo/internal/watch"
 )
@@ -72,6 +73,7 @@ func main() {
 	watchService := watch.New(pool, ruleService, cfg.JWTSecret, logger)
 	adminService := admin.NewService(pool, rdb, cfg.JWTSecret, 8*time.Hour, logger)
 	questionService := question.New(pool, logger)
+	reportService := report.New(pool, logger)
 	quizService := quiz.New(pool, rdb, ruleService, watchService, logger)
 
 	handler := httpapi.New(httpapi.Deps{
@@ -84,6 +86,7 @@ func main() {
 		Quiz:      quizService,
 		Rule:      ruleService,
 		Watch:     watchService,
+		Report:    reportService,
 		Version:   cfg.Version,
 		Env:       cfg.Env,
 	})

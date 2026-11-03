@@ -16,8 +16,9 @@
 - ✅ T6 答题会话与判分（一次性令牌、服务端判分、防重放）
 - ✅ T7 加权规则引擎（规则 CRUD、时段/额度、上下文、dry-run）
 - ✅ T8 授权与观看计量（grant、心跳、吊销、暂停不计量）
+- ✅ T9 报告聚合（周/月、趣味单列、定时 worker）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T9 报告聚合
+- ⏳ T10 离线租约
 
 ## 技术栈
 
@@ -32,6 +33,7 @@
 cmd/api           HTTP 服务入口
 cmd/migrate       数据库迁移入口
 cmd/admin         管理端账号 CLI
+cmd/worker        报告聚合定时任务
 internal/config   环境变量配置
 internal/httpapi  路由、中间件、统一响应
 internal/platform 数据库 / Redis / 日志适配
@@ -91,6 +93,7 @@ docker compose up --build
 | `DB_MAX_CONNS` | `10` | 连接池上限 |
 | `LOG_LEVEL` | `info` | debug / info / warn / error |
 | `SHUTDOWN_TIMEOUT` | `10s` | 优雅退出超时 |
+| `REPORT_INTERVAL` | `1h` | 报告 worker 聚合间隔 |
 | `JWT_SECRET` | dev 默认值 | 访问令牌签名密钥，生产必须替换且 ≥32 字符 |
 | `ACCESS_TOKEN_TTL` | `15m` | 访问令牌有效期 |
 | `REFRESH_TOKEN_TTL` | `720h` | 刷新令牌有效期 |
@@ -187,6 +190,17 @@ POST /v1/device/tamper                      上报权限关闭/卸载等异常
 - 授权分钟数 = `min(unlock_minutes, 当日剩余额度)`；同一会话幂等，不重复签发。
 - 心跳按两次心跳的服务端间隔计费（上限 120s），答题会话进行中强制不计费。
 - 时段外心跳直接吊销授权；额度耗尽状态置为 `exhausted`。
+
+## 成长报告（T9）
+
+```text
+GET /v1/family/children/{id}/reports?period=week|month&limit=8
+```
+
+- `subject_stats` 按学科统计答题量、正确率与每日趋势，**趣味题不进入学科统计**。
+- `fun_stats` 单列趣味题统计。
+- `watch_minutes` 为周期内实际观看分钟数。
+- `cmd/worker` 启动时生成一次，之后按 `REPORT_INTERVAL`（默认 1h）幂等重跑，覆盖当前/前一周、当前/前一月。
 
 状态机：`draft → review → trial → online → offline`，`review` 可驳回回 `draft`，`offline` 可重新提交。
 
