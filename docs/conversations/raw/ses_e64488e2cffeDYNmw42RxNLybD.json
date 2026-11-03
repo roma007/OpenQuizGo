@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 3997960,
-      "output": 254272,
-      "reasoning": 169838,
+      "input": 4018352,
+      "output": 268414,
+      "reasoning": 173721,
       "cache": {
-        "read": 100783744,
+        "read": 106840832,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793674754472,
-      "busy": 1793673978251,
-      "idle": 1793673960937,
-      "viewed": 1793673960937
+      "updated": 1793675542177,
+      "busy": 1793674843164,
+      "idle": 1793674778994,
+      "viewed": 1793674778994
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -36989,6 +36989,931 @@
         "reasoning": 325,
         "cache": {
           "read": 491648,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f58a6ae001ut07GWZUmexnsQ",
+      "time": {
+        "created": 1793674749619,
+        "streamed": 1793674757268,
+        "completed": 1793674767249
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now verify /metrics after tracing (quick start/curl maybe). Also check tracing no-op doesn't slow. Not necessary.\n\nRun a quick metrics/load? Already did load before tracing; tracing no-op adds span overhead negligible. Could rerun quick 5s 500 QPS to confirm. Optional. Let's do a short 500 QPS 5s to verify no regression and metrics route.\n\nNeed device token; previous server killed; token from last run unknown (we didn't save). Could skip; metrics works based on earlier. Tests pass.\n\nBut metrics middleware route labeling verified earlier. Good.\n\nCommit/push.\n\nBefore commit, check `go.mod` includes OTel; go.sum updated. `go mod tidy` ran. Build.\n\nCommit message `feat(t11): 可观测性、追踪与压测`.\n\nThen final response.\n\nAlso update plan M? no.\n\nCheck git status.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793674754478,
+            "completed": 1793674757259
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_5gnva0gcolnwb4t3vbt5ozyx",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -2 && git add -A && git commit -q -m \"feat(t11): 可观测性、追踪与压测\n\n- Prometheus 指标与 /metrics（HTTP、会话、答案、授权、心跳、报告）\n- OTLP/HTTP 追踪（OTEL_EXPORTER_OTLP_ENDPOINT 开启，默认 no-op）\n- 告警规则与 Prometheus 抓取配置\n- k6 负载脚本 + cmd/loadtest 压测工具\n- 安全自查清单\n- 本地 1000 QPS p95 0.96ms，记录 docs/load-test-2026-11-03.md\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git log --oneline -2",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   b4438c4..72407e8  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   b4438c4..72407e8  main -> master\n72407e8 feat(t11): 可观测性、追踪与压测\nb4438c4 feat(t10): Ed25519 离线租约与对账\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793674755893,
+            "ran": 1793674757265,
+            "completed": 1793674767187
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8b8a51f0637ad6627ea9c61481dd4f6c2d23487e",
+        "end": "3b8c3044dac7e934dfca7ea5831da6871f74d64c",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 828,
+        "output": 267,
+        "reasoning": 185,
+        "cache": {
+          "read": 493952,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f58eba3001ecLqH4IAQ7RY2M",
+      "time": {
+        "created": 1793674767271,
+        "streamed": 1793674778969,
+        "completed": 1793674778991
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "T11 done. Final response.\n\nSummarize:\n- Metrics list, /metrics.\n- OTel no-op default, OTLP.\n- Alerts + Prometheus config/compose.\n- k6 + loadtest.\n- 1000 QPS result.\n- Security checklist status (some unchecked: KMS, data export/delete, vuln scan, audit retention) — be honest.\n- Next T12 acceptance/docs.\n\nMention tracing added; no collector test but no-op compile.\n\nKeep concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793674771272,
+            "completed": 1793674778962
+          }
+        },
+        {
+          "type": "text",
+          "text": "**T11 完成并推送**（`72407e8`）。可观测性与压测就绪，本地 1000 QPS 实测 p95 **0.96ms**。\n\n## 交付内容\n\n| 类别 | 内容 |\n| --- | --- |\n| 指标 | `GET /metrics`：HTTP 请求/耗时/并发、会话创建、答题结果、授权签发、心跳秒数、报告生成 |\n| 追踪 | OTLP/HTTP，设置 `OTEL_EXPORTER_OTLP_ENDPOINT` 开启；默认 no-op，自动透传 `traceparent` |\n| 告警 | `deploy/prometheus/alerts.yml`：服务不可用、5xx >1%、p95 >200ms、并发积压、正确率异常 |\n| 采集 | `deploy/prometheus/prometheus.yml` + compose 内置 Prometheus（:9090） |\n| 压测 | k6 脚本 `deploy/k6/load.js`；Go 工具 `cmd/loadtest`（输出 p50/p95/p99） |\n| 安全 | `docs/security-checklist.md`，逐项标注已实现/待补 |\n\n## 压测结果\n\n```text\nGET /v1/child/context\nQPS 997.6（目标 1000），10s，并发 300\np50 0.65ms / p95 0.96ms / p99 4.15ms / max 52.9ms\n错误 0，丢弃 0\n```\n\n记录：[`docs/load-test-2026-11-03.md`](docs/load-test-2026-11-03.md)\n\n指标核对：`openquizgo_http_request_duration_seconds_count{route=\"/v1/child/context\"} 9976`。\n\n## 安全清单中仍待补的项（已如实标注）\n\n- KMS 托管密钥（当前环境变量注入）\n- 数据导出/删除自助入口\n- 依赖漏洞扫描纳入 CI（trivy/govulncheck）\n- 审计日志 36 个月保留与访问控制\n- 预发环境全链路压测（答题/心跳写入场景）\n\n## 当前进度\n\n- ✅ T1–T11\n- 🚧 T0 PoC APK 待实机\n- ⏳ **T12 验收与文档**：OpenAPI、部署文档、验收报告、遗留问题清单\n\nT12 会把 12 项验收标准逐条对照、补齐 OpenAPI 与部署说明，并输出第一期交付报告。继续我就收尾。"
+        }
+      ],
+      "snapshot": {
+        "start": "3b8c3044dac7e934dfca7ea5831da6871f74d64c",
+        "end": "3b8c3044dac7e934dfca7ea5831da6871f74d64c",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 647,
+        "output": 564,
+        "reasoning": 103,
+        "cache": {
+          "read": 494720,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f591972001zNiRCSCwWSXvUx",
+      "time": {
+        "created": 1793674778994
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_19f5a13d8001HEgh81mZEJJ4GK",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793674843257
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_19f5a149e0012lp0ily2KgMqC3",
+      "time": {
+        "created": 1793674843307,
+        "streamed": 1793674901302,
+        "completed": 1793674901406
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "T12: 验收与文档. Scope:\n- OpenAPI spec (api/openapi.yaml) covering all implemented endpoints.\n- Deployment docs (docs/deployment.md): env, migrations, docker compose, reverse proxy, health, backup, scaling, worker, prometheus.\n- Acceptance report (docs/acceptance/phase1.md) mapping R requirements/plan tasks to evidence.\n- Remaining issues list, next phase.\n- Run final full tests, migrations up/down, maybe verify OpenAPI validity.\n- Update README progress, plan T12 done, project status \"phase 1 delivered (server)\".\n- Maybe tag release v0.1.0? Git tag + push. Nice.\n- T0 still pending device, note as outstanding.\n\nNeed OpenAPI comprehensive but not absurd. Could generate manually with paths. Validate YAML parse; maybe use `npx @redocly/cli lint`? No network. Use python yaml parse.\n\nEndpoints:\nPublic:\n- POST /auth/sms/code, /auth/login, /auth/refresh\n- POST /device/activate/code, /device/token\nProtected parent:\n- POST /auth/logout\n- GET /family/me\n- GET/POST /family/children\n- GET/PUT /family/children/{childID}\n- GET/PUT /family/children/{childID}/rule\n- POST /family/children/{childID}/rule/preview\n- POST /family/pin, /family/pin/verify\n- GET /family/members, POST invite/join\n- GET /family/devices, POST activate, DELETE\n- GET reports\nProtected device:\n- GET /child/context\n- POST /quiz/sessions, GET session, POST answers, POST finish\n- GET /watch/grants/active, POST heartbeat\n- GET /offline/lease, POST /watch/logs\n- PUT /device/capability, POST /device/tamper\n- GET /device/me\nAdmin:\n- POST /admin/auth/login, GET /admin/me\n- questions CRUD, import, transitions, audit, quiz preview\nSystem: /healthz /readyz /v1/meta /metrics.\n\nOpenAPI with components schemas: Error, Rule, ChildInput, QuestionInput, etc. Could be 600 lines. Write compact but valid.\n\nUse OpenAPI 3.0.3 with security schemes bearerAuth (parent/device/admin same header but different tokens; note).\n\nDocs:\n- `docs/deployment.md`: requirements, env table, local dev, docker compose, migrations, reverse proxy sample (nginx), backup, observability, scaling, security.\n- `docs/acceptance/phase1.md`: scope, task status table T0-T12, requirement matrix R1-R21 status, test evidence, load test, known gaps, sign-off checklist.\n- `docs/CHANGELOG.md`? Maybe release notes.\n- Update docs/README navigation.\n- Update root README with docs links and phase status.\n- Add `docs/api.md`? OpenAPI is enough; maybe summary.\n\nGit tag v0.1.0 after commit.\n\nAlso make sure OpenAPI paths match actual routes:\n- `/v1/device/me` registered in identity DeviceRoutes — yes.\n- `/v1/device/activate/code`, `/v1/device/token`.\n- `/v1/family/devices/activate`.\n- `/v1/admin/quiz/preview`.\n- `/v1/admin/audit`.\n- `/v1/admin/questions/{id}/submit-review`, `/review`, `/publish`, `/offline`, `/resubmit`.\n- `/metrics`, `/healthz`, `/readyz`.\n\nAdmin routes are prefixed /v1/admin (router /v1). Parent/device /v1.\n\nOpenAPI servers: url `/v1`? If server URL is `/v1`, paths omit /v1. Simpler servers: `http://localhost:8080` and paths include /v1. Do that.\n\nLet's write OpenAPI. It doesn't need exhaustive schemas for every response, but good enough.\n\nFocus on request bodies and main response shapes.\n\nUse YAML anchors? no.\n\nWe'll write ~500 lines.\n\nThen acceptance report with evidence:\n- T0 not done (blocked on hardware) — status \"待实机\".\n- T1-T12 done except T0. Plan T12 done.\n- Requirements R1-R21 mapping:\n  R1 answer unlock → T6/T7/T8.\n  R2 rule engine → T7.\n  R3 offline → T10.\n  R4 subject system → T2/T4.\n  R5 stage → T2/T4.\n  R6 single table → migration.\n  R7 governance → T4.\n  R8 difficulty calibration → NOT in phase 1 (planned P1, T4? Actually T4 didn't include calibration; design phase 3). Mark 未实现（后续）.\n  R9 coverage dashboard → 未实现（T3 phase）.\n  R10 recommendation → 部分（组卷 v0），高级未实现.\n  R11 A/B → 未实现（phase 6）.\n  R12 family/account → T3.\n  R13 parent app → 未实现（phase 2，server API ready）.\n  R14 TV client → 未实现（phase 2）。\n  R15 reports → T9.\n  R16 compliance → 部分（加密/最小化），待法务.\n  R17 multi-device sync → 部分.\n  R18 device guard → T0 pending / phase 2.\n  R19 weighted scoring → T5/T7.\n  R20 pause/resume → T0 PoC pending.\n  R21 media-aware scope → T0 pending.\n- Acceptance \"第一期服务端\" defined by plan: E2E + load. Show E2E tests and load.\n- Known gaps: calibration, coverage, parent/TV apps, T0 hardware, SMS provider, KMS, data export, CI vuln scan.\n- Next phase.\n\nDeployment doc:\n- env table (all config).\n- local; docker compose.\n- migrations in container.\n- reverse proxy nginx sample with TLS, /metrics restriction.\n- worker and prometheus.\n- database backup/restore commands, retention.\n- scaling notes (stateless API, Redis, PG).\n- security checklist link.\n\nRoot README update:\n- T12 done, phase 1 server delivered.\n- Docs links.\n\ndocs/README table add deployment/acceptance/api.\n\nAlso maybe add `docs/api.md` with quick endpoint list? README already lists most. OpenAPI reference enough.\n\nLet's write OpenAPI first.\n\nI'll keep schemas modest. Use `bearerAuth` security.\n\nPaths with summaries, tags, security.\n\nError schema.\n\nNote rate limits.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793674847635,
+            "completed": 1793674901290
+          }
+        },
+        {
+          "type": "text",
+          "text": "收尾 T12：补 OpenAPI、部署文档与第一期验收报告，并把验收证据逐条对齐。"
+        },
+        {
+          "type": "tool",
+          "id": "call_00_jhwcg9zfjvfjbze2wujno3fj",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "openapi: 3.0.3\ninfo:\n  title: OpenQuizGo API\n  version: 0.1.0\n  description: |\n    答题解锁电视使用时长的服务端 API。第一期覆盖服务端全部能力：\n    身份/家庭/设备、题库治理、组卷、答题判分、规则引擎、授权计量、\n    离线租约、成长报告与可观测性端点。\n\n    鉴权方式均为 `Authorization: Bearer <token>`，但令牌类型不同：\n    - 家长令牌：`/auth/login` 获取，访问 `/family/*`\n    - 设备令牌：`/device/token` 获取，访问 `/quiz/*`、`/watch/*`、`/child/context`\n    - 管理员令牌：`/admin/auth/login` 获取，访问 `/admin/*`\nservers:\n  - url: http://localhost:8080\n    description: 本地开发\ntags:\n  - name: auth\n  - name: family\n  - name: device\n  - name: quiz\n  - name: watch\n  - name: report\n  - name: admin\n  - name: system\npaths:\n  /healthz:\n    get:\n      tags: [system]\n      summary: 存活探针\n      security: []\n      responses:\n        \"200\": { description: OK }\n  /readyz:\n    get:\n      tags: [system]\n      summary: 就绪探针（数据库/Redis）\n      security: []\n      responses:\n        \"200\": { description: Ready }\n        \"503\": { description: Not ready }\n  /metrics:\n    get:\n      tags: [system]\n      summary: Prometheus 指标\n      security: []\n      responses:\n        \"200\": { description: Prometheus text format }\n  /v1/meta:\n    get:\n      tags: [system]\n      summary: 服务元信息\n      security: []\n      responses:\n        \"200\":\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  service: { type: string }\n                  version: { type: string }\n                  env: { type: string }\n\n  /v1/auth/sms/code:\n    post:\n      tags: [auth]\n      summary: 发送登录验证码（mock 模式固定 123456）\n      security: []\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [phone]\n              properties:\n                phone: { type: string, example: \"13800138000\" }\n      responses:\n        \"200\": { description: 已发送 }\n        \"429\": { $ref: \"#/components/responses/RateLimited\" }\n  /v1/auth/login:\n    post:\n      tags: [auth]\n      summary: 手机号 + 验证码登录（首登自动创建家庭）\n      security: []\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [phone, code]\n              properties:\n                phone: { type: string }\n                code: { type: string }\n      responses:\n        \"200\":\n          description: 登录成功\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/LoginResult\" }\n        \"401\": { $ref: \"#/components/responses/Unauthorized\" }\n  /v1/auth/refresh:\n    post:\n      tags: [auth]\n      summary: 轮换刷新令牌\n      security: []\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                refresh_token: { type: string }\n      responses:\n        \"200\":\n          description: 新令牌\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/LoginResult\" }\n  /v1/auth/logout:\n    post:\n      tags: [auth]\n      summary: 吊销刷新令牌\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                refresh_token: { type: string }\n      responses:\n        \"200\": { description: OK }\n\n  /v1/family/me:\n    get:\n      tags: [family]\n      summary: 当前家长账号\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: OK\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Account\" }\n  /v1/family/children:\n    get:\n      tags: [family]\n      summary: 孩子列表\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: array\n                items: { $ref: \"#/components/schemas/Child\" }\n    post:\n      tags: [family]\n      summary: 新增孩子（自动创建默认规则）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema: { $ref: \"#/components/schemas/ChildInput\" }\n      responses:\n        \"201\":\n          description: Created\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Child\" }\n  /v1/family/children/{childID}:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    get:\n      tags: [family]\n      summary: 孩子详情\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: OK\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Child\" }\n    put:\n      tags: [family]\n      summary: 更新孩子档案\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema: { $ref: \"#/components/schemas/ChildInput\" }\n      responses:\n        \"200\":\n          description: OK\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/Child\" }\n  /v1/family/pin:\n    post:\n      tags: [family]\n      summary: 设置/修改家长 PIN\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                current_pin: { type: string }\n                new_pin: { type: string }\n      responses:\n        \"200\": { description: OK }\n  /v1/family/pin/verify:\n    post:\n      tags: [family]\n      summary: 校验家长 PIN\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                pin: { type: string }\n      responses:\n        \"200\": { description: OK }\n        \"403\": { $ref: \"#/components/responses/Forbidden\" }\n  /v1/family/members:\n    get:\n      tags: [family]\n      summary: 家庭成员（手机号脱敏）\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/family/members/invite:\n    post:\n      tags: [family]\n      summary: 生成家庭邀请码\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/family/members/join:\n    post:\n      tags: [family]\n      summary: 使用邀请码加入家庭\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                code: { type: string }\n      responses:\n        \"200\": { description: OK }\n  /v1/family/children/{childID}/rule:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    get:\n      tags: [family]\n      summary: 读取孩子规则\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  rule: { $ref: \"#/components/schemas/Rule\" }\n                  version: { type: integer }\n    put:\n      tags: [family]\n      summary: 更新规则（需 PIN）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [pin, rule]\n              properties:\n                pin: { type: string }\n                rule: { $ref: \"#/components/schemas/Rule\" }\n      responses:\n        \"200\": { description: OK }\n        \"403\": { $ref: \"#/components/responses/Forbidden\" }\n        \"422\": { $ref: \"#/components/responses/ValidationError\" }\n  /v1/family/children/{childID}/rule/preview:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    post:\n      tags: [family]\n      summary: 规则 dry-run（题量/配额/最高加权分）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                rule: { $ref: \"#/components/schemas/Rule\" }\n      responses:\n        \"200\": { description: OK }\n\n  /v1/family/devices:\n    get:\n      tags: [device]\n      summary: 已绑定设备\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/family/devices/activate:\n    post:\n      tags: [device]\n      summary: 家长凭激活码绑定孩子\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [code, child_id]\n              properties:\n                code: { type: string }\n                child_id: { type: string, format: uuid }\n      responses:\n        \"200\": { description: OK }\n  /v1/family/devices/{deviceID}:\n    delete:\n      tags: [device]\n      summary: 解绑设备（令牌立即失效）\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: deviceID\n          in: path\n          required: true\n          schema: { type: string, format: uuid }\n      responses:\n        \"200\": { description: OK }\n  /v1/family/children/{childID}/reports:\n    parameters:\n      - $ref: \"#/components/parameters/ChildID\"\n    get:\n      tags: [report]\n      summary: 周/月成长报告\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: period\n          in: query\n          schema: { type: string, enum: [week, month], default: week }\n        - name: limit\n          in: query\n          schema: { type: integer, default: 8 }\n      responses:\n        \"200\": { description: OK }\n\n  /v1/device/activate/code:\n    post:\n      tags: [device]\n      summary: 电视端申请激活码\n      security: []\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [device_id, platform]\n              properties:\n                device_id: { type: string }\n                platform: { type: string, enum: [tv, phone, pad, miniapp] }\n      responses:\n        \"200\": { description: OK }\n  /v1/device/token:\n    post:\n      tags: [device]\n      summary: 电视端兑换设备令牌\n      security: []\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [code, device_id]\n              properties:\n                code: { type: string }\n                device_id: { type: string }\n      responses:\n        \"200\": { description: 已绑定 }\n        \"202\": { description: 等待家长确认 }\n  /v1/device/me:\n    get:\n      tags: [device]\n      summary: 设备信息\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/device/capability:\n    put:\n      tags: [device]\n      summary: 上报守护模式与权限状态\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/device/tamper:\n    post:\n      tags: [device]\n      summary: 上报权限关闭/卸载等异常\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n\n  /v1/child/context:\n    get:\n      tags: [device]\n      summary: 电视端可看状态\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/quiz/sessions:\n    post:\n      tags: [quiz]\n      summary: 创建答题会话\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: 会话与题目（不含答案）\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/CreateSessionResponse\" }\n        \"409\": { description: 已有进行中的会话或题库不足 }\n        \"429\": { $ref: \"#/components/responses/RateLimited\" }\n  /v1/quiz/sessions/{sessionID}:\n    get:\n      tags: [quiz]\n      summary: 会话状态（断线恢复）\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: sessionID\n          in: path\n          required: true\n          schema: { type: string, format: uuid }\n      responses:\n        \"200\": { description: OK }\n  /v1/quiz/sessions/{sessionID}/answers:\n    post:\n      tags: [quiz]\n      summary: 提交答案（一次性令牌）\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: sessionID\n          in: path\n          required: true\n          schema: { type: string, format: uuid }\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [token, answer]\n              properties:\n                token: { type: string }\n                answer: {}\n      responses:\n        \"200\":\n          description: 判分结果\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/AnswerResult\" }\n        \"409\": { description: 令牌已使用/会话结束 }\n        \"410\": { description: 会话过期 }\n  /v1/quiz/sessions/{sessionID}/finish:\n    post:\n      tags: [quiz]\n      summary: 结算会话（可能签发授权）\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: sessionID\n          in: path\n          required: true\n          schema: { type: string, format: uuid }\n      responses:\n        \"200\":\n          description: 结算结果\n          content:\n            application/json:\n              schema: { $ref: \"#/components/schemas/SessionSummary\" }\n\n  /v1/watch/grants/active:\n    get:\n      tags: [watch]\n      summary: 当前有效授权\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n        \"404\": { description: 无有效授权 }\n  /v1/watch/grants/{grantID}/heartbeat:\n    post:\n      tags: [watch]\n      summary: 心跳计量\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - name: grantID\n          in: path\n          required: true\n          schema: { type: string, format: uuid }\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                foreground_app: { type: string }\n                paused: { type: boolean }\n                position_seconds: { type: integer }\n      responses:\n        \"200\": { description: 计量结果 }\n  /v1/offline/lease:\n    get:\n      tags: [watch]\n      summary: 预签发离线租约（Ed25519）\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n        \"403\": { description: 时段/额度不允许 }\n  /v1/watch/logs:\n    post:\n      tags: [watch]\n      summary: 离线观看记录对账\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [lease_id, entries]\n              properties:\n                lease_id: { type: string, format: uuid }\n                entries:\n                  type: array\n                  items:\n                    type: object\n                    properties:\n                      start_at: { type: string, format: date-time }\n                      end_at: { type: string, format: date-time }\n                      watched_seconds: { type: integer }\n                      paused_seconds: { type: integer }\n                      target_app: { type: string }\n      responses:\n        \"200\": { description: 对账结果 }\n        \"409\": { description: 已对账 }\n\n  /v1/admin/auth/login:\n    post:\n      tags: [admin]\n      summary: 管理员登录\n      security: []\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [username, password]\n              properties:\n                username: { type: string }\n                password: { type: string }\n      responses:\n        \"200\": { description: OK }\n        \"401\": { description: 凭据错误 }\n  /v1/admin/me:\n    get:\n      tags: [admin]\n      summary: 当前管理员与权限\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/questions:\n    get:\n      tags: [admin]\n      summary: 题库四维检索\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: subject, in: query, schema: { type: string } }\n        - { name: category, in: query, schema: { type: string } }\n        - { name: stage, in: query, schema: { type: string } }\n        - { name: difficulty, in: query, schema: { type: integer } }\n        - { name: type, in: query, schema: { type: string } }\n        - { name: status, in: query, schema: { type: string } }\n        - { name: q, in: query, schema: { type: string } }\n        - { name: limit, in: query, schema: { type: integer, default: 20 } }\n        - { name: offset, in: query, schema: { type: integer, default: 0 } }\n      responses:\n        \"200\": { description: OK }\n    post:\n      tags: [admin]\n      summary: 创建题目（draft）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema: { $ref: \"#/components/schemas/QuestionInput\" }\n      responses:\n        \"201\": { description: Created }\n        \"422\": { $ref: \"#/components/responses/ValidationError\" }\n  /v1/admin/questions/import:\n    post:\n      tags: [admin]\n      summary: 批量导入（JSON 或 CSV）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                questions:\n                  type: array\n                  items: { $ref: \"#/components/schemas/QuestionInput\" }\n          text/csv:\n            schema: { type: string }\n      responses:\n        \"200\": { description: OK }\n        \"422\": { description: 任一校验失败则整批未导入 }\n  /v1/admin/questions/{id}:\n    parameters:\n      - name: id\n        in: path\n        required: true\n        schema: { type: string, format: uuid }\n    get:\n      tags: [admin]\n      summary: 题目详情\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n    put:\n      tags: [admin]\n      summary: 编辑题目（仅 draft/offline）\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: \"#/components/schemas/QuestionInput\" }\n      responses:\n        \"200\": { description: OK }\n        \"409\": { description: 当前状态不可编辑 }\n    delete:\n      tags: [admin]\n      summary: 删除草稿\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/questions/{id}/submit-review:\n    post:\n      tags: [admin]\n      summary: 提交审核\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/questions/{id}/review:\n    post:\n      tags: [admin]\n      summary: 审核通过/驳回\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                approve: { type: boolean }\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/questions/{id}/publish:\n    post:\n      tags: [admin]\n      summary: 题目上线\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/questions/{id}/offline:\n    post:\n      tags: [admin]\n      summary: 题目下线\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/questions/{id}/resubmit:\n    post:\n      tags: [admin]\n      summary: 下线后重新提交审核\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/audit:\n    get:\n      tags: [admin]\n      summary: 题目审计日志\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: target_id, in: query, schema: { type: string } }\n        - { name: limit, in: query, schema: { type: integer, default: 50 } }\n      responses:\n        \"200\": { description: OK }\n  /v1/admin/quiz/preview:\n    post:\n      tags: [admin]\n      summary: 组卷 dry-run\n      security: [{ bearerAuth: [] }]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                child_id: { type: string, format: uuid }\n                stage: { type: string, enum: [preschool, low, mid, high] }\n                grade_tag: { type: string }\n                seed: { type: integer, format: int64 }\n                rule: { $ref: \"#/components/schemas/Rule\" }\n      responses:\n        \"200\": { description: 组卷结果 }\n        \"409\": { description: 题池不足 }\n\ncomponents:\n  securitySchemes:\n    bearerAuth:\n      type: http\n      scheme: bearer\n      bearerFormat: JWT or opaque device token\n  parameters:\n    ChildID:\n      name: childID\n      in: path\n      required: true\n      schema: { type: string, format: uuid }\n  responses:\n    Unauthorized:\n      description: 令牌无效或已过期\n      content:\n        application/json:\n          schema: { $ref: \"#/components/schemas/Error\" }\n    Forbidden:\n      description: 无权限\n      content:\n        application/json:\n          schema: { $ref: \"#/components/schemas/Error\" }\n    ValidationError:\n      description: 参数校验失败\n      content:\n        application/json:\n          schema: { $ref: \"#/components/schemas/Error\" }\n    RateLimited:\n      description: 限流\n      content:\n        application/json:\n          schema: { $ref: \"#/components/schemas/Error\" }\n  schemas:\n    Error:\n      type: object\n      properties:\n        code: { type: string }\n        message: { type: string }\n        request_id: { type: string }\n    Account:\n      type: object\n      properties:\n        id: { type: string, format: uuid }\n        family_id: { type: string, format: uuid }\n        phone: { type: string }\n        role: { type: string, enum: [owner, member] }\n    ChildInput:\n      type: object\n      required: [nickname, stage]\n      properties:\n        nickname: { type: string }\n        birth_year: { type: integer }\n        birth_month: { type: integer }\n        stage: { type: string, enum: [preschool, low, mid, high] }\n        grade_tag: { type: string, example: g2 }\n        avatar_url: { type: string }\n    Child:\n      allOf:\n        - $ref: \"#/components/schemas/ChildInput\"\n        - type: object\n          properties:\n            id: { type: string, format: uuid }\n            created_at: { type: string, format: date-time }\n    Rule:\n      type: object\n      required: [unlock_minutes, pass_threshold, subject_weight, daily_limit]\n      properties:\n        unlock_minutes: { type: integer, example: 20 }\n        pass_threshold: { type: number, format: double, example: 3 }\n        subject_weight:\n          type: object\n          additionalProperties: { type: number }\n          example: { math: 2, chinese: 1, science: 1, fun: 0.5 }\n        fun_ratio_cap: { type: integer, example: 2 }\n        fun_enabled: { type: boolean }\n        weight_preset: { type: string, enum: [balanced, math, literacy, custom] }\n        daily_limit: { type: integer, example: 60 }\n        offline_fallback_min: { type: integer, example: 10 }\n        scope_mode: { type: string, enum: [media, custom, all_apps] }\n        allowed_apps:\n          type: array\n          items: { type: string }\n        timezone: { type: string, example: Asia/Shanghai }\n        time_window:\n          type: object\n          properties:\n            allow:\n              type: array\n              items:\n                type: object\n                properties:\n                  start: { type: string, example: \"07:00\" }\n                  end: { type: string, example: \"21:00\" }\n    LoginResult:\n      type: object\n      properties:\n        account: { $ref: \"#/components/schemas/Account\" }\n        access_token: { type: string }\n        refresh_token: { type: string }\n        expires_in: { type: integer }\n        expires_at: { type: string, format: date-time }\n    QuestionInput:\n      type: object\n      required: [subject, category, stage, difficulty, type, stem, answer]\n      properties:\n        subject: { type: string, example: math }\n        category: { type: string, enum: [core, literacy, topic, fun] }\n        stage: { type: string, enum: [preschool, low, mid, high] }\n        grade_tag: { type: string, example: g2 }\n        difficulty: { type: integer, minimum: 1, maximum: 5 }\n        type: { type: string, enum: [choice, voice, image, fill, sort, match] }\n        stem: { type: string }\n        stem_media: {}\n        options: {}\n        answer: {}\n        answer_alias: {}\n        explain: { type: string }\n        duration_limit: { type: integer }\n        topic_id: { type: string, format: uuid }\n        schema_ver: { type: integer }\n    CreateSessionResponse:\n      type: object\n      properties:\n        session_id: { type: string, format: uuid }\n        expires_at: { type: string, format: date-time }\n        pass_threshold: { type: number }\n        rule_version: { type: integer }\n        questions:\n          type: array\n          items:\n            type: object\n            properties:\n              item_id: { type: string }\n              question_id: { type: string }\n              position: { type: integer }\n              type: { type: string }\n              stem: { type: string }\n              options: {}\n              duration_limit: { type: integer }\n              token: { type: string }\n    AnswerResult:\n      type: object\n      properties:\n        correct: { type: boolean }\n        correct_answer: {}\n        explain: { type: string }\n        duration_ms: { type: integer }\n        suspicious: { type: boolean }\n        score: { type: number }\n        threshold: { type: number }\n        answered: { type: integer }\n        total: { type: integer }\n        remaining: { type: integer }\n    SessionSummary:\n      type: object\n      properties:\n        session_id: { type: string, format: uuid }\n        state: { type: string, enum: [active, passed, failed, expired, cancelled] }\n        score: { type: number }\n        pass_threshold: { type: number }\n        correct_count: { type: integer }\n        answered_count: { type: integer }\n        question_count: { type: integer }\n        started_at: { type: string, format: date-time }\n        expires_at: { type: string, format: date-time }\n        finished_at: { type: string, format: date-time }\n        grant:\n          type: object\n          properties:\n            grant_id: { type: string, format: uuid }\n            minutes: { type: integer }\n            valid_until: { type: string, format: date-time }\n            remaining_seconds: { type: integer }\n            lease_token: { type: string }\n        grant_error: { type: string }\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/api/openapi.yaml"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: api/openapi.yaml"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793674869963,
+            "ran": 1793674901298,
+            "completed": 1793674901336
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "3b8c3044dac7e934dfca7ea5831da6871f74d64c",
+        "end": "6553fa2f852d66099f5623c7e7deba5db39890d6",
+        "files": [
+          "api/openapi.yaml"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 679,
+        "output": 6919,
+        "reasoning": 1439,
+        "cache": {
+          "read": 495360,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f5af7bf001XHGHKpm00fHfw4",
+      "time": {
+        "created": 1793674901444,
+        "streamed": 1793674926565,
+        "completed": 1793674926648
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Validate YAML with python yaml (available). Also check for duplicate keys? PyYAML silently overrides; use yamllint? Not installed. Use `python -c yaml.safe_load` and maybe `npx` no. Check paths count.\n\nThen deployment doc.\n\nDeployment doc details:\n- prerequisites.\n- env table complete.\n- local dev.\n- docker compose.\n- migrations (automatic in compose; manual make).\n- reverse proxy nginx sample:\n```\nserver {\n listen 443 ssl;\n location / { proxy_pass http://127.0.0.1:8080; }\n location /metrics { allow 10.0.0.0/8; deny all; proxy_pass ...; }\n}\n```\n- worker.\n- prometheus.\n- backup: pg_dump, restore; objects.\n- scaling: stateless API, DB pool, Redis, advisory locks only per child; multiple API instances OK; worker single instance (or use Redis lock; currently worker could duplicate but upsert idempotent).\n- logging.\n- security checklist.\n- upgrade/rollback.\n\nAcceptance report:\n- Header date/version/scope.\n- Deliverables.\n- Task table T0-T12 with status.\n- Requirement matrix.\n- Evidence: automated tests list (packages), smoke, load.\n- Known gaps.\n- Risks and next steps.\n- Sign-off checklist.\n\nLet's write deployment.md first.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793674906384,
+            "completed": 1793674926562
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_62l8iao15wg7byb2k6bxtpgq",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "# 部署与运维手册\n\n> 适用版本：0.1.0（第一期服务端）\n> 对应设计：[001-项目总体设计方案](design/001-项目总体设计方案.md)\n\n## 1. 组件\n\n| 组件 | 说明 | 必需 |\n| --- | --- | --- |\n| `api` | HTTP 服务（家长端、电视端、管理端） | 是 |\n| `worker` | 报告聚合定时任务 | 是（可与 api 合并部署） |\n| PostgreSQL | 唯一事实来源，建议 16 | 是 |\n| Redis | 验证码、限流、设备激活码 | 是 |\n| Prometheus | 指标抓取与告警 | 推荐 |\n| 反向代理 | TLS 终止、限流、访问控制 | 生产必需 |\n\n## 2. 环境变量\n\n| 变量 | 必填 | 默认 | 说明 |\n| --- | --- | --- | --- |\n| `APP_ENV` | 否 | `dev` | `dev` 输出文本日志；其他输出 JSON |\n| `APP_VERSION` | 否 | `dev` | 透传到 `/v1/meta` |\n| `HTTP_ADDR` | 否 | `:8080` | 监听地址 |\n| `DATABASE_URL` | **是** | — | PostgreSQL DSN |\n| `REDIS_URL` | 否 | `redis://localhost:6379/0` | Redis DSN |\n| `DB_MAX_CONNS` | 否 | `10` | 连接池上限 |\n| `LOG_LEVEL` | 否 | `info` | debug/info/warn/error |\n| `SHUTDOWN_TIMEOUT` | 否 | `10s` | 优雅退出 |\n| `JWT_SECRET` | 生产必填 | dev 默认 | 家长/管理端/授权令牌签名，≥32 字符 |\n| `ACCESS_TOKEN_TTL` | 否 | `15m` | 家长访问令牌 |\n| `REFRESH_TOKEN_TTL` | 否 | `720h` | 刷新令牌 |\n| `DATA_ENCRYPTION_KEY` | 生产必填 | dev 默认 | 手机号 AES-256-GCM 密钥（base64 32 字节） |\n| `PHONE_HASH_KEY` | 生产必填 | dev 默认 | 手机号 HMAC 密钥 |\n| `OFFLINE_LEASE_KEY` | 生产必填 | dev 默认 | 离线租约 Ed25519 种子（base64 32 字节） |\n| `SMS_MODE` | 否 | `mock` | 生产禁止 `mock`，需接入真实短信通道后设为 `disabled` 或扩展实现 |\n| `SMS_MOCK_CODE` | 否 | `123456` | 仅 dev |\n| `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |\n| `OTEL_EXPORTER_OTLP_ENDPOINT` | 否 | 空 | OTLP/HTTP 追踪端点，留空关闭 |\n\n> 生产启动会校验非 dev 环境的密钥与 `SMS_MODE`，缺失或仍为 mock 将拒绝启动。\n\n## 3. 本地运行\n\n```bash\ncp .env.example .env\n# 修改 DATABASE_URL / REDIS_URL\ncreatedb openquizgo\nmake migrate-up\nmake run\n```\n\n初始化管理员：\n\n```bash\ngo run ./cmd/admin create -username admin -password '********' -role super_admin -name 管理员\n```\n\n报告 worker：\n\n```bash\nmake build\n./bin/worker\n```\n\n## 4. Docker Compose\n\n```bash\ndocker compose up --build\n```\n\n包含：PostgreSQL、Redis、API（启动前自动迁移）、worker、Prometheus（:9090）。\n\n- API：http://localhost:8080\n- Prometheus：http://localhost:9090\n- 指标：http://localhost:8080/metrics\n\n## 5. 迁移\n\n```bash\nmake migrate-up       # 应用全部迁移\nmake migrate-status   # 查看版本\nmake migrate-down     # 回滚一个（仅开发/预发）\n```\n\n- 迁移内嵌在 `migrate` 二进制，生产无需额外文件。\n- 发布顺序：备份 → 迁移 → 启动新版本 → 验证 `/readyz`。\n- 回滚：镜像回退 + 按需执行 down；数据迁移默认只向前。\n\n## 6. 反向代理（Nginx 示例）\n\n```nginx\nserver {\n    listen 443 ssl http2;\n    server_name api.example.com;\n\n    ssl_certificate     /etc/ssl/api.crt;\n    ssl_certificate_key /etc/ssl/api.key;\n\n    location /metrics {\n        allow 10.0.0.0/8;\n        deny all;\n        proxy_pass http://127.0.0.1:8080;\n    }\n\n    location / {\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_read_timeout 30s;\n        proxy_pass http://127.0.0.1:8080;\n    }\n}\n```\n\n- 只暴露 API 与必要端口；PostgreSQL/Redis 不对外。\n- `/metrics` 仅允许监控网段。\n- 管理端建议独立域名/VPN。\n\n## 7. 监控与告警\n\n- 抓取配置：[`deploy/prometheus/prometheus.yml`](../deploy/prometheus/prometheus.yml)\n- 告警规则：[`deploy/prometheus/alerts.yml`](../deploy/prometheus/alerts.yml)\n- 关键指标：\n  - `openquizgo_http_request_duration_seconds` p95\n  - `openquizgo_http_requests_total{status=~\"5..\"}`\n  - `openquizgo_http_in_flight_requests`\n  - `openquizgo_quiz_answers_total{result}`\n  - `openquizgo_watch_grants_issued_total`\n- 日志为 JSON（非 dev），通过 `request_id`/`traceparent` 关联。\n\n## 8. 备份与恢复\n\n```bash\n# 每日全量\npg_dump --format=custom --file=/backup/openquizgo-$(date +%F).dump \"$DATABASE_URL\"\n\n# 恢复\npg_restore --clean --if-exists --dbname=\"$DATABASE_URL\" /backup/openquizgo-YYYY-MM-DD.dump\n```\n\n- 建议开启 WAL 归档，RPO ≤15 分钟。\n- 对象存储（题干图/音）单独做跨区复制。\n- 每季度演练一次恢复。\n\n## 9. 扩容与高可用\n\n- API 无状态，可水平扩容；会话/限流状态在 Redis，授权判断在 PostgreSQL。\n- 授权签发使用孩子级 advisory lock，多实例安全。\n- worker 可多实例运行（upsert 幂等），建议单实例或加分布式锁以省资源。\n- PostgreSQL 主从 + 连接池；Redis 主从/哨兵。\n- 容量基线：1 万家庭 / 5 万设备 / 峰值 1000 QPS（设计假设）。\n\n## 10. 发布与回滚\n\n1. 预发执行迁移与全量集成测试。\n2. 灰度 5% 设备，观察 5xx、p95、授权拒绝率。\n3. 全量发布。\n4. 异常回滚镜像；数据库不做破坏性 down，必要时用前向修复迁移。\n\n## 11. 安全\n\n上线前逐项检查 [`docs/security-checklist.md`](security-checklist.md)，重点：\n\n- 替换全部 dev 默认密钥。\n- 关闭 `SMS_MODE=mock`。\n- `/metrics` 与管理端网络隔离。\n- 数据库与 Redis 不暴露公网。\n- 开启审计日志与备份加密。\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/deployment.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/deployment.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793674910420,
+            "ran": 1793674926565,
+            "completed": 1793674926569
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "6553fa2f852d66099f5623c7e7deba5db39890d6",
+        "end": "fadbe0c0dc69807cd384a8e21ac3944355cffa63",
+        "files": [
+          "docs/deployment.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 8417,
+        "output": 1832,
+        "reasoning": 293,
+        "cache": {
+          "read": 496000,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f5b5a4b001jU292uFV1HOFKl",
+      "time": {
+        "created": 1793674926672,
+        "streamed": 1793674955010,
+        "completed": 1793674955156
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now acceptance report. Need accurate statuses.\n\nTask table T0-T12:\n- T0 doing (APK, pending device)\n- T1-T12 done (T12 this doc).\nPlan T12 status set done after.\n\nRequirement matrix statuses:\nR1 服务端完成（TV 客户端待二期）\nR2 完成\nR3 完成（服务端+租约；客户端验签待二期）\nR4 完成（数据模型/API）\nR5 完成\nR6 完成\nR7 完成（API；UI 三期）\nR8 未实现（三期）\nR9 未实现（三期）\nR10 部分（T5 v0；高级/AB 六期）\nR11 未实现（六期）\nR12 完成\nR13 服务端 API 完成；App 二期\nR14 未实现（二期）\nR15 完成\nR16 部分（加密/最小化/审计；法务与删除入口待补）\nR17 部分（多端数据一致由服务端保证；客户端二期）\nR18 未完成（T0 待实机）\nR19 完成\nR20 未完成（T0 待实机）\nR21 未完成（T0 待实机）\n\nEvidence:\n- Tests list with counts.\n- Commands.\n- Smoke flows.\n- Load.\n- Migration.\n- CI: GitHub Actions configured but cannot confirm run (gh not logged in). Honest: \"已配置，未在本次环境确认执行结果\".\n\nKnown gaps:\n- T0 hardware, TV/parent clients, admin UI, calibration/coverage/recommendation/AB, monetization, SMS provider, KMS, data export/delete, vuln scan, CI verification.\n- Divergences: PIN path, import sync, active_family, partitioning deferred, trace via OTLP optional.\n\nRisks:\n- Third-party app control feasibility; PoC gate.\n- SMS mock not production.\n- Load test only context endpoint.\n\nAcceptance conclusion:\n\"第一期服务端功能验收：通过（除 T0 硬件验证与上述非目标项）。\"\n\nSign-off table.\n\nAlso add `docs/acceptance/README.md`? Not necessary; link from docs/README.\n\nUpdate docs/README table with API/openapi, deployment, acceptance, security, data model, load test.\n\nUpdate root README progress: T12 done; phase 1 server delivered. Add link to acceptance. Maybe \"第一期服务端已交付（待 T0 实机）\".\n\nPlan T12 row done, status done? Plan overall status `in-progress`; since T0/T2? All T1-T12 done except T0. Plan completion: T0 is part of plan but blocked hardware. Set plan status `in-progress` still (T0 doing). Or `done` with caveat? Better keep `in-progress` because T0 pending; but T12 done. Hmm plan row status currently \"in-progress\" at top. Keep.\n\nLog T12: \"OpenAPI/部署/验收报告完成；tag v0.1.0\".\n\nMaybe create git tag v0.1.0.\n\nAlso update `docs/README.md` navigation and status \"T0 待实机\".\n\nOpenAPI validation first.\n\nLet's validate YAML and check paths count.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793674943837,
+            "completed": 1793674955002
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_5m2q1xygc152l12nr5kotxk7",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nimport yaml\nspec=yaml.safe_load(open('api/openapi.yaml'))\nprint('openapi', spec['openapi'], 'paths', len(spec['paths']), 'schemas', len(spec['components']['schemas']))\nfor f in ['deploy/prometheus/alerts.yml','deploy/prometheus/prometheus.yml','docker-compose.yml']:\n    yaml.safe_load(open(f)); print('yaml ok', f)\nPY"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "openapi 3.0.3 paths 48 schemas 10\nyaml ok deploy/prometheus/alerts.yml\nyaml ok deploy/prometheus/prometheus.yml\nyaml ok docker-compose.yml\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793674953793,
+            "ran": 1793674955007,
+            "completed": 1793674955147
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "fadbe0c0dc69807cd384a8e21ac3944355cffa63",
+        "end": "fadbe0c0dc69807cd384a8e21ac3944355cffa63",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2242,
+        "output": 159,
+        "reasoning": 706,
+        "cache": {
+          "read": 504320,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f5bc9bf001eAFQRRQdM7IJ1k",
+      "time": {
+        "created": 1793674955204,
+        "streamed": 1793674975723,
+        "completed": 1793674975826
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "48 paths includes path-level operations. Good.\n\nNow acceptance report.\n\nWrite carefully, with tables.\n\nAlso add docs/acceptance/ directory (created by write).\n\nLet's draft.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793674961776,
+            "completed": 1793674975704
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_43lnmse4zgxknyhtuh9tg75o",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "# 第一期服务端验收报告\n\n| 项目 | 内容 |\n| --- | --- |\n| 版本 | v0.1.0 |\n| 日期 | 2026-11-03 |\n| 范围 | 第一期：服务端基座（T1–T12），T0 设备管控 PoC 单独跟踪 |\n| 设计基线 | [001-项目总体设计方案](../design/001-项目总体设计方案.md) |\n| 计划基线 | [001-项目总体实施计划](../plans/001-项目总体实施计划.md) |\n\n## 1. 结论\n\n**第一期服务端功能验收：通过。**\n\n- 计划中的 T1–T12 已完成；T0（设备管控 PoC）已产出 APK，等待目标电视实机验证，不阻塞服务端验收。\n- 主链路「设备绑定 → 组卷 → 答题 → 加权判分 → 授权签发 → 心跳扣减 → 额度耗尽 → 报告聚合」已通过自动化与真实接口验证。\n- 1000 QPS 读路径压测达标（本地单机 p95 0.96ms）。\n- 二期客户端与 T0 结论相关的能力（暂停/拦截、家长 App、电视端）不在本期验收范围。\n\n## 2. 交付物\n\n| 类别 | 交付 |\n| --- | --- |\n| 代码 | Go 1.25 模块化单体、worker、管理 CLI、PoC APK 工程 |\n| 数据库 | 6 个迁移，28 张业务表 + 标签/角色种子 |\n| API | 48 个路径，OpenAPI 3.0.3 |\n| 客户端 PoC | `dist/OpenQuizGo-PoC-0.1.0.apk`（T0） |\n| 文档 | 设计/计划/数据模型/部署/安全/压测/验收 |\n| 运维 | Prometheus 指标与告警、OTLP 追踪、Docker Compose |\n\n## 3. 任务完成情况\n\n| 任务 | 内容 | 状态 | 证据 |\n| --- | --- | --- | --- |\n| T0 | 设备管控 PoC | 🚧 待实机 | APK 已产出；`android/README.md` 测试矩阵 |\n| T1 | 工程骨架 | ✅ | `go vet`、`go test`、健康检查 |\n| T2 | 数据模型与迁移 | ✅ | 空库 up/down/up，28 表 + 35 标签 |\n| T3 | 身份/家庭/设备 | ✅ | `TestIdentityFlow` |\n| T4 | 题库与治理 API | ✅ | `TestQuestionWorkflow`；1000 题导入 0.13s |\n| T5 | 组卷 v0 | ✅ | 配额/去重/断供测试 |\n| T6 | 答题会话与判分 | ✅ | `TestSessionFlow` |\n| T7 | 加权规则引擎 | ✅ | `TestRuleService`；时段/额度拦截 |\n| T8 | 授权与观看计量 | ✅ | `TestGrantAndHeartbeat`；100 并发不超发 |\n| T9 | 报告聚合 | ✅ | `TestGenerateWeeklyReport`；worker 32 份/40ms |\n| T10 | 离线租约 | ✅ | `TestOfflineLease`；EdDSA 验签 |\n| T11 | 可观测性与压测 | ✅ | 1000 QPS p95 0.96ms；告警规则 |\n| T12 | 验收与文档 | ✅ | 本报告、OpenAPI、部署手册 |\n\n## 4. 需求对照\n\n| 编号 | 需求 | 状态 | 说明 |\n| --- | --- | --- | --- |\n| R1 | 答题解锁使用时长 | ✅ 服务端 | 会话通过后签发 grant；客户端执行待二期 |\n| R2 | 规则引擎 | ✅ | 加权门槛、时段、每日额度、趣味上限 |\n| R3 | 断网降级 | ✅ 服务端 | Ed25519 租约 + 离线对账；客户端验签待二期 |\n| R4 | 学科体系与趣味类目 | ✅ | 标签化，趣味独立、占比上限、别名 |\n| R5 | 学段四档 + 年级柔性 | ✅ | 学段必填，年级仅推荐偏移 |\n| R6 | 单题库 | ✅ | 仅 `question` 一张主表 |\n| R7 | 题库治理 | ✅ | CRUD/检索/导入/状态机/审计；UI 三期 |\n| R8 | 难度校准 | ⏳ 三期 | 未实现 |\n| R9 | 覆盖率看板 | ⏳ 三期 | 未实现 |\n| R10 | 推荐引擎 | ◐ 部分 | T5 规则化组卷；高级策略六期 |\n| R11 | A/B 测试 | ⏳ 六期 | 未实现 |\n| R12 | 家庭与账号 | ✅ | 多家长、邀请、设备绑定、PIN |\n| R13 | 家长端 | ◐ 服务端就绪 | App 二期 |\n| R14 | 电视端 | ◐ PoC | 正式客户端二期 |\n| R15 | 成长报告 | ✅ | 周/月、趣味单列、worker |\n| R16 | 合规与内容审核 | ◐ 部分 | 加密/最小化/审核留痕；法务与删除入口待补 |\n| R17 | 多端同步 | ◐ 部分 | 服务端一致；客户端二期 |\n| R18 | 设备管控 | ⏳ T0 待实机 | 拦截能力取决于机型 |\n| R19 | 加权计分 | ✅ | 2 数学=4、3 科学=3 等用例 |\n| R20 | 答题暂停/恢复 | ⏳ T0 待实机 | 组合策略已设计，需逐 App 实测 |\n| R21 | 媒体感知管控 | ⏳ T0 待实机 | 需真机验证识别率 |\n\n图例：✅ 完成；◐ 部分/服务端就绪；⏳ 未开始或待验证。\n\n## 5. 验证证据\n\n### 5.1 自动化测试\n\n```text\ngo vet ./...                      通过\ngo test -p 1 ./...                通过\n  internal/identity               TestIdentityFlow\n  internal/question               TestQuestionWorkflow\n  internal/quiz                   TestSelectWithRealPool / TestSessionFlow / TestSessionIssuesGrant\n  internal/rule                   TestRuleService + 规则单元测试\n  internal/watch                  TestGrantAndHeartbeat / TestConcurrentIssueRespectsDailyLimit / TestOfflineLease\n  internal/report                 TestGenerateWeeklyReport / TestPeriodStart\n```\n\n关键断言：\n\n- 设备解绑后令牌立即 403。\n- 非法题目状态流转 409；editor 无发布权限 403。\n- 同一 seed 组卷结果一致；下线题/近 30 天已答题不入选。\n- 题目令牌重放 409；会话过期 410；快速作答标记 suspicious。\n- 时段外创建会话 403；每日额度用尽 403。\n- 100 并发签发、日额度 3 分钟 → 仅 3 成功，总额 3 分钟。\n- 答题期间心跳不扣减；时段外心跳吊销授权。\n- 离线租约 EdDSA 验签通过；重复对账 409；超额截断。\n- 周报趣味题不进入学科统计；重复生成不新增行。\n\n### 5.2 迁移验证\n\n```text\nmigrate up → 28 张业务表 + 35 条标签\nmigrate down ×2 → 业务表清空\nmigrate up → 恢复\n```\n\n### 5.3 真实接口冒烟\n\n- 登录 → 建孩子 → 设备激活 → 答题 7.5 分 → 授权 20 分钟。\n- 30s 心跳后剩余 1170s；暂停 60s 不扣减。\n- 时段外上下文 `allowed=false`、建会话 403。\n- 离线租约上报 2 分钟，剩余 58 分钟；重复上报 409。\n\n### 5.4 压测\n\n| 指标 | 结果 |\n| --- | --- |\n| 接口 | `GET /v1/child/context` |\n| QPS | 997.6 |\n| p95 | 0.96ms |\n| 错误率 | 0% |\n\n详见 [压测记录](../load-test-2026-11-03.md)。\n\n## 6. 已知缺口与风险\n\n| 项 | 影响 | 计划 |\n| --- | --- | --- |\n| T0 设备管控未实机验证 | 决定标准模式/暂停恢复是否成立 | 立即用现有电视测试 |\n| 家长端/电视端未开发 | 无法端到端交付用户 | 二期 |\n| 短信为 mock | 生产不可用 | 接入短信服务商 |\n| 管理端仅 API | 教研无法自助操作 | 三期后台 UI |\n| 难度校准/覆盖率/推荐/AB | 运营效率 | 三/六期 |\n| 数据导出/删除、KMS、漏洞扫描 | 合规与安全 | T12 后续补强 |\n| 压测仅覆盖读路径 | 写入容量未知 | 预发全链路压测 |\n| CI 未在本环境确认 | 流水线结果未知 | 推送后查看 Actions |\n\n## 7. 后续建议\n\n1. **优先完成 T0 实机 PoC**：至少 2 台不同厂商设备，覆盖爱奇艺/腾讯/云视听；结论决定二期产品形态。\n2. 启动二期：Android TV 守护端 + 家长端 App；服务端 API 已就绪。\n3. 生产化：替换 dev 密钥、关闭 mock 短信、接入 KMS、限制 `/metrics`。\n4. 运营能力：题库后台 UI、覆盖率看板、难度校准。\n5. 预发全链路压测：答题提交、心跳写入、报告 worker 并发。\n\n## 8. 验收签署\n\n| 角色 | 结论 | 日期 |\n| --- | --- | --- |\n| 产品/需求 | | |\n| 技术负责人 | | |\n| 测试 | | |\n\n> 本报告由 AI 依据代码、测试与实测结果生成；签署前请人工复核业务口径与合规事项。\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/acceptance/phase1.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/acceptance/phase1.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793674962122,
+            "ran": 1793674975720,
+            "completed": 1793674975750
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "fadbe0c0dc69807cd384a8e21ac3944355cffa63",
+        "end": "85aa253577cc2eb98705f897e58df66f08c696e5",
+        "files": [
+          "docs/acceptance/phase1.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 990,
+        "output": 2367,
+        "reasoning": 36,
+        "cache": {
+          "read": 506496,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f5c1a99001AsQiHiLs1Rv4vB",
+      "time": {
+        "created": 1793674975905,
+        "streamed": 1793674989906,
+        "completed": 1793674990039
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now update docs/README, root README, plan T12, project status, maybe AGENTS section 5 commands? Add build/test commands to AGENTS section 5 (\"待 T1 补充\") — now should update.\n\nAGENTS section 5 says目录结构、构建与测试命令待补充. Update:\n```\n- 构建/测试：make build / make test / make test-int（需 TEST_*）\n- 本地启动：make dev\n```\nGood.\n\ndocs/README table add:\n- docs/deployment.md\n- docs/security-checklist.md\n- docs/acceptance/phase1.md\n- api/openapi.yaml\n- docs/load-test...\nStatus row 001 → done? Plan still in-progress due T0. Set \"done（T0 待实机）\"? Status values: done/cancelled. Since T1-T12 done but T0 not, keep \"in-progress（T0 待实机）\". Maybe \"done（T0 另行跟踪）\". I'd set \"done（T0 待实机）\" to reflect phase 1 server complete. But plan overall status is in-progress. Consistency: keep plan `in-progress`; README \"in-progress（T0 待实机）\".\n\nPlan:\n- T12 status done.\n- Log T12.\n- G2 was done.\n- Plan top status remains in-progress.\n- Maybe add execution log \"第一期服务端验收通过\".\n\nREADME:\n- Progress T12 done; add \"第一期服务端已交付\".\n- Docs links.\n\nAlso `docs/README` table 001 status.\n\nTag v0.1.0.\n\nAdd Makefile target `openapi-lint`? No tool. Could add `docs` target? no.\n\nUpdate AGENTS.\n\nLet's patch.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793674982944,
+            "completed": 1793674989900
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_oyht6vd2tz6fijeu7wqjcowc",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('docs/README.md'); s=p.read_text()\ns=s.replace('''| `docs/idea.txt` | 产品需求草案（第 4–8 节，待补 1–3 节） | [idea.txt](idea.txt) |''','''| `docs/idea.txt` | 产品需求草案（第 4–8 节，待补 1–3 节） | [idea.txt](idea.txt) |\n| `api/openapi.yaml` | OpenAPI 3.0.3 接口契约 | [openapi.yaml](../api/openapi.yaml) |\n| `docs/data-model.md` | 数据模型与迁移说明 | [data-model.md](data-model.md) |\n| `docs/deployment.md` | 部署与运维手册 | [deployment.md](deployment.md) |\n| `docs/security-checklist.md` | 上线安全自查 | [security-checklist.md](security-checklist.md) |\n| `docs/acceptance/phase1.md` | 第一期验收报告 | [phase1.md](acceptance/phase1.md) |''')\ns=s.replace('''| 001 | 项目总体设计（答题解锁电视使用时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | in-progress（T1/T2） |''','''| 001 | 项目总体设计（答题解锁电视使用时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | in-progress（T1–T12 完成，T0 待实机） |''')\np.write_text(s)\n\np=Path('README.md'); s=p.read_text()\ns=s.replace('''- ✅ T11 可观测性与压测（指标、追踪、告警、k6、压测工具）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n- ⏳ T12 验收与文档''','''- ✅ T11 可观测性与压测（指标、追踪、告警、k6、压测工具）\n- ✅ T12 验收与文档（OpenAPI、部署手册、验收报告）\n- 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）\n\n**第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。''')\ns=s.replace('''## 技术栈''','''## 文档\n\n- [接口契约（OpenAPI）](api/openapi.yaml)\n- [部署与运维](docs/deployment.md)\n- [数据模型](docs/data-model.md)\n- [安全自查](docs/security-checklist.md)\n- [第一期验收报告](docs/acceptance/phase1.md)\n\n## 技术栈''')\np.write_text(s)\n\np=Path('docs/plans/001-项目总体实施计划.md'); s=p.read_text()\ns=s.replace('''| T12 | 验收与文档 | 全部 | OpenAPI、部署文档、验收报告、遗留问题清单 | E2E 全绿；文档可让新人独立跑通 | 2 | todo |''','''| T12 | 验收与文档 | 全部 | OpenAPI、部署文档、验收报告、遗留问题清单 | E2E 全绿；文档可让新人独立跑通 | 2 | done |''')\ns=s.replace('''| 2026-11-03 | T11 完成：Prometheus 指标、OTLP 追踪、告警规则、k6、loadtest、安全清单 | 本地 1000 QPS（997.6）p95 0.96ms、0 错误；告警规则见 deploy/prometheus |''','''| 2026-11-03 | T11 完成：Prometheus 指标、OTLP 追踪、告警规则、k6、loadtest、安全清单 | 本地 1000 QPS（997.6）p95 0.96ms、0 错误；告警规则见 deploy/prometheus |\n| 2026-11-03 | T12 完成：OpenAPI、部署手册、验收报告、安全清单；第一期服务端验收通过 | T0 仍待实机；tag v0.1.0 |''')\np.write_text(s)\n\np=Path('AGENTS.md'); s=p.read_text()\ns=s.replace('''- 目录结构、构建与测试命令：待 T1 工程骨架落地后补充。''','''- 构建/测试：`make build`、`make test`、`make test-int`（需 `TEST_DATABASE_URL` / `TEST_REDIS_URL`）。\n- 本地启动：`make dev`；迁移：`make migrate-up`。\n- 接口契约：`api/openapi.yaml`；部署手册：`docs/deployment.md`。''')\np.write_text(s)\nprint('docs updated')\nPY"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "docs updated\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793674987053,
+            "ran": 1793674989904,
+            "completed": 1793674989986
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "85aa253577cc2eb98705f897e58df66f08c696e5",
+        "end": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "files": [
+          "AGENTS.md",
+          "README.md",
+          "docs/README.md",
+          "docs/plans/001-项目总体实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2521,
+        "output": 1157,
+        "reasoning": 377,
+        "cache": {
+          "read": 507392,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f5c51e9001aAKQw5hRPDQPya",
+      "time": {
+        "created": 1793674990061,
+        "streamed": 1793675001171,
+        "completed": 1793675301216
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now run final verification:\n- gofmt, vet, tests.\n- OpenAPI paths count.\n- Maybe run `make build`.\n- Check docs links exist.\n\nThen commit, tag v0.1.0, push tag to both remotes.\n\nLet's run tests and build.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793675000044,
+            "completed": 1793675001168
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_kjprih4bdxej7duxhs3aowcd",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && gofmt -l . | head; go vet ./... && GOTOOLCHAIN=local go test -p 1 ./... 2>&1 | tail -8 && make build 2>&1 | tail -2 && ls -lh bin/api bin/worker bin/loadtest",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "?   \tgithub.com/roma007/OpenQuizGo/internal/platform/metrics\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/tracing\t[no test files]\nok  \tgithub.com/roma007/OpenQuizGo/internal/question\t(cached)\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t(cached)\nok  \tgithub.com/roma007/OpenQuizGo/internal/report\t(cached)\nok  \tgithub.com/roma007/OpenQuizGo/internal/rule\t(cached)\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t(cached)\n?   \tgithub.com/roma007/OpenQuizGo/migrations\t[no test files]\n\n\nCommand exceeded timeout of 300000 ms. Retry with a larger timeout if the command is expected to take longer."
+              },
+              {
+                "type": "text",
+                "text": "Timed out before completion"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "timeout": true
+            }
+          },
+          "time": {
+            "created": 1793675000462,
+            "ran": 1793675001170,
+            "completed": 1793675301186
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "end": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1638,
+        "output": 130,
+        "reasoning": 57,
+        "cache": {
+          "read": 509824,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f61116b001vCfQ7RkkzqSZBi",
+      "metadata": {
+        "notice": "instructions",
+        "instructionSources": [
+          "core/instructions"
+        ]
+      },
+      "time": {
+        "created": 1793675301227
+      },
+      "type": "system",
+      "text": "The instructions from /Users/mengfeng/我的文档/源码/OpenQuizGo/AGENTS.md changed. Here's the diff:\n```diff\n@@ -86,7 +86,9 @@\n - **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/悬浮窗/UsageStats），定位为**守护端**，不承载内容播放；答题时按「MediaSession → 音频焦点 → 媒体按键」组合暂停/恢复第三方播放（尽力而为）。\n - **家长端**：Flutter（Android / iOS）。\n - **管控对象**：第三方视频 App（播放器不可控），设备级管控方案见设计 001 第 4.6 节。\n-- 目录结构、构建与测试命令：待 T1 工程骨架落地后补充。\n+- 构建/测试：`make build`、`make test`、`make test-int`（需 `TEST_DATABASE_URL` / `TEST_REDIS_URL`）。\n+- 本地启动：`make dev`；迁移：`make migrate-up`。\n+- 接口契约：`api/openapi.yaml`；部署手册：`docs/deployment.md`。\n \n ## 六、版本管理与远端\n```",
+      "description": "Instructions updated: core/instructions"
+    },
+    {
+      "id": "msg_19f61119c001v3IEUoQXFLoexa",
+      "time": {
+        "created": 1793675301281,
+        "streamed": 1793675324208,
+        "completed": 1793675504247
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The command timed out at `make build`? Tests printed, then maybe make build hung? Tail output shows no build lines. Why would make build hang? Possibly because `make` includes `.env`, and `make build` runs go build; should be quick. Maybe an earlier test server still running? No.\n\nWait: `make build` builds `bin/api`; but command output truncated? It timed out after 300s, likely `go test` was not cached? But output shows cached. Maybe `make build` invoked something waiting due to `.env`? No.\n\nCheck running processes and run build separately with 120s.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793675321791,
+            "completed": 1793675324201
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_wdslaplml7gkl9jbo7bd72y9",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && ps aux | grep -E 'go build|compile|link' | grep -v grep | head -5; ls -lh bin/ 2>/dev/null; go build -trimpath -o bin/api ./cmd/api && go build -trimpath -o bin/worker ./cmd/worker && go build -trimpath -o bin/loadtest ./cmd/loadtest && ls -lh bin/",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "mengfeng         22966   0.0  0.1 435340112   4736   ??  S     9:56AM   0:00.30 /System/Library/PrivateFrameworks/Synapse.framework/Support/contentlinkingd\nmengfeng          4348   0.0  0.1 435374752   8688   ??  S     3:27PM   0:04.50 /usr/libexec/linkd\ntotal 113456\n-rwxr-xr-x@ 1 mengfeng  staff    20M Nov  3 10:51 api\n-rwxr-xr-x@ 1 mengfeng  staff   7.5M Nov  3 10:51 loadtest\n-rwxr-xr-x@ 1 mengfeng  staff    15M Nov  2 20:48 migrate\n-rwxr-xr-x@ 1 mengfeng  staff    13M Nov  3 10:14 worker\n\n\nCommand exceeded timeout of 180000 ms. Retry with a larger timeout if the command is expected to take longer."
+              },
+              {
+                "type": "text",
+                "text": "Timed out before completion"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "timeout": true
+            }
+          },
+          "time": {
+            "created": 1793675323016,
+            "ran": 1793675324207,
+            "completed": 1793675504228
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "end": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 757,
+        "output": 155,
+        "reasoning": 131,
+        "cache": {
+          "read": 511360,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f642ad7001UD1P14ZlkT2SYU",
+      "time": {
+        "created": 1793675504350,
+        "streamed": 1793675511525,
+        "completed": 1793675512893
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "`go build` hangs? Binaries exist from earlier (10:51). The command timed out after 180s; no output. Why would go build hang now? Perhaps `go` is trying to download a toolchain/deps due to go.mod change (OTel) and proxy is default proxy.golang.org (timeout). But tests ran cached; build after adding new packages may need downloads not in cache. `go build ./...` earlier succeeded before OTel tidy? We ran go mod tidy with goproxy.cn, which downloaded. But maybe building `cmd/api` needs OTel packages and go.sum entries missing? It would error, not hang. Unless network stalls on module fetch with default proxy.\n\nCheck `go env GOPROXY` is proxy.golang.org; running `go build` without GOPROXY may hang trying to fetch something not cached (e.g., toolchain? go.mod 1.25). Tests used cached packages.\n\nRun with `GOPROXY=https://goproxy.cn,direct` and `GOTOOLCHAIN=local` to see. Also `GOFLAGS=-mod=mod`? Let's run `GOPROXY=... go build -x -o /tmp/api ./cmd/api` with timeout 120s and tail.\n\nKill hanging go processes first? The command timed out; process may still run (shell kills child?). Check `ps aux | grep 'go build'` returned nothing. So build was blocked on network and killed.\n\nTry with GOPROXY.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793675508988,
+            "completed": 1793675511515
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_v62yj071wnag7hl6z95d0wbb",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOPROXY=https://goproxy.cn,direct GOTOOLCHAIN=local go build -trimpath -o bin/api ./cmd/api 2>&1 | tail -5; echo \"exit=$?\"; ls -lh bin/api",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "exit=0\n-rwxr-xr-x@ 1 mengfeng  staff    30M Nov  3 11:11 bin/api\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793675511043,
+            "ran": 1793675511524,
+            "completed": 1793675512750
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "end": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 652,
+        "output": 120,
+        "reasoning": 318,
+        "cache": {
+          "read": 512000,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f644d52001ysvWCfo4bBfkWt",
+      "time": {
+        "created": 1793675513189,
+        "streamed": 1793675520972,
+        "completed": 1793675526163
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "It was network/proxy. Build works with GOPROXY. The go.mod likely has an uncached module (OTel) and default proxy times out. For local reproducibility, could set `GOPROXY` in `.env`? That affects Makefile only, not go commands. Not ideal. But builds after cache should work offline. Now cache has everything; `go build` without proxy should be fast. Test.\n\nAlso binaries now 30M (OTel) vs 20M.\n\nBuild worker/loadtest.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793675518287,
+            "completed": 1793675520965
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_yg9xztafaof4k682j82qam5n",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && GOPROXY=https://goproxy.cn,direct GOTOOLCHAIN=local go build -trimpath -o bin/worker ./cmd/worker && GOPROXY=https://goproxy.cn,direct GOTOOLCHAIN=local go build -trimpath -o bin/loadtest ./cmd/loadtest && ls -lh bin/ && time go build -o /tmp/oqg-api ./cmd/api",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "total 138936\n-rwxr-xr-x@ 1 mengfeng  staff    30M Nov  3 11:11 api\n-rwxr-xr-x@ 1 mengfeng  staff   7.5M Nov  3 11:12 loadtest\n-rwxr-xr-x@ 1 mengfeng  staff    15M Nov  2 20:48 migrate\n-rwxr-xr-x@ 1 mengfeng  staff    16M Nov  3 11:12 worker\ngo build -o /tmp/oqg-api ./cmd/api  1.22s user 0.53s system 66% cpu 2.642 total\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793675520000,
+            "ran": 1793675520970,
+            "completed": 1793675526152
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "end": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 492,
+        "output": 158,
+        "reasoning": 108,
+        "cache": {
+          "read": 512640,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_19f648027001uVWHD8QF3Xnnz5",
+      "time": {
+        "created": 1793675526191,
+        "streamed": 1793675535091,
+        "completed": 1793675536244
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now cached, builds fine. Makefile `build` failed earlier due to missing cache + default proxy; now fine. Add README note about GOPROXY for China? Useful:\n\"依赖下载：如遇 proxy.golang.org 超时，`go env -w GOPROXY=https://goproxy.cn,direct`。\" Add under local start.\n\nAlso CI uses proxy.golang.org (works on GitHub).\n\nNow test API starts with OTel tracing no-op and metrics; quick smoke:\n- start bin/api on 18080, curl /metrics, /healthz, kill.\n- Ensure tracing init no error.\n\nRun.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793675532815,
+            "completed": 1793675535070
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_9ggvpd866awznqy3x1u1m0ex",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a; source .env; set +a; HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t12-api.log 2>&1 & API_PID=$!; for i in $(seq 1 20); do curl -sf localhost:18080/healthz >/dev/null && break; sleep 0.5; done; echo \"health: $(curl -s localhost:18080/healthz)\"; echo \"metrics lines: $(curl -s localhost:18080/metrics | wc -l)\"; curl -s localhost:18080/metrics | grep -E 'openquizgo_(quiz_sessions|watch_grants|reports_generated)' | head -5; kill $API_PID 2>/dev/null || true; tail -2 /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/t12-api.log",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "health: {\"status\":\"ok\"}\nmetrics lines:      134\n# HELP openquizgo_quiz_sessions_created_total 创建的答题会话数\n# TYPE openquizgo_quiz_sessions_created_total counter\nopenquizgo_quiz_sessions_created_total 0\n# HELP openquizgo_reports_generated_total 生成的成长报告数\n# TYPE openquizgo_reports_generated_total counter\ntime=2026-11-03T11:12:16.228+08:00 level=INFO msg=\"shutting down\"\ntime=2026-11-03T11:12:16.228+08:00 level=INFO msg=bye\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793675533733,
+            "ran": 1793675535075,
+            "completed": 1793675536232
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "end": "daedde348559e1b307979ab3b66e86d3d49ee686",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 529,
+        "output": 314,
+        "reasoning": 130,
+        "cache": {
+          "read": 513024,
           "write": 0
         }
       }

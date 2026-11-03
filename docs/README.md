@@ -10,6 +10,11 @@
 | 目录 | 用途 | 入口 |
 | --- | --- | --- |
 | `docs/idea.txt` | 产品需求草案（第 4–8 节，待补 1–3 节） | [idea.txt](idea.txt) |
+| `api/openapi.yaml` | OpenAPI 3.0.3 接口契约 | [openapi.yaml](../api/openapi.yaml) |
+| `docs/data-model.md` | 数据模型与迁移说明 | [data-model.md](data-model.md) |
+| `docs/deployment.md` | 部署与运维手册 | [deployment.md](deployment.md) |
+| `docs/security-checklist.md` | 上线安全自查 | [security-checklist.md](security-checklist.md) |
+| `docs/acceptance/phase1.md` | 第一期验收报告 | [phase1.md](acceptance/phase1.md) |
 | `docs/conversations/` | 对话留档（Markdown + 原始 JSON） | [INDEX.md](conversations/INDEX.md) |
 | `docs/design/` | 设计方案 | [TEMPLATE.md](design/TEMPLATE.md) |
 | `docs/plans/` | 实施计划 | [TEMPLATE.md](plans/TEMPLATE.md)、[BACKLOG.md](plans/BACKLOG.md) |
@@ -27,6 +32,6 @@ node scripts/archive-conversation.mjs --all
 | 编号 | 主题 | 设计 | 计划 | 状态 |
 | --- | --- | --- | --- | --- |
 | — | 项目规范与文档机制建立 | — | — | done |
-| 001 | 项目总体设计（答题解锁电视使用时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | in-progress（T1/T2） |
+| 001 | 项目总体设计（答题解锁电视使用时长） | [设计](design/001-项目总体设计方案.md) | [计划](plans/001-项目总体实施计划.md) | in-progress（T1–T12 完成，T0 待实机） |
 
 > 新增设计/计划后，请同步更新此表。

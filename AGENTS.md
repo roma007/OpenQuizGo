@@ -86,7 +86,9 @@ docs/
 - **电视端**：Android TV（Kotlin + Compose for TV + 无障碍/悬浮窗/UsageStats），定位为**守护端**，不承载内容播放；答题时按「MediaSession → 音频焦点 → 媒体按键」组合暂停/恢复第三方播放（尽力而为）。
 - **家长端**：Flutter（Android / iOS）。
 - **管控对象**：第三方视频 App（播放器不可控），设备级管控方案见设计 001 第 4.6 节。
-- 目录结构、构建与测试命令：待 T1 工程骨架落地后补充。
+- 构建/测试：`make build`、`make test`、`make test-int`（需 `TEST_DATABASE_URL` / `TEST_REDIS_URL`）。
+- 本地启动：`make dev`；迁移：`make migrate-up`。
+- 接口契约：`api/openapi.yaml`；部署手册：`docs/deployment.md`。
 
 ## 六、版本管理与远端
 

@@ -1,0 +1,923 @@
+openapi: 3.0.3
+info:
+  title: OpenQuizGo API
+  version: 0.1.0
+  description: |
+    答题解锁电视使用时长的服务端 API。第一期覆盖服务端全部能力：
+    身份/家庭/设备、题库治理、组卷、答题判分、规则引擎、授权计量、
+    离线租约、成长报告与可观测性端点。
+
+    鉴权方式均为 `Authorization: Bearer <token>`，但令牌类型不同：
+    - 家长令牌：`/auth/login` 获取，访问 `/family/*`
+    - 设备令牌：`/device/token` 获取，访问 `/quiz/*`、`/watch/*`、`/child/context`
+    - 管理员令牌：`/admin/auth/login` 获取，访问 `/admin/*`
+servers:
+  - url: http://localhost:8080
+    description: 本地开发
+tags:
+  - name: auth
+  - name: family
+  - name: device
+  - name: quiz
+  - name: watch
+  - name: report
+  - name: admin
+  - name: system
+paths:
+  /healthz:
+    get:
+      tags: [system]
+      summary: 存活探针
+      security: []
+      responses:
+        "200": { description: OK }
+  /readyz:
+    get:
+      tags: [system]
+      summary: 就绪探针（数据库/Redis）
+      security: []
+      responses:
+        "200": { description: Ready }
+        "503": { description: Not ready }
+  /metrics:
+    get:
+      tags: [system]
+      summary: Prometheus 指标
+      security: []
+      responses:
+        "200": { description: Prometheus text format }
+  /v1/meta:
+    get:
+      tags: [system]
+      summary: 服务元信息
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  version: { type: string }
+                  env: { type: string }
+
+  /v1/auth/sms/code:
+    post:
+      tags: [auth]
+      summary: 发送登录验证码（mock 模式固定 123456）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string, example: "13800138000" }
+      responses:
+        "200": { description: 已发送 }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /v1/auth/login:
+    post:
+      tags: [auth]
+      summary: 手机号 + 验证码登录（首登自动创建家庭）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, code]
+              properties:
+                phone: { type: string }
+                code: { type: string }
+      responses:
+        "200":
+          description: 登录成功
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LoginResult" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /v1/auth/refresh:
+    post:
+      tags: [auth]
+      summary: 轮换刷新令牌
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        "200":
+          description: 新令牌
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LoginResult" }
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      summary: 吊销刷新令牌
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        "200": { description: OK }
+
+  /v1/family/me:
+    get:
+      tags: [family]
+      summary: 当前家长账号
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Account" }
+  /v1/family/children:
+    get:
+      tags: [family]
+      summary: 孩子列表
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Child" }
+    post:
+      tags: [family]
+      summary: 新增孩子（自动创建默认规则）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChildInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Child" }
+  /v1/family/children/{childID}:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    get:
+      tags: [family]
+      summary: 孩子详情
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Child" }
+    put:
+      tags: [family]
+      summary: 更新孩子档案
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChildInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Child" }
+  /v1/family/pin:
+    post:
+      tags: [family]
+      summary: 设置/修改家长 PIN
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                current_pin: { type: string }
+                new_pin: { type: string }
+      responses:
+        "200": { description: OK }
+  /v1/family/pin/verify:
+    post:
+      tags: [family]
+      summary: 校验家长 PIN
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pin: { type: string }
+      responses:
+        "200": { description: OK }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/family/members:
+    get:
+      tags: [family]
+      summary: 家庭成员（手机号脱敏）
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/family/members/invite:
+    post:
+      tags: [family]
+      summary: 生成家庭邀请码
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/family/members/join:
+    post:
+      tags: [family]
+      summary: 使用邀请码加入家庭
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string }
+      responses:
+        "200": { description: OK }
+  /v1/family/children/{childID}/rule:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    get:
+      tags: [family]
+      summary: 读取孩子规则
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rule: { $ref: "#/components/schemas/Rule" }
+                  version: { type: integer }
+    put:
+      tags: [family]
+      summary: 更新规则（需 PIN）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pin, rule]
+              properties:
+                pin: { type: string }
+                rule: { $ref: "#/components/schemas/Rule" }
+      responses:
+        "200": { description: OK }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /v1/family/children/{childID}/rule/preview:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    post:
+      tags: [family]
+      summary: 规则 dry-run（题量/配额/最高加权分）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rule: { $ref: "#/components/schemas/Rule" }
+      responses:
+        "200": { description: OK }
+
+  /v1/family/devices:
+    get:
+      tags: [device]
+      summary: 已绑定设备
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/family/devices/activate:
+    post:
+      tags: [device]
+      summary: 家长凭激活码绑定孩子
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, child_id]
+              properties:
+                code: { type: string }
+                child_id: { type: string, format: uuid }
+      responses:
+        "200": { description: OK }
+  /v1/family/devices/{deviceID}:
+    delete:
+      tags: [device]
+      summary: 解绑设备（令牌立即失效）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: OK }
+  /v1/family/children/{childID}/reports:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    get:
+      tags: [report]
+      summary: 周/月成长报告
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string, enum: [week, month], default: week }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 8 }
+      responses:
+        "200": { description: OK }
+
+  /v1/device/activate/code:
+    post:
+      tags: [device]
+      summary: 电视端申请激活码
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_id, platform]
+              properties:
+                device_id: { type: string }
+                platform: { type: string, enum: [tv, phone, pad, miniapp] }
+      responses:
+        "200": { description: OK }
+  /v1/device/token:
+    post:
+      tags: [device]
+      summary: 电视端兑换设备令牌
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, device_id]
+              properties:
+                code: { type: string }
+                device_id: { type: string }
+      responses:
+        "200": { description: 已绑定 }
+        "202": { description: 等待家长确认 }
+  /v1/device/me:
+    get:
+      tags: [device]
+      summary: 设备信息
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/device/capability:
+    put:
+      tags: [device]
+      summary: 上报守护模式与权限状态
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/device/tamper:
+    post:
+      tags: [device]
+      summary: 上报权限关闭/卸载等异常
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+
+  /v1/child/context:
+    get:
+      tags: [device]
+      summary: 电视端可看状态
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/quiz/sessions:
+    post:
+      tags: [quiz]
+      summary: 创建答题会话
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 会话与题目（不含答案）
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CreateSessionResponse" }
+        "409": { description: 已有进行中的会话或题库不足 }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /v1/quiz/sessions/{sessionID}:
+    get:
+      tags: [quiz]
+      summary: 会话状态（断线恢复）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: sessionID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: OK }
+  /v1/quiz/sessions/{sessionID}/answers:
+    post:
+      tags: [quiz]
+      summary: 提交答案（一次性令牌）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: sessionID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, answer]
+              properties:
+                token: { type: string }
+                answer: {}
+      responses:
+        "200":
+          description: 判分结果
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnswerResult" }
+        "409": { description: 令牌已使用/会话结束 }
+        "410": { description: 会话过期 }
+  /v1/quiz/sessions/{sessionID}/finish:
+    post:
+      tags: [quiz]
+      summary: 结算会话（可能签发授权）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: sessionID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: 结算结果
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionSummary" }
+
+  /v1/watch/grants/active:
+    get:
+      tags: [watch]
+      summary: 当前有效授权
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+        "404": { description: 无有效授权 }
+  /v1/watch/grants/{grantID}/heartbeat:
+    post:
+      tags: [watch]
+      summary: 心跳计量
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: grantID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                foreground_app: { type: string }
+                paused: { type: boolean }
+                position_seconds: { type: integer }
+      responses:
+        "200": { description: 计量结果 }
+  /v1/offline/lease:
+    get:
+      tags: [watch]
+      summary: 预签发离线租约（Ed25519）
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+        "403": { description: 时段/额度不允许 }
+  /v1/watch/logs:
+    post:
+      tags: [watch]
+      summary: 离线观看记录对账
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lease_id, entries]
+              properties:
+                lease_id: { type: string, format: uuid }
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      start_at: { type: string, format: date-time }
+                      end_at: { type: string, format: date-time }
+                      watched_seconds: { type: integer }
+                      paused_seconds: { type: integer }
+                      target_app: { type: string }
+      responses:
+        "200": { description: 对账结果 }
+        "409": { description: 已对账 }
+
+  /v1/admin/auth/login:
+    post:
+      tags: [admin]
+      summary: 管理员登录
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        "200": { description: OK }
+        "401": { description: 凭据错误 }
+  /v1/admin/me:
+    get:
+      tags: [admin]
+      summary: 当前管理员与权限
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/admin/questions:
+    get:
+      tags: [admin]
+      summary: 题库四维检索
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: subject, in: query, schema: { type: string } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: stage, in: query, schema: { type: string } }
+        - { name: difficulty, in: query, schema: { type: integer } }
+        - { name: type, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 20 } }
+        - { name: offset, in: query, schema: { type: integer, default: 0 } }
+      responses:
+        "200": { description: OK }
+    post:
+      tags: [admin]
+      summary: 创建题目（draft）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuestionInput" }
+      responses:
+        "201": { description: Created }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /v1/admin/questions/import:
+    post:
+      tags: [admin]
+      summary: 批量导入（JSON 或 CSV）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                questions:
+                  type: array
+                  items: { $ref: "#/components/schemas/QuestionInput" }
+          text/csv:
+            schema: { type: string }
+      responses:
+        "200": { description: OK }
+        "422": { description: 任一校验失败则整批未导入 }
+  /v1/admin/questions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [admin]
+      summary: 题目详情
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+    put:
+      tags: [admin]
+      summary: 编辑题目（仅 draft/offline）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuestionInput" }
+      responses:
+        "200": { description: OK }
+        "409": { description: 当前状态不可编辑 }
+    delete:
+      tags: [admin]
+      summary: 删除草稿
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/admin/questions/{id}/submit-review:
+    post:
+      tags: [admin]
+      summary: 提交审核
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: OK }
+  /v1/admin/questions/{id}/review:
+    post:
+      tags: [admin]
+      summary: 审核通过/驳回
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approve: { type: boolean }
+      responses:
+        "200": { description: OK }
+  /v1/admin/questions/{id}/publish:
+    post:
+      tags: [admin]
+      summary: 题目上线
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: OK }
+  /v1/admin/questions/{id}/offline:
+    post:
+      tags: [admin]
+      summary: 题目下线
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: OK }
+  /v1/admin/questions/{id}/resubmit:
+    post:
+      tags: [admin]
+      summary: 下线后重新提交审核
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: OK }
+  /v1/admin/audit:
+    get:
+      tags: [admin]
+      summary: 题目审计日志
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: target_id, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 50 } }
+      responses:
+        "200": { description: OK }
+  /v1/admin/quiz/preview:
+    post:
+      tags: [admin]
+      summary: 组卷 dry-run
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                child_id: { type: string, format: uuid }
+                stage: { type: string, enum: [preschool, low, mid, high] }
+                grade_tag: { type: string }
+                seed: { type: integer, format: int64 }
+                rule: { $ref: "#/components/schemas/Rule" }
+      responses:
+        "200": { description: 组卷结果 }
+        "409": { description: 题池不足 }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT or opaque device token
+  parameters:
+    ChildID:
+      name: childID
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    Unauthorized:
+      description: 令牌无效或已过期
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: 无权限
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ValidationError:
+      description: 参数校验失败
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    RateLimited:
+      description: 限流
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+    Account:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        family_id: { type: string, format: uuid }
+        phone: { type: string }
+        role: { type: string, enum: [owner, member] }
+    ChildInput:
+      type: object
+      required: [nickname, stage]
+      properties:
+        nickname: { type: string }
+        birth_year: { type: integer }
+        birth_month: { type: integer }
+        stage: { type: string, enum: [preschool, low, mid, high] }
+        grade_tag: { type: string, example: g2 }
+        avatar_url: { type: string }
+    Child:
+      allOf:
+        - $ref: "#/components/schemas/ChildInput"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+    Rule:
+      type: object
+      required: [unlock_minutes, pass_threshold, subject_weight, daily_limit]
+      properties:
+        unlock_minutes: { type: integer, example: 20 }
+        pass_threshold: { type: number, format: double, example: 3 }
+        subject_weight:
+          type: object
+          additionalProperties: { type: number }
+          example: { math: 2, chinese: 1, science: 1, fun: 0.5 }
+        fun_ratio_cap: { type: integer, example: 2 }
+        fun_enabled: { type: boolean }
+        weight_preset: { type: string, enum: [balanced, math, literacy, custom] }
+        daily_limit: { type: integer, example: 60 }
+        offline_fallback_min: { type: integer, example: 10 }
+        scope_mode: { type: string, enum: [media, custom, all_apps] }
+        allowed_apps:
+          type: array
+          items: { type: string }
+        timezone: { type: string, example: Asia/Shanghai }
+        time_window:
+          type: object
+          properties:
+            allow:
+              type: array
+              items:
+                type: object
+                properties:
+                  start: { type: string, example: "07:00" }
+                  end: { type: string, example: "21:00" }
+    LoginResult:
+      type: object
+      properties:
+        account: { $ref: "#/components/schemas/Account" }
+        access_token: { type: string }
+        refresh_token: { type: string }
+        expires_in: { type: integer }
+        expires_at: { type: string, format: date-time }
+    QuestionInput:
+      type: object
+      required: [subject, category, stage, difficulty, type, stem, answer]
+      properties:
+        subject: { type: string, example: math }
+        category: { type: string, enum: [core, literacy, topic, fun] }
+        stage: { type: string, enum: [preschool, low, mid, high] }
+        grade_tag: { type: string, example: g2 }
+        difficulty: { type: integer, minimum: 1, maximum: 5 }
+        type: { type: string, enum: [choice, voice, image, fill, sort, match] }
+        stem: { type: string }
+        stem_media: {}
+        options: {}
+        answer: {}
+        answer_alias: {}
+        explain: { type: string }
+        duration_limit: { type: integer }
+        topic_id: { type: string, format: uuid }
+        schema_ver: { type: integer }
+    CreateSessionResponse:
+      type: object
+      properties:
+        session_id: { type: string, format: uuid }
+        expires_at: { type: string, format: date-time }
+        pass_threshold: { type: number }
+        rule_version: { type: integer }
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              item_id: { type: string }
+              question_id: { type: string }
+              position: { type: integer }
+              type: { type: string }
+              stem: { type: string }
+              options: {}
+              duration_limit: { type: integer }
+              token: { type: string }
+    AnswerResult:
+      type: object
+      properties:
+        correct: { type: boolean }
+        correct_answer: {}
+        explain: { type: string }
+        duration_ms: { type: integer }
+        suspicious: { type: boolean }
+        score: { type: number }
+        threshold: { type: number }
+        answered: { type: integer }
+        total: { type: integer }
+        remaining: { type: integer }
+    SessionSummary:
+      type: object
+      properties:
+        session_id: { type: string, format: uuid }
+        state: { type: string, enum: [active, passed, failed, expired, cancelled] }
+        score: { type: number }
+        pass_threshold: { type: number }
+        correct_count: { type: integer }
+        answered_count: { type: integer }
+        question_count: { type: integer }
+        started_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+        grant:
+          type: object
+          properties:
+            grant_id: { type: string, format: uuid }
+            minutes: { type: integer }
+            valid_until: { type: string, format: date-time }
+            remaining_seconds: { type: integer }
+            lease_token: { type: string }
+        grant_error: { type: string }

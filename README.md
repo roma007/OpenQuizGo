@@ -19,8 +19,18 @@
 - ✅ T9 报告聚合（周/月、趣味单列、定时 worker）
 - ✅ T10 离线租约（Ed25519 签名、离线对账、额度截断）
 - ✅ T11 可观测性与压测（指标、追踪、告警、k6、压测工具）
+- ✅ T12 验收与文档（OpenAPI、部署手册、验收报告）
 - 🚧 T0 设备管控 PoC（APK 已产出，待实机验证）
-- ⏳ T12 验收与文档
+
+**第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。
+
+## 文档
+
+- [接口契约（OpenAPI）](api/openapi.yaml)
+- [部署与运维](docs/deployment.md)
+- [数据模型](docs/data-model.md)
+- [安全自查](docs/security-checklist.md)
+- [第一期验收报告](docs/acceptance/phase1.md)
 
 ## 技术栈
 
@@ -48,6 +58,8 @@ docs              设计、计划、对话归档
 ## 本地启动
 
 前置：Go 1.25+、PostgreSQL 14+、Redis 6+。
+
+> 国内网络下载依赖超时：`go env -w GOPROXY=https://goproxy.cn,direct`
 
 ```bash
 cp .env.example .env
