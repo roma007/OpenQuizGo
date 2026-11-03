@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -11,17 +13,40 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         val apiBaseUrl = providers.gradleProperty("apiBaseUrl")
             .orElse("http://192.168.1.27:8080/")
             .get()
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
+    // 生产签名：在仓库根目录放置 keystore.properties（已 gitignore），否则回退 debug 签名仅供内部验收。
+    val keystorePropsFile = rootProject.file("keystore.properties")
+    val hasReleaseKey = keystorePropsFile.exists()
+    val releaseProps = Properties().apply {
+        if (hasReleaseKey) keystorePropsFile.inputStream().use { load(it) }
+    }
+
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                storeFile = rootProject.file(releaseProps.getProperty("storeFile"))
+                storePassword = releaseProps.getProperty("storePassword")
+                keyAlias = releaseProps.getProperty("keyAlias")
+                keyPassword = releaseProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = if (hasReleaseKey) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 

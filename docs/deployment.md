@@ -167,3 +167,50 @@ pg_restore --clean --if-exists --dbname="$DATABASE_URL" /backup/openquizgo-YYYY-
 - `/metrics` 与管理端网络隔离。
 - 数据库与 Redis 不暴露公网。
 - 开启审计日志与备份加密。
+
+## 12. Android TV 守护端
+
+### 12.1 构建
+
+```bash
+cd tv
+./gradlew :app:assembleDebug -PapiBaseUrl=http://<测试地址>:18080/   # 本地联调
+./gradlew :app:assembleRelease -PapiBaseUrl=https://<生产域名>/     # 正式包
+```
+
+- 正式包必须使用 HTTPS（release 不允许明文 HTTP）；
+- 生产签名放在仓库根目录 `keystore.properties`（已 gitignore）：
+  `storeFile` / `storePassword` / `keyAlias` / `keyPassword`；
+- 未提供签名配置时回退 debug 签名，仅限内部验收。
+
+### 12.2 安装与升级
+
+```bash
+adb install -r dist/OpenQuizGo-TV-0.2.0.apk
+adb shell settings put secure enabled_accessibility_services \
+  com.openquizgo.quiz/com.openquizgo.guard.platform.GuardAccessibilityService
+adb shell settings put secure accessibility_enabled 1
+adb shell appops set com.openquizgo.quiz GET_USAGE_STATS allow
+```
+
+- 同签名升级保留激活令牌与本地授权；
+- 换签名必须卸载，需重新激活；
+- 创维机型安装/升级后无障碍可能失效，需重启电视并重设上述 settings。
+
+### 12.3 本地联调
+
+```bash
+adb reverse tcp:18080 tcp:18080
+./gradlew :app:assembleDebug -PapiBaseUrl=http://127.0.0.1:18080/
+```
+
+调试触发（仅 debug 构建）：
+
+```bash
+adb shell am broadcast -n com.openquizgo.quiz/com.openquizgo.guard.debug.DebugReceiver \
+  -a com.openquizgo.guard.DEBUG_FORCE_QUIZ
+adb shell am broadcast -n com.openquizgo.quiz/com.openquizgo.guard.debug.DebugReceiver \
+  -a com.openquizgo.guard.DEBUG_FORCE_BLOCK
+```
+
+验收报告见 [`docs/acceptance/phase2.md`](acceptance/phase2.md)。

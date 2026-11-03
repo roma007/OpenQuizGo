@@ -21,7 +21,7 @@
 - ✅ T11 可观测性与压测（指标、追踪、告警、k6、压测工具）
 - ✅ T12 验收与文档（OpenAPI、部署手册、验收报告）
 - ✅ T0 设备管控 PoC（创维：全屏 Activity 方案通过，接受片头广告）
-- 🚧 002 Android TV 守护端（T9 权限引导与诊断完成）
+- ✅ 002 Android TV 守护端（v0.2.0，单机型验收通过）
 
 **第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。
 
