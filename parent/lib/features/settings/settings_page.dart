@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config.dart';
 import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
+import '../../data/membership_repository.dart';
 import '../membership/membership_page.dart';
 import 'members_page.dart';
 import 'pin_page.dart';
@@ -13,6 +14,12 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final membership = ref.watch(membershipCenterProvider).value?.membership;
+    final membershipSubtitle = membership?.active == true
+        ? '${membership!.planName} · 有效期至 ${formatDate(membership.expiresAt)}'
+        : membership?.status == 'expired'
+        ? '会员已到期，点击续费'
+        : '查看会员状态、套餐与订单（模拟支付）';
     return ContentFrame(
       maxWidth: 800,
       child: ListView(
@@ -53,7 +60,7 @@ class SettingsPage extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.workspace_premium_outlined),
               title: const Text('会员中心'),
-              subtitle: const Text('查看会员状态、套餐与订单（模拟支付）'),
+              subtitle: Text(membershipSubtitle),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(
                 context,

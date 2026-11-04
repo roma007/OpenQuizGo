@@ -157,19 +157,31 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
   Widget _statusCard(BuildContext context) {
     final membership = _center?.membership;
     final active = membership?.active == true;
-    final color = active ? const Color(0xFF1B8A6B) : const Color(0xFF8B8B8B);
-    final title = active
+    final expiring = active && (membership?.daysRemaining ?? 99) <= 7;
+    final color = expiring
+        ? const Color(0xFF9A5B00)
+        : active
+        ? const Color(0xFF1B8A6B)
+        : const Color(0xFF8B8B8B);
+    final title = expiring
+        ? '会员即将到期'
+        : active
         ? '会员有效'
         : membership?.status == 'expired'
         ? '会员已到期'
         : '尚未开通会员';
     final subtitle = active
-        ? '${membership!.planName} · 有效期至 ${formatDate(membership.expiresAt)}（剩余 ${membership.daysRemaining} 天）'
+        ? '${membership!.planName} · 有效期至 ${formatDate(membership.expiresAt)}'
+              '（${expiring ? '仅剩' : '剩余'} ${membership.daysRemaining} 天）'
         : membership?.status == 'expired'
         ? '${membership!.planName} · 到期时间 ${formatDate(membership.expiresAt)}'
         : '选择下方套餐，使用模拟支付立即开通。';
     return Card(
-      color: active ? const Color(0xFFE7F8EF) : null,
+      color: expiring
+          ? const Color(0xFFFFF4E5)
+          : active
+          ? const Color(0xFFE7F8EF)
+          : null,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(

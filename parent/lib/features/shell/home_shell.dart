@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../alerts/alerts_page.dart';
 import '../child/child_page.dart';
 import '../device/device_page.dart';
+import '../membership/membership_banner.dart';
 import '../report/report_page.dart';
 import '../settings/settings_page.dart';
 
@@ -75,13 +76,30 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     const VerticalDivider(width: 1),
                     Expanded(
                       child: ContentFrame(
-                        child: IndexedStack(index: _index, children: _pages),
+                        child: Column(
+                          children: [
+                            const MembershipBanner(),
+                            Expanded(
+                              child: IndexedStack(
+                                index: _index,
+                                children: _pages,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 )
               : ContentFrame(
-                  child: IndexedStack(index: _index, children: _pages),
+                  child: Column(
+                    children: [
+                      const MembershipBanner(),
+                      Expanded(
+                        child: IndexedStack(index: _index, children: _pages),
+                      ),
+                    ],
+                  ),
                 ),
           bottomNavigationBar: wide
               ? null
