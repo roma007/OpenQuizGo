@@ -85,7 +85,8 @@ class _BindDevicePageState extends ConsumerState<BindDevicePage> {
                 '加载孩子失败：$error',
                 style: const TextStyle(color: Colors.red),
               ),
-              data: (items) {
+              data: (cached) {
+                final items = cached.data;
                 if (items.isEmpty) {
                   return const Text(
                     '还没有孩子档案，请先在「孩子」页创建孩子后再绑定。',

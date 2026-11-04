@@ -17,50 +17,32 @@ class RulePage extends ConsumerStatefulWidget {
 }
 
 class _RulePageState extends ConsumerState<RulePage> {
-  late final Future<RuleWithVersion> _future;
-
-  @override
-  void initState() {
-    super.initState();
-    _future = ref.read(ruleRepositoryProvider).getRule(widget.child.id);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final rule = ref.watch(ruleProvider(widget.child.id));
     return Scaffold(
       appBar: AppBar(title: Text('${widget.child.nickname} 的观看规则')),
-      body: FutureBuilder<RuleWithVersion>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('加载规则失败：${snapshot.error}'),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: () => setState(() {
-                      _future = ref
-                          .read(ruleRepositoryProvider)
-                          .getRule(widget.child.id);
-                    }),
-                    child: const Text('重试'),
-                  ),
-                ],
+      body: rule.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('加载规则失败：$error'),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => ref.invalidate(ruleProvider(widget.child.id)),
+                child: const Text('重试'),
               ),
-            );
-          }
-          final data = snapshot.data!;
-          return _RuleForm(
-            childId: widget.child.id,
-            initial: data.rule,
-            version: data.version,
-          );
-        },
+            ],
+          ),
+        ),
+        data: (cached) => _RuleForm(
+          childId: widget.child.id,
+          initial: cached.data.rule,
+          version: cached.data.version,
+          staleAt: cached.stale ? cached.cachedAt : null,
+        ),
       ),
     );
   }
@@ -71,11 +53,13 @@ class _RuleForm extends ConsumerStatefulWidget {
     required this.childId,
     required this.initial,
     required this.version,
+    this.staleAt,
   });
 
   final String childId;
   final Rule initial;
   final int version;
+  final DateTime? staleAt;
 
   @override
   ConsumerState<_RuleForm> createState() => _RuleFormState();
@@ -288,6 +272,16 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        if (widget.staleAt != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              '离线数据 · 最后同步 ${widget.staleAt!.month}-${widget.staleAt!.day} '
+              '${widget.staleAt!.hour.toString().padLeft(2, '0')}:'
+              '${widget.staleAt!.minute.toString().padLeft(2, '0')}',
+              style: const TextStyle(color: Colors.orange, fontSize: 13),
+            ),
+          ),
         Text(
           '规则版本 v${widget.version}',
           style: Theme.of(context).textTheme.bodySmall,

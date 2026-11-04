@@ -33,6 +33,8 @@ class ChildPage extends ConsumerWidget {
             ],
           ),
         ),
+        if (children.value?.stale == true)
+          _OfflineBanner(cachedAt: children.value!.cachedAt),
         Expanded(
           child: children.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -40,7 +42,8 @@ class ChildPage extends ConsumerWidget {
               message: error.toString(),
               onRetry: () => ref.invalidate(childrenProvider),
             ),
-            data: (items) {
+            data: (cached) {
+              final items = cached.data;
               if (items.isEmpty) {
                 return _EmptyView(onCreate: () => _openEditor(context, ref));
               }
@@ -168,6 +171,30 @@ class _ErrorView extends StatelessWidget {
           const SizedBox(height: 16),
           OutlinedButton(onPressed: onRetry, child: const Text('重试')),
         ],
+      ),
+    );
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner({this.cachedAt});
+
+  final DateTime? cachedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final time = cachedAt == null
+        ? ''
+        : ' · 最后同步 ${cachedAt!.month}-${cachedAt!.day} '
+              '${cachedAt!.hour.toString().padLeft(2, '0')}:'
+              '${cachedAt!.minute.toString().padLeft(2, '0')}';
+    return Container(
+      width: double.infinity,
+      color: Colors.orange.withValues(alpha: 0.12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        '离线数据$time',
+        style: const TextStyle(color: Colors.orange, fontSize: 13),
       ),
     );
   }

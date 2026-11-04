@@ -33,6 +33,15 @@ class Child {
   final int? birthMonth;
   final String? gradeTag;
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'nickname': nickname,
+    'stage': stage,
+    if (birthYear != null) 'birth_year': birthYear,
+    if (birthMonth != null) 'birth_month': birthMonth,
+    if (gradeTag != null) 'grade_tag': gradeTag,
+  };
+
   factory Child.fromJson(Map<String, dynamic> json) => Child(
     id: json['id'] as String,
     nickname: json['nickname'] as String? ?? '孩子',

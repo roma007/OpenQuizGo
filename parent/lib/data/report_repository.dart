@@ -11,6 +11,12 @@ class SubjectStat {
   final int correct;
   final double accuracy;
 
+  Map<String, dynamic> toJson() => {
+    'answered': answered,
+    'correct': correct,
+    'accuracy': accuracy,
+  };
+
   factory SubjectStat.fromJson(Map<String, dynamic> json) => SubjectStat(
     answered: (json['answered'] as num?)?.toInt() ?? 0,
     correct: (json['correct'] as num?)?.toInt() ?? 0,
@@ -39,6 +45,18 @@ class GrowthReport {
   final Map<String, SubjectStat> subjectStats;
   final SubjectStat funStats;
   final int watchMinutes;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'period': period,
+    'period_start': periodStart?.toIso8601String(),
+    'period_end': periodEnd?.toIso8601String(),
+    'subject_stats': {
+      for (final entry in subjectStats.entries) entry.key: entry.value.toJson(),
+    },
+    'fun_stats': funStats.toJson(),
+    'watch_minutes': watchMinutes,
+  };
 
   factory GrowthReport.fromJson(Map<String, dynamic> json) {
     final subjects = <String, SubjectStat>{};

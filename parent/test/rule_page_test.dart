@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:openquizgo_parent/core/api/models.dart';
 import 'package:openquizgo_parent/core/providers.dart';
 import 'package:openquizgo_parent/data/rule_repository.dart';
@@ -40,6 +41,10 @@ class _FakeRuleRepository implements RuleRepository {
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('规则页渲染核心字段', (tester) async {
     await tester.pumpWidget(
       ProviderScope(

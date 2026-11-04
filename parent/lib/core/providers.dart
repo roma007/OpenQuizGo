@@ -1,6 +1,7 @@
 import '../features/auth/login_screen.dart';
 import '../features/shell/home_shell.dart';
 import 'api/api_client.dart';
+import 'cache/cache_store.dart';
 import 'api/models.dart';
 import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
@@ -15,6 +16,8 @@ import 'package:go_router/go_router.dart';
 
 final tokenStoreProvider = Provider<TokenStore>((ref) => SecureTokenStore());
 
+final cacheStoreProvider = Provider<CacheStore>((ref) => CacheStore());
+
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(ref.watch(tokenStoreProvider));
 });
@@ -23,8 +26,27 @@ final familyRepositoryProvider = Provider<FamilyRepository>((ref) {
   return FamilyRepository(ref.watch(apiClientProvider));
 });
 
-final childrenProvider = FutureProvider<List<Child>>((ref) {
-  return ref.watch(familyRepositoryProvider).listChildren();
+final childrenProvider = FutureProvider<Cached<List<Child>>>((ref) async {
+  final repository = ref.watch(familyRepositoryProvider);
+  final cache = ref.watch(cacheStoreProvider);
+  try {
+    final children = await repository.listChildren();
+    await cache.write(
+      'children',
+      children.map((child) => child.toJson()).toList(),
+    );
+    return Cached.fresh(children);
+  } on ApiException {
+    final entry = await cache.read('children');
+    final raw = entry?.data;
+    if (raw is List) {
+      final children = raw
+          .map((item) => Child.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList(growable: false);
+      return Cached.stale(children, entry!.cachedAt);
+    }
+    rethrow;
+  }
 });
 
 final membersProvider = FutureProvider<List<FamilyMember>>((ref) {
@@ -43,17 +65,72 @@ final ruleRepositoryProvider = Provider<RuleRepository>((ref) {
   return RuleRepository(ref.watch(apiClientProvider));
 });
 
-final ruleProvider = FutureProvider.family<RuleWithVersion, String>(
-  (ref, childId) => ref.watch(ruleRepositoryProvider).getRule(childId),
-);
+final ruleProvider = FutureProvider.family<Cached<RuleWithVersion>, String>((
+  ref,
+  childId,
+) async {
+  final repository = ref.watch(ruleRepositoryProvider);
+  final cache = ref.watch(cacheStoreProvider);
+  final key = 'rule:$childId';
+  try {
+    final result = await repository.getRule(childId);
+    await cache.write(key, {
+      'rule': result.rule.toJson(),
+      'version': result.version,
+    });
+    return Cached.fresh(result);
+  } on ApiException {
+    final entry = await cache.read(key);
+    final raw = entry?.data;
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      return Cached.stale(
+        RuleWithVersion(
+          rule: Rule.fromJson(Map<String, dynamic>.from(map['rule'] as Map)),
+          version: (map['version'] as num?)?.toInt() ?? 0,
+        ),
+        entry!.cachedAt,
+      );
+    }
+    rethrow;
+  }
+});
 
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   return ReportRepository(ref.watch(apiClientProvider));
 });
 
-final reportsProvider = FutureProvider.family<List<GrowthReport>, ReportQuery>(
-  (ref, query) => ref.watch(reportRepositoryProvider).listReports(query),
-);
+final reportsProvider =
+    FutureProvider.family<Cached<List<GrowthReport>>, ReportQuery>((
+      ref,
+      query,
+    ) async {
+      final repository = ref.watch(reportRepositoryProvider);
+      final cache = ref.watch(cacheStoreProvider);
+      final key = 'reports:${query.childId}:${query.period}';
+      try {
+        final reports = await repository.listReports(query);
+        await cache.write(
+          key,
+          reports.map((report) => report.toJson()).toList(),
+        );
+        return Cached.fresh(reports);
+      } on ApiException {
+        final entry = await cache.read(key);
+        final raw = entry?.data;
+        if (raw is List) {
+          final reports = raw
+              .map(
+                (item) => GrowthReport.fromJson(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
+              .toList(growable: false);
+          return Cached.stale(reports, entry!.cachedAt);
+        }
+        rethrow;
+      }
+    });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(

@@ -36,7 +36,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ],
         ),
       ),
-      data: (items) {
+      data: (cached) {
+        final items = cached.data;
         if (items.isEmpty) {
           return const Center(child: Text('还没有孩子档案，创建后即可查看报告'));
         }
@@ -99,6 +100,13 @@ class _ReportPageState extends ConsumerState<ReportPage> {
   }
 }
 
+String _formatCachedAt(DateTime? at) {
+  if (at == null) return '';
+  return '${at.month}-${at.day} '
+      '${at.hour.toString().padLeft(2, '0')}:'
+      '${at.minute.toString().padLeft(2, '0')}';
+}
+
 class _ReportBody extends ConsumerWidget {
   const _ReportBody({required this.query, required this.childName});
 
@@ -123,7 +131,8 @@ class _ReportBody extends ConsumerWidget {
           ],
         ),
       ),
-      data: (items) {
+      data: (cachedReports) {
+        final items = cachedReports.data;
         if (items.isEmpty) {
           return Center(
             child: Column(
@@ -145,6 +154,14 @@ class _ReportBody extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
           children: [
+            if (cachedReports.stale)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  '离线数据 · 最后同步 ${_formatCachedAt(cachedReports.cachedAt)}',
+                  style: const TextStyle(color: Colors.orange, fontSize: 13),
+                ),
+              ),
             _LatestReportCard(report: items.first),
             if (items.length > 1) ...[
               const SizedBox(height: 16),
