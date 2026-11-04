@@ -4,6 +4,7 @@ import {
   CloudUploadOutlined,
   CreditCardOutlined,
   CrownOutlined,
+  DashboardOutlined,
   DatabaseOutlined,
   ExperimentOutlined,
   GiftOutlined,
@@ -26,6 +27,7 @@ import type { AdminPrincipal } from './types'
 import AuditPage from './pages/AuditPage'
 import CalibrationPage from './pages/CalibrationPage'
 import CoveragePage from './pages/CoveragePage'
+import DashboardPage from './pages/DashboardPage'
 import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
 import MembershipOrdersPage from './pages/MembershipOrdersPage'
@@ -100,6 +102,12 @@ export default function App() {
             selectedKeys={[selected]}
             onClick={({ key }) => navigate(key)}
             items={[
+              {
+                key: '/dashboard',
+                icon: <DashboardOutlined />,
+                label: '运营概览',
+                disabled: !can('dashboard.read'),
+              },
               { key: '/questions', icon: <DatabaseOutlined />, label: '题目管理' },
               {
                 key: '/import',
@@ -179,6 +187,7 @@ export default function App() {
           <Content style={{ padding: 24, background: '#f5f7f6' }}>
             <Routes>
               <Route path="/" element={<Navigate to="/questions" replace />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/questions" element={<Questions />} />
               <Route path="/questions/new" element={<QuestionEdit />} />
               <Route path="/questions/:id" element={<QuestionEdit />} />

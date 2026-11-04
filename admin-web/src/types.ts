@@ -171,3 +171,35 @@ export interface MembershipOrderList {
   items: MembershipOrder[]
   total: number
 }
+
+export interface DashboardOrder {
+  order_no: string
+  plan_name: string
+  amount_cents: number
+  status: string
+  created_at: string
+}
+
+export interface DashboardExpiring {
+  account_id: string
+  plan_name: string
+  expires_at: string
+  days_remaining: number
+}
+
+export interface DashboardOverview {
+  questions: { total: number; online: number; draft: number; review: number }
+  topics: { total: number; online: number; active: number }
+  membership: {
+    active_members: number
+    revenue_cents: number
+    orders_30d: number
+    paid_30d: number
+  }
+  families: number
+  children: number
+  battles_7d: number
+  recent_orders: DashboardOrder[]
+  expiring_memberships: DashboardExpiring[]
+  generated_at: string
+}

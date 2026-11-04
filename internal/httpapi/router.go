@@ -14,6 +14,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/admin"
 	"github.com/roma007/OpenQuizGo/internal/battle"
 	"github.com/roma007/OpenQuizGo/internal/daily"
+	"github.com/roma007/OpenQuizGo/internal/dashboard"
 	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/membership"
 	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
@@ -42,6 +43,7 @@ type Deps struct {
 	Battle     *battle.Service
 	Topic      *topic.Service
 	Membership *membership.Service
+	Dashboard  *dashboard.Service
 	Version    string
 	Env        string
 }
@@ -106,6 +108,9 @@ func New(d Deps) http.Handler {
 		}
 		if d.Membership != nil && d.Admin != nil {
 			d.Membership.AdminRoutes(r, d.Admin)
+		}
+		if d.Dashboard != nil && d.Admin != nil {
+			d.Dashboard.Routes(r, d.Admin)
 		}
 		if d.Quiz != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {

@@ -13,6 +13,7 @@ import type {
   MembershipPlanList,
   MembershipOrder,
   MembershipOrderList,
+  DashboardOverview,
 } from './types'
 
 const TOKEN_KEY = 'openquizgo.admin.token'
@@ -138,6 +139,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+  dashboard: () => request<DashboardOverview>('/admin/dashboard'),
   membershipPlans: () => request<MembershipPlanList>('/admin/membership/plans'),
   createMembershipPlan: (payload: unknown) =>
     request<MembershipPlan>('/admin/membership/plans', {

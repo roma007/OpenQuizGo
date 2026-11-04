@@ -14,6 +14,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/battle"
 	"github.com/roma007/OpenQuizGo/internal/config"
 	"github.com/roma007/OpenQuizGo/internal/daily"
+	"github.com/roma007/OpenQuizGo/internal/dashboard"
 	"github.com/roma007/OpenQuizGo/internal/httpapi"
 	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/membership"
@@ -98,6 +99,7 @@ func main() {
 	battleService := battle.New(pool)
 	topicService := topic.New(pool)
 	membershipService := membership.New(pool, cfg.PaymentCallbackSecret)
+	dashboardService := dashboard.New(pool)
 	quizService := quiz.New(pool, rdb, ruleService, watchService, logger)
 
 	handler := httpapi.New(httpapi.Deps{
@@ -115,6 +117,7 @@ func main() {
 		Battle:     battleService,
 		Topic:      topicService,
 		Membership: membershipService,
+		Dashboard:  dashboardService,
 		Version:    cfg.Version,
 		Env:        cfg.Env,
 	})
