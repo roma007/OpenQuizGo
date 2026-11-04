@@ -3,6 +3,7 @@ import {
   AuditOutlined,
   CloudUploadOutlined,
   DatabaseOutlined,
+  ExperimentOutlined,
   LogoutOutlined,
   PieChartOutlined,
 } from '@ant-design/icons'
@@ -19,6 +20,7 @@ import { api, tokenStore } from './api'
 import { AuthContext } from './auth'
 import type { AdminPrincipal } from './types'
 import AuditPage from './pages/AuditPage'
+import CalibrationPage from './pages/CalibrationPage'
 import CoveragePage from './pages/CoveragePage'
 import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
@@ -101,6 +103,11 @@ export default function App() {
                 label: '覆盖率',
               },
               {
+                key: '/calibration',
+                icon: <ExperimentOutlined />,
+                label: '难度校准',
+              },
+              {
                 key: '/audit',
                 icon: <AuditOutlined />,
                 label: '审计日志',
@@ -146,6 +153,7 @@ export default function App() {
               <Route path="/import" element={<ImportPage />} />
               <Route path="/audit" element={<AuditPage />} />
               <Route path="/coverage" element={<CoveragePage />} />
+              <Route path="/calibration" element={<CalibrationPage />} />
             </Routes>
           </Content>
         </Layout>

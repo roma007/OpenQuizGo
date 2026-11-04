@@ -36,6 +36,8 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 
 		r.With(guard.Require("audit.read")).Get("/admin/audit", s.handleAudit)
 		r.With(guard.Require("question.read")).Get("/admin/coverage", s.handleCoverage)
+		r.With(guard.Require("question.read")).Get("/admin/calibration/preview", s.handleCalibrationPreview)
+		r.With(guard.Require("question.write")).Post("/admin/calibration/apply", s.handleCalibrationApply)
 	})
 }
 
@@ -46,6 +48,32 @@ func (s *Service) handleCoverage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Service) handleCalibrationPreview(w http.ResponseWriter, r *http.Request) {
+	minAnswers, _ := strconv.Atoi(r.URL.Query().Get("min_answers"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	result, err := s.CalibrationPreview(r.Context(), minAnswers, limit)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Service) handleCalibrationApply(w http.ResponseWriter, r *http.Request) {
+	var req CalibrationApplyRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writeServiceError(w, r, newAPIError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	principal, _ := admin.From(r.Context())
+	applied, err := s.ApplyCalibration(r.Context(), req.Items, principal, clientIP(r))
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]int{"applied": applied})
 }
 
 func (s *Service) handleList(w http.ResponseWriter, r *http.Request) {

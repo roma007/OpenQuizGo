@@ -5,6 +5,7 @@ import type {
   LoginResult,
   Question,
   QuestionList,
+  CalibrationResult,
 } from './types'
 
 const TOKEN_KEY = 'openquizgo.admin.token'
@@ -113,4 +114,13 @@ export const api = {
       `/admin/audit?limit=100${targetId ? `&target_id=${encodeURIComponent(targetId)}` : ''}`,
     ),
   coverage: () => request<CoverageResult>('/admin/coverage'),
+  calibrationPreview: (minAnswers: number) =>
+    request<CalibrationResult>(
+      `/admin/calibration/preview?min_answers=${minAnswers}&limit=200`,
+    ),
+  calibrationApply: (items: { question_id: string; difficulty: number }[]) =>
+    request<{ applied: number }>('/admin/calibration/apply', {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    }),
 }

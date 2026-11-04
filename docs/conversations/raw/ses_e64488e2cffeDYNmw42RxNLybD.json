@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 13685014,
-      "output": 668537,
-      "reasoning": 473930,
+      "input": 13689223,
+      "output": 677737,
+      "reasoning": 477009,
       "cache": {
-        "read": 698775424,
+        "read": 711079808,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793792324559,
-      "busy": 1793786919851,
-      "idle": 1793786887523,
-      "viewed": 1793786887523
+      "updated": 1793793109415,
+      "busy": 1793792785803,
+      "idle": 1793792560322,
+      "viewed": 1793792560322
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -133530,6 +133530,1340 @@
         "reasoning": 138,
         "cache": {
           "read": 761088,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a65a92b7001aO8SyihrrYEaG6",
+      "time": {
+        "created": 1793792316096,
+        "streamed": 1793792328539,
+        "completed": 1793792348729
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Good. GitHub push still blocked. Try once; if fails, report.\n\nAlso ensure admin-web/node_modules not committed: `admin-web` untracked added; .gitignore includes node_modules? Vite .gitignore yes. Check git show --stat count/size; commit succeeded. npm install created package-lock; tracked good.\n\nTry GitHub push/tag? No tag yet; 005 version 0.5.0 no repo tag. Could tag v0.5.0 after GitHub connectivity; or tag locally and push gitee. Do tag v0.5.0 and push gitee; GitHub pending.\n\nAlso the go coverage route needs OpenAPI update and maybe tests. Add openapi path + coverage schema; small. Also docs deployment for admin-web? Add section. And a Go test? Coverage manual verified; fine.\n\nAdd OpenAPI coverage path and deployment section, amend commit? Could do follow-up commit.\n\nFirst tag/push gitee, then docs additive commit.\n\nLet's add OpenAPI `/v1/admin/coverage` and deployment admin-web section. Then commit, tag v0.5.0 push gitee; try GitHub.\n\nOpenAPI insert after audit.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792324567,
+            "completed": 1793792328457
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_P8TsSvn35jyMd1NJJ3Ty5366",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('api/openapi.yaml'); s=p.read_text()\ns=s.replace('''  /v1/admin/quiz/preview:''','''  /v1/admin/coverage:\n    get:\n      tags: [admin]\n      summary: 题库覆盖率聚合\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: 按学科/学段/题型/状态/难度聚合\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  cells:\n                    type: array\n                    items:\n                      type: object\n                      properties:\n                        subject: { type: string }\n                        stage: { type: string }\n                        type: { type: string }\n                        status: { type: string }\n                        difficulty: { type: integer }\n                        count: { type: integer }\n                  total: { type: integer }\n\n  /v1/admin/quiz/preview:''')\np.write_text(s)\np=Path('docs/deployment.md'); s=p.read_text()\ns += '''\n## 13. 题库治理后台（admin-web）\n\n```bash\ncd admin-web\nnpm install\nnpm run dev -- --host 127.0.0.1 --port 5175   # 代理 /v1 → 127.0.0.1:18080\nnpm run build                                  # 产物 dist/\n```\n\n- 管理员账号：`go run ./cmd/admin create -username admin -password '********' -role super_admin -name 管理员`\n- 生产建议与 API 同源托管：`/admin/` 指向 `admin-web/dist`，`/v1/` 反向代理到 Go 服务；\n- 同源部署可避免 CORS；令牌存 localStorage，需配置 CSP。\n'''\np.write_text(s)\nprint('openapi/deployment updated')\nPY\nnode scripts/archive-conversation.mjs 2>&1 | tail -2; git add -A && git commit -q -m \"docs(005): OpenAPI 覆盖率接口与后台部署说明\" && git tag -a v0.5.0 -m \"OpenQuizGo 题库治理后台 v0.5.0\" && git push gitee main:master 2>&1 | tail -2 && git push gitee v0.5.0 2>&1 | tail -1; git push github main 2>&1 | tail -2",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "openapi/deployment updated\n\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo gitee.com:roma007007/open-quiz-go.git\n   fbbc645..be0684c  main -> master\n * [new tag]         v0.5.0 -> v0.5.0\nTo github.com:roma007/OpenQuizGo.git\n   e8e2cdc..be0684c  main -> main\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793792326567,
+            "ran": 1793792328510,
+            "completed": 1793792348551
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1b8de90dd04ba9392999f7d524ba922fa1ab9364",
+        "end": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "files": [
+          "api/openapi.yaml",
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json",
+          "docs/deployment.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 521,
+        "output": 596,
+        "reasoning": 248,
+        "cache": {
+          "read": 761600,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a65b12e7001GtEGQpr2Y1WMXs",
+      "time": {
+        "created": 1793792348914,
+        "streamed": 1793792418286,
+        "completed": 1793792454154
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "GitHub push succeeded now! Network back. Push tag v0.5.0 to GitHub too, and maybe v0.4.0 tag (was not pushed earlier). Check and push tags v0.4.0, v0.5.0.\n\nAlso push GitHub tag v0.4.0 (previous failed). Do.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792417573,
+            "completed": 1793792418283
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_YzhvPx6VWQj06Z1pm2sA6763",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git push github v0.4.0 2>&1 | tail -1; git push github v0.5.0 2>&1 | tail -1; git ls-remote github refs/tags/v0.4.0 refs/tags/v0.5.0",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": " * [new tag]         v0.4.0 -> v0.4.0\n * [new tag]         v0.5.0 -> v0.5.0\n3358f995e06a3999ca1770c1f0b89dbeb4e88356\trefs/tags/v0.4.0\ne09d9368abb592dbffbeaef12ad4428f38c23e67\trefs/tags/v0.5.0\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793792418053,
+            "ran": 1793792418285,
+            "completed": 1793792454129
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "end": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 207,
+        "output": 131,
+        "reasoning": 70,
+        "cache": {
+          "read": 762880,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a65caeb7001Ylz1WkuYYNvujY",
+      "time": {
+        "created": 1793792454337,
+        "streamed": 1793792560205,
+        "completed": 1793792560297
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "All synced. Now report 005 completion.\n\nNote admin-web port 5174 in use by our dev server; docs says 5175 to avoid conflicts. Fine.\n\nSummary:\n- 005 done: coverage API, admin web pages, workflow tested, screenshots.\n- Version tag v0.5.0.\n- GitHub network restored; both remotes synced (main be0684c, tags v0.4.0/v0.5.0).\n- Limitations: calibration not implemented, no image upload, localStorage token, deployment config pending.\n- Next: 006 difficulty calibration / coverage charts; or TV matrix (network issues), push.\n\nAlso mention user may view admin UI at http://127.0.0.1:5174 (current dev server) with admin/admin12345.\n\nKeep concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792556775,
+            "completed": 1793792560194
+          }
+        },
+        {
+          "type": "text",
+          "text": "第 3 期（005 题库治理后台 UI）已完成，v0.5.0 已同时推送到 GitHub 和 Gitee（`be0684c`，标签 `v0.5.0`）。网络恢复后 GitHub 也同步成功了。\n\n## 交付内容\n\n| 部分 | 内容 |\n| --- | --- |\n| 服务端 | `GET /v1/admin/coverage` 题库分布聚合 |\n| 管理端 | Vite + React + TS + Ant Design |\n| 页面 | 登录、题目列表/筛选/分页、题目详情/编辑、工作流、批量导入、审计、覆盖率 |\n| 构建 | `npm run build` 成功 |\n\n## 浏览器实测（完整闭环）\n\n```text\n管理员登录 200\n题目列表 2004 题分页/筛选正常\nUI 新建草稿「界面测试：2+3=?」\n提交审核 → 审核通过 → 上线 → 下线 全部成功\nJSON 批量导入 1 题成功\n审计日志记录 create/submit_review/approve/publish/offline/import\n覆盖率：总分 2006、上线 2002、草稿 1、下线 3、聚合单元 7\n```\n\n截图已归档到 `docs/acceptance/phase5/`（题目列表、详情、覆盖率、导入、审计），验收报告：`docs/acceptance/phase5.md`。\n\n## 本地查看\n\n管理端 dev server 正在运行：\n\n```text\nhttp://127.0.0.1:5174\n账号：admin\n密码：admin12345\n```\n\n## 已知限制\n\n1. 难度校准（基于答题正确率建议难度）未实现，列入 006；\n2. 覆盖率暂为表格 + 热力色，没有导出/图表；\n3. 管理端令牌存 localStorage，生产需同源部署 + CSP；\n4. 题目图片上传未做。\n\n## 下一步建议\n\n- **006 难度校准**：`answer_log` 统计 → 难度建议 → preview/apply + 审计；\n- 或补 **覆盖率导出 CSV / 图表**；\n- TV 侧第三方 App 矩阵仍需电视网络恢复。\n\n要继续 006 吗？"
+        }
+      ],
+      "snapshot": {
+        "start": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "end": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 274,
+        "output": 481,
+        "reasoning": 168,
+        "cache": {
+          "read": 763136,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a65e4cc2001SzZus0OIlJ5Sq6",
+      "time": {
+        "created": 1793792560322
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1a661bd620017NUdZZZxeQHDyA",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793792785985
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_1a661be6f001cwyzugEOjID6M9",
+      "time": {
+        "created": 1793792786041,
+        "streamed": 1793792798100,
+        "completed": 1793792798338
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Continue 006: difficulty calibration. Need design+plan then implement. User says continue; per rule write 006 design/plan approved, then implement.\n\nScope:\n- Backend: aggregate answer_log per question: answered, correct, accuracy, current difficulty. Suggest difficulty based on accuracy thresholds. Endpoints:\n  - GET /v1/admin/calibration/preview?subject=&stage=&limit= → items [{question_id, stem, subject, stage, difficulty, answered, correct, accuracy, suggested_difficulty, reason}]\n  - POST /v1/admin/calibration/apply {items:[{question_id, difficulty}]} → updates question.difficulty (only online? allow all), audit log actor admin, action question.calibrate; returns applied count.\n- Admin UI page 难度校准: fetch preview, table with checkboxes, apply selected; show summary.\n- Migration? No; answer_log exists. Index on answer_log(question_id)? Check schema.\n- Algorithm:\n  - accuracy >= 0.9 → suggested = max(1, difficulty-1)? Wait calibration semantics: if too easy (high accuracy), increase difficulty? Difficulty is 1-5 (1 easy,5 hard). If accuracy high, question too easy → increase difficulty number. If accuracy low, decrease. Suggest:\n    - accuracy >= 0.85 → min(5, diff+1)\n    - accuracy <= 0.4 → max(1, diff-1)\n    - else keep diff.\n  - require answered >= 20 to suggest.\n  - reason text.\n- Apply: validate difficulty 1-5, update, audit.\n\nCheck answer_log schema.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792795460,
+            "completed": 1793792798092
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_sunG8upcMJtQkFmlQisY6811",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && psql -d openquizgo -c \"\\d answer_log\" | head -20; psql -d openquizgo -c \"select count(*) from answer_log;\"",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "                                        Table \"public.answer_log\"\n    Column    |           Type           | Collation | Nullable |                Default                 \n--------------+--------------------------+-----------+----------+----------------------------------------\n id           | bigint                   |           | not null | nextval('answer_log_id_seq'::regclass)\n child_id     | uuid                     |           | not null | \n question_id  | uuid                     |           | not null | \n session_id   | uuid                     |           |          | \n device_id    | text                     |           | not null | \n answer_given | jsonb                    |           |          | \n is_correct   | boolean                  |           | not null | \n duration_ms  | integer                  |           |          | \n answered_at  | timestamp with time zone |           | not null | now()\nIndexes:\n    \"answer_log_pkey\" PRIMARY KEY, btree (id)\n    \"answer_log_child_idx\" btree (child_id, answered_at DESC)\n    \"answer_log_question_idx\" btree (question_id, answered_at DESC)\nForeign-key constraints:\n    \"answer_log_child_id_fkey\" FOREIGN KEY (child_id) REFERENCES child_profile(id) ON DELETE CASCADE\n    \"answer_log_question_id_fkey\" FOREIGN KEY (question_id) REFERENCES question(id) ON DELETE RESTRICT\n    \"answer_log_session_id_fkey\" FOREIGN KEY (session_id) REFERENCES quiz_session(id) ON DELETE SET NULL\n count \n-------\n    46\n(1 row)\n\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793792797810,
+            "ran": 1793792798098,
+            "completed": 1793792798315
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "end": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 160,
+        "output": 106,
+        "reasoning": 345,
+        "cache": {
+          "read": 763904,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a661ef05001T75fwrT0CkZrXI",
+      "time": {
+        "created": 1793792798485,
+        "streamed": 1793792823547,
+        "completed": 1793792823654
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Only 46 answers; calibration requires threshold maybe 10 to show some. Test data has 46 across few questions. Use min_answers default 5 for dev? Design: threshold 20, configurable query min_answers (default 20). For demo, can insert simulated answer logs or lower to 5 via query. UI has min answers input default 20; with 46 logs spread, maybe none. We can seed answer logs for testing (insert 20 rows for one question with mixed correctness) via SQL for demo—but don't pollute? Dev DB fine.\n\nDesign 006:\n- Accuracy thresholds 0.85/0.40, min answers 20 configurable.\n- Preview only online questions? Include online (calibration meaningful). Maybe status online.\n- Apply selected items, only changes difficulty; audit `question.calibrate`.\n\nEndpoints:\nGET /v1/admin/calibration/preview?min_answers=20&limit=100\nPOST /v1/admin/calibration/apply {items:[{question_id,difficulty}]}\nPermission: question.read for preview, question.write for apply (or new `question.calibrate`; use write).\n\nResponse:\n```json\n{\"items\":[{\"question_id\",\"stem\",\"subject\",\"stage\",\"difficulty\",\"answered\",\"correct\",\"accuracy\",\"suggested_difficulty\",\"reason\"}],\"total\":n,\"thresholds\":{\"min_answers\":20,\"up\":0.85,\"down\":0.4}}\n```\n`total` = candidates with suggestion != current (or all sampled). Let's return all eligible with suggestions, including keep (suggested==current) maybe UI filters. Simpler: only rows where suggested != current, order by accuracy desc. total = len.\n\nApply returns {applied: n}.\n\nImplement server in internal/question:\n- models CalibrationItem, CalibrationResult, ApplyRequest.\n- repo CalibrationPreview(ctx,minAnswers,limit) query join answer_log/question:\n```sql\nselect q.id,q.stem,q.subject_code,q.stage_code,q.difficulty,\n count(a.id), count(*) filter (where a.is_correct)\nfrom question q join answer_log a on a.question_id=q.id\nwhere q.status='online'\ngroup by q.id...\nhaving count(a.id) >= $1\norder by ...\n```\nThen compute suggestion in Go.\n- ApplyCalibration(ctx, items, adminID, ip): validate, transaction update question set difficulty, version+1? Keep version? Difficulty change should increment version maybe. Use `update question set difficulty=$2, version=version+1, updated_at=now() where id=$1 and status='online'`; audit per item `question.calibrate` with before/after.\n- Route under `question.write` for apply, `question.read` preview.\n- Audit action.\n\nAdmin UI:\n- Menu 难度校准 (icon ExperimentOutlined), page CalibrationPage.\n- Fetch preview with min answers input; table columns: stem, subject/stage, current→suggested, answered/correct/accuracy, reason, checkbox.\n- Apply selected button → POST, message, reload.\n- Show thresholds note.\n\nTests:\n- Go unit for suggestion function + repo maybe integration.\n- UI build + browser test with seeded data.\n\nSeed answer logs for a question: pick an online question id; insert 30 logs: 27 correct (90%) to suggest +1. Need child_id/device_id; use existing child/device from dev. Insert via SQL with generate_series.\n\nWe'll do after implementation.\n\nWrite 006 design/plan, implement.\n\nLet's write docs concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792819239,
+            "completed": 1793792823539
+          }
+        },
+        {
+          "type": "text",
+          "text": "继续 006：基于答题正确率的难度校准。"
+        },
+        {
+          "type": "tool",
+          "id": "call_00_QRmQSCETIAPbsA97UIqL5632",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "content": "# 006-题库难度校准设计\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 006 |\n| 版本 | v1 |\n| 状态 | approved |\n| 作者 | AI |\n| 创建日期 | 2026-11-04 |\n| 最后更新 | 2026-11-04 |\n| 对应计划 | [006-题库难度校准实施计划](../plans/006-题库难度校准实施计划.md) |\n| 前置 | 005 管理端、answer_log |\n\n## 1. 背景与目标\n\n- 题库难度目前由人工设定，缺少数据反馈；\n- `answer_log` 已记录每题作答与对错；\n- 目标：统计每题正确率，给出难度调整建议，管理员确认后批量应用并审计。\n\n## 2. 规则\n\n| 条件（样本 ≥ min_answers） | 建议 |\n| --- | --- |\n| accuracy ≥ 0.85 | 难度 +1（最高 5） |\n| accuracy ≤ 0.40 | 难度 -1（最低 1） |\n| 其他 | 保持不变 |\n\n- 默认 `min_answers=20`，可在预览时调整（5–1000）；\n- 仅统计 `status='online'` 的题；\n- 应用时仅修改 `difficulty`，`version+1`，写审计 `question.calibrate`。\n\n## 3. 接口\n\n| 方法 | 路径 | 权限 | 说明 |\n| --- | --- | --- | --- |\n| GET | `/v1/admin/calibration/preview?min_answers=20&limit=100` | question.read | 返回建议列表 |\n| POST | `/v1/admin/calibration/apply` | question.write | `{items:[{question_id,difficulty}]}` |\n\n预览响应：\n```json\n{\"items\":[{\"question_id\":\"...\",\"stem\":\"...\",\"subject\":\"math\",\"stage\":\"low\",\n\"difficulty\":2,\"answered\":30,\"correct\":27,\"accuracy\":0.9,\n\"suggested_difficulty\":3,\"reason\":\"正确率 90%，建议提高难度\"}],\n\"thresholds\":{\"min_answers\":20,\"up\":0.85,\"down\":0.4}}\n```\n\n## 4. 风险\n\n| 风险 | 对策 |\n| --- | --- |\n| 样本少导致误判 | min_answers 门槛 + 仅给建议，人工确认 |\n| 批量误操作 | 前端勾选 + 二次确认；服务端审计 |\n| 难度频繁变动 | 同一题可重复校准，记录版本与审计 |\n\n## 5. 变更记录\n\n| 日期 | 变更 | 原因 |\n| --- | --- | --- |\n| 2026-11-04 | 初稿并批准 | 启动 006 |\n",
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/design/006-题库难度校准设计.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/design/006-题库难度校准设计.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793792820875,
+            "ran": 1793792823542,
+            "completed": 1793792823562
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2829d6c83c832af4165d5375af93b85d51a13f05",
+        "end": "4ff758d072cfe42ad4c746dd6d4abdd21b6d5583",
+        "files": [
+          "docs/design/006-题库难度校准设计.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 422,
+        "output": 693,
+        "reasoning": 752,
+        "cache": {
+          "read": 764416,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a662522e001WeazYDSmZmex6o",
+      "time": {
+        "created": 1793792823867,
+        "streamed": 1793792837387,
+        "completed": 1793792837471
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_ET_mEo4bxQidSoZD0S5OBYe9524",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/plans/006-题库难度校准实施计划.md <<'EOF'\n# 006-题库难度校准实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 006 |\n| 状态 | approved |\n| 负责人 | AI |\n| 创建日期 | 2026-11-04 |\n| 最后更新 | 2026-11-04 |\n| 对应设计 | [006-题库难度校准设计](../design/006-题库难度校准设计.md) |\n\n## 1. 任务\n\n| 序号 | 任务 | 依赖 | 产出 | 验收 | 状态 |\n| --- | --- | --- | --- | --- | --- |\n| S1 | 校准预览接口 | — | `GET /admin/calibration/preview` | 聚合正确率、建议难度、门槛生效 | todo |\n| S2 | 校准应用接口 | S1 | `POST /admin/calibration/apply` + 审计 | difficulty 更新、version+1、审计记录 | todo |\n| S3 | 单元测试 | S1/S2 | 建议算法/应用测试 | 边界正确 | todo |\n| T1 | 管理端校准页 | S1 | 列表、勾选、min_answers、应用 | 浏览器可见建议并应用 | todo |\n| T2 | 验收 | T1 | 截图、报告 | 预览/应用闭环 | todo |\n\n## 2. 验证\n\n- `go test ./...`；\n- 浏览器：调整 min_answers → 查看建议 → 勾选 → 应用 → 难度更新、审计新增 `question.calibrate`；\n- `npm run build`。\n\n## 3. 回滚\n\n- 接口只读/单字段更新；回滚可人工改回难度或按审计恢复；\n- 前端入口可下线。\n\n## 4. 执行记录\n\n| 日期 | 内容 | 结果 |\n| --- | --- | --- |\n| 2026-11-04 | 设计与计划创建 | approved，进入实施 |\n\n## 5. 验收结论\n\n- 待验收\nEOF",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "(no output)"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793792835372,
+            "ran": 1793792837386,
+            "completed": 1793792837408
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "4ff758d072cfe42ad4c746dd6d4abdd21b6d5583",
+        "end": "28627ca6701fc64fe1f6bc15f53c8af7827845d5",
+        "files": [
+          "docs/plans/006-题库难度校准实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 230,
+        "output": 527,
+        "reasoning": 0,
+        "cache": {
+          "read": 766080,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a66287f9001w5EMhmds0s7Riu",
+      "time": {
+        "created": 1793792837636,
+        "streamed": 1793792856375,
+        "completed": 1793792908249
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Implement server.\n\nModels:\n```go\ntype CalibrationItem struct {...}\ntype CalibrationResult struct { Items []CalibrationItem; Thresholds CalibrationThresholds }\ntype CalibrationThresholds struct { MinAnswers int `json:\"min_answers\"`; Up float64 `json:\"up\"`; Down float64 `json:\"down\"` }\ntype CalibrationApplyItem struct { QuestionID string; Difficulty int }\ntype CalibrationApplyRequest struct { Items []CalibrationApplyItem `json:\"items\"` }\n```\nRepo:\n```go\ntype calibrationRow {ID,Stem,Subject,Stage string; Difficulty,Answered,Correct int}\nfunc (r *repository) calibrationRows(ctx,minAnswers,limit int) ([]calibrationRow,error)\n```\nQuery:\n```sql\nselect q.id,q.stem,q.subject_code,q.stage_code,q.difficulty,\n count(a.id)::int, count(*) filter (where a.is_correct)::int\nfrom question q join answer_log a on a.question_id=q.id\nwhere q.status='online'\ngroup by q.id,q.stem,q.subject_code,q.stage_code,q.difficulty\nhaving count(a.id) >= $1\norder by count(a.id) desc\nlimit $2\n```\nService computed suggestion. Apply:\n```go\nfunc (s *Service) ApplyCalibration(ctx, items []CalibrationApplyItem, principal admin.Principal, ip string) (int,error)\n```\n- validate non-empty, difficulty 1-5, dedupe.\n- repo.applyCalibration(ctx, items, adminID) (applied int, error): tx; for each, fetch current difficulty/status/version; update if online; insert audit (actor, action, target, after_data {from,to}, ip). Use existing repo.audit but within tx? Simpler call s.audit for each after update; partial audit if failure. Use repo method with tx and audit insert inside.\n- Return applied.\n\nAdd routes:\n```go\nr.With(guard.Require(\"question.read\")).Get(\"/admin/calibration/preview\", s.handleCalibrationPreview)\nr.With(guard.Require(\"question.write\")).Post(\"/admin/calibration/apply\", s.handleCalibrationApply)\n```\nHandlers parse min_answers/limit, apply body.\n\nImplement.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792846555,
+            "completed": 1793792856347
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_aM1pvz35rbdI2H5HoDJb4947",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/question/models.go'); s=p.read_text()\ns=s.replace('''// Filter 是四维检索条件。''','''// CalibrationItem 是难度校准建议。\ntype CalibrationItem struct {\n\tQuestionID          string  `json:\"question_id\"`\n\tStem                string  `json:\"stem\"`\n\tSubject             string  `json:\"subject\"`\n\tStage               string  `json:\"stage\"`\n\tDifficulty          int     `json:\"difficulty\"`\n\tAnswered            int     `json:\"answered\"`\n\tCorrect             int     `json:\"correct\"`\n\tAccuracy            float64 `json:\"accuracy\"`\n\tSuggestedDifficulty int     `json:\"suggested_difficulty\"`\n\tReason              string  `json:\"reason\"`\n}\n\n// CalibrationThresholds 是校准阈值。\ntype CalibrationThresholds struct {\n\tMinAnswers int     `json:\"min_answers\"`\n\tUp         float64 `json:\"up\"`\n\tDown       float64 `json:\"down\"`\n}\n\n// CalibrationResult 是校准预览结果。\ntype CalibrationResult struct {\n\tItems      []CalibrationItem     `json:\"items\"`\n\tThresholds CalibrationThresholds `json:\"thresholds\"`\n}\n\n// CalibrationApplyItem 是单题难度调整。\ntype CalibrationApplyItem struct {\n\tQuestionID string `json:\"question_id\"`\n\tDifficulty int    `json:\"difficulty\"`\n}\n\n// CalibrationApplyRequest 是校准应用入参。\ntype CalibrationApplyRequest struct {\n\tItems []CalibrationApplyItem `json:\"items\"`\n}\n\n// Filter 是四维检索条件。''')\np.write_text(s)\n\np=Path('internal/question/repository.go'); s=p.read_text()\ns=s.replace('''// Coverage 聚合题库分布。''','''type calibrationRow struct {\n\tID         string\n\tStem       string\n\tSubject    string\n\tStage      string\n\tDifficulty int\n\tAnswered   int\n\tCorrect    int\n}\n\n// calibrationRows 返回达到样本门槛的在线题统计。\nfunc (r *repository) calibrationRows(ctx context.Context, minAnswers, limit int) ([]calibrationRow, error) {\n\trows, err := r.pool.Query(ctx, `\n\t\tselect q.id, q.stem, q.subject_code, q.stage_code, q.difficulty,\n\t\t       count(a.id)::int, count(*) filter (where a.is_correct)::int\n\t\tfrom question q\n\t\tjoin answer_log a on a.question_id = q.id\n\t\twhere q.status = 'online'\n\t\tgroup by q.id, q.stem, q.subject_code, q.stage_code, q.difficulty\n\t\thaving count(a.id) >= $1\n\t\torder by count(a.id) desc, q.id\n\t\tlimit $2`, minAnswers, limit)\n\tif err != nil {\n\t\treturn nil, fmt.Errorf(\"calibration query: %w\", err)\n\t}\n\tdefer rows.Close()\n\n\tresult := make([]calibrationRow, 0)\n\tfor rows.Next() {\n\t\tvar row calibrationRow\n\t\tif err := rows.Scan(&row.ID, &row.Stem, &row.Subject, &row.Stage,\n\t\t\t&row.Difficulty, &row.Answered, &row.Correct); err != nil {\n\t\t\treturn nil, fmt.Errorf(\"scan calibration: %w\", err)\n\t\t}\n\t\tresult = append(result, row)\n\t}\n\treturn result, rows.Err()\n}\n\n// applyCalibration 批量更新难度并写审计。\nfunc (r *repository) applyCalibration(ctx context.Context, items []CalibrationApplyItem,\n\tadminID, ip string) (int, error) {\n\ttx, err := r.pool.Begin(ctx)\n\tif err != nil {\n\t\treturn 0, fmt.Errorf(\"begin: %w\", err)\n\t}\n\tdefer func() { _ = tx.Rollback(ctx) }()\n\n\tapplied := 0\n\tfor _, item := range items {\n\t\tvar before int\n\t\terr := tx.QueryRow(ctx, `\n\t\t\tselect difficulty from question\n\t\t\twhere id = $1 and status = 'online' for update`, item.QuestionID).Scan(&before)\n\t\tif errors.Is(err, pgx.ErrNoRows) {\n\t\t\tcontinue\n\t\t}\n\t\tif err != nil {\n\t\t\treturn 0, fmt.Errorf(\"lock question: %w\", err)\n\t\t}\n\t\tif before == item.Difficulty {\n\t\t\tcontinue\n\t\t}\n\t\tif _, err := tx.Exec(ctx, `\n\t\t\tupdate question set difficulty = $2, version = version + 1, updated_at = now()\n\t\t\twhere id = $1`, item.QuestionID, item.Difficulty); err != nil {\n\t\t\treturn 0, fmt.Errorf(\"update difficulty: %w\", err)\n\t\t}\n\t\tafter, _ := json.Marshal(map[string]int{\"from\": before, \"to\": item.Difficulty})\n\t\tif _, err := tx.Exec(ctx, `\n\t\t\tinsert into audit_log (actor_type, actor_id, action, target_type, target_id, after_data, ip)\n\t\t\tvalues ('admin', $1, 'question.calibrate', 'question', $2, $3::jsonb, nullif($4, '')::inet)`,\n\t\t\tadminID, item.QuestionID, string(after), ip); err != nil {\n\t\t\treturn 0, fmt.Errorf(\"audit calibration: %w\", err)\n\t\t}\n\t\tapplied++\n\t}\n\tif err := tx.Commit(ctx); err != nil {\n\t\treturn 0, err\n\t}\n\treturn applied, nil\n}\n\n// Coverage 聚合题库分布。''')\np.write_text(s)\n\np=Path('internal/question/service.go'); s=p.read_text()\ns=s.replace('''// Coverage 返回题库覆盖率聚合。''','''const (\n\tcalibrationUp   = 0.85\n\tcalibrationDown = 0.40\n)\n\n// CalibrationPreview 返回难度校准建议。\nfunc (s *Service) CalibrationPreview(ctx context.Context, minAnswers, limit int) (CalibrationResult, error) {\n\tif minAnswers <= 0 {\n\t\tminAnswers = 20\n\t}\n\tif minAnswers < 5 {\n\t\tminAnswers = 5\n\t}\n\tif minAnswers > 1000 {\n\t\tminAnswers = 1000\n\t}\n\tif limit <= 0 || limit > 500 {\n\t\tlimit = 100\n\t}\n\trows, err := s.repo.calibrationRows(ctx, minAnswers, limit)\n\tif err != nil {\n\t\treturn CalibrationResult{}, err\n\t}\n\titems := make([]CalibrationItem, 0, len(rows))\n\tfor _, row := range rows {\n\t\taccuracy := 0.0\n\t\tif row.Answered > 0 {\n\t\t\taccuracy = float64(row.Correct) / float64(row.Answered)\n\t\t}\n\t\tsuggested := row.Difficulty\n\t\treason := \"正确率在目标区间，保持难度\"\n\t\tif accuracy >= calibrationUp && row.Difficulty < 5 {\n\t\t\tsuggested = row.Difficulty + 1\n\t\t\treason = \"正确率偏高，建议提高难度\"\n\t\t} else if accuracy <= calibrationDown && row.Difficulty > 1 {\n\t\t\tsuggested = row.Difficulty - 1\n\t\t\treason = \"正确率偏低，建议降低难度\"\n\t\t}\n\t\titems = append(items, CalibrationItem{\n\t\t\tQuestionID:          row.ID,\n\t\t\tStem:                row.Stem,\n\t\t\tSubject:             row.Subject,\n\t\t\tStage:               row.Stage,\n\t\t\tDifficulty:          row.Difficulty,\n\t\t\tAnswered:            row.Answered,\n\t\t\tCorrect:             row.Correct,\n\t\t\tAccuracy:            accuracy,\n\t\t\tSuggestedDifficulty: suggested,\n\t\t\tReason:              reason,\n\t\t})\n\t}\n\treturn CalibrationResult{\n\t\tItems: items,\n\t\tThresholds: CalibrationThresholds{\n\t\t\tMinAnswers: minAnswers,\n\t\t\tUp:         calibrationUp,\n\t\t\tDown:       calibrationDown,\n\t\t},\n\t}, nil\n}\n\n// ApplyCalibration 应用难度调整。\nfunc (s *Service) ApplyCalibration(ctx context.Context, items []CalibrationApplyItem,\n\tprincipal admin.Principal, ip string) (int, error) {\n\tif len(items) == 0 || len(items) > 500 {\n\t\treturn 0, newAPIError(422, \"VALIDATION_ERROR\", \"校准条目需在 1–500 之间\")\n\t}\n\tseen := make(map[string]bool, len(items))\n\tclean := make([]CalibrationApplyItem, 0, len(items))\n\tfor _, item := range items {\n\t\tif item.QuestionID == \"\" || item.Difficulty < 1 || item.Difficulty > 5 {\n\t\t\treturn 0, newAPIError(422, \"VALIDATION_ERROR\", \"题目或难度不合法\")\n\t\t}\n\t\tif seen[item.QuestionID] {\n\t\t\tcontinue\n\t\t}\n\t\tseen[item.QuestionID] = true\n\t\tclean = append(clean, item)\n\t}\n\treturn s.repo.applyCalibration(ctx, clean, principal.ID, ip)\n}\n\n// Coverage 返回题库覆盖率聚合。''')\np.write_text(s)\n\np=Path('internal/question/handlers.go'); s=p.read_text()\ns=s.replace('''\t\tr.With(guard.Require(\"question.read\")).Get(\"/admin/coverage\", s.handleCoverage)''','''\t\tr.With(guard.Require(\"question.read\")).Get(\"/admin/coverage\", s.handleCoverage)\n\t\tr.With(guard.Require(\"question.read\")).Get(\"/admin/calibration/preview\", s.handleCalibrationPreview)\n\t\tr.With(guard.Require(\"question.write\")).Post(\"/admin/calibration/apply\", s.handleCalibrationApply)''')\ns=s.replace('''func (s *Service) handleList(w http.ResponseWriter, r *http.Request) {''','''func (s *Service) handleCalibrationPreview(w http.ResponseWriter, r *http.Request) {\n\tminAnswers, _ := strconv.Atoi(r.URL.Query().Get(\"min_answers\"))\n\tlimit, _ := strconv.Atoi(r.URL.Query().Get(\"limit\"))\n\tresult, err := s.CalibrationPreview(r.Context(), minAnswers, limit)\n\tif err != nil {\n\t\twriteServiceError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleCalibrationApply(w http.ResponseWriter, r *http.Request) {\n\tvar req CalibrationApplyRequest\n\tif err := decodeJSON(w, r, &req); err != nil {\n\t\twriteServiceError(w, r, newAPIError(422, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\"))\n\t\treturn\n\t}\n\tprincipal, _ := admin.From(r.Context())\n\tapplied, err := s.ApplyCalibration(r.Context(), req.Items, principal, clientIP(r))\n\tif err != nil {\n\t\twriteServiceError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, map[string]int{\"applied\": applied})\n}\n\nfunc (s *Service) handleList(w http.ResponseWriter, r *http.Request) {''')\np.write_text(s)\nprint('calibration implemented')\nPY\ngofmt -w internal/question && go build ./... 2>&1 | head -10",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "calibration implemented\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793792848800,
+            "ran": 1793792856373,
+            "completed": 1793792908163
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "28627ca6701fc64fe1f6bc15f53c8af7827845d5",
+        "end": "d3cdfc080a514dbdcc2d577078fc5904b26a590c",
+        "files": [
+          "internal/question/handlers.go",
+          "internal/question/models.go",
+          "internal/question/repository.go",
+          "internal/question/service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 644,
+        "output": 2532,
+        "reasoning": 489,
+        "cache": {
+          "read": 766208,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6639c69001CACPAhg3VYZphu",
+      "time": {
+        "created": 1793792908400,
+        "streamed": 1793792930036,
+        "completed": 1793792965668
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build success. Add unit test for suggestion logic? CalibrationPreview needs repo; suggestion embedded. Extract pure function `suggestDifficulty(difficulty,answered,correct) (int,string)` for test. Refactor service to use helper and add test.\n\nDo quickly:\n```go\nfunc suggestDifficulty(difficulty, answered, correct int) (int,string) {...}\n```\nUse in loop. Add test in service_test? question package has tests; add calibration_test.go pure.\n\nAlso repo apply test maybe integration; skip.\n\nPatch.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792926731,
+            "completed": 1793792930004
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_maaDMdCeitgZ2iqYGnmB3048",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/question/service.go'); s=p.read_text()\ns=s.replace('''\t\tsuggested := row.Difficulty\n\t\treason := \"正确率在目标区间，保持难度\"\n\t\tif accuracy >= calibrationUp && row.Difficulty < 5 {\n\t\t\tsuggested = row.Difficulty + 1\n\t\t\treason = \"正确率偏高，建议提高难度\"\n\t\t} else if accuracy <= calibrationDown && row.Difficulty > 1 {\n\t\t\tsuggested = row.Difficulty - 1\n\t\t\treason = \"正确率偏低，建议降低难度\"\n\t\t}''','''\t\tsuggested, reason := suggestDifficulty(row.Difficulty, row.Answered, row.Correct)''')\ns=s.replace('''// ApplyCalibration 应用难度调整。''','''// suggestDifficulty 根据正确率给出难度建议。\nfunc suggestDifficulty(difficulty, answered, correct int) (int, string) {\n\taccuracy := 0.0\n\tif answered > 0 {\n\t\taccuracy = float64(correct) / float64(answered)\n\t}\n\tif accuracy >= calibrationUp && difficulty < 5 {\n\t\treturn difficulty + 1, \"正确率偏高，建议提高难度\"\n\t}\n\tif accuracy <= calibrationDown && difficulty > 1 {\n\t\treturn difficulty - 1, \"正确率偏低，建议降低难度\"\n\t}\n\treturn difficulty, \"正确率在目标区间，保持难度\"\n}\n\n// ApplyCalibration 应用难度调整。''')\np.write_text(s)\nPY\ncat > internal/question/calibration_test.go <<'EOF'\npackage question\n\nimport \"testing\"\n\nfunc TestSuggestDifficulty(t *testing.T) {\n\tcases := []struct {\n\t\tname      string\n\t\tdifficulty int\n\t\tanswered  int\n\t\tcorrect   int\n\t\twant      int\n\t}{\n\t\t{\"high accuracy raises\", 2, 20, 18, 3},\n\t\t{\"max difficulty stays\", 5, 20, 20, 5},\n\t\t{\"low accuracy lowers\", 3, 20, 6, 2},\n\t\t{\"min difficulty stays\", 1, 20, 0, 1},\n\t\t{\"middle keeps\", 3, 20, 12, 3},\n\t\t{\"no answers keeps\", 2, 0, 0, 2},\n\t}\n\tfor _, tc := range cases {\n\t\tt.Run(tc.name, func(t *testing.T) {\n\t\t\tgot, _ := suggestDifficulty(tc.difficulty, tc.answered, tc.correct)\n\t\t\tif got != tc.want {\n\t\t\t\tt.Fatalf(\"suggest = %d, want %d\", got, tc.want)\n\t\t\t}\n\t\t})\n\t}\n}\nEOF\ngofmt -w internal/question && go test ./internal/question -run TestSuggestDifficulty -count=1 2>&1 | tail -3",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "FAIL\nFAIL\tgithub.com/roma007/OpenQuizGo/internal/question\t0.817s\nFAIL\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793792927787,
+            "ran": 1793792930035,
+            "completed": 1793792965574
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "d3cdfc080a514dbdcc2d577078fc5904b26a590c",
+        "end": "cbd6d5c36c0ab9ff29a57b4065ed414476b35aa6",
+        "files": [
+          "internal/question/calibration_test.go",
+          "internal/question/service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 225,
+        "output": 704,
+        "reasoning": 110,
+        "cache": {
+          "read": 769664,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6647d34001khfISDPyRPc3Wd",
+      "time": {
+        "created": 1793792965953,
+        "streamed": 1793792974949,
+        "completed": 1793793008289
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Test failure likely \"no answers\" accuracy 0 <= 0.4 and difficulty 2 → lowers to 1, expected keeps. For answered=0, should keep. Our suggest uses accuracy 0 when no answers → down. Need handle answered==0 explicitly keep. Also \"min difficulty stays\" difficulty1, answered20 correct0 → stays 1. Fine.\n\nModify: if answered<=0 return difficulty, keep. Re-run.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793792973297,
+            "completed": 1793792974946
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_wQaQPcsTTl06tEDjkvtN1376",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/question/service.go'); s=p.read_text()\ns=s.replace('''func suggestDifficulty(difficulty, answered, correct int) (int, string) {\n\taccuracy := 0.0\n\tif answered > 0 {\n\t\taccuracy = float64(correct) / float64(answered)\n\t}\n\tif accuracy >= calibrationUp && difficulty < 5 {''','''func suggestDifficulty(difficulty, answered, correct int) (int, string) {\n\tif answered <= 0 {\n\t\treturn difficulty, \"样本不足，保持难度\"\n\t}\n\taccuracy := float64(correct) / float64(answered)\n\tif accuracy >= calibrationUp && difficulty < 5 {''')\np.write_text(s)\nPY\ngofmt -w internal/question && go test ./internal/question -run TestSuggestDifficulty -count=1 2>&1 | tail -3",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "ok  \tgithub.com/roma007/OpenQuizGo/internal/question\t0.772s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793792974194,
+            "ran": 1793792974948,
+            "completed": 1793793008220
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "cbd6d5c36c0ab9ff29a57b4065ed414476b35aa6",
+        "end": "49eaa35c6b75563608d8fd7c4c1300cb763b945f",
+        "files": [
+          "internal/question/service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 178,
+        "output": 266,
+        "reasoning": 91,
+        "cache": {
+          "read": 770560,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6652363001qDR8Sqz1e0omjG",
+      "time": {
+        "created": 1793793008492,
+        "streamed": 1793793019875,
+        "completed": 1793793025839
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now seed answer logs for a question to make preview show suggestions. Choose an online question, insert 30 logs 27 correct. Need child_id (use f59bae8c test child) and device_id 'tv-parent-e2e2'. answer_log columns question_id, child_id, device_id, is_correct, answered_at, session_id nullable, answer_given.\n\nInsert generate_series 30, is_correct = i<=27, answered_at now() - interval. Use one question id from online; but many logs for same question across sessions fine.\n\nThen rebuild API/restart to expose calibration routes, curl preview.\n\nAlso admin UI page CalibrationPage + menu.\n\nLet's seed + restart + curl.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793793017284,
+            "completed": 1793793019869
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_vZFkdYQK87eDRXtWTZZM3361",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && QID=$(psql -t -A -d openquizgo -c \"select id from question where status='online' order by created_at limit 1\"); echo qid=$QID; psql -d openquizgo -c \"insert into answer_log (child_id, question_id, device_id, is_correct, answered_at) select 'f59bae8c-1198-4e46-8847-466b0de3540a'::uuid, '$QID'::uuid, 'tv-parent-e2e2', (i<=27), now() - (i || ' minutes')::interval from generate_series(1,30) i;\" | tail -1; go build -o bin/api ./cmd/api && PID=$(lsof -nP -iTCP:18080 -sTCP:LISTEN -t | head -1); [ -n \"$PID\" ] && kill $PID; sleep 1; (set -a; source .env; set +a; DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api > /private/var/folders/_t/4h8d1ftd4cq9cn64g4c9t8780000gn/T/opencode/api.log 2>&1 &) ; sleep 3; TOKEN=$(curl -s -X POST http://127.0.0.1:18080/v1/admin/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin12345\"}' | python3 -c \"import sys,json;print(json.load(sys.stdin)['token'])\"); curl -s \"http://127.0.0.1:18080/v1/admin/calibration/preview?min_answers=20\" -H \"Authorization: Bearer $TOKEN\" | head -c 500; echo",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "qid=3606bdec-f012-4c9d-93f9-09c66915c03b\nINSERT 0 30\n{\"items\":[{\"question_id\":\"3606bdec-f012-4c9d-93f9-09c66915c03b\",\"stem\":\"导入题 1: 3+0=?\",\"subject\":\"math\",\"stage\":\"low\",\"difficulty\":1,\"answered\":30,\"correct\":27,\"accuracy\":0.9,\"suggested_difficulty\":2,\"reason\":\"正确率偏高，建议提高难度\"}],\"thresholds\":{\"min_answers\":20,\"up\":0.85,\"down\":0.4}}\n\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793793018433,
+            "ran": 1793793019873,
+            "completed": 1793793025826
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "49eaa35c6b75563608d8fd7c4c1300cb763b945f",
+        "end": "49eaa35c6b75563608d8fd7c4c1300cb763b945f",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 183,
+        "output": 471,
+        "reasoning": 149,
+        "cache": {
+          "read": 770944,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a66567b6001149cm60R7I5nAq",
+      "time": {
+        "created": 1793793025981,
+        "streamed": 1793793041034,
+        "completed": 1793793042433
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Calibration preview works. Now admin UI page.\n\nAdd CalibrationPage:\n- state minAnswers=20, data, selected IDs, loading/applying.\n- fetch on mount/min change.\n- Table rowSelection for rows where suggested != difficulty? Include keep rows but disable? Server returns all eligible including keep. Row selection enabled only if suggested != current; show suggestion tag.\n- Apply button calls api.calibrationApply(items), message, reload.\n- Table columns: stem, subject/stage, current→suggested (tag), answered, accuracy, reason.\n\nAPI client methods: calibrationPreview, calibrationApply.\n\nMenu add 难度校准 with ExperimentOutlined.\n\nAdd route.\n\nWrite.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793793034092,
+            "completed": 1793793041026
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_zHdOldaXdf0cgMMN1F1h0895",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/admin-web && python3 - <<'PY'\nfrom pathlib import Path\np=Path('src/types.ts'); s=p.read_text()\ns += '''\nexport interface CalibrationItem {\n  question_id: string\n  stem: string\n  subject: string\n  stage: string\n  difficulty: number\n  answered: number\n  correct: number\n  accuracy: number\n  suggested_difficulty: number\n  reason: string\n}\n\nexport interface CalibrationResult {\n  items: CalibrationItem[]\n  thresholds: { min_answers: number; up: number; down: number }\n}\n'''\np.write_text(s)\np=Path('src/api.ts'); s=p.read_text()\ns=s.replace(\"  coverage: () => request<CoverageResult>('/admin/coverage'),\",\"  coverage: () => request<CoverageResult>('/admin/coverage'),\\n  calibrationPreview: (minAnswers: number) =>\\n    request<CalibrationResult>(\\n      `/admin/calibration/preview?min_answers=${minAnswers}&limit=200`,\\n    ),\\n  calibrationApply: (items: { question_id: string; difficulty: number }[]) =>\\n    request<{ applied: number }>('/admin/calibration/apply', {\\n      method: 'POST',\\n      body: JSON.stringify({ items }),\\n    }),\")\ns=s.replace(\"  Question,\\n  QuestionList,\",\"  Question,\\n  QuestionList,\\n  CalibrationResult,\")\np.write_text(s)\nPY\ncat > src/pages/CalibrationPage.tsx <<'EOF'\nimport {\n  Alert,\n  Button,\n  Card,\n  InputNumber,\n  Popconfirm,\n  Space,\n  Table,\n  Tag,\n  Typography,\n  message,\n} from 'antd'\nimport { useEffect, useState } from 'react'\nimport { api, ApiError } from '../api'\nimport type { CalibrationItem } from '../types'\n\nconst subjectLabel: Record<string, string> = {\n  math: '数学', chinese: '语文', english: '英语', science: '科学',\n  logic: '逻辑', safety: '安全', fun: '趣味',\n}\nconst stageLabel: Record<string, string> = {\n  preschool: '学龄前', low: '小学低', mid: '小学中', high: '小学高',\n}\n\nexport default function CalibrationPage() {\n  const [minAnswers, setMinAnswers] = useState(20)\n  const [items, setItems] = useState<CalibrationItem[]>([])\n  const [selected, setSelected] = useState<string[]>([])\n  const [loading, setLoading] = useState(false)\n  const [applying, setApplying] = useState(false)\n\n  const load = async (threshold = minAnswers) => {\n    setLoading(true)\n    try {\n      const result = await api.calibrationPreview(threshold)\n      setItems(result.items || [])\n      setSelected(\n        (result.items || [])\n          .filter((item) => item.suggested_difficulty !== item.difficulty)\n          .map((item) => item.question_id),\n      )\n    } catch (error) {\n      message.error(error instanceof ApiError ? error.message : '加载失败')\n    } finally {\n      setLoading(false)\n    }\n  }\n\n  useEffect(() => {\n    void load()\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [])\n\n  const apply = async () => {\n    const chosen = items.filter((item) => selected.includes(item.question_id))\n    if (chosen.length === 0) return\n    setApplying(true)\n    try {\n      const result = await api.calibrationApply(\n        chosen.map((item) => ({\n          question_id: item.question_id,\n          difficulty: item.suggested_difficulty,\n        })),\n      )\n      message.success(`已应用 ${result.applied} 题`)\n      await load()\n    } catch (error) {\n      message.error(error instanceof ApiError ? error.message : '应用失败')\n    } finally {\n      setApplying(false)\n    }\n  }\n\n  const changeCount = items.filter(\n    (item) => item.suggested_difficulty !== item.difficulty,\n  ).length\n\n  return (\n    <Card loading={loading}>\n      <Space style={{ marginBottom: 16 }} wrap>\n        <Typography.Title level={4} style={{ margin: 0 }}>\n          难度校准\n        </Typography.Title>\n        <span>\n          样本门槛\n          <InputNumber\n            style={{ width: 90, marginInline: 8 }}\n            min={5}\n            max={1000}\n            value={minAnswers}\n            onChange={(value) => setMinAnswers(value || 20)}\n          />\n          <Button onClick={() => load(minAnswers)}>刷新</Button>\n        </span>\n        <Popconfirm\n          title={`确认应用 ${selected.length} 题的难度调整？`}\n          onConfirm={apply}\n          disabled={selected.length === 0}\n        >\n          <Button type=\"primary\" disabled={selected.length === 0} loading={applying}>\n            应用选中（{selected.length}）\n          </Button>\n        </Popconfirm>\n      </Space>\n      <Alert\n        style={{ marginBottom: 16 }}\n        type=\"info\"\n        showIcon\n        message={`正确率 ≥ 85% 时难度 +1，≤ 40% 时难度 -1；当前 ${items.length} 题达样本门槛，${changeCount} 题有建议。`}\n      />\n      <Table\n        rowKey=\"question_id\"\n        size=\"small\"\n        dataSource={items}\n        scroll={{ x: 1000 }}\n        rowSelection={{\n          selectedRowKeys: selected,\n          onChange: (keys) => setSelected(keys as string[]),\n          getCheckboxProps: (row) => ({\n            disabled: row.suggested_difficulty === row.difficulty,\n          }),\n        }}\n        columns={[\n          { title: '题干', dataIndex: 'stem', ellipsis: true, width: 320 },\n          {\n            title: '学科/学段',\n            width: 130,\n            render: (_, row) =>\n              `${subjectLabel[row.subject] || row.subject} / ${stageLabel[row.stage] || row.stage}`,\n          },\n          {\n            title: '难度',\n            width: 140,\n            render: (_, row) => (\n              <Space>\n                <span>{row.difficulty}</span>\n                <span>→</span>\n                <Tag color={row.suggested_difficulty === row.difficulty ? 'default' : 'blue'}>\n                  {row.suggested_difficulty}\n                </Tag>\n              </Space>\n            ),\n          },\n          { title: '作答', dataIndex: 'answered', width: 80 },\n          {\n            title: '正确率',\n            width: 100,\n            render: (_, row) => `${(row.accuracy * 100).toFixed(0)}%`,\n          },\n          { title: '建议', dataIndex: 'reason' },\n        ]}\n      />\n    </Card>\n  )\n}\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('src/App.tsx'); s=p.read_text()\ns=s.replace(\"  DatabaseOutlined,\",\"  DatabaseOutlined,\\n  ExperimentOutlined,\")\ns=s.replace(\"import CoveragePage from './pages/CoveragePage'\",\"import CalibrationPage from './pages/CalibrationPage'\\nimport CoveragePage from './pages/CoveragePage'\")\ns=s.replace('''              {\n                key: '/coverage',\n                icon: <PieChartOutlined />,\n                label: '覆盖率',\n              },''','''              {\n                key: '/coverage',\n                icon: <PieChartOutlined />,\n                label: '覆盖率',\n              },\n              {\n                key: '/calibration',\n                icon: <ExperimentOutlined />,\n                label: '难度校准',\n              },''')\ns=s.replace('''              <Route path=\"/coverage\" element={<CoveragePage />} />''','''              <Route path=\"/coverage\" element={<CoveragePage />} />\n              <Route path=\"/calibration\" element={<CalibrationPage />} />''')\np.write_text(s)\nPY\nnpm run build 2>&1 | tail -3",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n✓ built in 445ms\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793793035400,
+            "ran": 1793793041032,
+            "completed": 1793793042374
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "49eaa35c6b75563608d8fd7c4c1300cb763b945f",
+        "end": "328b20b073514058029309987efed1b642bd8fd8",
+        "files": [
+          "admin-web/src/App.tsx",
+          "admin-web/src/api.ts",
+          "admin-web/src/pages/CalibrationPage.tsx",
+          "admin-web/src/types.ts"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 192,
+        "output": 1859,
+        "reasoning": 139,
+        "cache": {
+          "read": 771712,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a665a87800102iUtgmoRmTu5S",
+      "time": {
+        "created": 1793793042559,
+        "streamed": 1793793053050,
+        "completed": 1793793054174
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build succeeds. Browser test calibration:\n- navigate /calibration, wait \"难度校准\", verify suggestion row (stem 导入题 1, difficulty 1→2, 90%).\n- Click 应用选中 → confirm → applied 1, reload shows no suggestion (difficulty 2 now, accuracy 90% → suggested 3? Wait after applying to 2, accuracy still 90% → suggestion 3, so it will suggest again immediately! Calibration may keep raising each run until difficulty 5 because accuracy remains 0.9. That's expected but annoying; applying once then reload shows 2→3 suggestion. Fine for test; but could cause repeated raise. Business logic maybe should require cooldown/only apply once per period—out of scope; note.\n\nTest apply: click button (应用选中), confirm Popconfirm 确定, wait message 已应用 1 题. Then verify DB difficulty updated + audit.\n\nDo browser.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793793050975,
+            "completed": 1793793053045
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_HETMHk5hgkF1qjJMLkGm0758",
+          "name": "execute",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "code": "const tab = (await tools.browser.tabs.list()).tabs.find(t => t.url.includes('5174'))\nawait tools.browser.navigate({ tabID: tab.id, url: \"http://127.0.0.1:5174/calibration\" })\nawait tools.browser.wait({ tabID: tab.id, condition: \"text\", text: \"正确率 ≥ 85%\" })\nconst text = await tools.browser.evaluate({ tabID: tab.id, script: `document.body.innerText.slice(0,1200)` })\nreturn text.value"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "OpenQuizGo\n题库治理后台\n题目管理\n批量导入\n覆盖率\n难度校准\n审计日志\n 题库治理\nadmin\n退出\n难度校准\n样本门槛\n刷 新\n应用选中（1）\n正确率 ≥ 85% 时难度 +1，≤ 40% 时难度 -1；当前 1 题达样本门槛，1 题有建议。\n\t题干\t学科/学段\t难度\t作答\t正确率\t建议\n\n\t\n题干\n\t\n学科/学段\n\t\n难度\n\t\n作答\n\t\n正确率\n\t\n建议\n\n\n\t导入题 1: 3+0=?\t数学 / 小学低\t\n1\n→\n2\n\t30\t90%\t正确率偏高，建议提高难度\n1"
+              }
+            ],
+            "metadata": {
+              "toolCalls": [
+                {
+                  "tool": "browser.tabs.list",
+                  "status": "completed"
+                },
+                {
+                  "tool": "browser.navigate",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "url": "http://127.0.0.1:5174/calibration"
+                  }
+                },
+                {
+                  "tool": "browser.wait",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "condition": "text",
+                    "text": "正确率 ≥ 85%"
+                  }
+                },
+                {
+                  "tool": "browser.evaluate",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "script": "document.body.innerText.slice(0,1200)"
+                  }
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793793052753,
+            "ran": 1793793053049,
+            "completed": 1793793054151
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "328b20b073514058029309987efed1b642bd8fd8",
+        "end": "328b20b073514058029309987efed1b642bd8fd8",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 210,
+        "output": 154,
+        "reasoning": 198,
+        "cache": {
+          "read": 773760,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a665d686001EQilRZOgdpfvXk",
+      "time": {
+        "created": 1793793054359,
+        "streamed": 1793793063679,
+        "completed": 1793793063888
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Page works, auto-selects 1. Apply: click 应用选中（1） → Popconfirm; confirm 确定. Then wait \"已应用 1 题\". Verify DB.\n\nUse evaluate click normalized.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793793062373,
+            "completed": 1793793063676
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_8g3fFCIZSCmKUaGAs1J83003",
+          "name": "execute",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "code": "const tab = (await tools.browser.tabs.list()).tabs.find(t => t.url.includes('/calibration'))\nawait tools.browser.evaluate({ tabID: tab.id, script: `(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.replace(/\\\\s/g,'').startsWith('应用选中'));if(b)b.click();return 'ok'})()` })\nawait tools.browser.wait({ tabID: tab.id, condition: \"text\", text: \"确认应用\" })\nawait tools.browser.evaluate({ tabID: tab.id, script: `(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.replace(/\\\\s/g,'')==='确定');if(b)b.click();return 'ok'})()` })\nawait tools.browser.wait({ tabID: tab.id, condition: \"text\", text: \"已应用\" })\nconst text = await tools.browser.evaluate({ tabID: tab.id, script: `document.body.innerText.slice(0,400)` })\nreturn text.value"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "OpenQuizGo\n题库治理后台\n题目管理\n批量导入\n覆盖率\n难度校准\n审计日志\n 题库治理\nadmin\n退出\n难度校准\n样本门槛\n刷 新\n应用选中（1）\n正确率 ≥ 85% 时难度 +1，≤ 40% 时难度 -1；当前 1 题达样本门槛，1 题有建议。\n\t题干\t学科/学段\t难度\t作答\t正确率\t建议\n\n\t\n题干\n\t\n学科/学段\n\t\n难度\n\t\n作答\n\t\n正确率\n\t\n建议\n\n\n\t导入题 1: 3+0=?\t数学 / 小学低\t\n2\n→\n3\n\t30\t90%\t正确率偏高，建议提高难度\n1\n已应用 1 题"
+              }
+            ],
+            "metadata": {
+              "toolCalls": [
+                {
+                  "tool": "browser.tabs.list",
+                  "status": "completed"
+                },
+                {
+                  "tool": "browser.evaluate",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "script": "(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.replace(/\\s/g,'').startsWith('应用选中'));if(b)b.click();return 'ok'})()"
+                  }
+                },
+                {
+                  "tool": "browser.wait",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "condition": "text",
+                    "text": "确认应用"
+                  }
+                },
+                {
+                  "tool": "browser.evaluate",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "script": "(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.replace(/\\s/g,'')==='确定');if(b)b.click();return 'ok'})()"
+                  }
+                },
+                {
+                  "tool": "browser.wait",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "condition": "text",
+                    "text": "已应用"
+                  }
+                },
+                {
+                  "tool": "browser.evaluate",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "script": "document.body.innerText.slice(0,400)"
+                  }
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793793062947,
+            "ran": 1793793063678,
+            "completed": 1793793063867
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "328b20b073514058029309987efed1b642bd8fd8",
+        "end": "328b20b073514058029309987efed1b642bd8fd8",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 217,
+        "output": 262,
+        "reasoning": 44,
+        "cache": {
+          "read": 774272,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a665fc5b001Q6ESVFy6LkrZuU",
+      "time": {
+        "created": 1793793064034,
+        "streamed": 1793793073676,
+        "completed": 1793793073794
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Applied: difficulty updated 1→2, audit presumably. Verify DB + audit. Then screenshot calibration page.\n\nScreenshot with focus.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793793072759,
+            "completed": 1793793073671
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_V1egANZr1nD8iF2pVqvp2994",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && psql -d openquizgo -c \"select difficulty, version from question where id='3606bdec-f012-4c9d-93f9-09c66915c03b';\"; psql -d openquizgo -c \"select action, target_id, after_data from audit_log where action='question.calibrate' order by id desc limit 1;\" | head -5",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": " difficulty | version \n------------+---------\n          2 |       2\n(1 row)\n\n       action       |              target_id               |      after_data      \n--------------------+--------------------------------------+----------------------\n question.calibrate | 3606bdec-f012-4c9d-93f9-09c66915c03b | {\"to\": 2, \"from\": 1}\n(1 row)\n\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793793073272,
+            "ran": 1793793073674,
+            "completed": 1793793073763
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "328b20b073514058029309987efed1b642bd8fd8",
+        "end": "328b20b073514058029309987efed1b642bd8fd8",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 185,
+        "output": 156,
+        "reasoning": 27,
+        "cache": {
+          "read": 774784,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6662352001vfiy2m9BarpW5A",
+      "time": {
+        "created": 1793793074013,
+        "streamed": 1793793084390,
+        "completed": 1793793087461
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Applied and audited. Screenshot calibration.\n\nThen docs: plan 006 done, design done, phase6 acceptance, screenshots, README/docs table, tag v0.6.0 (repo). Admin-web version 0.6.0? bump package version.\n\nOpenAPI add endpoints.\n\nCommit/push both (GitHub now works).\n\nAlso note repeated suggestion issue (after apply, still suggests +1 because accuracy unchanged) — maybe business concern; document as \"同一题可连续上调，需人工判断\" or add cooldown? Could be acceptable but bad UX: recalibrating repeatedly will push to 5. Better design: apply should only allow one difficulty change per calibration cycle? Without tracking, we can't. Add note in report/limitations: \"正确率不变时会持续建议同方向调整，需要教研判断或后续加冷却期\". Fine.\n\nCapture screenshot.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793793082390,
+            "completed": 1793793084381
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_cxnVd9kpoDp1oQCOyKif8595",
+          "name": "execute",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "code": "const tab = (await tools.browser.tabs.list()).tabs.find(t => t.url.includes('/calibration'))\nawait tools.browser.tabs.focus({ tabID: tab.id })\nconst s = await tools.browser.screenshot({ tabID: tab.id })\nreturn s.files[0].path"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "[browser.operation_failed] browser.screenshot failed. Screenshot needs a visible tab. Call browser.tabs.focus and keep its desktop window visible."
+              }
+            ],
+            "metadata": {
+              "toolCalls": [
+                {
+                  "tool": "browser.tabs.list",
+                  "status": "completed"
+                },
+                {
+                  "tool": "browser.tabs.focus",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5"
+                  }
+                },
+                {
+                  "tool": "browser.screenshot",
+                  "status": "error",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5"
+                  }
+                }
+              ],
+              "error": true,
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793793084161,
+            "ran": 1793793084388,
+            "completed": 1793793087446
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "328b20b073514058029309987efed1b642bd8fd8",
+        "end": "328b20b073514058029309987efed1b642bd8fd8",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 209,
+        "output": 99,
+        "reasoning": 184,
+        "cache": {
+          "read": 775040,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6665865001eWhdopSAGNcoE1",
+      "time": {
+        "created": 1793793087597,
+        "streamed": 1793793096605,
+        "completed": 1793793100154
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Screenshot failed due to visibility (maybe user minimized). We have prior screenshots; for calibration, could retry focus later, or use evaluate? We can ask user to keep window; not necessary. Try once more after focus and maybe tabs.open new? Earlier failure then later success. Try reload + focus + screenshot.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793793095338,
+            "completed": 1793793096602
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_hVw2IoEgiwyKnJ2b5hht4215",
+          "name": "execute",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "code": "const tab = (await tools.browser.tabs.list()).tabs.find(t => t.url.includes('/calibration'))\nawait tools.browser.tabs.focus({ tabID: tab.id })\nawait tools.browser.reload({ tabID: tab.id })\nawait tools.browser.wait({ tabID: tab.id, condition: \"text\", text: \"难度校准\" })\nawait tools.browser.tabs.focus({ tabID: tab.id })\ntry { const s = await tools.browser.screenshot({ tabID: tab.id }); return s.files[0].path } catch(e){ return String(e) }"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Error: [browser.operation_failed] browser.screenshot failed. Screenshot needs a visible tab. Call browser.tabs.focus and keep its desktop window visible."
+              }
+            ],
+            "metadata": {
+              "toolCalls": [
+                {
+                  "tool": "browser.tabs.list",
+                  "status": "completed"
+                },
+                {
+                  "tool": "browser.tabs.focus",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5"
+                  }
+                },
+                {
+                  "tool": "browser.reload",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5"
+                  }
+                },
+                {
+                  "tool": "browser.wait",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5",
+                    "condition": "text",
+                    "text": "难度校准"
+                  }
+                },
+                {
+                  "tool": "browser.tabs.focus",
+                  "status": "completed",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5"
+                  }
+                },
+                {
+                  "tool": "browser.screenshot",
+                  "status": "error",
+                  "input": {
+                    "tabID": "tab_a1b0ae79-64ce-45ee-899b-836fde845ba5"
+                  }
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793793096224,
+            "ran": 1793793096604,
+            "completed": 1793793100121
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "328b20b073514058029309987efed1b642bd8fd8",
+        "end": "328b20b073514058029309987efed1b642bd8fd8",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 152,
+        "output": 163,
+        "reasoning": 65,
+        "cache": {
+          "read": 775424,
           "write": 0
         }
       }

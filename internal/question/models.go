@@ -64,6 +64,44 @@ type CoverageResult struct {
 	Total int            `json:"total"`
 }
 
+// CalibrationItem 是难度校准建议。
+type CalibrationItem struct {
+	QuestionID          string  `json:"question_id"`
+	Stem                string  `json:"stem"`
+	Subject             string  `json:"subject"`
+	Stage               string  `json:"stage"`
+	Difficulty          int     `json:"difficulty"`
+	Answered            int     `json:"answered"`
+	Correct             int     `json:"correct"`
+	Accuracy            float64 `json:"accuracy"`
+	SuggestedDifficulty int     `json:"suggested_difficulty"`
+	Reason              string  `json:"reason"`
+}
+
+// CalibrationThresholds 是校准阈值。
+type CalibrationThresholds struct {
+	MinAnswers int     `json:"min_answers"`
+	Up         float64 `json:"up"`
+	Down       float64 `json:"down"`
+}
+
+// CalibrationResult 是校准预览结果。
+type CalibrationResult struct {
+	Items      []CalibrationItem     `json:"items"`
+	Thresholds CalibrationThresholds `json:"thresholds"`
+}
+
+// CalibrationApplyItem 是单题难度调整。
+type CalibrationApplyItem struct {
+	QuestionID string `json:"question_id"`
+	Difficulty int    `json:"difficulty"`
+}
+
+// CalibrationApplyRequest 是校准应用入参。
+type CalibrationApplyRequest struct {
+	Items []CalibrationApplyItem `json:"items"`
+}
+
 // Filter 是四维检索条件。
 type Filter struct {
 	Subject    string

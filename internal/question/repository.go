@@ -100,6 +100,89 @@ func (r *repository) get(ctx context.Context, id string) (Question, error) {
 	return scanQuestion(r.pool.QueryRow(ctx, `select `+questionColumns+` from question where id = $1`, id))
 }
 
+type calibrationRow struct {
+	ID         string
+	Stem       string
+	Subject    string
+	Stage      string
+	Difficulty int
+	Answered   int
+	Correct    int
+}
+
+// calibrationRows 返回达到样本门槛的在线题统计。
+func (r *repository) calibrationRows(ctx context.Context, minAnswers, limit int) ([]calibrationRow, error) {
+	rows, err := r.pool.Query(ctx, `
+		select q.id, q.stem, q.subject_code, q.stage_code, q.difficulty,
+		       count(a.id)::int, count(*) filter (where a.is_correct)::int
+		from question q
+		join answer_log a on a.question_id = q.id
+		where q.status = 'online'
+		group by q.id, q.stem, q.subject_code, q.stage_code, q.difficulty
+		having count(a.id) >= $1
+		order by count(a.id) desc, q.id
+		limit $2`, minAnswers, limit)
+	if err != nil {
+		return nil, fmt.Errorf("calibration query: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]calibrationRow, 0)
+	for rows.Next() {
+		var row calibrationRow
+		if err := rows.Scan(&row.ID, &row.Stem, &row.Subject, &row.Stage,
+			&row.Difficulty, &row.Answered, &row.Correct); err != nil {
+			return nil, fmt.Errorf("scan calibration: %w", err)
+		}
+		result = append(result, row)
+	}
+	return result, rows.Err()
+}
+
+// applyCalibration 批量更新难度并写审计。
+func (r *repository) applyCalibration(ctx context.Context, items []CalibrationApplyItem,
+	adminID, ip string) (int, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("begin: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	applied := 0
+	for _, item := range items {
+		var before int
+		err := tx.QueryRow(ctx, `
+			select difficulty from question
+			where id = $1 and status = 'online' for update`, item.QuestionID).Scan(&before)
+		if errors.Is(err, pgx.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return 0, fmt.Errorf("lock question: %w", err)
+		}
+		if before == item.Difficulty {
+			continue
+		}
+		if _, err := tx.Exec(ctx, `
+			update question set difficulty = $2, version = version + 1, updated_at = now()
+			where id = $1`, item.QuestionID, item.Difficulty); err != nil {
+			return 0, fmt.Errorf("update difficulty: %w", err)
+		}
+		after, _ := json.Marshal(map[string]int{"from": before, "to": item.Difficulty})
+		if _, err := tx.Exec(ctx, `
+			insert into audit_log (actor_type, actor_id, action, target_type, target_id, after_data, ip)
+			values ('admin', $1, 'question.calibrate', 'question', $2, $3::jsonb, nullif($4, '')::inet)`,
+			adminID, item.QuestionID, string(after), ip); err != nil {
+			return 0, fmt.Errorf("audit calibration: %w", err)
+		}
+		applied++
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return 0, err
+	}
+	return applied, nil
+}
+
 // Coverage 聚合题库分布。
 func (r *repository) Coverage(ctx context.Context) ([]CoverageCell, int, error) {
 	rows, err := r.pool.Query(ctx, `

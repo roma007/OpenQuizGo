@@ -122,6 +122,95 @@ func (s *Service) Get(ctx context.Context, id string) (Question, error) {
 }
 
 // List 四维检索。
+const (
+	calibrationUp   = 0.85
+	calibrationDown = 0.40
+)
+
+// CalibrationPreview 返回难度校准建议。
+func (s *Service) CalibrationPreview(ctx context.Context, minAnswers, limit int) (CalibrationResult, error) {
+	if minAnswers <= 0 {
+		minAnswers = 20
+	}
+	if minAnswers < 5 {
+		minAnswers = 5
+	}
+	if minAnswers > 1000 {
+		minAnswers = 1000
+	}
+	if limit <= 0 || limit > 500 {
+		limit = 100
+	}
+	rows, err := s.repo.calibrationRows(ctx, minAnswers, limit)
+	if err != nil {
+		return CalibrationResult{}, err
+	}
+	items := make([]CalibrationItem, 0, len(rows))
+	for _, row := range rows {
+		accuracy := 0.0
+		if row.Answered > 0 {
+			accuracy = float64(row.Correct) / float64(row.Answered)
+		}
+		suggested, reason := suggestDifficulty(row.Difficulty, row.Answered, row.Correct)
+		items = append(items, CalibrationItem{
+			QuestionID:          row.ID,
+			Stem:                row.Stem,
+			Subject:             row.Subject,
+			Stage:               row.Stage,
+			Difficulty:          row.Difficulty,
+			Answered:            row.Answered,
+			Correct:             row.Correct,
+			Accuracy:            accuracy,
+			SuggestedDifficulty: suggested,
+			Reason:              reason,
+		})
+	}
+	return CalibrationResult{
+		Items: items,
+		Thresholds: CalibrationThresholds{
+			MinAnswers: minAnswers,
+			Up:         calibrationUp,
+			Down:       calibrationDown,
+		},
+	}, nil
+}
+
+// suggestDifficulty 根据正确率给出难度建议。
+func suggestDifficulty(difficulty, answered, correct int) (int, string) {
+	if answered <= 0 {
+		return difficulty, "样本不足，保持难度"
+	}
+	accuracy := float64(correct) / float64(answered)
+	if accuracy >= calibrationUp && difficulty < 5 {
+		return difficulty + 1, "正确率偏高，建议提高难度"
+	}
+	if accuracy <= calibrationDown && difficulty > 1 {
+		return difficulty - 1, "正确率偏低，建议降低难度"
+	}
+	return difficulty, "正确率在目标区间，保持难度"
+}
+
+// ApplyCalibration 应用难度调整。
+func (s *Service) ApplyCalibration(ctx context.Context, items []CalibrationApplyItem,
+	principal admin.Principal, ip string) (int, error) {
+	if len(items) == 0 || len(items) > 500 {
+		return 0, newAPIError(422, "VALIDATION_ERROR", "校准条目需在 1–500 之间")
+	}
+	seen := make(map[string]bool, len(items))
+	clean := make([]CalibrationApplyItem, 0, len(items))
+	for _, item := range items {
+		if item.QuestionID == "" || item.Difficulty < 1 || item.Difficulty > 5 {
+			return 0, newAPIError(422, "VALIDATION_ERROR", "题目或难度不合法")
+		}
+		if seen[item.QuestionID] {
+			continue
+		}
+		seen[item.QuestionID] = true
+		clean = append(clean, item)
+	}
+	return s.repo.applyCalibration(ctx, clean, principal.ID, ip)
+}
+
 // Coverage 返回题库覆盖率聚合。
 func (s *Service) Coverage(ctx context.Context) (CoverageResult, error) {
 	cells, total, err := s.repo.Coverage(ctx)

@@ -69,3 +69,21 @@ export interface AuditEntry {
   after_data?: unknown
   created_at: string
 }
+
+export interface CalibrationItem {
+  question_id: string
+  stem: string
+  subject: string
+  stage: string
+  difficulty: number
+  answered: number
+  correct: number
+  accuracy: number
+  suggested_difficulty: number
+  reason: string
+}
+
+export interface CalibrationResult {
+  items: CalibrationItem[]
+  thresholds: { min_answers: number; up: number; down: number }
+}
