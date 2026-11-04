@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../data/device_repository.dart';
@@ -55,6 +56,7 @@ class DevicePage extends ConsumerWidget {
                     final device = items[index];
                     return _DeviceCard(
                       device: device,
+                      onUnlock: () => _unlock(context, ref, device),
                       onUnbind: () => _confirmUnbind(context, ref, device),
                     );
                   },
@@ -77,6 +79,34 @@ class DevicePage extends ConsumerWidget {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('设备绑定成功')));
+      }
+    }
+  }
+
+  Future<void> _unlock(
+    BuildContext context,
+    WidgetRef ref,
+    DeviceInfo device,
+  ) async {
+    final input = await showDialog<_UnlockInput>(
+      context: context,
+      builder: (_) => _UnlockDialog(childName: device.childName),
+    );
+    if (input == null) return;
+    try {
+      final grant = await ref
+          .read(deviceRepositoryProvider)
+          .unlock(bindId: device.id, pin: input.pin, minutes: input.minutes);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('已解锁 ${grant.minutes} 分钟，电视将在 10 秒内恢复')),
+        );
+      }
+    } on ApiException catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
       }
     }
   }
@@ -123,9 +153,14 @@ class DevicePage extends ConsumerWidget {
 }
 
 class _DeviceCard extends StatelessWidget {
-  const _DeviceCard({required this.device, required this.onUnbind});
+  const _DeviceCard({
+    required this.device,
+    required this.onUnlock,
+    required this.onUnbind,
+  });
 
   final DeviceInfo device;
+  final VoidCallback onUnlock;
   final VoidCallback onUnbind;
 
   @override
@@ -149,10 +184,20 @@ class _DeviceCard extends StatelessWidget {
           '${platformLabel(device.platform)} · '
           '${boundAt == null ? "绑定时间未知" : "绑定于 ${DateFormat("yyyy-MM-dd HH:mm").format(boundAt.toLocal())}"}',
         ),
-        trailing: IconButton(
-          tooltip: '解绑',
-          onPressed: onUnbind,
-          icon: const Icon(Icons.link_off),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: '远程解锁',
+              onPressed: onUnlock,
+              icon: const Icon(Icons.lock_open),
+            ),
+            IconButton(
+              tooltip: '解绑',
+              onPressed: onUnbind,
+              icon: const Icon(Icons.link_off),
+            ),
+          ],
         ),
       ),
     );
@@ -206,6 +251,85 @@ class _ErrorView extends StatelessWidget {
           OutlinedButton(onPressed: onRetry, child: const Text('重试')),
         ],
       ),
+    );
+  }
+}
+
+class _UnlockInput {
+  _UnlockInput({required this.pin, required this.minutes});
+
+  final String pin;
+  final int minutes;
+}
+
+class _UnlockDialog extends StatefulWidget {
+  const _UnlockDialog({required this.childName});
+
+  final String childName;
+
+  @override
+  State<_UnlockDialog> createState() => _UnlockDialogState();
+}
+
+class _UnlockDialogState extends State<_UnlockDialog> {
+  final _pin = TextEditingController();
+  int _minutes = 10;
+
+  @override
+  void dispose() {
+    _pin.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('远程解锁'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('为「${widget.childName}」签发一段观看时间，电视阻挡页会自动放行。'),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<int>(
+            initialValue: _minutes,
+            decoration: const InputDecoration(labelText: '解锁时长'),
+            items: const [
+              DropdownMenuItem(value: 5, child: Text('5 分钟')),
+              DropdownMenuItem(value: 10, child: Text('10 分钟')),
+              DropdownMenuItem(value: 20, child: Text('20 分钟')),
+              DropdownMenuItem(value: 30, child: Text('30 分钟')),
+              DropdownMenuItem(value: 60, child: Text('60 分钟')),
+            ],
+            onChanged: (value) => setState(() => _minutes = value ?? 10),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _pin,
+            autofocus: true,
+            obscureText: true,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            decoration: const InputDecoration(
+              labelText: '家长 PIN',
+              counterText: '',
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('取消'),
+        ),
+        FilledButton(
+          onPressed: () {
+            final pin = _pin.text.trim();
+            if (pin.isEmpty) return;
+            Navigator.pop(context, _UnlockInput(pin: pin, minutes: _minutes));
+          },
+          child: const Text('解锁'),
+        ),
+      ],
     );
   }
 }
