@@ -5,6 +5,7 @@ import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../data/family_repository.dart';
 import 'child_edit_page.dart';
+import '../rule/rule_page.dart';
 
 class ChildPage extends ConsumerWidget {
   const ChildPage({super.key});
@@ -72,7 +73,17 @@ class ChildPage extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         subtitle: Text(_subtitle(child)),
-                        trailing: const Icon(Icons.chevron_right),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: '观看规则',
+                              icon: const Icon(Icons.tune),
+                              onPressed: () => _openRule(context, child),
+                            ),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
                         onTap: () => _openEditor(context, ref, child: child),
                       ),
                     );
@@ -91,6 +102,12 @@ class ChildPage extends ConsumerWidget {
         ? '${child.birthYear}年${child.birthMonth ?? 1}月'
         : '生日未设置';
     return '${stageLabel(child.stage)} · $birthday';
+  }
+
+  void _openRule(BuildContext context, Child child) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => RulePage(child: child)));
   }
 
   Future<void> _openEditor(

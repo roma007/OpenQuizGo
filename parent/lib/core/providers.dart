@@ -6,6 +6,7 @@ import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
 import '../data/family_repository.dart';
 import '../data/device_repository.dart';
+import '../data/rule_repository.dart';
 import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -32,6 +33,14 @@ final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
 final devicesProvider = FutureProvider<List<DeviceInfo>>((ref) {
   return ref.watch(deviceRepositoryProvider).listDevices();
 });
+
+final ruleRepositoryProvider = Provider<RuleRepository>((ref) {
+  return RuleRepository(ref.watch(apiClientProvider));
+});
+
+final ruleProvider = FutureProvider.family<RuleWithVersion, String>(
+  (ref, childId) => ref.watch(ruleRepositoryProvider).getRule(childId),
+);
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
