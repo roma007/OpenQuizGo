@@ -10,14 +10,15 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          childrenProvider.overrideWith((ref) async => [
-                Child(id: 'c1', nickname: '小明', stage: 'low'),
-              ]),
+          childrenProvider.overrideWith(
+            (ref) async => [Child(id: 'c1', nickname: '小明', stage: 'low')],
+          ),
         ],
         child: const MaterialApp(home: HomeShell()),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('孩子档案'), findsOneWidget);
     expect(find.text('小明'), findsOneWidget);
   });

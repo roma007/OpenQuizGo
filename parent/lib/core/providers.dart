@@ -5,6 +5,7 @@ import 'api/models.dart';
 import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
 import '../data/family_repository.dart';
+import '../data/device_repository.dart';
 import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -22,6 +23,14 @@ final familyRepositoryProvider = Provider<FamilyRepository>((ref) {
 
 final childrenProvider = FutureProvider<List<Child>>((ref) {
   return ref.watch(familyRepositoryProvider).listChildren();
+});
+
+final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
+  return DeviceRepository(ref.watch(apiClientProvider));
+});
+
+final devicesProvider = FutureProvider<List<DeviceInfo>>((ref) {
+  return ref.watch(deviceRepositoryProvider).listDevices();
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
