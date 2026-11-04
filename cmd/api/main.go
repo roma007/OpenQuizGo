@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/roma007/OpenQuizGo/internal/admin"
+	"github.com/roma007/OpenQuizGo/internal/battle"
 	"github.com/roma007/OpenQuizGo/internal/config"
 	"github.com/roma007/OpenQuizGo/internal/daily"
 	"github.com/roma007/OpenQuizGo/internal/httpapi"
@@ -93,6 +94,7 @@ func main() {
 	questionService := question.New(pool, logger)
 	reportService := report.New(pool, logger)
 	dailyService := daily.New(pool, logger)
+	battleService := battle.New(pool)
 	topicService := topic.New(pool)
 	quizService := quiz.New(pool, rdb, ruleService, watchService, logger)
 
@@ -108,6 +110,7 @@ func main() {
 		Watch:     watchService,
 		Report:    reportService,
 		Daily:     dailyService,
+		Battle:    battleService,
 		Topic:     topicService,
 		Version:   cfg.Version,
 		Env:       cfg.Env,

@@ -1,0 +1,493 @@
+package battle
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"sort"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/roma007/OpenQuizGo/internal/identity"
+)
+
+const (
+	defaultQuestions = 5
+	minQuestions     = 3
+	maxQuestions     = 10
+)
+
+type Service struct {
+	pool *pgxpool.Pool
+}
+
+func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
+
+func (s *Service) Routes(r chi.Router) {
+	r.Post("/family/children/{childID}/battles", s.handleCreate)
+	r.Get("/family/children/{childID}/battles/{battleID}", s.handleGet)
+	r.Post("/family/children/{childID}/battles/{battleID}/answers", s.handleSubmit)
+}
+
+type QuestionView struct {
+	ID      string          `json:"id"`
+	Stem    string          `json:"stem"`
+	Type    string          `json:"type"`
+	Options json.RawMessage `json:"options,omitempty"`
+}
+
+type AnswerView struct {
+	Side          string          `json:"side"`
+	QuestionID    string          `json:"question_id"`
+	Answer        json.RawMessage `json:"answer"`
+	Correct       bool            `json:"correct"`
+	CorrectAnswer json.RawMessage `json:"correct_answer,omitempty"`
+	Explain       string          `json:"explain,omitempty"`
+}
+
+type ResultView struct {
+	Winner      string `json:"winner"`
+	ChildScore  int    `json:"child_score"`
+	ParentScore int    `json:"parent_score"`
+}
+
+type State struct {
+	ID            string         `json:"id"`
+	Status        string         `json:"status"`
+	QuestionCount int            `json:"question_count"`
+	Questions     []QuestionView `json:"questions"`
+	ChildScore    int            `json:"child_score"`
+	ParentScore   int            `json:"parent_score"`
+	Result        *ResultView    `json:"result,omitempty"`
+	Answers       []AnswerView   `json:"answers,omitempty"`
+}
+
+type Submission struct {
+	QuestionID string          `json:"question_id"`
+	Answer     json.RawMessage `json:"answer"`
+}
+
+type apiError struct {
+	Status  int
+	Code    string
+	Message string
+}
+
+func (e apiError) Error() string { return e.Message }
+
+type questionRecord struct {
+	ID      string
+	Stem    string
+	Type    string
+	Options json.RawMessage
+	Answer  json.RawMessage
+	Explain string
+}
+
+type battleRecord struct {
+	ID          string
+	FamilyID    string
+	Status      string
+	QuestionIDs []string
+	ChildScore  int
+	ParentScore int
+}
+
+func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
+	childID := chi.URLParam(r, "childID")
+	accountID := identity.AccountIDFrom(r.Context())
+	if _, err := s.ownsChild(r.Context(), accountID, childID); err != nil {
+		writeError(w, err)
+		return
+	}
+	var req struct {
+		QuestionCount int `json:"question_count"`
+	}
+	if r.Body != nil {
+		_ = json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&req)
+	}
+	count := req.QuestionCount
+	if count == 0 {
+		count = defaultQuestions
+	}
+	if count < minQuestions || count > maxQuestions {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "题数需在 3–10 之间"})
+		return
+	}
+	state, err := s.Create(r.Context(), accountID, childID, count)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, state)
+}
+
+func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {
+	childID := chi.URLParam(r, "childID")
+	if _, err := s.ownsChild(r.Context(), identity.AccountIDFrom(r.Context()), childID); err != nil {
+		writeError(w, err)
+		return
+	}
+	state, err := s.Get(r.Context(), childID, chi.URLParam(r, "battleID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, state)
+}
+
+func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
+	childID := chi.URLParam(r, "childID")
+	if _, err := s.ownsChild(r.Context(), identity.AccountIDFrom(r.Context()), childID); err != nil {
+		writeError(w, err)
+		return
+	}
+	var req struct {
+		Side    string       `json:"side"`
+		Answers []Submission `json:"answers"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	state, err := s.Submit(r.Context(), childID, chi.URLParam(r, "battleID"), req.Side, req.Answers)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, state)
+}
+
+// Create 创建一个孩子先答的对局。
+func (s *Service) Create(ctx context.Context, accountID, childID string, count int) (State, error) {
+	familyID, err := s.ownsChild(ctx, accountID, childID)
+	if err != nil {
+		return State{}, err
+	}
+	stage := ""
+	_ = s.pool.QueryRow(ctx, `select stage_code from child_profile where id = $1`, childID).Scan(&stage)
+
+	rows, err := s.pool.Query(ctx, `
+		select id from question
+		where status = 'online' and type_code in ('choice', 'image') and options is not null
+		order by (stage_code = $1) desc, random()
+		limit $2`, stage, count)
+	if err != nil {
+		return State{}, err
+	}
+	defer rows.Close()
+	ids := make([]string, 0, count)
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return State{}, err
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		return State{}, err
+	}
+	if len(ids) < count {
+		return State{}, apiError{409, "QUESTION_POOL_EMPTY", "题库可用题目不足，无法发起对战"}
+	}
+
+	encoded, err := json.Marshal(ids)
+	if err != nil {
+		return State{}, err
+	}
+	var battleID string
+	err = s.pool.QueryRow(ctx, `
+		insert into family_battle (family_id, child_id, question_ids, created_by)
+		values ($1, $2, $3::jsonb, nullif($4, '')::uuid)
+		returning id`, familyID, childID, string(encoded), accountID).Scan(&battleID)
+	if err != nil {
+		return State{}, err
+	}
+	return s.Get(ctx, childID, battleID)
+}
+
+// Get 返回对局状态；未结束时不下发答案与解析。
+func (s *Service) Get(ctx context.Context, childID, battleID string) (State, error) {
+	battle, err := s.load(ctx, childID, battleID)
+	if err != nil {
+		return State{}, err
+	}
+	questions, err := s.questions(ctx, battle.QuestionIDs)
+	if err != nil {
+		return State{}, err
+	}
+	state := State{
+		ID:            battle.ID,
+		Status:        battle.Status,
+		QuestionCount: len(battle.QuestionIDs),
+		Questions:     questions,
+		ChildScore:    battle.ChildScore,
+		ParentScore:   battle.ParentScore,
+	}
+	if battle.Status == "finished" {
+		state.Result = &ResultView{
+			Winner:      winner(battle.ChildScore, battle.ParentScore),
+			ChildScore:  battle.ChildScore,
+			ParentScore: battle.ParentScore,
+		}
+		answers, err := s.answers(ctx, battle.ID)
+		if err != nil {
+			return State{}, err
+		}
+		state.Answers = answers
+	}
+	return state, nil
+}
+
+// Submit 提交当前一方答案并推进状态。
+func (s *Service) Submit(ctx context.Context, childID, battleID, side string, submissions []Submission) (State, error) {
+	if side != "child" && side != "parent" {
+		return State{}, apiError{422, "VALIDATION_ERROR", "对战方不合法"}
+	}
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return State{}, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var status string
+	var rawIDs string
+	var childScore, parentScore int
+	err = tx.QueryRow(ctx, `
+		select status, question_ids::text, child_score, parent_score
+		from family_battle where id = $1 and child_id = $2 for update`,
+		battleID, childID).Scan(&status, &rawIDs, &childScore, &parentScore)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return State{}, apiError{404, "BATTLE_NOT_FOUND", "对局不存在"}
+	}
+	if err != nil {
+		return State{}, err
+	}
+
+	expected := "child"
+	if status == "parent_turn" {
+		expected = "parent"
+	}
+	if status == "finished" || side != expected {
+		return State{}, apiError{409, "BATTLE_TURN_INVALID", "当前不是该方答题轮次"}
+	}
+
+	var questionIDs []string
+	if err := json.Unmarshal([]byte(rawIDs), &questionIDs); err != nil {
+		return State{}, err
+	}
+	items, err := s.questions(ctx, questionIDs)
+	if err != nil {
+		return State{}, err
+	}
+	correctAnswers := map[string]json.RawMessage{}
+	for _, q := range items {
+		rec, err := s.question(ctx, q.ID)
+		if err != nil {
+			return State{}, err
+		}
+		correctAnswers[q.ID] = rec.Answer
+	}
+
+	if len(submissions) != len(questionIDs) {
+		return State{}, apiError{422, "VALIDATION_ERROR", "需要提交全部题目答案"}
+	}
+	seen := map[string]bool{}
+	correct := 0
+	for position, item := range submissions {
+		if item.QuestionID == "" || seen[item.QuestionID] {
+			return State{}, apiError{422, "VALIDATION_ERROR", "答案重复或缺少题目"}
+		}
+		expectedAnswer, ok := correctAnswers[item.QuestionID]
+		if !ok {
+			return State{}, apiError{422, "VALIDATION_ERROR", "答案包含不属于本局的题目"}
+		}
+		seen[item.QuestionID] = true
+		ok = equalSet(expectedAnswer, item.Answer)
+		if ok {
+			correct++
+		}
+		if _, err := tx.Exec(ctx, `
+			insert into family_battle_answer (battle_id, side, question_id, answer, correct, position)
+			values ($1, $2, $3, $4::jsonb, $5, $6)`,
+			battleID, side, item.QuestionID, string(item.Answer), ok, position); err != nil {
+			return State{}, err
+		}
+	}
+
+	nextStatus := "parent_turn"
+	if side == "parent" {
+		nextStatus = "finished"
+	}
+	if side == "child" {
+		childScore = correct
+	} else {
+		parentScore = correct
+	}
+	if _, err := tx.Exec(ctx, `
+		update family_battle
+		set status = $2, child_score = $3, parent_score = $4,
+		    finished_at = case when $2 = 'finished' then now() else finished_at end
+		where id = $1`, battleID, nextStatus, childScore, parentScore); err != nil {
+		return State{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return State{}, err
+	}
+	return s.Get(ctx, childID, battleID)
+}
+
+func (s *Service) ownsChild(ctx context.Context, accountID, childID string) (string, error) {
+	if accountID == "" {
+		return "", apiError{401, "AUTH_REQUIRED", "家长未登录"}
+	}
+	var familyID string
+	err := s.pool.QueryRow(ctx, `
+		select cp.family_id::text from child_profile cp
+		join family_member fm on fm.family_id = cp.family_id
+		where cp.id = $1 and fm.account_id = $2
+		  and cp.family_id = coalesce(
+		      (select active_family_id from parent_account where id = $2), fm.family_id)`,
+		childID, accountID).Scan(&familyID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", apiError{404, "CHILD_NOT_FOUND", "孩子档案不存在"}
+	}
+	if err != nil {
+		return "", err
+	}
+	return familyID, nil
+}
+
+func (s *Service) load(ctx context.Context, childID, battleID string) (battleRecord, error) {
+	var rec battleRecord
+	var rawIDs string
+	err := s.pool.QueryRow(ctx, `
+		select id, family_id, status, question_ids::text, child_score, parent_score
+		from family_battle where id = $1 and child_id = $2`,
+		battleID, childID).Scan(&rec.ID, &rec.FamilyID, &rec.Status, &rawIDs, &rec.ChildScore, &rec.ParentScore)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return battleRecord{}, apiError{404, "BATTLE_NOT_FOUND", "对局不存在"}
+	}
+	if err != nil {
+		return battleRecord{}, err
+	}
+	if err := json.Unmarshal([]byte(rawIDs), &rec.QuestionIDs); err != nil {
+		return battleRecord{}, err
+	}
+	return rec, nil
+}
+
+func (s *Service) questions(ctx context.Context, ids []string) ([]QuestionView, error) {
+	items := make([]QuestionView, 0, len(ids))
+	for _, id := range ids {
+		rec, err := s.question(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, QuestionView{
+			ID: rec.ID, Stem: rec.Stem, Type: rec.Type, Options: rec.Options,
+		})
+	}
+	return items, nil
+}
+
+func (s *Service) question(ctx context.Context, id string) (questionRecord, error) {
+	var rec questionRecord
+	err := s.pool.QueryRow(ctx, `
+		select id, stem, type_code, coalesce(options::text, '[]'),
+		       answer::text, coalesce(explain, '')
+		from question where id = $1`, id).
+		Scan(&rec.ID, &rec.Stem, &rec.Type, &rec.Options, &rec.Answer, &rec.Explain)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return questionRecord{}, apiError{404, "QUESTION_NOT_FOUND", "题目不存在"}
+	}
+	return rec, err
+}
+
+func (s *Service) answers(ctx context.Context, battleID string) ([]AnswerView, error) {
+	rows, err := s.pool.Query(ctx, `
+		select a.side, a.question_id, a.answer::text, a.correct,
+		       q.answer::text, coalesce(q.explain, '')
+		from family_battle_answer a
+		join question q on q.id = a.question_id
+		where a.battle_id = $1
+		order by a.position, a.side`, battleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]AnswerView, 0)
+	for rows.Next() {
+		var item AnswerView
+		var answer, correctAnswer string
+		if err := rows.Scan(&item.Side, &item.QuestionID, &answer, &item.Correct,
+			&correctAnswer, &item.Explain); err != nil {
+			return nil, err
+		}
+		item.Answer = json.RawMessage(answer)
+		item.CorrectAnswer = json.RawMessage(correctAnswer)
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+func winner(child, parent int) string {
+	switch {
+	case child > parent:
+		return "child"
+	case parent > child:
+		return "parent"
+	default:
+		return "draw"
+	}
+}
+
+func equalSet(expected, given json.RawMessage) bool {
+	want, ok1 := stringList(expected)
+	got, ok2 := stringList(given)
+	if !ok1 || !ok2 || len(want) != len(got) {
+		return false
+	}
+	sort.Strings(want)
+	sort.Strings(got)
+	for i := range want {
+		if want[i] != got[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func stringList(raw json.RawMessage) ([]string, bool) {
+	if len(raw) == 0 {
+		return nil, false
+	}
+	var many []string
+	if err := json.Unmarshal(raw, &many); err == nil {
+		return many, true
+	}
+	var single string
+	if err := json.Unmarshal(raw, &single); err == nil {
+		return []string{single}, true
+	}
+	return nil, false
+}
+
+func writeError(w http.ResponseWriter, err error) {
+	var e apiError
+	if errors.As(err, &e) {
+		writeJSON(w, e.Status, map[string]string{"code": e.Code, "message": e.Message})
+		return
+	}
+	writeJSON(w, http.StatusInternalServerError, map[string]string{"code": "INTERNAL", "message": "服务端错误"})
+}
+
+func writeJSON(w http.ResponseWriter, status int, body any) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(body)
+}
