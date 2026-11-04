@@ -7,6 +7,7 @@ import 'auth/auth_repository.dart';
 import '../data/family_repository.dart';
 import '../data/device_repository.dart';
 import '../data/rule_repository.dart';
+import '../data/report_repository.dart';
 import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -40,6 +41,14 @@ final ruleRepositoryProvider = Provider<RuleRepository>((ref) {
 
 final ruleProvider = FutureProvider.family<RuleWithVersion, String>(
   (ref, childId) => ref.watch(ruleRepositoryProvider).getRule(childId),
+);
+
+final reportRepositoryProvider = Provider<ReportRepository>((ref) {
+  return ReportRepository(ref.watch(apiClientProvider));
+});
+
+final reportsProvider = FutureProvider.family<List<GrowthReport>, ReportQuery>(
+  (ref, query) => ref.watch(reportRepositoryProvider).listReports(query),
 );
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
