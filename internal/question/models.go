@@ -60,8 +60,9 @@ type CoverageCell struct {
 
 // CoverageResult 是覆盖率看板数据。
 type CoverageResult struct {
-	Cells []CoverageCell `json:"cells"`
-	Total int            `json:"total"`
+	Cells    []CoverageCell `json:"cells"`
+	Total    int            `json:"total"`
+	Warnings []string       `json:"warnings"`
 }
 
 // CalibrationItem 是难度校准建议。

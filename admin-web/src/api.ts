@@ -114,6 +114,14 @@ export const api = {
       `/admin/audit?limit=100${targetId ? `&target_id=${encodeURIComponent(targetId)}` : ''}`,
     ),
   coverage: () => request<CoverageResult>('/admin/coverage'),
+  coverageExport: async () => {
+    const token = tokenStore.get()
+    const response = await fetch('/v1/admin/coverage/export', {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+    if (!response.ok) throw new ApiError('导出失败', response.status)
+    return response.blob()
+  },
   calibrationPreview: (minAnswers: number) =>
     request<CalibrationResult>(
       `/admin/calibration/preview?min_answers=${minAnswers}&limit=200`,

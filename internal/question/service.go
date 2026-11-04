@@ -3,8 +3,10 @@ package question
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"regexp"
+	"sort"
 	"strings"
 	"unicode/utf8"
 
@@ -217,7 +219,61 @@ func (s *Service) Coverage(ctx context.Context) (CoverageResult, error) {
 	if err != nil {
 		return CoverageResult{}, err
 	}
-	return CoverageResult{Cells: cells, Total: total}, nil
+	online := make(map[string]int)
+	for _, cell := range cells {
+		if cell.Status == "online" {
+			online[cell.Subject+"|"+cell.Stage] += cell.Count
+		}
+	}
+	warnings := make([]string, 0)
+	for key, count := range online {
+		if count >= coverageMinOnline {
+			continue
+		}
+		parts := strings.SplitN(key, "|", 2)
+		warnings = append(warnings, fmt.Sprintf("%s/%s 在线题量 %d，低于建议 %d",
+			subjectName(parts[0]), stageName(parts[1]), count, coverageMinOnline))
+	}
+	sort.Strings(warnings)
+	return CoverageResult{Cells: cells, Total: total, Warnings: warnings}, nil
+}
+
+const coverageMinOnline = 50
+
+func subjectName(code string) string {
+	switch code {
+	case "math":
+		return "数学"
+	case "chinese":
+		return "语文"
+	case "english":
+		return "英语"
+	case "science":
+		return "科学"
+	case "logic":
+		return "逻辑"
+	case "safety":
+		return "安全"
+	case "fun":
+		return "趣味"
+	default:
+		return code
+	}
+}
+
+func stageName(code string) string {
+	switch code {
+	case "preschool":
+		return "学龄前"
+	case "low":
+		return "小学低年级"
+	case "mid":
+		return "小学中年级"
+	case "high":
+		return "小学高年级"
+	default:
+		return code
+	}
 }
 
 func (s *Service) List(ctx context.Context, f Filter) (ListResult, error) {

@@ -36,6 +36,7 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 
 		r.With(guard.Require("audit.read")).Get("/admin/audit", s.handleAudit)
 		r.With(guard.Require("question.read")).Get("/admin/coverage", s.handleCoverage)
+		r.With(guard.Require("question.read")).Get("/admin/coverage/export", s.handleCoverageExport)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/preview", s.handleCalibrationPreview)
 		r.With(guard.Require("question.write")).Post("/admin/calibration/apply", s.handleCalibrationApply)
 	})
@@ -48,6 +49,23 @@ func (s *Service) handleCoverage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Service) handleCoverageExport(w http.ResponseWriter, r *http.Request) {
+	result, err := s.Coverage(r.Context())
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="coverage.csv"`)
+	writer := csv.NewWriter(w)
+	_ = writer.Write([]string{"subject", "stage", "type", "status", "difficulty", "count"})
+	for _, cell := range result.Cells {
+		_ = writer.Write([]string{cell.Subject, cell.Stage, cell.Type, cell.Status,
+			strconv.Itoa(cell.Difficulty), strconv.Itoa(cell.Count)})
+	}
+	writer.Flush()
 }
 
 func (s *Service) handleCalibrationPreview(w http.ResponseWriter, r *http.Request) {

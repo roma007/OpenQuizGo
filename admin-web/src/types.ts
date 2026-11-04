@@ -57,6 +57,7 @@ export interface CoverageCell {
 export interface CoverageResult {
   cells: CoverageCell[]
   total: number
+  warnings: string[]
 }
 
 export interface AuditEntry {

@@ -1,4 +1,4 @@
-import { Card, Col, Row, Statistic, Table, Typography, message } from 'antd'
+import { Alert, Button, Card, Col, Row, Space, Statistic, Table, Typography, message } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { api, ApiError } from '../api'
 import type { CoverageCell } from '../types'
@@ -18,6 +18,7 @@ const statusLabel: Record<string, string> = {
 export default function CoveragePage() {
   const [cells, setCells] = useState<CoverageCell[]>([])
   const [total, setTotal] = useState(0)
+  const [warnings, setWarnings] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function CoveragePage() {
         const result = await api.coverage()
         setCells(result.cells || [])
         setTotal(result.total || 0)
+        setWarnings(result.warnings || [])
       } catch (error) {
         message.error(error instanceof ApiError ? error.message : '加载失败')
       } finally {
@@ -47,9 +49,43 @@ export default function CoveragePage() {
 
   return (
     <Card loading={loading}>
-      <Typography.Title level={4} style={{ marginTop: 0 }}>
-        题库覆盖率
-      </Typography.Title>
+      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+        <Typography.Title level={4} style={{ marginTop: 0 }}>
+          题库覆盖率
+        </Typography.Title>
+        <Button
+          onClick={async () => {
+            try {
+              const blob = await api.coverageExport()
+              const url = URL.createObjectURL(blob)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = 'coverage.csv'
+              link.click()
+              URL.revokeObjectURL(url)
+            } catch (error) {
+              message.error(error instanceof ApiError ? error.message : '导出失败')
+            }
+          }}
+        >
+          导出 CSV
+        </Button>
+      </Space>
+      {warnings.length > 0 && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={`覆盖不足告警（${warnings.length} 项）`}
+          description={
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {warnings.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          }
+        />
+      )}
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col span={4}><Statistic title="总题量" value={total} /></Col>
         <Col span={4}><Statistic title="已上线" value={byStatus.online || 0} /></Col>
