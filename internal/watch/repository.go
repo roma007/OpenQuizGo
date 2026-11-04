@@ -172,6 +172,62 @@ func (r *repository) issueParent(ctx context.Context, childID, deviceID string,
 }
 
 // insertAudit 记录家长操作审计。
+// listAlerts 返回家庭告警与未读数。
+func (r *repository) listAlerts(ctx context.Context, accountID string, limit int) ([]Alert, int, error) {
+	const base = `
+		from tamper_event te
+		join child_profile cp on cp.id = te.child_id
+		join family_member fm on fm.family_id = cp.family_id
+		where fm.account_id = $1
+		  and cp.family_id = coalesce(
+		      (select active_family_id from parent_account where id = $1),
+		      fm.family_id)`
+
+	rows, err := r.pool.Query(ctx, `
+		select te.id, te.type, te.detail, te.reported_at, te.child_id,
+		       cp.nickname, te.device_id, te.read_at is not null`+base+`
+		order by te.reported_at desc limit $2`, accountID, limit)
+	if err != nil {
+		return nil, 0, fmt.Errorf("query alerts: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]Alert, 0, limit)
+	for rows.Next() {
+		var item Alert
+		if err := rows.Scan(&item.ID, &item.Type, &item.Detail, &item.ReportedAt,
+			&item.ChildID, &item.ChildName, &item.DeviceID, &item.Read); err != nil {
+			return nil, 0, fmt.Errorf("scan alert: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	var unread int
+	if err := r.pool.QueryRow(ctx, `
+		select count(*)`+base+` and te.read_at is null`, accountID).Scan(&unread); err != nil {
+		return nil, 0, fmt.Errorf("count unread: %w", err)
+	}
+	return items, unread, nil
+}
+
+// markAlertsRead 把家庭全部未读告警标记为已读。
+func (r *repository) markAlertsRead(ctx context.Context, accountID string) error {
+	_, err := r.pool.Exec(ctx, `
+		update tamper_event te set read_at = now()
+		 where te.read_at is null
+		   and te.child_id in (
+		     select cp.id from child_profile cp
+		     join family_member fm on fm.family_id = cp.family_id
+		     where fm.account_id = $1
+		       and cp.family_id = coalesce(
+		           (select active_family_id from parent_account where id = $1),
+		           fm.family_id))`, accountID)
+	return err
+}
+
 func (r *repository) insertAudit(ctx context.Context, accountID, deviceID, grantID string,
 	minutes int, ip string) error {
 	after, _ := json.Marshal(map[string]any{

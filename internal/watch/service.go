@@ -89,6 +89,23 @@ func (s *Service) Issue(ctx context.Context, req IssueRequest) (Grant, error) {
 	return s.toGrant(rec), nil
 }
 
+// ListAlerts 返回家庭告警列表与未读数。
+func (s *Service) ListAlerts(ctx context.Context, accountID string, limit int) (AlertList, error) {
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	items, unread, err := s.repo.listAlerts(ctx, accountID, limit)
+	if err != nil {
+		return AlertList{}, err
+	}
+	return AlertList{Items: items, Unread: unread}, nil
+}
+
+// MarkAlertsRead 标记家庭全部告警已读。
+func (s *Service) MarkAlertsRead(ctx context.Context, accountID string) error {
+	return s.repo.markAlertsRead(ctx, accountID)
+}
+
 // ParentUnlock 由家长为设备签发一段观看时间（无答题会话）。
 func (s *Service) ParentUnlock(ctx context.Context, accountID, deviceID, pin string,
 	minutes int, ip string) (Grant, error) {

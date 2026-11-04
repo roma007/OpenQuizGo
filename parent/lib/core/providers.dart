@@ -9,6 +9,7 @@ import '../data/family_repository.dart';
 import '../data/device_repository.dart';
 import '../data/rule_repository.dart';
 import '../data/report_repository.dart';
+import '../data/alert_repository.dart';
 import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -94,6 +95,14 @@ final ruleProvider = FutureProvider.family<Cached<RuleWithVersion>, String>((
     }
     rethrow;
   }
+});
+
+final alertRepositoryProvider = Provider<AlertRepository>((ref) {
+  return AlertRepository(ref.watch(apiClientProvider));
+});
+
+final alertsProvider = FutureProvider<AlertList>((ref) {
+  return ref.watch(alertRepositoryProvider).list();
 });
 
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:openquizgo_parent/core/api/models.dart';
 import 'package:openquizgo_parent/core/cache/cache_store.dart';
 import 'package:openquizgo_parent/core/providers.dart';
+import 'package:openquizgo_parent/data/alert_repository.dart';
 import 'package:openquizgo_parent/features/shell/home_shell.dart';
 
 void main() {
@@ -16,6 +17,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          alertsProvider.overrideWith(
+            (ref) async => AlertList(items: const [], unread: 0),
+          ),
           childrenProvider.overrideWith(
             (ref) async =>
                 Cached.fresh([Child(id: 'c1', nickname: '小明', stage: 'low')]),

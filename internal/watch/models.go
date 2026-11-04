@@ -1,6 +1,9 @@
 package watch
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Grant 是服务端签发的观看授权。
 type Grant struct {
@@ -67,6 +70,24 @@ type Capability struct {
 	Permissions map[string]bool `json:"permissions"`
 	OSVersion   string          `json:"os_version"`
 	AppVersion  string          `json:"app_version"`
+}
+
+// Alert 是家长端告警条目（来源于 tamper_event）。
+type Alert struct {
+	ID         int64           `json:"id"`
+	Type       string          `json:"type"`
+	Detail     json.RawMessage `json:"detail"`
+	ReportedAt time.Time       `json:"reported_at"`
+	ChildID    string          `json:"child_id"`
+	ChildName  string          `json:"child_name"`
+	DeviceID   string          `json:"device_id"`
+	Read       bool            `json:"read"`
+}
+
+// AlertList 是告警列表结果。
+type AlertList struct {
+	Items  []Alert `json:"items"`
+	Unread int     `json:"unread"`
 }
 
 // TamperEvent 是篡改/权限异常上报。

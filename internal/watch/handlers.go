@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
@@ -14,6 +15,28 @@ import (
 // ParentRoutes 注册家长端设备操作接口。
 func (s *Service) ParentRoutes(r chi.Router) {
 	r.Post("/family/devices/{deviceID}/unlock", s.handleParentUnlock)
+	r.Get("/family/alerts", s.handleListAlerts)
+	r.Post("/family/alerts/read", s.handleMarkAlertsRead)
+}
+
+func (s *Service) handleListAlerts(w http.ResponseWriter, r *http.Request) {
+	accountID := identity.AccountIDFrom(r.Context())
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	result, err := s.ListAlerts(r.Context(), accountID, limit)
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Service) handleMarkAlertsRead(w http.ResponseWriter, r *http.Request) {
+	accountID := identity.AccountIDFrom(r.Context())
+	if err := s.MarkAlertsRead(r.Context(), accountID); err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 // DeviceRoutes 注册电视端计量与设备上报接口。

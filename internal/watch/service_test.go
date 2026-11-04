@@ -224,6 +224,59 @@ func seedWatchChild(t *testing.T, pool *pgxpool.Pool, hash ...string) string {
 	return childID
 }
 
+func TestAlertsListAndRead(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareWatchDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedWatchChild(t, pool)
+	if _, err := pool.Exec(ctx, `
+		insert into tamper_event (device_id, child_id, type, detail)
+		values ('tv-alert', $1, 'permission_revoked', '{"permission":"accessibility"}'::jsonb)`,
+		childID); err != nil {
+		t.Fatalf("insert tamper: %v", err)
+	}
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		select fm.account_id from child_profile cp
+		join family_member fm on fm.family_id = cp.family_id
+		where cp.id = $1`, childID).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+
+	repo := newRepository(pool)
+	alerts, unread, err := repo.listAlerts(ctx, accountID, 10)
+	if err != nil {
+		t.Fatalf("list alerts: %v", err)
+	}
+	if len(alerts) != 1 || alerts[0].Type != "permission_revoked" || alerts[0].Read {
+		t.Fatalf("unexpected alerts: %+v", alerts)
+	}
+	if unread != 1 {
+		t.Fatalf("unread = %d, want 1", unread)
+	}
+
+	if err := repo.markAlertsRead(ctx, accountID); err != nil {
+		t.Fatalf("mark read: %v", err)
+	}
+	alerts, unread, err = repo.listAlerts(ctx, accountID, 10)
+	if err != nil {
+		t.Fatalf("list after read: %v", err)
+	}
+	if unread != 0 || !alerts[0].Read {
+		t.Fatalf("after read unread=%d alert=%+v", unread, alerts[0])
+	}
+}
+
 func TestIssueParentGrant(t *testing.T) {
 	dbURL := os.Getenv("TEST_DATABASE_URL")
 	if dbURL == "" {
