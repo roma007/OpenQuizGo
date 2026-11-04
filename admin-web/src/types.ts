@@ -149,3 +149,23 @@ export interface MembershipPlan {
 export interface MembershipPlanList {
   items: MembershipPlan[]
 }
+
+export interface MembershipOrder {
+  id: string
+  order_no: string
+  account_id?: string
+  plan_id: string
+  plan_name: string
+  amount_cents: number
+  duration_days: number
+  status: string
+  channel: string
+  created_at: string
+  paid_at?: string
+  refunded_at?: string
+}
+
+export interface MembershipOrderList {
+  items: MembershipOrder[]
+  total: number
+}

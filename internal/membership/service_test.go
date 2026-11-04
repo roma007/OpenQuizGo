@@ -146,6 +146,61 @@ func TestMembershipWorkflow(t *testing.T) {
 		t.Fatalf("unexpected orders: %+v", orders)
 	}
 
+	// 退款：回退一单时长，重复退款幂等。
+	refunded, err := svc.RefundOrder(ctx, order2.ID)
+	if err != nil {
+		t.Fatalf("refund order2: %v", err)
+	}
+	if refunded.Status != "refunded" {
+		t.Fatalf("refund status = %s, want refunded", refunded.Status)
+	}
+	afterRefund, err := svc.Center(ctx, accountID)
+	if err != nil {
+		t.Fatalf("center after refund: %v", err)
+	}
+	if afterRefund.Membership == nil || !afterRefund.Membership.ExpiresAt.Equal(firstExpiry) {
+		t.Fatalf("refund did not roll back expiry: %+v", afterRefund.Membership)
+	}
+	againRefund, err := svc.RefundOrder(ctx, order2.ID)
+	if err != nil {
+		t.Fatalf("refund twice: %v", err)
+	}
+	afterTwice, _ := svc.Center(ctx, accountID)
+	if !againRefund.RefundedAt.Equal(*refunded.RefundedAt) ||
+		!afterTwice.Membership.ExpiresAt.Equal(firstExpiry) {
+		t.Fatal("idempotent refund changed expiry")
+	}
+
+	adminOrders, total, err := svc.AdminOrders(ctx, "refunded", 20, 0)
+	if err != nil {
+		t.Fatalf("admin orders: %v", err)
+	}
+	if total != 1 || len(adminOrders) != 1 || adminOrders[0].ID != order2.ID {
+		t.Fatalf("unexpected admin orders: total=%d items=%+v", total, adminOrders)
+	}
+
+	// 未支付订单不能退款。
+	pending, err := svc.CreateOrder(ctx, accountID, plan.ID)
+	if err != nil {
+		t.Fatalf("pending order: %v", err)
+	}
+	if _, err := svc.RefundOrder(ctx, pending.ID); err == nil || !isCode(err, "ORDER_NOT_REFUNDABLE") {
+		t.Fatalf("refund pending = %v, want ORDER_NOT_REFUNDABLE", err)
+	}
+
+	// 退掉首单后会员到期，权益失效。
+	if _, err := svc.RefundOrder(ctx, order.ID); err != nil {
+		t.Fatalf("refund order1: %v", err)
+	}
+	expiredCenter, err := svc.Center(ctx, accountID)
+	if err != nil {
+		t.Fatalf("center after full refund: %v", err)
+	}
+	if expiredCenter.Membership == nil || expiredCenter.Membership.Active ||
+		len(expiredCenter.Membership.Entitlements) != 0 {
+		t.Fatalf("membership still active after refund: %+v", expiredCenter.Membership)
+	}
+
 	// 有订单引用时删除套餐失败。
 	if err := svc.DeletePlan(ctx, plan.ID); err == nil || !isCode(err, "PLAN_IN_USE") {
 		t.Fatalf("delete used plan = %v, want PLAN_IN_USE", err)

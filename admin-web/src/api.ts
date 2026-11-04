@@ -11,6 +11,8 @@ import type {
   QuizPreviewResult,
   MembershipPlan,
   MembershipPlanList,
+  MembershipOrder,
+  MembershipOrderList,
 } from './types'
 
 const TOKEN_KEY = 'openquizgo.admin.token'
@@ -149,6 +151,17 @@ export const api = {
     }),
   deleteMembershipPlan: (id: string) =>
     request<void>(`/admin/membership/plans/${id}`, { method: 'DELETE' }),
+  membershipOrders: (params: Record<string, string | number | undefined>) => {
+    const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') query.set(key, String(value))
+    })
+    return request<MembershipOrderList>(`/admin/membership/orders?${query.toString()}`)
+  },
+  refundMembershipOrder: (id: string) =>
+    request<MembershipOrder>(`/admin/membership/orders/${id}/refund`, {
+      method: 'POST',
+    }),
   topics: () => request<TopicPackList>('/admin/topics'),
   topic: (id: string) => request<TopicPack>(`/admin/topics/${id}`),
   createTopic: (payload: unknown) =>

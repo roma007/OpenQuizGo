@@ -2,6 +2,7 @@ import {
   AppstoreOutlined,
   AuditOutlined,
   CloudUploadOutlined,
+  CreditCardOutlined,
   CrownOutlined,
   DatabaseOutlined,
   ExperimentOutlined,
@@ -27,6 +28,7 @@ import CalibrationPage from './pages/CalibrationPage'
 import CoveragePage from './pages/CoveragePage'
 import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
+import MembershipOrdersPage from './pages/MembershipOrdersPage'
 import MembershipPlansPage from './pages/MembershipPlansPage'
 import QuestionEdit from './pages/QuestionEdit'
 import Questions from './pages/Questions'
@@ -117,6 +119,12 @@ export default function App() {
                 disabled: !can('membership.read'),
               },
               {
+                key: '/membership/orders',
+                icon: <CreditCardOutlined />,
+                label: '会员订单',
+                disabled: !can('membership.read'),
+              },
+              {
                 key: '/quiz-preview',
                 icon: <PlayCircleOutlined />,
                 label: '组卷预览',
@@ -177,6 +185,7 @@ export default function App() {
               <Route path="/topics" element={<TopicsPage />} />
               <Route path="/quiz-preview" element={<QuizPreviewPage />} />
               <Route path="/membership" element={<MembershipPlansPage />} />
+              <Route path="/membership/orders" element={<MembershipOrdersPage />} />
               <Route path="/import" element={<ImportPage />} />
               <Route path="/audit" element={<AuditPage />} />
               <Route path="/coverage" element={<CoveragePage />} />

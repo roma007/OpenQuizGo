@@ -295,6 +295,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
     final paid = order.status == 'paid';
     final label = switch (order.status) {
       'paid' => '已支付',
+      'refunded' => '已退款',
       'cancelled' => '已取消',
       _ => '待支付',
     };

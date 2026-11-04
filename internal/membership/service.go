@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -50,6 +51,7 @@ type PlanInput struct {
 type Order struct {
 	ID           string     `json:"id"`
 	OrderNo      string     `json:"order_no"`
+	AccountID    string     `json:"account_id,omitempty"`
 	PlanID       string     `json:"plan_id"`
 	PlanName     string     `json:"plan_name"`
 	AmountCents  int        `json:"amount_cents"`
@@ -58,6 +60,7 @@ type Order struct {
 	Channel      string     `json:"channel"`
 	CreatedAt    time.Time  `json:"created_at"`
 	PaidAt       *time.Time `json:"paid_at,omitempty"`
+	RefundedAt   *time.Time `json:"refunded_at,omitempty"`
 }
 
 type Membership struct {
@@ -93,6 +96,8 @@ func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("membership.write")).Post("/admin/membership/plans", s.handleAdminCreate)
 		r.With(guard.Require("membership.write")).Put("/admin/membership/plans/{id}", s.handleAdminUpdate)
 		r.With(guard.Require("membership.write")).Delete("/admin/membership/plans/{id}", s.handleAdminDelete)
+		r.With(guard.Require("membership.read")).Get("/admin/membership/orders", s.handleAdminOrders)
+		r.With(guard.Require("membership.write")).Post("/admin/membership/orders/{id}/refund", s.handleAdminRefund)
 	})
 }
 
@@ -146,6 +151,26 @@ func (s *Service) handleAdminDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (s *Service) handleAdminOrders(w http.ResponseWriter, r *http.Request) {
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	orders, total, err := s.AdminOrders(r.Context(), r.URL.Query().Get("status"), limit, offset)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": orders, "total": total})
+}
+
+func (s *Service) handleAdminRefund(w http.ResponseWriter, r *http.Request) {
+	order, err := s.RefundOrder(r.Context(), chi.URLParam(r, "id"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, order)
 }
 
 func (s *Service) handleCenter(w http.ResponseWriter, r *http.Request) {
@@ -296,8 +321,8 @@ func (s *Service) Center(ctx context.Context, accountID string) (Center, error) 
 
 func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error) {
 	rows, err := s.pool.Query(ctx, `
-		select id, order_no, plan_id, plan_name, amount_cents, duration_days,
-		       status, channel, created_at, paid_at
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		       status, channel, created_at, paid_at, refunded_at
 		from membership_order where account_id = $1
 		order by created_at desc limit 20`, accountID)
 	if err != nil {
@@ -306,15 +331,48 @@ func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error)
 	defer rows.Close()
 	orders := make([]Order, 0)
 	for rows.Next() {
-		var item Order
-		if err := rows.Scan(&item.ID, &item.OrderNo, &item.PlanID, &item.PlanName,
-			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt); err != nil {
+		item, err := scanOrder(rows)
+		if err != nil {
 			return nil, err
 		}
 		orders = append(orders, item)
 	}
 	return orders, rows.Err()
+}
+
+// AdminOrders 返回全部订单，可按状态筛选。
+func (s *Service) AdminOrders(ctx context.Context, status string, limit, offset int) ([]Order, int, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	var total int
+	if err := s.pool.QueryRow(ctx,
+		`select count(*)::int from membership_order where ($1 = '' or status = $1)`,
+		status).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.pool.Query(ctx, `
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		       status, channel, created_at, paid_at, refunded_at
+		from membership_order
+		where ($1 = '' or status = $1)
+		order by created_at desc limit $2 offset $3`, status, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	orders := make([]Order, 0)
+	for rows.Next() {
+		item, err := scanOrder(rows)
+		if err != nil {
+			return nil, 0, err
+		}
+		orders = append(orders, item)
+	}
+	return orders, total, rows.Err()
 }
 
 func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Order, error) {
@@ -342,11 +400,12 @@ func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Or
 		insert into membership_order (
 			order_no, account_id, plan_id, plan_name, amount_cents, duration_days)
 		values ($1, $2, $3, $4, $5, $6)
-		returning id, order_no, plan_id, plan_name, amount_cents, duration_days,
-		          status, channel, created_at, paid_at`,
+		returning id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		          status, channel, created_at, paid_at, refunded_at`,
 		orderNo(), accountID, plan.ID, plan.Name, plan.PriceCents, plan.DurationDays).
-		Scan(&item.ID, &item.OrderNo, &item.PlanID, &item.PlanName, &item.AmountCents,
-			&item.DurationDays, &item.Status, &item.Channel, &item.CreatedAt, &item.PaidAt)
+		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
+			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
+			&item.CreatedAt, &item.PaidAt, &item.RefundedAt)
 	if err != nil {
 		return Order{}, err
 	}
@@ -365,12 +424,13 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 
 	var item Order
 	err = tx.QueryRow(ctx, `
-		select id, order_no, plan_id, plan_name, amount_cents, duration_days,
-		       status, channel, created_at, paid_at
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		       status, channel, created_at, paid_at, refunded_at
 		from membership_order
 		where id = $1 and account_id = $2 for update`, orderID, accountID).
-		Scan(&item.ID, &item.OrderNo, &item.PlanID, &item.PlanName, &item.AmountCents,
-			&item.DurationDays, &item.Status, &item.Channel, &item.CreatedAt, &item.PaidAt)
+		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
+			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
+			&item.CreatedAt, &item.PaidAt, &item.RefundedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PayResult{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -427,6 +487,69 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 	return PayResult{Order: item, Membership: *member}, nil
 }
 
+// RefundOrder 模拟退款，按订单时长回退会员到期时间。
+func (s *Service) RefundOrder(ctx context.Context, orderID string) (Order, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Order{}, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var item Order
+	err = tx.QueryRow(ctx, `
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		       status, channel, created_at, paid_at, refunded_at
+		from membership_order where id = $1 for update`, orderID).
+		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
+			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
+			&item.CreatedAt, &item.PaidAt, &item.RefundedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
+	}
+	if err != nil {
+		return Order{}, err
+	}
+	if item.Status == "refunded" {
+		if err := tx.Commit(ctx); err != nil {
+			return Order{}, err
+		}
+		return item, nil
+	}
+	if item.Status != "paid" {
+		return Order{}, apiError{409, "ORDER_NOT_REFUNDABLE", "只有已支付订单可以退款"}
+	}
+
+	var expiresAt *time.Time
+	_ = tx.QueryRow(ctx,
+		`select expires_at from account_membership where account_id = $1 for update`,
+		item.AccountID).Scan(&expiresAt)
+	if expiresAt != nil {
+		now := time.Now()
+		newExpiry := expiresAt.AddDate(0, 0, -item.DurationDays)
+		newStatus := "active"
+		if !newExpiry.After(now) {
+			newStatus = "expired"
+		}
+		if _, err := tx.Exec(ctx, `
+			update account_membership set status = $2, expires_at = $3, updated_at = now()
+			where account_id = $1`, item.AccountID, newStatus, newExpiry); err != nil {
+			return Order{}, err
+		}
+	}
+	now := time.Now()
+	if _, err := tx.Exec(ctx, `
+		update membership_order set status = 'refunded', refunded_at = $2 where id = $1`,
+		item.ID, now); err != nil {
+		return Order{}, err
+	}
+	item.Status = "refunded"
+	item.RefundedAt = &now
+	if err := tx.Commit(ctx); err != nil {
+		return Order{}, err
+	}
+	return item, nil
+}
+
 func (s *Service) current(ctx context.Context, accountID string) (*Membership, error) {
 	var member Membership
 	var expiresAt time.Time
@@ -479,6 +602,14 @@ func (s *Service) getPlan(ctx context.Context, id string) (Plan, error) {
 
 type scanner interface {
 	Scan(dest ...any) error
+}
+
+func scanOrder(row scanner) (Order, error) {
+	var item Order
+	err := row.Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID,
+		&item.PlanName, &item.AmountCents, &item.DurationDays, &item.Status,
+		&item.Channel, &item.CreatedAt, &item.PaidAt, &item.RefundedAt)
+	return item, err
 }
 
 func scanPlan(row scanner) (Plan, error) {
