@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import 'members_page.dart';
+import 'pin_page.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -15,11 +17,30 @@ class SettingsPage extends ConsumerWidget {
           child: ListTile(
             leading: const Icon(Icons.lock_outline),
             title: const Text('家长 PIN'),
-            subtitle: const Text('T8：设置/修改 PIN'),
+            subtitle: const Text('修改 PIN（规则保存与远程解锁需要）'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => ScaffoldMessenger.of(
+            onTap: () async {
+              final saved = await Navigator.of(
+                context,
+              ).push<bool>(MaterialPageRoute(builder: (_) => const PinPage()));
+              if (saved == true && context.mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('家长 PIN 已更新')));
+              }
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.group_outlined),
+            title: const Text('家庭成员'),
+            subtitle: const Text('邀请另一位家长、加入家庭'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('T8 接入'))),
+            ).push(MaterialPageRoute(builder: (_) => const MembersPage())),
           ),
         ),
         const SizedBox(height: 12),

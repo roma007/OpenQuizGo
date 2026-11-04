@@ -27,6 +27,10 @@ final childrenProvider = FutureProvider<List<Child>>((ref) {
   return ref.watch(familyRepositoryProvider).listChildren();
 });
 
+final membersProvider = FutureProvider<List<FamilyMember>>((ref) {
+  return ref.watch(familyRepositoryProvider).listMembers();
+});
+
 final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
   return DeviceRepository(ref.watch(apiClientProvider));
 });
