@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/api_client.dart';
+import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 
 class MembersPage extends ConsumerWidget {
@@ -14,73 +15,76 @@ class MembersPage extends ConsumerWidget {
     final members = ref.watch(membersProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('家庭成员')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _invite(context, ref),
-                    icon: const Icon(Icons.person_add_alt),
-                    label: const Text('生成邀请码'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _join(context, ref),
-                    icon: const Icon(Icons.group_add),
-                    label: const Text('加入家庭'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: members.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('加载成员失败：$error'),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: () => ref.invalidate(membersProvider),
-                      child: const Text('重试'),
+      body: ContentFrame(
+        maxWidth: 1000,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _invite(context, ref),
+                      icon: const Icon(Icons.person_add_alt),
+                      label: const Text('生成邀请码'),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _join(context, ref),
+                      icon: const Icon(Icons.group_add),
+                      label: const Text('加入家庭'),
+                    ),
+                  ),
+                ],
               ),
-              data: (items) => ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final member = items[index];
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Icon(
-                          member.role == 'owner'
-                              ? Icons.admin_panel_settings
-                              : Icons.person,
+            ),
+            Expanded(
+              child: members.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('加载成员失败：$error'),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: () => ref.invalidate(membersProvider),
+                        child: const Text('重试'),
+                      ),
+                    ],
+                  ),
+                ),
+                data: (items) => ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: items.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final member = items[index];
+                    return Card(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          child: Icon(
+                            member.role == 'owner'
+                                ? Icons.admin_panel_settings
+                                : Icons.person,
+                          ),
+                        ),
+                        title: Text(member.phone),
+                        subtitle: Text(
+                          '${_roleLabel(member.role)}'
+                          '${member.joinedAt == null ? '' : ' · 加入于 ${DateFormat('yyyy-MM-dd').format(member.joinedAt!.toLocal())}'}',
                         ),
                       ),
-                      title: Text(member.phone),
-                      subtitle: Text(
-                        '${_roleLabel(member.role)}'
-                        '${member.joinedAt == null ? '' : ' · 加入于 ${DateFormat('yyyy-MM-dd').format(member.joinedAt!.toLocal())}'}',
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

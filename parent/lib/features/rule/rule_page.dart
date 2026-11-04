@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
+import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/rule_repository.dart';
 
@@ -37,11 +38,14 @@ class _RulePageState extends ConsumerState<RulePage> {
             ],
           ),
         ),
-        data: (cached) => _RuleForm(
-          childId: widget.child.id,
-          initial: cached.data.rule,
-          version: cached.data.version,
-          staleAt: cached.stale ? cached.cachedAt : null,
+        data: (cached) => ContentFrame(
+          maxWidth: 900,
+          child: _RuleForm(
+            childId: widget.child.id,
+            initial: cached.data.rule,
+            version: cached.data.version,
+            staleAt: cached.stale ? cached.cachedAt : null,
+          ),
         ),
       ),
     );

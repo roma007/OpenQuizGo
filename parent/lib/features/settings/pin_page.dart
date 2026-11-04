@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
+import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 
 class PinPage extends ConsumerStatefulWidget {
@@ -52,30 +53,33 @@ class _PinPageState extends ConsumerState<PinPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('家长 PIN')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            const Text('PIN 用于修改规则和远程解锁。首次设置时「当前 PIN」留空。'),
-            const SizedBox(height: 20),
-            _pinField(_current, '当前 PIN（首次设置留空）', required: false),
-            const SizedBox(height: 12),
-            _pinField(_next, '新 PIN（4–6 位数字）'),
-            const SizedBox(height: 12),
-            _pinField(_confirm, '确认新 PIN', confirm: true),
-            const SizedBox(height: 28),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: _saving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('保存 PIN'),
-            ),
-          ],
+      body: ContentFrame(
+        maxWidth: 720,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              const Text('PIN 用于修改规则和远程解锁。首次设置时「当前 PIN」留空。'),
+              const SizedBox(height: 20),
+              _pinField(_current, '当前 PIN（首次设置留空）', required: false),
+              const SizedBox(height: 12),
+              _pinField(_next, '新 PIN（4–6 位数字）'),
+              const SizedBox(height: 12),
+              _pinField(_confirm, '确认新 PIN', confirm: true),
+              const SizedBox(height: 28),
+              FilledButton(
+                onPressed: _saving ? null : _save,
+                child: _saving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('保存 PIN'),
+              ),
+            ],
+          ),
         ),
       ),
     );

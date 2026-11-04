@@ -45,52 +45,48 @@ class ChildPage extends ConsumerWidget {
             Expanded(
               child: items.isEmpty
                   ? _EmptyView(onCreate: () => _openEditor(context, ref))
-                  : RefreshIndicator(
-                      onRefresh: () async => ref.invalidate(childrenProvider),
-                      child: ListView.separated(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(16),
-                        itemCount: items.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final child = items[index];
-                          return Card(
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
-                              ),
-                              leading: CircleAvatar(
-                                radius: 26,
-                                child: Text(
-                                  child.nickname.isEmpty
-                                      ? '?'
-                                      : child.nickname.substring(0, 1),
-                                  style: const TextStyle(fontSize: 20),
-                                ),
-                              ),
-                              title: Text(
-                                child.nickname,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              subtitle: Text(_subtitle(child)),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    tooltip: '观看规则',
-                                    icon: const Icon(Icons.tune),
-                                    onPressed: () => _openRule(context, child),
-                                  ),
-                                  const Icon(Icons.chevron_right),
-                                ],
-                              ),
-                              onTap: () =>
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final columns = constraints.maxWidth >= 1400
+                            ? 3
+                            : constraints.maxWidth >= 900
+                            ? 2
+                            : 1;
+                        final cards = [
+                          for (final child in items)
+                            _ChildCard(
+                              child: child,
+                              subtitle: _subtitle(child),
+                              onEdit: () =>
                                   _openEditor(context, ref, child: child),
+                              onRule: () => _openRule(context, child),
                             ),
-                          );
-                        },
-                      ),
+                        ];
+                        return RefreshIndicator(
+                          onRefresh: () async =>
+                              ref.invalidate(childrenProvider),
+                          child: columns == 1
+                              ? ListView.separated(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.all(16),
+                                  itemCount: cards.length,
+                                  separatorBuilder: (_, _) =>
+                                      const SizedBox(height: 12),
+                                  itemBuilder: (_, index) => cards[index],
+                                )
+                              : GridView.count(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.all(16),
+                                  crossAxisCount: columns,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  childAspectRatio: 4.2,
+                                  children: cards,
+                                ),
+                        );
+                      },
                     ),
             ),
           ],
@@ -121,6 +117,56 @@ class ChildPage extends ConsumerWidget {
       MaterialPageRoute(builder: (_) => ChildEditPage(child: child)),
     );
     if (saved == true) ref.invalidate(childrenProvider);
+  }
+}
+
+class _ChildCard extends StatelessWidget {
+  const _ChildCard({
+    required this.child,
+    required this.subtitle,
+    required this.onEdit,
+    required this.onRule,
+  });
+
+  final Child child;
+  final String subtitle;
+  final VoidCallback onEdit;
+  final VoidCallback onRule;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 10,
+        ),
+        leading: CircleAvatar(
+          radius: 26,
+          child: Text(
+            child.nickname.isEmpty ? '?' : child.nickname.substring(0, 1),
+            style: const TextStyle(fontSize: 20),
+          ),
+        ),
+        title: Text(
+          child.nickname,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        subtitle: Text(subtitle),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: '观看规则',
+              icon: const Icon(Icons.tune),
+              onPressed: onRule,
+            ),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+        onTap: onEdit,
+      ),
+    );
   }
 }
 

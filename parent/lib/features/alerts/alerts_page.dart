@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/alert_repository.dart';
 
@@ -39,52 +40,55 @@ class _AlertsPageState extends ConsumerState<AlertsPage> {
     final alerts = ref.watch(alertsProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('消息中心')),
-      body: alerts.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('加载告警失败：$error'),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () => ref.invalidate(alertsProvider),
-                child: const Text('重试'),
-              ),
-            ],
+      body: ContentFrame(
+        maxWidth: 1000,
+        child: alerts.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('加载告警失败：$error'),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: () => ref.invalidate(alertsProvider),
+                  child: const Text('重试'),
+                ),
+              ],
+            ),
           ),
-        ),
-        data: (data) {
-          if (data.items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.notifications_none,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('暂无告警'),
-                  const SizedBox(height: 8),
-                  const Text('权限异常、卸载尝试等事件会显示在这里'),
-                ],
+          data: (data) {
+            if (data.items.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.notifications_none,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('暂无告警'),
+                    const SizedBox(height: 8),
+                    const Text('权限异常、卸载尝试等事件会显示在这里'),
+                  ],
+                ),
+              );
+            }
+            return RefreshIndicator(
+              onRefresh: () async => ref.invalidate(alertsProvider),
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                itemCount: data.items.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) =>
+                    _AlertCard(alert: data.items[index]),
               ),
             );
-          }
-          return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(alertsProvider),
-            child: ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: data.items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) =>
-                  _AlertCard(alert: data.items[index]),
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }

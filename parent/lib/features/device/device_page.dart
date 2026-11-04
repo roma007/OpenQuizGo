@@ -45,22 +45,43 @@ class DevicePage extends ConsumerWidget {
               if (items.isEmpty) {
                 return _EmptyView(onBind: () => _bind(context, ref));
               }
-              return RefreshIndicator(
-                onRefresh: () async => ref.invalidate(devicesProvider),
-                child: ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  itemCount: items.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final device = items[index];
-                    return _DeviceCard(
-                      device: device,
-                      onUnlock: () => _unlock(context, ref, device),
-                      onUnbind: () => _confirmUnbind(context, ref, device),
-                    );
-                  },
-                ),
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = constraints.maxWidth >= 1400
+                      ? 3
+                      : constraints.maxWidth >= 900
+                      ? 2
+                      : 1;
+                  final cards = [
+                    for (final device in items)
+                      _DeviceCard(
+                        device: device,
+                        onUnlock: () => _unlock(context, ref, device),
+                        onUnbind: () => _confirmUnbind(context, ref, device),
+                      ),
+                  ];
+                  return RefreshIndicator(
+                    onRefresh: () async => ref.invalidate(devicesProvider),
+                    child: columns == 1
+                        ? ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(16),
+                            itemCount: cards.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (_, index) => cards[index],
+                          )
+                        : GridView.count(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(16),
+                            crossAxisCount: columns,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 4.2,
+                            children: cards,
+                          ),
+                  );
+                },
               );
             },
           ),

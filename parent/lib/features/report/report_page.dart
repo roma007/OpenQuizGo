@@ -151,25 +151,65 @@ class _ReportBody extends ConsumerWidget {
             ),
           );
         }
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-          children: [
-            if (cachedReports.stale)
-              Padding(
+        final banner = cachedReports.stale
+            ? Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   '离线数据 · 最后同步 ${_formatCachedAt(cachedReports.cachedAt)}',
                   style: const TextStyle(color: Colors.orange, fontSize: 13),
                 ),
-              ),
-            _LatestReportCard(report: items.first),
-            if (items.length > 1) ...[
-              const SizedBox(height: 16),
-              Text('历史报告', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              for (final report in items.skip(1)) _HistoryTile(report: report),
-            ],
-          ],
+              )
+            : null;
+        final latest = _LatestReportCard(report: items.first);
+        final history = [
+          for (final report in items.skip(1)) _HistoryTile(report: report),
+        ];
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 1000 && items.length > 1;
+            if (wide) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                      children: [?banner, latest],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 1,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(0, 4, 16, 24),
+                      children: [
+                        Text(
+                          '历史报告',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        ...history,
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+              children: [
+                ?banner,
+                latest,
+                if (items.length > 1) ...[
+                  const SizedBox(height: 16),
+                  Text('历史报告', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  ...history,
+                ],
+              ],
+            );
+          },
         );
       },
     );

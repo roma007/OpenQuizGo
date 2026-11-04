@@ -33,4 +33,31 @@ void main() {
     expect(find.text('孩子档案'), findsOneWidget);
     expect(find.text('小明'), findsOneWidget);
   });
+
+  testWidgets('宽屏使用侧边导航', (tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          alertsProvider.overrideWith(
+            (ref) async => AlertList(items: const [], unread: 0),
+          ),
+          childrenProvider.overrideWith(
+            (ref) async =>
+                Cached.fresh([Child(id: 'c1', nickname: '小明', stage: 'low')]),
+          ),
+        ],
+        child: const MaterialApp(home: HomeShell()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
 }
