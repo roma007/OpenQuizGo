@@ -147,12 +147,13 @@ func TestMembershipWorkflow(t *testing.T) {
 	}
 
 	// 退款：回退一单时长，重复退款幂等。
-	refunded, err := svc.RefundOrder(ctx, order2.ID)
+	refunded, err := svc.RefundOrder(ctx, order2.ID, "用户申请退款", "00000000-0000-0000-0000-000000000001")
 	if err != nil {
 		t.Fatalf("refund order2: %v", err)
 	}
-	if refunded.Status != "refunded" {
-		t.Fatalf("refund status = %s, want refunded", refunded.Status)
+	if refunded.Status != "refunded" || refunded.RefundReason != "用户申请退款" ||
+		refunded.RefundedBy != "00000000-0000-0000-0000-000000000001" {
+		t.Fatalf("unexpected refund: %+v", refunded)
 	}
 	afterRefund, err := svc.Center(ctx, accountID)
 	if err != nil {
@@ -161,14 +162,15 @@ func TestMembershipWorkflow(t *testing.T) {
 	if afterRefund.Membership == nil || !afterRefund.Membership.ExpiresAt.Equal(firstExpiry) {
 		t.Fatalf("refund did not roll back expiry: %+v", afterRefund.Membership)
 	}
-	againRefund, err := svc.RefundOrder(ctx, order2.ID)
+	againRefund, err := svc.RefundOrder(ctx, order2.ID, "再次退款", "00000000-0000-0000-0000-000000000001")
 	if err != nil {
 		t.Fatalf("refund twice: %v", err)
 	}
 	afterTwice, _ := svc.Center(ctx, accountID)
 	if !againRefund.RefundedAt.Equal(*refunded.RefundedAt) ||
-		!afterTwice.Membership.ExpiresAt.Equal(firstExpiry) {
-		t.Fatal("idempotent refund changed expiry")
+		!afterTwice.Membership.ExpiresAt.Equal(firstExpiry) ||
+		againRefund.RefundReason != "用户申请退款" {
+		t.Fatal("idempotent refund changed expiry or reason")
 	}
 
 	adminOrders, total, err := svc.AdminOrders(ctx, "refunded", 20, 0)
@@ -184,12 +186,15 @@ func TestMembershipWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("pending order: %v", err)
 	}
-	if _, err := svc.RefundOrder(ctx, pending.ID); err == nil || !isCode(err, "ORDER_NOT_REFUNDABLE") {
+	if _, err := svc.RefundOrder(ctx, pending.ID, "", "00000000-0000-0000-0000-000000000001"); err == nil || !isCode(err, "VALIDATION_ERROR") {
+		t.Fatalf("empty reason = %v, want VALIDATION_ERROR", err)
+	}
+	if _, err := svc.RefundOrder(ctx, pending.ID, "测试", "00000000-0000-0000-0000-000000000001"); err == nil || !isCode(err, "ORDER_NOT_REFUNDABLE") {
 		t.Fatalf("refund pending = %v, want ORDER_NOT_REFUNDABLE", err)
 	}
 
 	// 退掉首单后会员到期，权益失效。
-	if _, err := svc.RefundOrder(ctx, order.ID); err != nil {
+	if _, err := svc.RefundOrder(ctx, order.ID, "全额退款", "00000000-0000-0000-0000-000000000001"); err != nil {
 		t.Fatalf("refund order1: %v", err)
 	}
 	expiredCenter, err := svc.Center(ctx, accountID)

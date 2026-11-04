@@ -1,7 +1,8 @@
 import {
   Button,
   Card,
-  Popconfirm,
+  Input,
+  Modal,
   Select,
   Space,
   Table,
@@ -40,6 +41,8 @@ export default function MembershipOrdersPage() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [refunding, setRefunding] = useState<string | null>(null)
+  const [refundTarget, setRefundTarget] = useState<MembershipOrder | null>(null)
+  const [reason, setReason] = useState('')
   const pageSize = 20
 
   const load = async (nextPage = page, nextStatus = status) => {
@@ -64,11 +67,19 @@ export default function MembershipOrdersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const refund = async (order: MembershipOrder) => {
+  const refund = async () => {
+    const order = refundTarget
+    if (!order) return
+    if (!reason.trim()) {
+      message.warning('请填写退款原因')
+      return
+    }
     setRefunding(order.id)
     try {
-      await api.refundMembershipOrder(order.id)
+      await api.refundMembershipOrder(order.id, reason.trim())
       message.success(`订单 ${order.order_no} 已退款`)
+      setRefundTarget(null)
+      setReason('')
       await load()
     } catch (error) {
       message.error(error instanceof ApiError ? error.message : '退款失败')
@@ -112,27 +123,29 @@ export default function MembershipOrdersPage() {
       render: (value?: string) => (value ? new Date(value).toLocaleString() : '—'),
     },
     {
+      title: '退款原因',
+      dataIndex: 'refund_reason',
+      width: 180,
+      ellipsis: true,
+      render: (value?: string) => value || '—',
+    },
+    {
       title: '操作',
       width: 100,
       render: (_, order) =>
         order.status === 'paid' ? (
-          <Popconfirm
-            title={`退款订单 ${order.order_no}？`}
-            description="退款会回退会员到期时间，可能导致权益失效。"
-            okText="退款"
-            cancelText="取消"
-            onConfirm={() => void refund(order)}
+          <Button
+            type="link"
+            danger
+            loading={refunding === order.id}
             disabled={!can('membership.write')}
+            onClick={() => {
+              setRefundTarget(order)
+              setReason('')
+            }}
           >
-            <Button
-              type="link"
-              danger
-              loading={refunding === order.id}
-              disabled={!can('membership.write')}
-            >
-              退款
-            </Button>
-          </Popconfirm>
+            退款
+          </Button>
         ) : order.status === 'refunded' ? (
           <Typography.Text type="secondary">
             {order.refunded_at ? new Date(order.refunded_at).toLocaleDateString() : '已退款'}
@@ -180,6 +193,37 @@ export default function MembershipOrdersPage() {
         }}
         locale={{ emptyText: '还没有会员订单' }}
       />
+
+      <Modal
+        open={Boolean(refundTarget)}
+        title={refundTarget ? `退款订单 ${refundTarget.order_no}` : '退款'}
+        onCancel={() => setRefundTarget(null)}
+        onOk={() => void refund()}
+        confirmLoading={refunding !== null}
+        okText="确认退款"
+        okButtonProps={{ danger: true }}
+        destroyOnHidden
+      >
+        {refundTarget && (
+          <Space orientation="vertical" style={{ width: '100%' }}>
+            <Typography.Text>
+              {refundTarget.plan_name} · ¥{(refundTarget.amount_cents / 100).toFixed(2)} ·{' '}
+              {refundTarget.duration_days} 天
+            </Typography.Text>
+            <Typography.Text type="secondary">
+              退款会回退会员到期时间，可能导致权益失效。
+            </Typography.Text>
+            <Input.TextArea
+              rows={3}
+              maxLength={200}
+              showCount
+              placeholder="请填写退款原因（1–200 字）"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            />
+          </Space>
+        )}
+      </Modal>
     </Card>
   )
 }

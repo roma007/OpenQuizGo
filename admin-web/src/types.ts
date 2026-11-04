@@ -163,6 +163,8 @@ export interface MembershipOrder {
   created_at: string
   paid_at?: string
   refunded_at?: string
+  refund_reason?: string
+  refunded_by?: string
 }
 
 export interface MembershipOrderList {

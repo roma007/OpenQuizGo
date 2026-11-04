@@ -158,9 +158,10 @@ export const api = {
     })
     return request<MembershipOrderList>(`/admin/membership/orders?${query.toString()}`)
   },
-  refundMembershipOrder: (id: string) =>
+  refundMembershipOrder: (id: string, reason: string) =>
     request<MembershipOrder>(`/admin/membership/orders/${id}/refund`, {
       method: 'POST',
+      body: JSON.stringify({ reason }),
     }),
   topics: () => request<TopicPackList>('/admin/topics'),
   topic: (id: string) => request<TopicPack>(`/admin/topics/${id}`),

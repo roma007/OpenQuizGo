@@ -113,6 +113,7 @@ class MembershipOrder {
     required this.status,
     required this.createdAt,
     required this.paidAt,
+    this.refundReason = '',
   });
 
   final String id;
@@ -123,6 +124,7 @@ class MembershipOrder {
   final String status;
   final DateTime? createdAt;
   final DateTime? paidAt;
+  final String refundReason;
 
   factory MembershipOrder.fromJson(Map<String, dynamic> json) =>
       MembershipOrder(
@@ -138,6 +140,7 @@ class MembershipOrder {
         paidAt: json['paid_at'] is String
             ? DateTime.tryParse(json['paid_at'] as String)
             : null,
+        refundReason: json['refund_reason'] as String? ?? '',
       );
 }
 

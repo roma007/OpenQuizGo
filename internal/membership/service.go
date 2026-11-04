@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"net"
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -61,6 +63,8 @@ type Order struct {
 	CreatedAt    time.Time  `json:"created_at"`
 	PaidAt       *time.Time `json:"paid_at,omitempty"`
 	RefundedAt   *time.Time `json:"refunded_at,omitempty"`
+	RefundReason string     `json:"refund_reason,omitempty"`
+	RefundedBy   string     `json:"refunded_by,omitempty"`
 }
 
 type Membership struct {
@@ -165,12 +169,43 @@ func (s *Service) handleAdminOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) handleAdminRefund(w http.ResponseWriter, r *http.Request) {
-	order, err := s.RefundOrder(r.Context(), chi.URLParam(r, "id"))
+	var req struct {
+		Reason string `json:"reason"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	principal, _ := admin.From(r.Context())
+	order, err := s.RefundOrder(r.Context(), chi.URLParam(r, "id"), req.Reason, principal.ID)
 	if err != nil {
 		writeError(w, err)
 		return
 	}
+	s.audit(r.Context(), principal.ID, order, req.Reason, clientIP(r))
 	writeJSON(w, http.StatusOK, order)
+}
+
+func (s *Service) audit(ctx context.Context, actorID string, order Order, reason, ip string) {
+	payload, _ := json.Marshal(map[string]any{
+		"order_no":      order.OrderNo,
+		"amount_cents":  order.AmountCents,
+		"duration_days": order.DurationDays,
+		"reason":        reason,
+	})
+	_, _ = s.pool.Exec(ctx, `
+		insert into audit_log (actor_type, actor_id, action, target_type, target_id, after_data, ip)
+		values ('admin', $1, 'membership.order.refund', 'membership_order', $2, $3::jsonb,
+		        nullif($4, '')::inet)`,
+		actorID, order.ID, string(payload), ip)
+}
+
+func clientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
 }
 
 func (s *Service) handleCenter(w http.ResponseWriter, r *http.Request) {
@@ -322,7 +357,8 @@ func (s *Service) Center(ctx context.Context, accountID string) (Center, error) 
 func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error) {
 	rows, err := s.pool.Query(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
-		       status, channel, created_at, paid_at, refunded_at
+		       status, channel, created_at, paid_at, refunded_at,
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
 		from membership_order where account_id = $1
 		order by created_at desc limit 20`, accountID)
 	if err != nil {
@@ -356,7 +392,8 @@ func (s *Service) AdminOrders(ctx context.Context, status string, limit, offset 
 	}
 	rows, err := s.pool.Query(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
-		       status, channel, created_at, paid_at, refunded_at
+		       status, channel, created_at, paid_at, refunded_at,
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
 		from membership_order
 		where ($1 = '' or status = $1)
 		order by created_at desc limit $2 offset $3`, status, limit, offset)
@@ -401,11 +438,13 @@ func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Or
 			order_no, account_id, plan_id, plan_name, amount_cents, duration_days)
 		values ($1, $2, $3, $4, $5, $6)
 		returning id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
-		          status, channel, created_at, paid_at, refunded_at`,
+		          status, channel, created_at, paid_at, refunded_at,
+		          coalesce(refund_reason, ''), coalesce(refunded_by::text, '')`,
 		orderNo(), accountID, plan.ID, plan.Name, plan.PriceCents, plan.DurationDays).
 		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
 			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt, &item.RefundedAt)
+			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
+			&item.RefundReason, &item.RefundedBy)
 	if err != nil {
 		return Order{}, err
 	}
@@ -425,12 +464,14 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 	var item Order
 	err = tx.QueryRow(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
-		       status, channel, created_at, paid_at, refunded_at
+		       status, channel, created_at, paid_at, refunded_at,
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
 		from membership_order
 		where id = $1 and account_id = $2 for update`, orderID, accountID).
 		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
 			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt, &item.RefundedAt)
+			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
+			&item.RefundReason, &item.RefundedBy)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PayResult{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -488,7 +529,11 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 }
 
 // RefundOrder 模拟退款，按订单时长回退会员到期时间。
-func (s *Service) RefundOrder(ctx context.Context, orderID string) (Order, error) {
+func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID string) (Order, error) {
+	reason = strings.TrimSpace(reason)
+	if reason == "" || len([]rune(reason)) > 200 {
+		return Order{}, apiError{422, "VALIDATION_ERROR", "退款原因需为 1–200 字"}
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return Order{}, err
@@ -498,11 +543,13 @@ func (s *Service) RefundOrder(ctx context.Context, orderID string) (Order, error
 	var item Order
 	err = tx.QueryRow(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
-		       status, channel, created_at, paid_at, refunded_at
+		       status, channel, created_at, paid_at, refunded_at,
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
 		from membership_order where id = $1 for update`, orderID).
 		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
 			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt, &item.RefundedAt)
+			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
+			&item.RefundReason, &item.RefundedBy)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -538,12 +585,16 @@ func (s *Service) RefundOrder(ctx context.Context, orderID string) (Order, error
 	}
 	now := time.Now()
 	if _, err := tx.Exec(ctx, `
-		update membership_order set status = 'refunded', refunded_at = $2 where id = $1`,
-		item.ID, now); err != nil {
+		update membership_order set status = 'refunded', refunded_at = $2,
+		       refund_reason = $3, refunded_by = nullif($4, '')::uuid
+		where id = $1`,
+		item.ID, now, reason, operatorID); err != nil {
 		return Order{}, err
 	}
 	item.Status = "refunded"
 	item.RefundedAt = &now
+	item.RefundReason = reason
+	item.RefundedBy = operatorID
 	if err := tx.Commit(ctx); err != nil {
 		return Order{}, err
 	}
@@ -608,7 +659,8 @@ func scanOrder(row scanner) (Order, error) {
 	var item Order
 	err := row.Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID,
 		&item.PlanName, &item.AmountCents, &item.DurationDays, &item.Status,
-		&item.Channel, &item.CreatedAt, &item.PaidAt, &item.RefundedAt)
+		&item.Channel, &item.CreatedAt, &item.PaidAt, &item.RefundedAt,
+		&item.RefundReason, &item.RefundedBy)
 	return item, err
 }
 

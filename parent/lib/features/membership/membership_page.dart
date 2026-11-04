@@ -299,6 +299,9 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
       'cancelled' => '已取消',
       _ => '待支付',
     };
+    final reason = order.status == 'refunded' && order.refundReason.isNotEmpty
+        ? '\n退款原因：${order.refundReason}'
+        : '';
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -308,7 +311,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
         ),
         title: Text('${order.planName} · ${formatYuan(order.amountCents)}'),
         subtitle: Text(
-          '${formatDateTime(order.createdAt)} · ${order.orderNo}\n$label',
+          '${formatDateTime(order.createdAt)} · ${order.orderNo}\n$label$reason',
         ),
         isThreeLine: true,
       ),

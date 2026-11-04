@@ -344,12 +344,8 @@ func (r *repository) listAudit(ctx context.Context, targetID string, limit int) 
 		select id, actor_type, actor_id, action, target_type, target_id,
 		       coalesce(after_data::text, ''), created_at
 		from audit_log
-		where target_type = 'question'`
-	args := []any{}
-	if targetID != "" {
-		query += ` and target_id = $1`
-		args = append(args, targetID)
-	}
+		where ($1 = '' or target_id = $1)`
+	args := []any{targetID}
 	args = append(args, limit)
 	query += fmt.Sprintf(` order by id desc limit $%d`, len(args))
 

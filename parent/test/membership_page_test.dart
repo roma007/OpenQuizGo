@@ -70,6 +70,23 @@ class _FakeMembershipRepository implements MembershipRepository {
   }
 }
 
+class _FakeRefundedRepository extends _FakeMembershipRepository {
+  @override
+  Future<List<MembershipOrder>> orders() async => [
+    MembershipOrder(
+      id: 'o3',
+      orderNo: 'M3',
+      planName: '月度会员',
+      amountCents: 1990,
+      durationDays: 30,
+      status: 'refunded',
+      createdAt: DateTime(2026, 11, 4, 11),
+      paidAt: DateTime(2026, 11, 4, 11, 0, 1),
+      refundReason: '用户申请退款：误购',
+    ),
+  ];
+}
+
 void main() {
   testWidgets('会员中心模拟支付开通', (tester) async {
     final repository = _FakeMembershipRepository();
@@ -95,5 +112,21 @@ void main() {
     expect(repository.payCalls, 1);
     expect(find.text('会员有效'), findsOneWidget);
     expect(find.textContaining('有效期至 2026-12-04'), findsWidgets);
+  });
+
+  testWidgets('已退款订单展示原因', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          membershipRepositoryProvider.overrideWithValue(
+            _FakeRefundedRepository(),
+          ),
+        ],
+        child: const MaterialApp(home: MembershipPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('已退款'), findsOneWidget);
+    expect(find.textContaining('退款原因：用户申请退款：误购'), findsOneWidget);
   });
 }
