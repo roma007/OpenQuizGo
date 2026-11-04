@@ -143,6 +143,9 @@ func New(d Deps) http.Handler {
 				d.Membership.ParentRoutes(r)
 			})
 		}
+		if d.Membership != nil {
+			d.Membership.PublicRoutes(r)
+		}
 		if d.Report != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.ParentAuth)

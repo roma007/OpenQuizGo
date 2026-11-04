@@ -2,9 +2,13 @@ package membership
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"net"
@@ -51,20 +55,21 @@ type PlanInput struct {
 }
 
 type Order struct {
-	ID           string     `json:"id"`
-	OrderNo      string     `json:"order_no"`
-	AccountID    string     `json:"account_id,omitempty"`
-	PlanID       string     `json:"plan_id"`
-	PlanName     string     `json:"plan_name"`
-	AmountCents  int        `json:"amount_cents"`
-	DurationDays int        `json:"duration_days"`
-	Status       string     `json:"status"`
-	Channel      string     `json:"channel"`
-	CreatedAt    time.Time  `json:"created_at"`
-	PaidAt       *time.Time `json:"paid_at,omitempty"`
-	RefundedAt   *time.Time `json:"refunded_at,omitempty"`
-	RefundReason string     `json:"refund_reason,omitempty"`
-	RefundedBy   string     `json:"refunded_by,omitempty"`
+	ID              string     `json:"id"`
+	OrderNo         string     `json:"order_no"`
+	AccountID       string     `json:"account_id,omitempty"`
+	PlanID          string     `json:"plan_id"`
+	PlanName        string     `json:"plan_name"`
+	AmountCents     int        `json:"amount_cents"`
+	DurationDays    int        `json:"duration_days"`
+	Status          string     `json:"status"`
+	Channel         string     `json:"channel"`
+	CreatedAt       time.Time  `json:"created_at"`
+	PaidAt          *time.Time `json:"paid_at,omitempty"`
+	RefundedAt      *time.Time `json:"refunded_at,omitempty"`
+	RefundReason    string     `json:"refund_reason,omitempty"`
+	RefundedBy      string     `json:"refunded_by,omitempty"`
+	ExternalTradeNo string     `json:"external_trade_no,omitempty"`
 }
 
 type Membership struct {
@@ -88,10 +93,13 @@ type PayResult struct {
 }
 
 type Service struct {
-	pool *pgxpool.Pool
+	pool           *pgxpool.Pool
+	callbackSecret string
 }
 
-func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
+func New(pool *pgxpool.Pool, callbackSecret string) *Service {
+	return &Service{pool: pool, callbackSecret: callbackSecret}
+}
 
 func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
 	r.Group(func(r chi.Router) {
@@ -103,6 +111,11 @@ func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("membership.read")).Get("/admin/membership/orders", s.handleAdminOrders)
 		r.With(guard.Require("membership.write")).Post("/admin/membership/orders/{id}/refund", s.handleAdminRefund)
 	})
+}
+
+// PublicRoutes 注册支付渠道回调（无需家长令牌，使用 HMAC 校验）。
+func (s *Service) PublicRoutes(r chi.Router) {
+	r.Post("/payments/callback", s.handleCallback)
 }
 
 func (s *Service) ParentRoutes(r chi.Router) {
@@ -155,6 +168,24 @@ func (s *Service) handleAdminDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (s *Service) handleCallback(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		writeError(w, apiError{413, "PAYLOAD_TOO_LARGE", "回调体过大"})
+		return
+	}
+	order, err := s.Callback(r.Context(), body, r.Header.Get("X-Payment-Signature"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":   "ok",
+		"order_no": order.OrderNo,
+		"paid":     order.Status == "paid",
+	})
 }
 
 func (s *Service) handleAdminOrders(w http.ResponseWriter, r *http.Request) {
@@ -358,7 +389,8 @@ func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error)
 	rows, err := s.pool.Query(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
-		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
+		       coalesce(external_trade_no, '')
 		from membership_order where account_id = $1
 		order by created_at desc limit 20`, accountID)
 	if err != nil {
@@ -393,7 +425,8 @@ func (s *Service) AdminOrders(ctx context.Context, status string, limit, offset 
 	rows, err := s.pool.Query(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
-		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
+		       coalesce(external_trade_no, '')
 		from membership_order
 		where ($1 = '' or status = $1)
 		order by created_at desc limit $2 offset $3`, status, limit, offset)
@@ -439,12 +472,13 @@ func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Or
 		values ($1, $2, $3, $4, $5, $6)
 		returning id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		          status, channel, created_at, paid_at, refunded_at,
-		          coalesce(refund_reason, ''), coalesce(refunded_by::text, '')`,
+		          coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
+		       coalesce(external_trade_no, '')`,
 		orderNo(), accountID, plan.ID, plan.Name, plan.PriceCents, plan.DurationDays).
 		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
 			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
 			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-			&item.RefundReason, &item.RefundedBy)
+			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
 	if err != nil {
 		return Order{}, err
 	}
@@ -465,13 +499,14 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 	err = tx.QueryRow(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
-		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
+		       coalesce(external_trade_no, '')
 		from membership_order
 		where id = $1 and account_id = $2 for update`, orderID, accountID).
 		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
 			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
 			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-			&item.RefundReason, &item.RefundedBy)
+			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PayResult{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -479,38 +514,9 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 		return PayResult{}, err
 	}
 	if item.Status == "pending" {
-		now := time.Now()
-		var existingExpiry *time.Time
-		_ = tx.QueryRow(ctx, `select expires_at from account_membership where account_id = $1 for update`,
-			accountID).Scan(&existingExpiry)
-		base := now
-		if existingExpiry != nil && existingExpiry.After(now) {
-			base = *existingExpiry
-		}
-		expiresAt := base.AddDate(0, 0, item.DurationDays)
-		if _, err := tx.Exec(ctx, `
-			insert into account_membership (account_id, plan_id, plan_name, status, starts_at, expires_at, updated_at)
-			values ($1, $2, $3, 'active', $4, $5, now())
-			on conflict (account_id) do update set
-			    plan_id = excluded.plan_id,
-			    plan_name = excluded.plan_name,
-			    status = 'active',
-			    starts_at = case when account_membership.status = 'active'
-			                     and account_membership.expires_at > now()
-			                     then account_membership.starts_at else excluded.starts_at end,
-			    expires_at = excluded.expires_at,
-			    updated_at = now()`,
-			accountID, item.PlanID, item.PlanName, now, expiresAt); err != nil {
+		if err := s.activate(ctx, tx, &item, "mock", ""); err != nil {
 			return PayResult{}, err
 		}
-		if _, err := tx.Exec(ctx, `
-			update membership_order set status = 'paid', paid_at = now() where id = $1`,
-			item.ID); err != nil {
-			return PayResult{}, err
-		}
-		item.Status = "paid"
-		paidAt := now
-		item.PaidAt = &paidAt
 	} else if item.Status == "cancelled" {
 		return PayResult{}, apiError{409, "ORDER_CANCELLED", "订单已取消"}
 	}
@@ -526,6 +532,110 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 		member = &Membership{Status: "none"}
 	}
 	return PayResult{Order: item, Membership: *member}, nil
+}
+
+// activate 在事务内将会员订单标记为已支付并延长会员。
+func (s *Service) activate(ctx context.Context, tx pgx.Tx, item *Order, channel, tradeNo string) error {
+	now := time.Now()
+	var existingExpiry *time.Time
+	_ = tx.QueryRow(ctx,
+		`select expires_at from account_membership where account_id = $1 for update`,
+		item.AccountID).Scan(&existingExpiry)
+	base := now
+	if existingExpiry != nil && existingExpiry.After(now) {
+		base = *existingExpiry
+	}
+	expiresAt := base.AddDate(0, 0, item.DurationDays)
+	if _, err := tx.Exec(ctx, `
+		insert into account_membership (account_id, plan_id, plan_name, status, starts_at, expires_at, updated_at)
+		values ($1, $2, $3, 'active', $4, $5, now())
+		on conflict (account_id) do update set
+		    plan_id = excluded.plan_id,
+		    plan_name = excluded.plan_name,
+		    status = 'active',
+		    starts_at = case when account_membership.status = 'active'
+		                     and account_membership.expires_at > now()
+		                     then account_membership.starts_at else excluded.starts_at end,
+		    expires_at = excluded.expires_at,
+		    updated_at = now()`,
+		item.AccountID, item.PlanID, item.PlanName, now, expiresAt); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `
+		update membership_order
+		set status = 'paid', paid_at = now(), channel = $2, external_trade_no = $3
+		where id = $1`, item.ID, channel, tradeNo); err != nil {
+		return err
+	}
+	item.Status = "paid"
+	item.Channel = channel
+	item.ExternalTradeNo = tradeNo
+	paidAt := now
+	item.PaidAt = &paidAt
+	return nil
+}
+
+// Callback 处理支付渠道回调，使用 HMAC-SHA256 校验原始请求体。
+func (s *Service) Callback(ctx context.Context, body []byte, signature string) (Order, error) {
+	if s.callbackSecret == "" {
+		return Order{}, apiError{503, "PAYMENT_DISABLED", "支付回调未启用"}
+	}
+	mac := hmac.New(sha256.New, []byte(s.callbackSecret))
+	mac.Write(body)
+	expected := hex.EncodeToString(mac.Sum(nil))
+	if !hmac.Equal([]byte(expected), []byte(strings.ToLower(strings.TrimSpace(signature)))) {
+		return Order{}, apiError{401, "SIGNATURE_INVALID", "回调签名无效"}
+	}
+	var req struct {
+		OrderNo string `json:"order_no"`
+		TradeNo string `json:"trade_no"`
+		Status  string `json:"status"`
+	}
+	if err := json.Unmarshal(body, &req); err != nil {
+		return Order{}, apiError{422, "VALIDATION_ERROR", "回调体不合法"}
+	}
+	if req.OrderNo == "" || req.TradeNo == "" {
+		return Order{}, apiError{422, "VALIDATION_ERROR", "缺少订单号或交易号"}
+	}
+	if req.Status != "paid" {
+		return Order{}, apiError{422, "VALIDATION_ERROR", "暂只支持 paid 状态"}
+	}
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Order{}, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var item Order
+	err = tx.QueryRow(ctx, `
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		       status, channel, created_at, paid_at, refunded_at,
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
+		       coalesce(external_trade_no, '')
+		from membership_order where order_no = $1 for update`, req.OrderNo).
+		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
+			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
+			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
+			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
+	}
+	if err != nil {
+		return Order{}, err
+	}
+	if item.Status == "refunded" {
+		return Order{}, apiError{409, "ORDER_ALREADY_REFUNDED", "订单已退款"}
+	}
+	if item.Status == "pending" {
+		if err := s.activate(ctx, tx, &item, "callback", req.TradeNo); err != nil {
+			return Order{}, err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return Order{}, err
+	}
+	return item, nil
 }
 
 // RefundOrder 模拟退款，按订单时长回退会员到期时间。
@@ -544,12 +654,13 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 	err = tx.QueryRow(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
-		       coalesce(refund_reason, ''), coalesce(refunded_by::text, '')
+		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
+		       coalesce(external_trade_no, '')
 		from membership_order where id = $1 for update`, orderID).
 		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
 			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
 			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-			&item.RefundReason, &item.RefundedBy)
+			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -660,7 +771,7 @@ func scanOrder(row scanner) (Order, error) {
 	err := row.Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID,
 		&item.PlanName, &item.AmountCents, &item.DurationDays, &item.Status,
 		&item.Channel, &item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-		&item.RefundReason, &item.RefundedBy)
+		&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
 	return item, err
 }
 

@@ -29,6 +29,8 @@ type Config struct {
 	OTELEndpoint    string
 	SMSMode         string
 	SMSMockCode     string
+
+	PaymentCallbackSecret string
 }
 
 // Load 读取环境变量并做最小校验。
@@ -53,11 +55,16 @@ func Load() (Config, error) {
 		OTELEndpoint:    os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"),
 		SMSMode:         getenv("SMS_MODE", "mock"),
 		SMSMockCode:     getenv("SMS_MOCK_CODE", "123456"),
+
+		PaymentCallbackSecret: os.Getenv("PAYMENT_CALLBACK_SECRET"),
 	}
 
 	if cfg.Env == "dev" {
 		if cfg.JWTSecret == "" {
 			cfg.JWTSecret = "dev-insecure-jwt-secret-change-me-please"
+		}
+		if cfg.PaymentCallbackSecret == "" {
+			cfg.PaymentCallbackSecret = "dev-payment-callback-secret"
 		}
 		if cfg.EncryptionKey == "" {
 			cfg.EncryptionKey = "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="

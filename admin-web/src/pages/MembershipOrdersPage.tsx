@@ -103,6 +103,13 @@ export default function MembershipOrdersPage() {
       render: (value: number) => yuan(value),
     },
     {
+      title: '渠道',
+      dataIndex: 'channel',
+      width: 100,
+      render: (value: string) =>
+        value === 'callback' ? '渠道回调' : value === 'mock' ? '模拟支付' : value || '—',
+    },
+    {
       title: '状态',
       dataIndex: 'status',
       width: 100,

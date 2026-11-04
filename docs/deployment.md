@@ -33,6 +33,7 @@
 | `PHONE_HASH_KEY` | 生产必填 | dev 默认 | 手机号 HMAC 密钥 |
 | `OFFLINE_LEASE_KEY` | 生产必填 | dev 默认 | 离线租约 Ed25519 种子（base64 32 字节） |
 | `SMS_MODE` | 否 | `mock` | 生产禁止 `mock`，需接入真实短信通道后设为 `disabled` 或扩展实现 |
+| `PAYMENT_CALLBACK_SECRET` | 是 | dev 默认 | 支付回调 HMAC 密钥；生产必须显式配置，留空则禁用回调 |
 | `SMS_MOCK_CODE` | 否 | `123456` | 仅 dev |
 | `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | 否 | 空 | OTLP/HTTP 追踪端点，留空关闭 |

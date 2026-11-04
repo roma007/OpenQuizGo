@@ -2,7 +2,10 @@ package membership
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"os"
 	"testing"
@@ -35,7 +38,7 @@ func TestMembershipWorkflow(t *testing.T) {
 		returning id`).Scan(&accountID); err != nil {
 		t.Fatalf("account: %v", err)
 	}
-	svc := New(pool)
+	svc := New(pool, "test-callback-secret")
 
 	// 种子套餐 + 测试套餐。
 	seeded, err := svc.ListPlans(ctx, true)
@@ -272,5 +275,86 @@ func prepareDB(t *testing.T, url string) {
 		values ('monthly', '月度会员', '', 30, 1990, '[]'::jsonb, 'online', 10),
 		       ('yearly', '年度会员', '', 365, 16900, '[]'::jsonb, 'online', 20)`); err != nil {
 		t.Fatalf("seed plans: %v", err)
+	}
+}
+
+func TestPaymentCallback(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'callback-test')
+		returning id`).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	svc := New(pool, "test-callback-secret")
+	plan, err := svc.CreatePlan(ctx, PlanInput{
+		Code: "callback-plan", Name: "回调测试卡", DurationDays: 7, PriceCents: 100,
+		Features: []string{}, EntitlementCodes: []string{}, Status: "online",
+	})
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	order, err := svc.CreateOrder(ctx, accountID, plan.ID)
+	if err != nil {
+		t.Fatalf("order: %v", err)
+	}
+
+	body := []byte(`{"order_no":"` + order.OrderNo + `","trade_no":"T123","status":"paid"}`)
+	mac := hmac.New(sha256.New, []byte("test-callback-secret"))
+	mac.Write(body)
+	sig := hex.EncodeToString(mac.Sum(nil))
+
+	if _, err := svc.Callback(ctx, body, "bad-signature"); err == nil || !isCode(err, "SIGNATURE_INVALID") {
+		t.Fatalf("bad signature = %v, want SIGNATURE_INVALID", err)
+	}
+	paid, err := svc.Callback(ctx, body, sig)
+	if err != nil {
+		t.Fatalf("callback: %v", err)
+	}
+	if paid.Status != "paid" || paid.Channel != "callback" || paid.ExternalTradeNo != "T123" {
+		t.Fatalf("unexpected paid order: %+v", paid)
+	}
+	center, err := svc.Center(ctx, accountID)
+	if err != nil {
+		t.Fatalf("center: %v", err)
+	}
+	if center.Membership == nil || !center.Membership.Active {
+		t.Fatalf("membership not active: %+v", center.Membership)
+	}
+	expiry := *center.Membership.ExpiresAt
+
+	// 重复回调幂等。
+	if _, err := svc.Callback(ctx, body, sig); err != nil {
+		t.Fatalf("callback again: %v", err)
+	}
+	center, _ = svc.Center(ctx, accountID)
+	if !center.Membership.ExpiresAt.Equal(expiry) {
+		t.Fatal("idempotent callback changed expiry")
+	}
+
+	// 未知订单。
+	unknown := []byte(`{"order_no":"M-UNKNOWN","trade_no":"T1","status":"paid"}`)
+	mac = hmac.New(sha256.New, []byte("test-callback-secret"))
+	mac.Write(unknown)
+	if _, err := svc.Callback(ctx, unknown, hex.EncodeToString(mac.Sum(nil))); err == nil || !isCode(err, "ORDER_NOT_FOUND") {
+		t.Fatalf("unknown order = %v, want ORDER_NOT_FOUND", err)
+	}
+
+	// 未配置密钥时禁用回调。
+	disabled := New(pool, "")
+	if _, err := disabled.Callback(ctx, body, sig); err == nil || !isCode(err, "PAYMENT_DISABLED") {
+		t.Fatalf("disabled callback = %v, want PAYMENT_DISABLED", err)
 	}
 }
