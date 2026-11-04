@@ -20,6 +20,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/quiz"
 	"github.com/roma007/OpenQuizGo/internal/report"
 	"github.com/roma007/OpenQuizGo/internal/rule"
+	"github.com/roma007/OpenQuizGo/internal/topic"
 	"github.com/roma007/OpenQuizGo/internal/watch"
 )
 
@@ -36,6 +37,7 @@ type Deps struct {
 	Watch     *watch.Service
 	Report    *report.Service
 	Daily     *daily.Service
+	Topic     *topic.Service
 	Version   string
 	Env       string
 }
@@ -94,6 +96,9 @@ func New(d Deps) http.Handler {
 		}
 		if d.Quiz != nil && d.Admin != nil {
 			d.Quiz.Routes(r, d.Admin)
+		}
+		if d.Topic != nil && d.Admin != nil {
+			d.Topic.Routes(r, d.Admin)
 		}
 		if d.Quiz != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {

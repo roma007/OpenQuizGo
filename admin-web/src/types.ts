@@ -88,3 +88,23 @@ export interface CalibrationResult {
   items: CalibrationItem[]
   thresholds: { min_answers: number; up: number; down: number }
 }
+
+export interface TopicPack {
+  id: string
+  name: string
+  type: string
+  subject_scope: string[]
+  stage_scope: string[]
+  start_at?: string | null
+  end_at?: string | null
+  is_paid: boolean
+  status: string
+  question_count: number
+  question_ids?: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface TopicPackList {
+  items: TopicPack[]
+}

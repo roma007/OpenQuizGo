@@ -6,6 +6,8 @@ import type {
   Question,
   QuestionList,
   CalibrationResult,
+  TopicPack,
+  TopicPackList,
 } from './types'
 
 const TOKEN_KEY = 'openquizgo.admin.token'
@@ -126,6 +128,25 @@ export const api = {
     request<CalibrationResult>(
       `/admin/calibration/preview?min_answers=${minAnswers}&limit=200`,
     ),
+  topics: () => request<TopicPackList>('/admin/topics'),
+  topic: (id: string) => request<TopicPack>(`/admin/topics/${id}`),
+  createTopic: (payload: unknown) =>
+    request<TopicPack>('/admin/topics', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  updateTopic: (id: string, payload: unknown) =>
+    request<TopicPack>(`/admin/topics/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+  deleteTopic: (id: string) =>
+    request<void>(`/admin/topics/${id}`, { method: 'DELETE' }),
+  setTopicQuestions: (id: string, questionIds: string[]) =>
+    request<TopicPack>(`/admin/topics/${id}/questions`, {
+      method: 'PUT',
+      body: JSON.stringify({ question_ids: questionIds }),
+    }),
   calibrationApply: (items: { question_id: string; difficulty: number }[]) =>
     request<{ applied: number }>('/admin/calibration/apply', {
       method: 'POST',

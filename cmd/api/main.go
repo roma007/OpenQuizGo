@@ -24,6 +24,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/quiz"
 	"github.com/roma007/OpenQuizGo/internal/report"
 	"github.com/roma007/OpenQuizGo/internal/rule"
+	"github.com/roma007/OpenQuizGo/internal/topic"
 	"github.com/roma007/OpenQuizGo/internal/watch"
 )
 
@@ -92,6 +93,7 @@ func main() {
 	questionService := question.New(pool, logger)
 	reportService := report.New(pool, logger)
 	dailyService := daily.New(pool, logger)
+	topicService := topic.New(pool)
 	quizService := quiz.New(pool, rdb, ruleService, watchService, logger)
 
 	handler := httpapi.New(httpapi.Deps{
@@ -106,6 +108,7 @@ func main() {
 		Watch:     watchService,
 		Report:    reportService,
 		Daily:     dailyService,
+		Topic:     topicService,
 		Version:   cfg.Version,
 		Env:       cfg.Env,
 	})

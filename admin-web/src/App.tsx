@@ -4,6 +4,7 @@ import {
   CloudUploadOutlined,
   DatabaseOutlined,
   ExperimentOutlined,
+  GiftOutlined,
   LogoutOutlined,
   PieChartOutlined,
 } from '@ant-design/icons'
@@ -26,6 +27,7 @@ import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
 import QuestionEdit from './pages/QuestionEdit'
 import Questions from './pages/Questions'
+import TopicsPage from './pages/TopicsPage'
 
 const { Header, Sider, Content } = Layout
 
@@ -71,7 +73,9 @@ export default function App() {
 
   const selected = location.pathname.startsWith('/questions')
     ? '/questions'
-    : location.pathname
+    : location.pathname.startsWith('/topics')
+      ? '/topics'
+      : location.pathname
 
   return (
     <AuthContext.Provider value={{ principal, can }}>
@@ -96,6 +100,11 @@ export default function App() {
                 icon: <CloudUploadOutlined />,
                 label: '批量导入',
                 disabled: !can('question.import'),
+              },
+              {
+                key: '/topics',
+                icon: <GiftOutlined />,
+                label: '专题题包',
               },
               {
                 key: '/coverage',
@@ -150,6 +159,7 @@ export default function App() {
               <Route path="/questions" element={<Questions />} />
               <Route path="/questions/new" element={<QuestionEdit />} />
               <Route path="/questions/:id" element={<QuestionEdit />} />
+              <Route path="/topics" element={<TopicsPage />} />
               <Route path="/import" element={<ImportPage />} />
               <Route path="/audit" element={<AuditPage />} />
               <Route path="/coverage" element={<CoveragePage />} />
