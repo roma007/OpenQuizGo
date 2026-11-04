@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../data/family_repository.dart';
+import '../daily/daily_quiz_page.dart';
 import '../rule/rule_page.dart';
 import 'child_edit_page.dart';
 
@@ -60,6 +61,7 @@ class ChildPage extends ConsumerWidget {
                               onEdit: () =>
                                   _openEditor(context, ref, child: child),
                               onRule: () => _openRule(context, child),
+                              onDaily: () => _openDaily(context, child),
                             ),
                         ];
                         return RefreshIndicator(
@@ -102,6 +104,12 @@ class ChildPage extends ConsumerWidget {
     return '${stageLabel(child.stage)} · $birthday';
   }
 
+  void _openDaily(BuildContext context, Child child) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => DailyQuizPage(child: child)));
+  }
+
   void _openRule(BuildContext context, Child child) {
     Navigator.of(
       context,
@@ -126,12 +134,14 @@ class _ChildCard extends StatelessWidget {
     required this.subtitle,
     required this.onEdit,
     required this.onRule,
+    required this.onDaily,
   });
 
   final Child child;
   final String subtitle;
   final VoidCallback onEdit;
   final VoidCallback onRule;
+  final VoidCallback onDaily;
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +166,11 @@ class _ChildCard extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            IconButton(
+              tooltip: '每日一题',
+              icon: const Icon(Icons.quiz_outlined),
+              onPressed: onDaily,
+            ),
             IconButton(
               tooltip: '观看规则',
               icon: const Icon(Icons.tune),

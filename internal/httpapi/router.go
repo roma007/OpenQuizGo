@@ -12,6 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/roma007/OpenQuizGo/internal/admin"
+	"github.com/roma007/OpenQuizGo/internal/daily"
 	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
 	"github.com/roma007/OpenQuizGo/internal/platform/tracing"
@@ -34,6 +35,7 @@ type Deps struct {
 	Rule      *rule.Service
 	Watch     *watch.Service
 	Report    *report.Service
+	Daily     *daily.Service
 	Version   string
 	Env       string
 }
@@ -109,6 +111,12 @@ func New(d Deps) http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.ParentAuth)
 				d.Watch.ParentRoutes(r)
+			})
+		}
+		if d.Daily != nil && d.Identity != nil {
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.ParentAuth)
+				d.Daily.Routes(r)
 			})
 		}
 		if d.Report != nil && d.Identity != nil {
