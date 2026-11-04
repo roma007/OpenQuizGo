@@ -1,0 +1,24 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:openquizgo_parent/core/api/models.dart';
+import 'package:openquizgo_parent/core/providers.dart';
+import 'package:openquizgo_parent/features/shell/home_shell.dart';
+
+void main() {
+  testWidgets('首页孩子页渲染标题与列表', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          childrenProvider.overrideWith((ref) async => [
+                Child(id: 'c1', nickname: '小明', stage: 'low'),
+              ]),
+        ],
+        child: const MaterialApp(home: HomeShell()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('孩子档案'), findsOneWidget);
+    expect(find.text('小明'), findsOneWidget);
+  });
+}

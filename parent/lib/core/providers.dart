@@ -1,8 +1,10 @@
 import '../features/auth/login_screen.dart';
 import '../features/shell/home_shell.dart';
 import 'api/api_client.dart';
+import 'api/models.dart';
 import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
+import '../data/family_repository.dart';
 import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -12,6 +14,14 @@ final tokenStoreProvider = Provider<TokenStore>((ref) => SecureTokenStore());
 
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(ref.watch(tokenStoreProvider));
+});
+
+final familyRepositoryProvider = Provider<FamilyRepository>((ref) {
+  return FamilyRepository(ref.watch(apiClientProvider));
+});
+
+final childrenProvider = FutureProvider<List<Child>>((ref) {
+  return ref.watch(familyRepositoryProvider).listChildren();
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

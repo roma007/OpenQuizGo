@@ -125,6 +125,21 @@ class ApiClient {
     );
   }
 
+  Future<List<dynamic>> getList(
+    String path, {
+    Map<String, dynamic>? query,
+  }) async {
+    try {
+      final response = await _dio.get<List<dynamic>>(
+        path,
+        queryParameters: query,
+      );
+      return response.data ?? <dynamic>[];
+    } on DioException catch (error) {
+      throw _mapError(error);
+    }
+  }
+
   Future<Map<String, dynamic>> putJson(
     String path,
     Map<String, dynamic> body,
