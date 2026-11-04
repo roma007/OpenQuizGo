@@ -11,6 +11,7 @@ import '../data/rule_repository.dart';
 import '../data/report_repository.dart';
 import '../data/daily_repository.dart';
 import '../data/battle_repository.dart';
+import '../data/membership_repository.dart';
 import '../data/alert_repository.dart';
 import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -109,6 +110,10 @@ final dailyProvider = FutureProvider.autoDispose.family<DailyState, String>(
 
 final battleRepositoryProvider = Provider<BattleRepository>((ref) {
   return BattleRepository(ref.watch(apiClientProvider));
+});
+
+final membershipRepositoryProvider = Provider<MembershipRepository>((ref) {
+  return MembershipRepository(ref.watch(apiClientProvider));
 });
 
 final alertRepositoryProvider = Provider<AlertRepository>((ref) {

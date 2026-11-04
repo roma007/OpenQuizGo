@@ -16,6 +16,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/daily"
 	"github.com/roma007/OpenQuizGo/internal/httpapi"
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/membership"
 	"github.com/roma007/OpenQuizGo/internal/platform/cache"
 	"github.com/roma007/OpenQuizGo/internal/platform/cryptox"
 	"github.com/roma007/OpenQuizGo/internal/platform/database"
@@ -96,24 +97,26 @@ func main() {
 	dailyService := daily.New(pool, logger)
 	battleService := battle.New(pool)
 	topicService := topic.New(pool)
+	membershipService := membership.New(pool)
 	quizService := quiz.New(pool, rdb, ruleService, watchService, logger)
 
 	handler := httpapi.New(httpapi.Deps{
-		Logger:    logger,
-		DB:        pool,
-		Redis:     rdb,
-		Identity:  identityService,
-		Admin:     adminService,
-		Questions: questionService,
-		Quiz:      quizService,
-		Rule:      ruleService,
-		Watch:     watchService,
-		Report:    reportService,
-		Daily:     dailyService,
-		Battle:    battleService,
-		Topic:     topicService,
-		Version:   cfg.Version,
-		Env:       cfg.Env,
+		Logger:     logger,
+		DB:         pool,
+		Redis:      rdb,
+		Identity:   identityService,
+		Admin:      adminService,
+		Questions:  questionService,
+		Quiz:       quizService,
+		Rule:       ruleService,
+		Watch:      watchService,
+		Report:     reportService,
+		Daily:      dailyService,
+		Battle:     battleService,
+		Topic:      topicService,
+		Membership: membershipService,
+		Version:    cfg.Version,
+		Env:        cfg.Env,
 	})
 
 	srv := &http.Server{

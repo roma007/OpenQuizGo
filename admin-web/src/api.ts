@@ -9,6 +9,8 @@ import type {
   TopicPack,
   TopicPackList,
   QuizPreviewResult,
+  MembershipPlan,
+  MembershipPlanList,
 } from './types'
 
 const TOKEN_KEY = 'openquizgo.admin.token'
@@ -134,6 +136,19 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+  membershipPlans: () => request<MembershipPlanList>('/admin/membership/plans'),
+  createMembershipPlan: (payload: unknown) =>
+    request<MembershipPlan>('/admin/membership/plans', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  updateMembershipPlan: (id: string, payload: unknown) =>
+    request<MembershipPlan>(`/admin/membership/plans/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+  deleteMembershipPlan: (id: string) =>
+    request<void>(`/admin/membership/plans/${id}`, { method: 'DELETE' }),
   topics: () => request<TopicPackList>('/admin/topics'),
   topic: (id: string) => request<TopicPack>(`/admin/topics/${id}`),
   createTopic: (payload: unknown) =>

@@ -130,3 +130,21 @@ export interface QuizPreviewResult {
   topic_name?: string
   generated_at: string
 }
+
+export interface MembershipPlan {
+  id: string
+  code: string
+  name: string
+  description: string
+  duration_days: number
+  price_cents: number
+  features: string[]
+  status: string
+  sort: number
+  created_at: string
+  updated_at: string
+}
+
+export interface MembershipPlanList {
+  items: MembershipPlan[]
+}

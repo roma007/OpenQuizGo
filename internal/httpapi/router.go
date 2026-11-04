@@ -15,6 +15,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/battle"
 	"github.com/roma007/OpenQuizGo/internal/daily"
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/membership"
 	"github.com/roma007/OpenQuizGo/internal/platform/metrics"
 	"github.com/roma007/OpenQuizGo/internal/platform/tracing"
 	"github.com/roma007/OpenQuizGo/internal/question"
@@ -27,21 +28,22 @@ import (
 
 // Deps 是 HTTP 层依赖。
 type Deps struct {
-	Logger    *slog.Logger
-	DB        *pgxpool.Pool
-	Redis     *redis.Client
-	Identity  *identity.Service
-	Admin     *admin.Service
-	Questions *question.Service
-	Quiz      *quiz.Service
-	Rule      *rule.Service
-	Watch     *watch.Service
-	Report    *report.Service
-	Daily     *daily.Service
-	Battle    *battle.Service
-	Topic     *topic.Service
-	Version   string
-	Env       string
+	Logger     *slog.Logger
+	DB         *pgxpool.Pool
+	Redis      *redis.Client
+	Identity   *identity.Service
+	Admin      *admin.Service
+	Questions  *question.Service
+	Quiz       *quiz.Service
+	Rule       *rule.Service
+	Watch      *watch.Service
+	Report     *report.Service
+	Daily      *daily.Service
+	Battle     *battle.Service
+	Topic      *topic.Service
+	Membership *membership.Service
+	Version    string
+	Env        string
 }
 
 // New 构建路由。
@@ -102,6 +104,9 @@ func New(d Deps) http.Handler {
 		if d.Topic != nil && d.Admin != nil {
 			d.Topic.Routes(r, d.Admin)
 		}
+		if d.Membership != nil && d.Admin != nil {
+			d.Membership.AdminRoutes(r, d.Admin)
+		}
 		if d.Quiz != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.DeviceAuth)
@@ -130,6 +135,12 @@ func New(d Deps) http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.ParentAuth)
 				d.Battle.Routes(r)
+			})
+		}
+		if d.Membership != nil && d.Identity != nil {
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.ParentAuth)
+				d.Membership.ParentRoutes(r)
 			})
 		}
 		if d.Report != nil && d.Identity != nil {

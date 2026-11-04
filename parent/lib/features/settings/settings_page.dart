@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config.dart';
 import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
+import '../membership/membership_page.dart';
 import 'members_page.dart';
 import 'pin_page.dart';
 
@@ -45,6 +46,18 @@ class SettingsPage extends ConsumerWidget {
               onTap: () => Navigator.of(
                 context,
               ).push(MaterialPageRoute(builder: (_) => const MembersPage())),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.workspace_premium_outlined),
+              title: const Text('会员中心'),
+              subtitle: const Text('查看会员状态、套餐与订单（模拟支付）'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const MembershipPage())),
             ),
           ),
           const SizedBox(height: 12),
