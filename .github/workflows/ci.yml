@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
@@ -41,9 +41,9 @@ jobs:
       TEST_REDIS_URL: redis://localhost:6379/15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.25"
           cache: true
@@ -55,7 +55,15 @@ jobs:
         run: go vet ./...
 
       - name: Test
-        run: go test -p 1 ./...
+        run: |
+          set +e
+          go test -p 1 ./... 2>&1 | tee /tmp/test.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            msg=$(tail -n 80 /tmp/test.log | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=go-test-failure::$msg"
+          fi
+          exit $code
 
       - name: Migrate
         run: go run ./cmd/migrate up
