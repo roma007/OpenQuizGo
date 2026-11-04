@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config.dart';
 import '../../core/providers.dart';
 import 'members_page.dart';
 import 'pin_page.dart';
@@ -48,7 +49,7 @@ class SettingsPage extends ConsumerWidget {
           child: ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('关于'),
-            subtitle: const Text('OpenQuizGo 家长端 0.1.0'),
+            subtitle: Text('OpenQuizGo 家长端 ${AppConfig.appVersion}'),
           ),
         ),
         const SizedBox(height: 24),
