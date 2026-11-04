@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
 import '../../data/family_repository.dart';
-import 'child_edit_page.dart';
 import '../rule/rule_page.dart';
+import 'child_edit_page.dart';
 
 class ChildPage extends ConsumerWidget {
   const ChildPage({super.key});
@@ -13,90 +13,89 @@ class ChildPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final children = ref.watch(childrenProvider);
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '孩子档案',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+    return children.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => _ErrorView(
+        message: error.toString(),
+        onRetry: () => ref.invalidate(childrenProvider),
+      ),
+      data: (cached) {
+        final items = cached.data;
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '孩子档案',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  FilledButton.icon(
+                    onPressed: () => _openEditor(context, ref),
+                    icon: const Icon(Icons.add),
+                    label: const Text('新增孩子'),
+                  ),
+                ],
               ),
-              FilledButton.icon(
-                onPressed: () => _openEditor(context, ref),
-                icon: const Icon(Icons.add),
-                label: const Text('新增孩子'),
-              ),
-            ],
-          ),
-        ),
-        if (children.value?.stale == true)
-          _OfflineBanner(cachedAt: children.value!.cachedAt),
-        Expanded(
-          child: children.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => _ErrorView(
-              message: error.toString(),
-              onRetry: () => ref.invalidate(childrenProvider),
             ),
-            data: (cached) {
-              final items = cached.data;
-              if (items.isEmpty) {
-                return _EmptyView(onCreate: () => _openEditor(context, ref));
-              }
-              return RefreshIndicator(
-                onRefresh: () async => ref.invalidate(childrenProvider),
-                child: ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  itemCount: items.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final child = items[index];
-                    return Card(
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        leading: CircleAvatar(
-                          radius: 26,
-                          child: Text(
-                            child.nickname.isEmpty
-                                ? '?'
-                                : child.nickname.substring(0, 1),
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                        ),
-                        title: Text(
-                          child.nickname,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        subtitle: Text(_subtitle(child)),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              tooltip: '观看规则',
-                              icon: const Icon(Icons.tune),
-                              onPressed: () => _openRule(context, child),
+            if (cached.stale) _OfflineBanner(cachedAt: cached.cachedAt),
+            Expanded(
+              child: items.isEmpty
+                  ? _EmptyView(onCreate: () => _openEditor(context, ref))
+                  : RefreshIndicator(
+                      onRefresh: () async => ref.invalidate(childrenProvider),
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(16),
+                        itemCount: items.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final child = items[index];
+                          return Card(
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 10,
+                              ),
+                              leading: CircleAvatar(
+                                radius: 26,
+                                child: Text(
+                                  child.nickname.isEmpty
+                                      ? '?'
+                                      : child.nickname.substring(0, 1),
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
+                              title: Text(
+                                child.nickname,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              subtitle: Text(_subtitle(child)),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    tooltip: '观看规则',
+                                    icon: const Icon(Icons.tune),
+                                    onPressed: () => _openRule(context, child),
+                                  ),
+                                  const Icon(Icons.chevron_right),
+                                ],
+                              ),
+                              onTap: () =>
+                                  _openEditor(context, ref, child: child),
                             ),
-                            const Icon(Icons.chevron_right),
-                          ],
-                        ),
-                        onTap: () => _openEditor(context, ref, child: child),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 

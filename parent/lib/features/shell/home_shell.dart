@@ -17,7 +17,7 @@ class _HomeShellState extends State<HomeShell> {
 
   static const _titles = ['孩子', '设备', '报告', '设置'];
 
-  final _pages = const [
+  static const _pages = [
     ChildPage(),
     DevicePage(),
     ReportPage(),

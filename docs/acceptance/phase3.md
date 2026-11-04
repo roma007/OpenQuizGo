@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 版本 | v0.3.0 |
+| 版本 | v0.3.1 |
 | 日期 | 2026-11-04 |
 | 范围 | 第三期：家长端 App（S1–S3、T1–T10） |
 | 设计基线 | [003-家长端 App 设计](../design/003-家长端%20App%20设计.md) |
@@ -18,13 +18,15 @@
 - 服务端远程解锁接口完成并实测（200/403/404/429）；
 - Android debug/release 构建成功；iOS 无签名构建成功；
 - `flutter test` 18 项通过，`dart analyze` 无问题；
-- 限制：没有实体手机，页面目视验收只覆盖模拟器登录与首页；模拟器 headless 合成器在后续页面会冻结画面。
+- 已在 Android TV 模拟器完成逐页目视走查（孩子/规则/预览/PIN/设备/远程解锁/报告/设置/成员）；
+- 走查中发现并修复「FilledButton 最小宽度为无限大导致 Row 内整页空白」的 UI 缺陷（v0.3.1）；
+- 限制：没有实体手机，真机尺寸/手感与 iOS 真机体验仍待补。
 
 ## 2. 交付物
 
 | 类别 | 交付 |
 | --- | --- |
-| Android 包 | `dist/OpenQuizGo-Parent-0.3.0.apk`（19.5MB，sha256 见同目录） |
+| Android 包 | `dist/OpenQuizGo-Parent-0.3.1.apk`（sha256 见同目录） |
 | iOS | `parent/build/ios/iphoneos/Runner.app`（未签名） |
 | 源码 | `parent/`（Flutter + Riverpod + go_router + Dio） |
 | 服务端 | 迁移 `00007_parent_unlock.sql`、`POST /v1/family/devices/{id}/unlock` |
@@ -63,7 +65,7 @@ go test ./...              passed（含远程解锁单测）
 | 产物 | 结果 |
 | --- | --- |
 | Android debug（arm64） | ✅ 构建成功 |
-| Android release（arm64） | ✅ 19.5MB，versionCode 3 / 0.3.0 |
+| Android release（arm64） | ✅ versionCode 4 / 0.3.1 |
 | iOS `flutter build ios --no-codesign` | ✅ Runner.app 18.1MB |
 
 > release 包当前回退 debug 签名（未提供 `keystore.properties`），仅用于内部验收；生产签名方式见部署手册。
@@ -78,6 +80,27 @@ go test ./...              passed（含远程解锁单测）
 | 远程解锁 | 服务端实测：签发 200、错误 PIN 403、限流 429；写库 `source=parent`、`session_id=NULL`、审计记录 |
 | TV 放行 | TV v0.2.0 阻挡页每 5s 轮询 active grant，实测 5s 内 `BLOCKED -> GRANTED` |
 | 规则生效 | 服务端 `PUT /rule` 校验 PIN/可达性；TV 下次组卷使用新规则 |
+
+### 4.4 目视走查（Android TV 模拟器）
+
+截图见 [`docs/acceptance/phase3/`](phase3/)：
+
+| 页面 | 截图 |
+| --- | --- |
+| 孩子列表 | `01-child-list.png` |
+| 新增孩子 | `02-child-form.png` |
+| 规则配置 | `03-rule.png` |
+| 规则预览（5 题 / 最高 5.5 分） | `04-rule-preview.png` |
+| 规则保存 PIN | `05-rule-pin.png` |
+| 设备列表 | `06-devices.png` |
+| 远程解锁 | `07-unlock.png` |
+| 远程解锁成功（已解锁 10 分钟） | `08-unlock-success.png` |
+| 报告空态 | `09-report.png` |
+| 设置 | `10-settings.png` |
+| 家庭邀请码 | `11-invite.png` |
+
+走查同时验证了真实接口：
+`PUT /rule 200`、`POST /rule/preview 200`、`POST /devices/{id}/unlock 200`、`POST /members/invite 200`。
 
 ## 5. 已知限制
 
