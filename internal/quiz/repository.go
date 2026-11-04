@@ -2,8 +2,10 @@ package quiz
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -48,6 +50,80 @@ func (r *repository) candidates(ctx context.Context, childID, subject string, st
 	rows, err := r.pool.Query(ctx, query, subject, stages, childArg, limit)
 	if err != nil {
 		return nil, fmt.Errorf("query pool: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]Candidate, 0, limit)
+	for rows.Next() {
+		var c Candidate
+		if err := rows.Scan(&c.ID, &c.Subject, &c.Stage, &c.Type, &c.Difficulty); err != nil {
+			return nil, err
+		}
+		items = append(items, c)
+	}
+	return items, rows.Err()
+}
+
+// topicPack 是参与组卷的专题包。
+type topicPack struct {
+	ID   string
+	Name string
+}
+
+// activeTopicPack 返回匹配学段/学科且在有效期内的在线专题（题目数 >= 3）。
+func (r *repository) activeTopicPack(ctx context.Context, stage string, subjects, stages []string) (topicPack, bool, error) {
+	var pack topicPack
+	err := r.pool.QueryRow(ctx, `
+		select tp.id, tp.name
+		from topic_pack tp
+		join topic_question tq on tq.topic_id = tp.id
+		join question q on q.id = tq.question_id
+		where tp.status = 'online'
+		  and (tp.start_at is null or tp.start_at <= now())
+		  and (tp.end_at is null or tp.end_at >= now())
+		  and (jsonb_array_length(tp.stage_scope) = 0 or tp.stage_scope ? $1)
+		  and (jsonb_array_length(tp.subject_scope) = 0
+		       or exists (
+		           select 1 from jsonb_array_elements_text(tp.subject_scope) s
+		           where s = any($2)))
+		  and q.status = 'online'
+		  and q.stage_code = any($3)
+		group by tp.id, tp.name, tp.updated_at
+		having count(*) >= 3
+		order by tp.updated_at desc
+		limit 1`, stage, subjects, stages).Scan(&pack.ID, &pack.Name)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return topicPack{}, false, nil
+	}
+	if err != nil {
+		return topicPack{}, false, err
+	}
+	return pack, true, nil
+}
+
+// topicCandidates 返回专题内匹配学段的在线题目；excludeRecent 为 true 时排除孩子近 30 天做过的题。
+func (r *repository) topicCandidates(ctx context.Context, childID, topicID string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) {
+	var childArg any
+	if childID != "" && excludeRecent {
+		childArg = childID
+	}
+
+	rows, err := r.pool.Query(ctx, `
+		select q.id, q.subject_code, q.stage_code, q.type_code, q.difficulty
+		from topic_question tq
+		join question q on q.id = tq.question_id
+		where tq.topic_id = $1
+		  and q.status = 'online'
+		  and q.stage_code = any($2)
+		  and ($3::uuid is null or not exists (
+		      select 1 from answer_log a
+		      where a.child_id = $3::uuid
+		        and a.question_id = q.id
+		        and a.answered_at > now() - interval '30 days'))
+		order by tq.position, q.id
+		limit $4`, topicID, stages, childArg, limit)
+	if err != nil {
+		return nil, fmt.Errorf("query topic pool: %w", err)
 	}
 	defer rows.Close()
 

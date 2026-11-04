@@ -31,6 +31,8 @@ type Result struct {
 	DifficultyTarget int            `json:"difficulty_target"`
 	Warnings         []string       `json:"warnings,omitempty"`
 	Seed             int64          `json:"seed"`
+	TopicID          string         `json:"topic_id,omitempty"`
+	TopicName        string         `json:"topic_name,omitempty"`
 }
 
 // Error 是组卷业务错误。

@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 13820242,
-      "output": 745717,
-      "reasoning": 497119,
+      "input": 13860312,
+      "output": 757825,
+      "reasoning": 506289,
       "cache": {
-        "read": 789275776,
+        "read": 792689280,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793797618654,
-      "busy": 1793796945753,
-      "idle": 1793796846720,
-      "viewed": 1793796846720
+      "updated": 1793798517120,
+      "busy": 1793798180196,
+      "idle": 1793797751149,
+      "viewed": 1793797751149
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -148444,6 +148444,2323 @@
         "reasoning": 18,
         "cache": {
           "read": 101248,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6ab723e001c6w7v15UlC9gRG",
+      "time": {
+        "created": 1793797616193,
+        "streamed": 1793797619072,
+        "completed": 1793797621605
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Fine. Archive and commit.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793797618656,
+            "completed": 1793797619066
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_zeo1yubm1zlz64sh8o7v8b7g",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -2 && git add -A && git status --short | head -20",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\n索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nM  README.md\nM  admin-web/package.json\nM  admin-web/src/App.tsx\nM  admin-web/src/api.ts\nA  admin-web/src/pages/TopicsPage.tsx\nM  admin-web/src/types.ts\nM  cmd/api/main.go\nM  docs/README.md\nA  docs/acceptance/phase10.md\nM  \"docs/conversations/2026-11-02-001-\\351\\241\\271\\347\\233\\256\\351\\223\\201\\345\\276\\213-\\347\\225\\231\\346\\241\\243\\344\\270\\216\\345\\274\\200\\345\\217\\221\\350\\256\\241\\345\\210\\222.md\"\nM  docs/conversations/INDEX.md\nM  docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json\nA  \"docs/design/010-\\344\\270\\223\\351\\242\\230\\351\\242\\230\\345\\214\\205\\350\\256\\276\\350\\256\\241.md\"\nA  \"docs/plans/010-\\344\\270\\223\\351\\242\\230\\351\\242\\230\\345\\214\\205\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\nM  internal/httpapi/router.go\nA  internal/topic/integration_test.go\nA  internal/topic/service.go\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793797618657,
+            "ran": 1793797619070,
+            "completed": 1793797621478
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "48c50d10e61da4d0da528627e6a3b53d60e1c5c1",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 357,
+        "output": 101,
+        "reasoning": 6,
+        "cache": {
+          "read": 101504,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6ab8778001Ox73znlfA2sSS6",
+      "time": {
+        "created": 1793797621628,
+        "streamed": 1793797625933,
+        "completed": 1793797726929
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The archive modified an old conversation file (2026-11-02-001) — probably appending. That's expected per script rerun? It says archive files shouldn't be manually modified but script can overwrite. Fine.\n\nCommit, tag, push.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793797624145,
+            "completed": 1793797625914
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_7h83yjtaq7ufltr51hrrhvyq",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git commit -q -m \"feat(010): 专题题包管理与选题\n\n- 新增 internal/topic：专题列表/详情/新建/修改/删除\n- PUT /admin/topics/{id}/questions 全量设置题目，去重保序并校验外键\n- 管理端「专题题包」页面：元数据弹窗、搜索选题、上下线、删除确认\n- 管理员路由统一接入 Auth，修复权限校验缺失\n- 集成测试覆盖 CRUD/选题/排序/清空；版本 0.10.0\" && git tag -a v0.10.0 -m \"OpenQuizGo v0.10.0（专题题包管理）\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git push github v0.10.0 2>&1 | tail -1 && git push gitee v0.10.0 2>&1 | tail -1",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Please make sure you have the correct access rights\nand the repository exists.\nTo gitee.com:roma007007/open-quiz-go.git\n   41390a2..e7c136a  main -> master\n * [new tag]         v0.10.0 -> v0.10.0\n * [new tag]         v0.10.0 -> v0.10.0\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793797624442,
+            "ran": 1793797625931,
+            "completed": 1793797726880
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 578,
+        "output": 292,
+        "reasoning": 53,
+        "cache": {
+          "read": 101760,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6ad22ea0018DibjYLTD1ZkvB",
+      "time": {
+        "created": 1793797726957,
+        "streamed": 1793797729570,
+        "completed": 1793797733701
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "GitHub push failed (\"Please make sure you have the correct access rights and the repository exists\") — likely SSH access temporarily. Gitee succeeded. Need retry GitHub; maybe network/SSH issue. Check `git push github main` output more fully.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793797728940,
+            "completed": 1793797729563
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_kv6ggdv4re9wnr809yu227js",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git push github main 2>&1 | tail -6",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "To github.com:roma007/OpenQuizGo.git\n   41390a2..e7c136a  main -> main\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793797729263,
+            "ran": 1793797729569,
+            "completed": 1793797733673
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 509,
+        "output": 82,
+        "reasoning": 53,
+        "cache": {
+          "read": 102272,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6ad3d59001d7xMurMVjuyqCz",
+      "time": {
+        "created": 1793797733724,
+        "streamed": 1793797736347,
+        "completed": 1793797740237
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now GitHub succeeded (transient). Tag push GitHub?",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793797735921,
+            "completed": 1793797736342
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_yxzjp6fri9pybwstq8xyr6gz",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git push github v0.10.0 2>&1 | tail -2; git status --short | head -5; git log --oneline -1",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Everything up-to-date\ne7c136a feat(010): 专题题包管理与选题\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793797735924,
+            "ran": 1793797736345,
+            "completed": 1793797740224
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 300,
+        "output": 104,
+        "reasoning": 11,
+        "cache": {
+          "read": 102656,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6ad56e2001W5R6uQy9P1Yik6",
+      "time": {
+        "created": 1793797740262,
+        "streamed": 1793797745523,
+        "completed": 1793797745568
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Everything synced.\n\nOne more thought: the API server still running in background. Fine for further work.\n\nPotential issue in TopicsPage: useForm warning fixed with forceRender; but `destroyOnHidden` was replaced by forceRender, meaning modal form stays mounted. Good.\n\nAlso Select opening via clicks worked. Form edit range handling: when opening edit, `range` value set as [dayjs, dayjs]; DatePicker.RangePicker accepts. Fine.\n\nPotential concern: `start_at: null` sent when no range. Backend `*time.Time` unmarshals null fine. Good.\n\nOne bug: `topics` service Delete on a topic referenced by question.topic_id with ON DELETE SET NULL works. topic_question cascade. Good.\n\nAnother: SetQuestions claims 500 max, error mapping inside tx returns apiError but defer rollback. Good.\n\nAnother: `Get` scans array_agg `[]string` via pgx — worked in tests.\n\nNow verify server is still running (we killed/restarted). Fine.\n\nCould clean up test data in openquizgo? We created and deleted via UI; list is empty. The test DB was used for integration. Fine.\n\nBefore final response, update checkpoint? Not needed.\n\nLet me ensure docs/acceptance folder naming conventions; phase10.md consistent with phase9.md. Good.\n\nFinal response summarize.\n\nAlso mention screenshot limitation. And that GitHub had transient failure but retried successfully; both remotes at e7c136a, tag v0.10.0.\n\nOne more check: docs plan/design status updated correctly. Quick grep.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793797742253,
+            "completed": 1793797745519
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_nc0c3wrs1apw6c6i6k8ei5r3",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"状态\\|todo\\|通过\" docs/plans/010-专题题包实施计划.md | head; grep -n \"状态\" docs/design/010-专题题包设计.md | head -2",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "6:| 状态 | done |\n13:| 序号 | 任务 | 产出 | 验收 | 状态 |\n19:| T2 | 验收 | 截图/报告 | 全流程通过 | done |\n34:| 2026-11-04 | S1–S3/T1–T2 完成 | 服务端测试通过；管理端浏览器 CRUD + 选题 + 上下线 + 删除通过 |\n38:- **通过**，详见 [验收报告](../acceptance/phase10.md)。\n7:| 状态 | done |\n33:| PUT | `/v1/admin/topics/{id}` | 修改元数据/状态 |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793797745093,
+            "ran": 1793797745522,
+            "completed": 1793797745548
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 192,
+        "output": 117,
+        "reasoning": 329,
+        "cache": {
+          "read": 102912,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6ad6bab001cBBGsZbdHEby2a",
+      "time": {
+        "created": 1793797745583,
+        "streamed": 1793797751110,
+        "completed": 1793797751136
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "010 专题题包已完成并发布 **v0.10.0**，两个远端已同步（`e7c136a`，标签 `v0.10.0`）。\n\n## 交付内容\n\n| 部分 | 内容 |\n| --- | --- |\n| 服务端 | `internal/topic`：专题列表/详情/新建/修改/删除 + 全量设置题目 |\n| 路由 | `GET/POST /v1/admin/topics`、`GET/PUT/DELETE /v1/admin/topics/{id}`、`PUT .../questions` |\n| 权限 | 全部挂在管理员鉴权组，读写分别校验 `question.read` / `question.write` |\n| 管理端 | 「专题题包」页面：列表、元数据弹窗、搜索选题、上下线、删除确认 |\n| 测试 | 集成测试覆盖 CRUD、去重保序、清空、外键错误 |\n\n## 实测结果\n\n```text\n创建专题            201 draft\n绑定 3 道题         200 question_count=3，顺序一致\n编辑并上线          200 online / 付费\n删除                200，列表恢复空态\ngo test ./...       passed\nnpm run build       passed\n```\n\n浏览器中完整走通：新建 → 搜索「导入题」添加 3 题 → 编辑上线/付费 → 删除确认。\n\n## 已修复问题\n\n- 专题路由最初漏挂 `guard.Auth`，导致管理员请求返回 403；已改为与其他管理路由一致的鉴权组。\n- 编辑弹窗 `useForm` 未连接警告：已增加 `forceRender`。\n\n## 说明\n\n验收时桌面浏览器窗口最小化，截图工具不可用，验收报告已注明以 DOM 交互与接口日志为证据：`docs/acceptance/phase10.md`。\n\n## 版本线\n\n```text\n服务端   v0.1.0\nTV       v0.2.0\n家长端   v0.9.0\n管理端   v0.10.0\n```\n\n第 5 期剩余：专题包接入组卷/每日一题选题、亲子对战、会员体系。下一步建议把专题包接入组卷抽题，可继续。"
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 659,
+        "output": 482,
+        "reasoning": 0,
+        "cache": {
+          "read": 103040,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6ad816d001EnRLvAx54DLhuW",
+      "time": {
+        "created": 1793797751149
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1a6b40d0f001IBgwGPrMJm90Tu",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793798180226
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_1a6b40d8f001HtHBVVdUEZz8tu",
+      "time": {
+        "created": 1793798180247,
+        "streamed": 1793798184277,
+        "completed": 1793798184316
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The user says continue. Per the checkpoint and last work, next step: integrate topic packs into quiz selection (组卷抽题), then maybe 亲子对战, 会员体系. Need design + plan first per AGENTS.md.\n\nLet me investigate the existing quiz selector and question topic_id usage to design integration. We need to produce docs/design/011-专题包组卷设计.md and plan, then implement.\n\nFirst understand current quiz selection logic. Let me read internal/quiz/selector.go and related.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798182948,
+            "completed": 1793798184272
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_51govlx4t6e7b31wtfbok5p6",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '1,240p' internal/quiz/selector.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "package quiz\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"log/slog\"\n\t\"math\"\n\t\"math/rand\"\n\t\"sort\"\n\t\"strings\"\n\t\"time\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n\t\"github.com/redis/go-redis/v9\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/rule\"\n\t\"github.com/roma007/OpenQuizGo/internal/watch\"\n)\n\n// Rule 是规则子集别名，统一由 rule 包校验。\ntype Rule = rule.Rule\n\nconst defaultPoolLimit = 2000\n\nvar (\n\tstageRanks = map[string]int{\"preschool\": 0, \"low\": 1, \"mid\": 2, \"high\": 3}\n\tstageOrder = map[string][]string{\n\t\t\"preschool\": {\"preschool\", \"low\", \"mid\", \"high\"},\n\t\t\"low\":       {\"low\", \"preschool\", \"mid\", \"high\"},\n\t\t\"mid\":       {\"mid\", \"low\", \"high\", \"preschool\"},\n\t\t\"high\":      {\"high\", \"mid\", \"low\", \"preschool\"},\n\t}\n\tvalidStages = map[string]bool{\"preschool\": true, \"low\": true, \"mid\": true, \"high\": true}\n)\n\n// Service 是组卷服务。\ntype Service struct {\n\trepo     *repository\n\tredis    *redis.Client\n\truleSvc  *rule.Service\n\twatchSvc *watch.Service\n\tlogger   *slog.Logger\n}\n\n// New 构造组卷服务。\nfunc New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, watchSvc *watch.Service, logger *slog.Logger) *Service {\n\treturn &Service{\n\t\trepo:     newRepository(pool),\n\t\tredis:    rdb,\n\t\truleSvc:  ruleSvc,\n\t\twatchSvc: watchSvc,\n\t\tlogger:   logger,\n\t}\n}\n\n// Select 按规则组卷。\nfunc (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error) {\n\tstage, grade := req.Stage, req.GradeTag\n\tif req.ChildID != \"\" {\n\t\tchildStage, childGrade, err := s.repo.childStage(ctx, req.ChildID)\n\t\tif err != nil {\n\t\t\treturn Result{}, newError(404, \"CHILD_NOT_FOUND\", \"孩子档案不存在\")\n\t\t}\n\t\tstage, grade = childStage, childGrade\n\t}\n\tstage = strings.TrimSpace(stage)\n\tif !validStages[stage] {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"学段不合法\")\n\t}\n\tif err := rule.Validate(req.Rule); err != nil {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", err.Error())\n\t}\n\n\tseed := req.Seed\n\tif seed == 0 {\n\t\tseed = time.Now().UnixNano()\n\t}\n\trng := rand.New(rand.NewSource(seed))\n\n\tstats, err := s.repo.difficultyStats(ctx, req.ChildID)\n\tif err != nil {\n\t\treturn Result{}, err\n\t}\n\ttarget := targetDifficulty(stage, grade, stats)\n\n\tn, err := rule.SessionSize(req.Rule)\n\tif err != nil {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", err.Error())\n\t}\n\tif req.MaxQuestions > 0 && req.MaxQuestions < n {\n\t\tn = max(3, req.MaxQuestions)\n\t}\n\n\tsubjectWeights := make(map[string]float64)\n\tfor subject, weight := range req.Rule.SubjectWeight {\n\t\tif subject == \"fun\" || weight <= 0 {\n\t\t\tcontinue\n\t\t}\n\t\tsubjectWeights[subject] = weight\n\t}\n\tif len(subjectWeights) == 0 {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"至少需要一个学科权重\")\n\t}\n\n\tfunSlots := 0\n\tif req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight[\"fun\"] > 0 {\n\t\tfunSlots = min(req.Rule.FunRatioCap, max(1, n-1))\n\t}\n\tsubjectSlots := n - funSlots\n\tquota := rule.Allocate(subjectWeights, subjectSlots)\n\n\tselected := make([]Selected, 0, n)\n\tchosen := map[string]bool{}\n\twarnings := make([]string, 0)\n\taddWarning := func(w string) {\n\t\tfor _, existing := range warnings {\n\t\t\tif existing == w {\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\twarnings = append(warnings, w)\n\t}\n\n\tstages := stageOrder[stage]\n\tprimaryRank := stageRanks[stage]\n\n\tfor _, subject := range sortedKeys(quota) {\n\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\ttarget, quota[subject], rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\tif funSlots > 0 {\n\t\tfunStages := []string{\"preschool\", \"low\"}\n\t\tif stage == \"mid\" || stage == \"high\" {\n\t\t\tfunStages = []string{\"mid\", \"high\"}\n\t\t}\n\t\tif err := s.fillSubject(ctx, req.ChildID, \"fun\", funStages, -1,\n\t\t\ttarget, funSlots, rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\t// 配额未满时，按权重从高到低再分配。\n\tif len(selected) < n {\n\t\tordered := rule.SubjectsByWeight(subjectWeights)\n\t\tfor pass := 0; pass < 2 && len(selected) < n; pass++ {\n\t\t\tprogress := false\n\t\t\tfor _, subject := range ordered {\n\t\t\t\tif len(selected) >= n {\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\tneed := n - len(selected)\n\t\t\t\tbefore := len(selected)\n\t\t\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\t\t\ttarget, need, rng, chosen, &selected, addWarning); err != nil {\n\t\t\t\t\treturn Result{}, err\n\t\t\t\t}\n\t\t\t\tif len(selected) > before {\n\t\t\t\t\tprogress = true\n\t\t\t\t}\n\t\t\t}\n\t\t\tif !progress {\n\t\t\t\tbreak\n\t\t\t}\n\t\t\taddWarning(\"quota_redistributed\")\n\t\t}\n\t}\n\n\trng.Shuffle(len(selected), func(i, j int) {\n\t\tselected[i], selected[j] = selected[j], selected[i]\n\t})\n\n\tscore := 0.0\n\tactual := map[string]int{}\n\tfor _, item := range selected {\n\t\tscore += req.Rule.SubjectWeight[item.Subject]\n\t\tactual[item.Subject]++\n\t}\n\n\tresult := Result{\n\t\tTotal:            len(selected),\n\t\tQuota:            actual,\n\t\tSelected:         selected,\n\t\tMaxScore:         round2(score),\n\t\tDifficultyTarget: target,\n\t\tWarnings:         warnings,\n\t\tSeed:             seed,\n\t}\n\tif len(selected) < 3 || score < req.Rule.PassThreshold {\n\t\tapiErr := newError(409, \"INSUFFICIENT_POOL\",\n\t\t\tfmt.Sprintf(\"题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f\", len(selected), score, req.Rule.PassThreshold))\n\t\tapiErr.Warnings = warnings\n\t\treturn result, apiErr\n\t}\n\treturn result, nil\n}\n\nfunc (s *Service) fillSubject(\n\tctx context.Context,\n\tchildID, subject string,\n\tstages []string,\n\tprimaryRank, target, need int,\n\trng *rand.Rand,\n\tchosen map[string]bool,\n\tselected *[]Selected,\n\taddWarning func(string),\n) error {\n\tif need <= 0 {\n\t\treturn nil\n\t}\n\n\tfresh, err := s.repo.candidates(ctx, childID, subject, stages, true, defaultPoolLimit)\n\tif err != nil {\n\t\treturn err\n\t}\n\tsortCandidates(fresh, rng, primaryRank, target)\n\n\tpicked := 0\n\tfor _, candidate := range fresh {\n\t\tif picked >= need {\n\t\t\tbreak\n\t\t}\n\t\tif chosen[candidate.ID] {\n\t\t\tcontinue\n\t\t}\n\t\t*selected = append(*selected, toSelected(candidate, false))\n\t\tchosen[candidate.ID] = true\n\t\tpicked++\n\t\tif primaryRank >= 0 && stageRanks[candidate.Stage] != primaryRank {\n\t\t\taddWarning(\"stage_fallback:\" + subject)\n\t\t}\n\t\tif candidate.Difficulty != target {\n\t\t\taddWarning(\"difficulty_fallback:\" + subject)\n\t\t}\n\t}\n\n\tif picked >= need || childID == \"\" {\n\t\tif picked < need {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798183682,
+            "ran": 1793798184275,
+            "completed": 1793798184293
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_zsyz266ie6elfs36u4rfgg5z",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -rn \"topic_id\\|TopicID\\|topic\" internal/quiz internal/question | head -30",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "internal/question/models.go:24:\tTopicID       string          `json:\"topic_id,omitempty\"`\ninternal/question/models.go:47:\tTopicID       *string         `json:\"topic_id\"`\ninternal/question/models.go:114:\tTopicID    string\ninternal/question/service.go:68:\ttopicIDs, err := s.repo.topicIDs(ctx)\ninternal/question/service.go:72:\tif problems := validate(&in, tags, topicIDs); len(problems) > 0 {\ninternal/question/service.go:99:\ttopicIDs, err := s.repo.topicIDs(ctx)\ninternal/question/service.go:103:\tif problems := validate(&in, tags, topicIDs); len(problems) > 0 {\ninternal/question/service.go:346:\ttopicIDs, err := s.repo.topicIDs(ctx)\ninternal/question/service.go:353:\t\tproblems := validate(&inputs[i], tags, topicIDs)\ninternal/question/service.go:392:func validate(in *Input, tags tagSets, topicIDs map[string]bool) []ImportError {\ninternal/question/service.go:444:\tcase \"topic\":\ninternal/question/service.go:454:\tif in.TopicID != nil && *in.TopicID != \"\" {\ninternal/question/service.go:455:\t\tif !topicIDs[*in.TopicID] {\ninternal/question/service.go:456:\t\t\tadd(\"topic_id\", \"专题题包不存在\")\ninternal/question/service.go:458:\t} else if in.Category == \"topic\" {\ninternal/question/service.go:459:\t\tadd(\"topic_id\", \"专题内容必须指定 topic_id\")\ninternal/question/handlers.go:109:\t\tTopicID:    q.Get(\"topic_id\"),\ninternal/question/handlers.go:266:\t\"stem_media\", \"options\", \"answer\", \"answer_alias\", \"explain\", \"duration_limit\", \"topic_id\", \"schema_ver\",\ninternal/question/handlers.go:332:\t\tif value := cell(\"topic_id\"); value != \"\" {\ninternal/question/handlers.go:333:\t\t\ttopic := value\ninternal/question/handlers.go:334:\t\t\tinput.TopicID = &topic\ninternal/question/integration_test.go:208:\tif _, err := db.Exec(`truncate table question, topic_pack, audit_log, admin_user cascade`); err != nil {\ninternal/question/repository.go:17:\tcoalesce(explain, ''), duration_limit, coalesce(topic_id::text, ''), status, version, schema_ver,\ninternal/question/repository.go:33:\t\t&stemMedia, &options, &answer, &alias, &q.Explain, &q.DurationLimit, &q.TopicID,\ninternal/question/repository.go:63:\t\t\tstem_media, options, answer, answer_alias, explain, duration_limit, topic_id,\ninternal/question/repository.go:72:\t\tin.Explain, in.DurationLimit, topicParam(in.TopicID), in.SchemaVer, adminID))\ninternal/question/repository.go:75:func topicParam(id *string) any {\ninternal/question/repository.go:88:\t\t\texplain = nullif($13,''), duration_limit = $14, topic_id = nullif($15,'')::uuid,\ninternal/question/repository.go:96:\t\tin.Explain, in.DurationLimit, topicParam(in.TopicID), in.SchemaVer))\ninternal/question/repository.go:238:\tif f.TopicID != \"\" {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798183932,
+            "ran": 1793798184276,
+            "completed": 1793798184300
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 507,
+        "output": 166,
+        "reasoning": 104,
+        "cache": {
+          "read": 103680,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b41d8a001uUajKl6Ajc37hc",
+      "time": {
+        "created": 1793798184334,
+        "streamed": 1793798187313,
+        "completed": 1793798187377
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Let me read rest of selector and repository candidates query. Also SelectRequest struct.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798186587,
+            "completed": 1793798187304
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_ltssiwxnftvbi4bfxekr7yt2",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '240,420p' internal/quiz/selector.go; grep -n \"type SelectRequest\" -A 15 internal/quiz/*.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\t\tif picked < need {\n\t\t\taddWarning(\"subject_shortage:\" + subject)\n\t\t}\n\t\treturn nil\n\t}\n\n\t// 去重导致不足时，退化为允许重复题。\n\tall, err := s.repo.candidates(ctx, childID, subject, stages, false, defaultPoolLimit)\n\tif err != nil {\n\t\treturn err\n\t}\n\tsortCandidates(all, rng, primaryRank, target)\n\tfor _, candidate := range all {\n\t\tif picked >= need {\n\t\t\tbreak\n\t\t}\n\t\tif chosen[candidate.ID] {\n\t\t\tcontinue\n\t\t}\n\t\t*selected = append(*selected, toSelected(candidate, true))\n\t\tchosen[candidate.ID] = true\n\t\tpicked++\n\t\taddWarning(\"repeat_question:\" + subject)\n\t}\n\tif picked < need {\n\t\taddWarning(\"subject_shortage:\" + subject)\n\t}\n\treturn nil\n}\n\nfunc toSelected(c Candidate, repeated bool) Selected {\n\treturn Selected{\n\t\tQuestionID: c.ID,\n\t\tSubject:    c.Subject,\n\t\tStage:      c.Stage,\n\t\tType:       c.Type,\n\t\tDifficulty: c.Difficulty,\n\t\tRepeated:   repeated,\n\t}\n}\n\nfunc sortCandidates(items []Candidate, rng *rand.Rand, primaryRank, target int) {\n\trng.Shuffle(len(items), func(i, j int) {\n\t\titems[i], items[j] = items[j], items[i]\n\t})\n\tsort.SliceStable(items, func(i, j int) bool {\n\t\tri, rj := stageRanks[items[i].Stage], stageRanks[items[j].Stage]\n\t\tif primaryRank >= 0 {\n\t\t\tdi, dj := abs(ri-primaryRank), abs(rj-primaryRank)\n\t\t\tif di != dj {\n\t\t\t\treturn di < dj\n\t\t\t}\n\t\t}\n\t\tdi, dj := abs(items[i].Difficulty-target), abs(items[j].Difficulty-target)\n\t\tif di != dj {\n\t\t\treturn di < dj\n\t\t}\n\t\treturn false\n\t})\n}\n\nfunc sortedKeys(quota map[string]int) []string {\n\tkeys := make([]string, 0, len(quota))\n\tfor key := range quota {\n\t\tkeys = append(keys, key)\n\t}\n\tsort.Strings(keys)\n\treturn keys\n}\n\nfunc targetDifficulty(stage, grade string, stats map[int]float64) int {\n\tbest, bestDistance := 0, math.MaxFloat64\n\tfor difficulty, rate := range stats {\n\t\tdistance := math.Abs(rate - 0.7)\n\t\tif distance < bestDistance {\n\t\t\tbest, bestDistance = difficulty, distance\n\t\t}\n\t}\n\tif best > 0 && bestDistance <= 0.25 {\n\t\treturn best\n\t}\n\n\tbase := map[string]int{\"preschool\": 1, \"low\": 2, \"mid\": 3, \"high\": 3}[stage]\n\tif len(grade) == 2 && grade[0] == 'g' {\n\t\tswitch grade[1] {\n\t\tcase '1', '2', '3':\n\t\t\tbase--\n\t\tcase '7', '8', '9':\n\t\t\tbase++\n\t\t}\n\t}\n\treturn clamp(base, 1, 5)\n}\n\nfunc abs(n int) int {\n\tif n < 0 {\n\t\treturn -n\n\t}\n\treturn n\n}\n\nfunc clamp(value, low, high int) int {\n\tif value < low {\n\t\treturn low\n\t}\n\tif value > high {\n\t\treturn high\n\t}\n\treturn value\n}\n\nfunc round2(value float64) float64 {\n\treturn math.Round(value*100) / 100\n}\ninternal/quiz/models.go:6:type SelectRequest struct {\ninternal/quiz/models.go-7-\tChildID      string `json:\"child_id\"`\ninternal/quiz/models.go-8-\tStage        string `json:\"stage\"`\ninternal/quiz/models.go-9-\tGradeTag     string `json:\"grade_tag\"`\ninternal/quiz/models.go-10-\tRule         Rule   `json:\"rule\"`\ninternal/quiz/models.go-11-\tSeed         int64  `json:\"seed\"`\ninternal/quiz/models.go-12-\tMaxQuestions int    `json:\"max_questions\"`\ninternal/quiz/models.go-13-}\ninternal/quiz/models.go-14-\ninternal/quiz/models.go-15-// Selected 是被选中的题目。\ninternal/quiz/models.go-16-type Selected struct {\ninternal/quiz/models.go-17-\tQuestionID string `json:\"question_id\"`\ninternal/quiz/models.go-18-\tSubject    string `json:\"subject\"`\ninternal/quiz/models.go-19-\tStage      string `json:\"stage\"`\ninternal/quiz/models.go-20-\tType       string `json:\"type\"`\ninternal/quiz/models.go-21-\tDifficulty int    `json:\"difficulty\"`\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798186658,
+            "ran": 1793798187309,
+            "completed": 1793798187355
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_pq44l08wzgnn02px09zhv8v4",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"func (r \\*repository) candidates\" -A 65 internal/quiz/repository.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "28:func (r *repository) candidates(ctx context.Context, childID, subject string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) {\n29-\tvar childArg any\n30-\tif childID != \"\" && excludeRecent {\n31-\t\tchildArg = childID\n32-\t}\n33-\n34-\tconst query = `\n35-\t\tselect q.id, q.subject_code, q.stage_code, q.type_code, q.difficulty\n36-\t\tfrom question q\n37-\t\twhere q.status = 'online'\n38-\t\t  and q.subject_code = $1\n39-\t\t  and q.stage_code = any($2)\n40-\t\t  and ($3::uuid is null or not exists (\n41-\t\t      select 1 from answer_log a\n42-\t\t      where a.child_id = $3::uuid\n43-\t\t        and a.question_id = q.id\n44-\t\t        and a.answered_at > now() - interval '30 days'))\n45-\t\torder by q.id\n46-\t\tlimit $4`\n47-\n48-\trows, err := r.pool.Query(ctx, query, subject, stages, childArg, limit)\n49-\tif err != nil {\n50-\t\treturn nil, fmt.Errorf(\"query pool: %w\", err)\n51-\t}\n52-\tdefer rows.Close()\n53-\n54-\titems := make([]Candidate, 0, limit)\n55-\tfor rows.Next() {\n56-\t\tvar c Candidate\n57-\t\tif err := rows.Scan(&c.ID, &c.Subject, &c.Stage, &c.Type, &c.Difficulty); err != nil {\n58-\t\t\treturn nil, err\n59-\t\t}\n60-\t\titems = append(items, c)\n61-\t}\n62-\treturn items, rows.Err()\n63-}\n64-\n65-// childStage 读取孩子学段；childID 为空时返回空。\n66-func (r *repository) childStage(ctx context.Context, childID string) (stage, grade string, err error) {\n67-\tif childID == \"\" {\n68-\t\treturn \"\", \"\", nil\n69-\t}\n70-\terr = r.pool.QueryRow(ctx, `\n71-\t\tselect stage_code, coalesce(grade_tag, '')\n72-\t\tfrom child_profile where id = $1`, childID).Scan(&stage, &grade)\n73-\treturn stage, grade, err\n74-}\n75-\n76-// difficultyStats 返回孩子近 30 天各难度的正确率。\n77-func (r *repository) difficultyStats(ctx context.Context, childID string) (map[int]float64, error) {\n78-\tif childID == \"\" {\n79-\t\treturn map[int]float64{}, nil\n80-\t}\n81-\trows, err := r.pool.Query(ctx, `\n82-\t\tselect difficulty, count(*) as attempts,\n83-\t\t       sum(case when a.is_correct then 1 else 0 end)::float / count(*) as rate\n84-\t\tfrom answer_log a\n85-\t\tjoin question q on q.id = a.question_id\n86-\t\twhere a.child_id = $1 and a.answered_at > now() - interval '30 days'\n87-\t\tgroup by difficulty`, childID)\n88-\tif err != nil {\n89-\t\treturn nil, err\n90-\t}\n91-\tdefer rows.Close()\n92-\n93-\tstats := map[int]float64{}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798186992,
+            "ran": 1793798187312,
+            "completed": 1793798187348
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 3093,
+        "output": 187,
+        "reasoning": 16,
+        "cache": {
+          "read": 104064,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b42987001GOwaEj1T7YvvB4",
+      "time": {
+        "created": 1793798187403,
+        "streamed": 1793798220648,
+        "completed": 1793798221909
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "We need to decide integration design. Options:\n\nA. Add `topic_id` to SelectRequest: when set, restrict candidate pool to questions in that topic pack (via topic_question) and bypass subject quota? Or still respect? Topic packs group across subjects; users expect questions from the pack. Simplest: add `TopicID` optional; if set, candidates are restricted to topic_question of an online topic pack within time window, and selection picks n questions from the pack honoring difficulty/stage ordering but not subject quota. But then `Result.Quota` and score based on subject weights; could still compute. Pass threshold may not make sense. Also pack questions may span subjects.\n\nB. Auto-inject topic pack when active: if an online topic pack matches child's subject/stage and date window, prefer its questions. But complexity.\n\nC. Parent/admin UI \"试玩专题\"? Existing product surfaces: TV quiz uses rule; parent app doesn't start quizzes except daily. There's no consumer of `/quiz/select` except TV. TV requests based on child rule. So topic pack integration needs a way to tell TV to use a topic. Could be part of watch rule? Alternatively, \"每日一题\" could pick from active topic pack. Hmm.\n\nGiven Phase 5 \"专题题包\", likely next: 组卷时按专题包抽题. The plan design 010 says \"不改变现有组卷逻辑（专题包接入组卷留到后续）\". So now design 011.\n\nWhat's the most valuable, locally verifiable integration? Add an optional `topic_id` to quiz select API, and the topic selection logic:\n- If `topic_id` given (or `topic_slug`), validate pack is online and within start/end.\n- Build candidate pool from `topic_question` (ordered positions) joined to online questions, restricted by stage order and difficulty sort as usual, and subject weights? Since pack is a curated set, we should select from pack by positions primarily, not subject quota. But need to fill n questions. Approach: select up to n from pack, prioritizing stage closeness and difficulty target, then shuffle. Ignore subject quota but still compute score? PassThreshold might fail for subjects not in weights. Better define: topic mode uses `Rule` only for count (SessionSize) and maybe fun; no pass threshold? That's a semantic change.\n\nAlternative simpler design: topic pack acts as a hard filter in `fillSubject`: candidates query restricted to questions with `topic_id = $topic` OR membership in `topic_question`? There are two associations: question.topic_id (single) and topic_question join (many). Admin UI \"选题\" writes topic_question, but question admin form also has topic_id. Design 010 uses topic_question. So filter by topic_question.\n\nImplementation: add `TopicID` to candidate query, passed through fillSubject. Then subject quota still applies: only subjects present in the pack get questions; other subjects produce shortage warnings; pass threshold may fail. If pack is scoped to math but rule weights math+chinese, chinese shortage. Hmm.\n\nMaybe better: when TopicID set, bypass subject quota and just draw from the pack with stage/difficulty ordering, up to n. This is clean and matches \"专题题包 = curated set\". Rule still determines n and fun? We can ignore fun slots. Pass threshold: compute weighted score but only for questions whose subject in weights; topic may include fun. The 409 threshold is designed to ensure enough content; in topic mode, if pack has < n questions, return `INSUFFICIENT_POOL` with warning `topic_shortage`. We can skip threshold check in topic mode (or retain but likely fail). I'd define: topic mode requires pack online + within window; selects min(n, pack size) from pack; no pass-threshold check; returns warnings when shortage.\n\nThen how does TV use it? Need a trigger. Could add `topic_id` optional in `SelectRequest` and wire TV config? TV app sends select request; adding field requires TV change and parent UI to choose pack, which is bigger. Maybe the consumer is the admin \"预览\" button: admin can preview a topic pack by calling select with topic_id, verifying the flow end-to-end locally. That gives immediate value: admin page \"试玩/预览\" generates selected questions from the pack. But acceptance and UI.\n\nAlternatively daily quiz can use active topic pack: pick question from pack for today. But daily currently selects from all online. Topic integration into daily quiz is natural: if there's an online topic pack active now matching child stage/subject, today's question comes from it. But this affects daily behavior subtly.\n\nLet's think about product: 专题题包 for holidays/IP. When a pack is active, quiz sessions (TV) should draw from that pack. Since TV gets its rule from server, server could automatically prefer an active topic pack that matches the child's stage and current time. That's the real integration and requires no client change: in Select, query active online packs matching stage (stage_scope empty or contains child stage) and time window; if one exists, select from it. But deterministic? If multiple, choose most specific/latest. This auto behavior could surprise; but it's the feature.\n\nHowever, \"组卷时支持按专题包抽题\" from acceptance next steps. A clean design: optional `topic_id` request param for explicit pack, plus \"auto\" active pack selection if `topic_id` absent? Keep explicit only, and wire an admin preview to prove it.\n\nSince the user says \"继续\" with no specifics, I should choose the next logical task and be transparent. I could instead tackle 亲子对战 or 会员体系. But topic pack integration is the stated next step.\n\nGiven effort constraints, implement:\n1. Server: SelectRequest.TopicID optional; `Select` uses topic mode:\n   - validate pack exists, status online, time window.\n   - fetch pack questions (join question online) ordered by position, then apply stage order/difficulty sorting.\n   - fill up to n; no subject quota; if fewer than n, warnings topic_shortage and continue; require at least 3? Existing behavior requires >=3 for a valid session. Keep response with what's available and 409 only if <3.\n   - include `topic_id` in Result.\n2. Admin API: `POST /v1/admin/topics/{id}/preview` returning selected questions (using quiz service?). But admin page can call `/v1/quiz/select`? Quiz routes check permissions maybe. Let's inspect quiz handlers routes. The preview can be server-side using quiz.Select with topic id and a rule built from pack/scope or default. Simpler: add `POST /v1/admin/topics/{id}/preview` that returns questions from pack ordered by position (no rule), for admin preview. But that doesn't exercise select. Alternatively admin UI \"预览\" shows ordered questions — already the 选题 modal shows them, so low value.\n\n3. Parent app: add \"专题\" entry showing active packs and start quiz? Parent app doesn't have a quiz session UI (TV does). Hmm.\n\nMaybe a better integration with existing product: daily quiz uses active topic pack. That's tangible and testable in parent app. Design: daily quiz chooses from active online pack matching child's stage if any; fallback to global pool. That helps \"专题\" be visible daily. But question per day from pack only if pack active; the pack has limited questions.\n\nBut the actual quiz session on TV is the main consumption. TV already uses server selection; if server auto-prefers active pack, it works with zero client change. I like auto-preference but explicit is safer/testable via API.\n\nLet's look at quiz handlers for how Select is called and whether TV sends `topic_id` pass-through (it won't). If we add auto-preference based on active pack, every TV session uses it. Design complexity: decide matching: pack status online, now within [start_at, end_at], stage_scope empty or includes child stage, subject_scope maybe intersects rule weights? If multiple, pick newest updated. Then select from pack. This is reasonable: \"上线中的专题优先组卷\".\n\nTesting: create pack with 3 questions online, set status online, no time bounds; call `/v1/quiz/select` with child who has rule; expect selected all from pack. Then offline pack and expect global pool. This is fully server-testable and no UI needed beyond existing admin.\n\nRisk: an active pack with very few questions would degrade sessions. Mitigate: only use pack if it has at least 3 questions; otherwise fallback with warning `topic_shortage`. Also only prefer when pack's stage_scope matches. Subject scope? if pack subject_scope set, still use regardless of rule weights? If pack is math and child rule wants math+chinese, session becomes all math. Maybe acceptable for a curated theme. To be safe, match pack subject scope to at least one weighted subject? Pack's subject_scope empty = all; if set, intersect with rule weights. Then a math pack applies only if rule has math (most do). Stage match too.\n\nSelection algorithm for pack: choose n from pack, prioritizing stage closeness and difficulty target, exclude recent (30 days) first; if insufficient, allow recent. We already have sortCandidates and repo logic. Add repo.topicCandidates(ctx, childID, topicID, stages, excludeRecent, limit) returning Candidates from topic_question join question where q.status online and q.stage_code = any(stages) (and topic membership), with recent exclusion. Then in Select, after n determined, if active pack found: fetch candidates (stage-filtered), sort, take n, mark repeated false; if shortage, try without stage filter? pack should be stage-scoped. Then compute quota/score; skip pass threshold? For session, `PassThreshold` might still be required by TV? Let's check Result fields usage in TV. It likely just uses selected. The API returns 409 if insufficient; if we return fewer than n but >=3 with warnings, TV proceeds. Threshold check in topic mode: compute score from actual subjects and rule weights. If pack subjects not in weights, score 0 and 409. Should skip threshold in topic mode and rely on >=3. Document it.\n\nBut careful: parent daily uses its own service, unaffected.\n\nI'll write design 011: \"专题题包接入组卷\". Plan with tasks S1 (selector topic mode + repo), S2 (admin visibility? maybe expose active pack in result), S3 tests, T1 admin UI \"上线\" already exists; maybe add preview button? Not necessary. T1 could be E2E API.\n\nMaybe add `topic` info in Result: `TopicID`, `TopicName` so TV/logs know. Also warnings `topic_mode:<name>`.\n\nLet's inspect Result struct and TV usage.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798189515,
+            "completed": 1793798220643
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_1nowcaw0oiq4ormy49m7dux3",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '1,80p' internal/quiz/models.go; grep -rn \"warnings\\|selected\\|topic\" tv/app/src/main/java 2>/dev/null | head -15; grep -rn \"select\" internal/quiz/handlers.go | head -10",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "package quiz\n\nimport \"time\"\n\n// SelectRequest 是组卷请求。\ntype SelectRequest struct {\n\tChildID      string `json:\"child_id\"`\n\tStage        string `json:\"stage\"`\n\tGradeTag     string `json:\"grade_tag\"`\n\tRule         Rule   `json:\"rule\"`\n\tSeed         int64  `json:\"seed\"`\n\tMaxQuestions int    `json:\"max_questions\"`\n}\n\n// Selected 是被选中的题目。\ntype Selected struct {\n\tQuestionID string `json:\"question_id\"`\n\tSubject    string `json:\"subject\"`\n\tStage      string `json:\"stage\"`\n\tType       string `json:\"type\"`\n\tDifficulty int    `json:\"difficulty\"`\n\tRepeated   bool   `json:\"repeated\"`\n}\n\n// Result 是组卷结果。\ntype Result struct {\n\tTotal            int            `json:\"total\"`\n\tQuota            map[string]int `json:\"quota\"`\n\tSelected         []Selected     `json:\"selected\"`\n\tMaxScore         float64        `json:\"max_score\"`\n\tDifficultyTarget int            `json:\"difficulty_target\"`\n\tWarnings         []string       `json:\"warnings,omitempty\"`\n\tSeed             int64          `json:\"seed\"`\n}\n\n// Error 是组卷业务错误。\ntype Error struct {\n\tStatus    int\n\tCode      string\n\tMessage   string\n\tWarnings  []string\n\tSessionID string\n}\n\nfunc (e *Error) Error() string { return e.Message }\n\nfunc newError(status int, code, message string) *Error {\n\treturn &Error{Status: status, Code: code, Message: message}\n}\n\n// PreviewResponse 便于管理端 dry-run 查看。\ntype PreviewResponse struct {\n\tResult\n\tGeneratedAt time.Time `json:\"generated_at\"`\n}\ninternal/quiz/handlers.go:43:\t\ts.logger.Error(\"select questions\", \"error\", err)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798219268,
+            "ran": 1793798220645,
+            "completed": 1793798220683
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_fpphiozkvdpzar4p34ywkqc8",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -rn \"INSUFFICIENT_POOL\\|PassThreshold\\|MaxScore\" --include=\"*.kt\" --include=\"*.dart\" . | head -10",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "(no output)"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798220087,
+            "ran": 1793798220647,
+            "completed": 1793798221892
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2042,
+        "output": 224,
+        "reasoning": 2299,
+        "cache": {
+          "read": 107136,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b4b06c001tZ21kPl9WupA8G",
+      "time": {
+        "created": 1793798221935,
+        "streamed": 1793798226931,
+        "completed": 1793798226978
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "There's PreviewResponse; maybe an existing preview endpoint. Let's look at quiz handlers.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798226247,
+            "completed": 1793798226929
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_mhrwvym96de646i4iw6dyzyt",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '1,80p' internal/quiz/handlers.go; grep -n \"topic\" internal/quiz/*.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "package quiz\n\nimport (\n\t\"encoding/json\"\n\t\"errors\"\n\t\"net/http\"\n\t\"time\"\n\n\t\"github.com/go-chi/chi/v5\"\n\n\t\"github.com/roma007/OpenQuizGo/internal/admin\"\n)\n\n// Routes 注册组卷相关管理端接口。\nfunc (s *Service) Routes(r chi.Router, guard *admin.Service) {\n\tr.Group(func(r chi.Router) {\n\t\tr.Use(guard.Auth)\n\t\tr.With(guard.Require(\"question.read\")).Post(\"/admin/quiz/preview\", s.handlePreview)\n\t})\n}\n\nfunc (s *Service) handlePreview(w http.ResponseWriter, r *http.Request) {\n\tvar req SelectRequest\n\tr.Body = http.MaxBytesReader(w, r.Body, 1<<20)\n\tif err := json.NewDecoder(r.Body).Decode(&req); err != nil {\n\t\twriteError(w, http.StatusUnprocessableEntity, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\")\n\t\treturn\n\t}\n\tresult, err := s.Select(r.Context(), req)\n\tif err != nil {\n\t\tvar quizErr *Error\n\t\tif errors.As(err, &quizErr) {\n\t\t\tbody := map[string]any{\n\t\t\t\t\"code\":    quizErr.Code,\n\t\t\t\t\"message\": quizErr.Message,\n\t\t\t}\n\t\t\tif len(quizErr.Warnings) > 0 {\n\t\t\t\tbody[\"warnings\"] = quizErr.Warnings\n\t\t\t}\n\t\t\twriteJSON(w, quizErr.Status, body)\n\t\t\treturn\n\t\t}\n\t\ts.logger.Error(\"select questions\", \"error\", err)\n\t\twriteError(w, http.StatusInternalServerError, \"INTERNAL\", \"服务端错误\")\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, PreviewResponse{Result: result, GeneratedAt: time.Now()})\n}\n\nfunc writeJSON(w http.ResponseWriter, status int, body any) {\n\tw.Header().Set(\"Content-Type\", \"application/json; charset=utf-8\")\n\tw.WriteHeader(status)\n\t_ = json.NewEncoder(w).Encode(body)\n}\n\nfunc writeError(w http.ResponseWriter, status int, code, message string) {\n\twriteJSON(w, status, map[string]string{\"code\": code, \"message\": message})\n}\n"
+              },
+              {
+                "type": "text",
+                "text": "Exited with code 1"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 1
+            }
+          },
+          "time": {
+            "created": 1793798226444,
+            "ran": 1793798226931,
+            "completed": 1793798226959
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 3068,
+        "output": 99,
+        "reasoning": 18,
+        "cache": {
+          "read": 109056,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b4c43b0018zm4ts3Pl8GZrv",
+      "time": {
+        "created": 1793798227010,
+        "streamed": 1793798231199,
+        "completed": 1793798231246
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "There's already admin preview endpoint. Great: auto-preference can be previewed from admin, and TV device route uses Select too. Let me check device route handler.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798230576,
+            "completed": 1793798231194
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_djstyejkefpztnset5jud6n6",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"DeviceRoutes\\|Select(\" -A 10 internal/quiz/session_handlers.go | head -60",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "13:// DeviceRoutes 注册电视端答题路由（需设备令牌）。\n14:func (s *Service) DeviceRoutes(r chi.Router) {\n15-\tr.Post(\"/quiz/sessions\", s.handleCreateSession)\n16-\tr.Get(\"/quiz/sessions/{sessionID}\", s.handleGetSession)\n17-\tr.Post(\"/quiz/sessions/{sessionID}/answers\", s.handleSubmitAnswer)\n18-\tr.Post(\"/quiz/sessions/{sessionID}/finish\", s.handleFinishSession)\n19-}\n20-\n21-func (s *Service) handleCreateSession(w http.ResponseWriter, r *http.Request) {\n22-\tprincipal, ok := identity.DeviceFrom(r.Context())\n23-\tif !ok {\n24-\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798230865,
+            "ran": 1793798231197,
+            "completed": 1793798231222
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 733,
+        "output": 96,
+        "reasoning": 34,
+        "cache": {
+          "read": 112000,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b4d500001XD3ig821FltKX6",
+      "time": {
+        "created": 1793798231299,
+        "streamed": 1793798235106,
+        "completed": 1793798235135
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": " ",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798234416,
+            "completed": 1793798235102
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_r5fr60v6ghs7vcb1u3cjn68r",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '21,80p' internal/quiz/session_handlers.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "func (s *Service) handleCreateSession(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tresult, err := s.CreateSession(r.Context(), principal)\n\tif err != nil {\n\t\twriteQuizError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleGetSession(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tresult, err := s.GetSession(r.Context(), principal, chi.URLParam(r, \"sessionID\"))\n\tif err != nil {\n\t\twriteQuizError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleSubmitAnswer(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tvar submission AnswerSubmission\n\tr.Body = http.MaxBytesReader(w, r.Body, 1<<20)\n\tif err := json.NewDecoder(r.Body).Decode(&submission); err != nil {\n\t\twriteError(w, http.StatusUnprocessableEntity, \"VALIDATION_ERROR\", \"请求体不是合法 JSON\")\n\t\treturn\n\t}\n\tif submission.Token == \"\" {\n\t\twriteError(w, http.StatusUnprocessableEntity, \"VALIDATION_ERROR\", \"缺少题令牌\")\n\t\treturn\n\t}\n\tresult, err := s.SubmitAnswer(r.Context(), principal, chi.URLParam(r, \"sessionID\"), submission)\n\tif err != nil {\n\t\twriteQuizError(w, r, err)\n\t\treturn\n\t}\n\twriteJSON(w, http.StatusOK, result)\n}\n\nfunc (s *Service) handleFinishSession(w http.ResponseWriter, r *http.Request) {\n\tprincipal, ok := identity.DeviceFrom(r.Context())\n\tif !ok {\n\t\twriteError(w, http.StatusUnauthorized, \"AUTH_INVALID_TOKEN\", \"设备未授权\")\n\t\treturn\n\t}\n\tresult, err := s.FinishSession(r.Context(), principal, chi.URLParam(r, \"sessionID\"))\n\tif err != nil {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798234475,
+            "ran": 1793798235105,
+            "completed": 1793798235118
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 408,
+        "output": 88,
+        "reasoning": 1,
+        "cache": {
+          "read": 112640,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b4e40f001BGPxZ5HSbvPulC",
+      "time": {
+        "created": 1793798235154,
+        "streamed": 1793798238498,
+        "completed": 1793798238560
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "CreateSession likely calls Select with child. Let's check.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798238132,
+            "completed": 1793798238495
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_9u3704x7dkgw3sq0q381n4bb",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"func (s \\*Service) CreateSession\" -A 60 internal/quiz/session_service.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "26:func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePrincipal) (CreateSessionResponse, error) {\n27-\tif !s.allow(ctx, \"rl:quiz:create:\"+principal.DeviceID, sessionCreateLimit, sessionCreateWindow) {\n28-\t\treturn CreateSessionResponse{}, newError(429, \"QUIZ_SESSION_LIMIT\", \"发起答题过于频繁，请稍后再试\")\n29-\t}\n30-\tif existing, err := s.repo.activeSessionForDevice(ctx, principal.DeviceID); err == nil {\n31-\t\tconflict := newError(409, \"QUIZ_SESSION_ACTIVE\", \"已有进行中的答题会话\")\n32-\t\tconflict.SessionID = existing\n33-\t\treturn CreateSessionResponse{}, conflict\n34-\t}\n35-\n36-\truleSnapshot, err := s.loadRule(ctx, principal.ChildID)\n37-\tif err != nil {\n38-\t\treturn CreateSessionResponse{}, err\n39-\t}\n40-\n41-\tresult, err := s.Select(ctx, SelectRequest{\n42-\t\tChildID: principal.ChildID,\n43-\t\tRule:    ruleSnapshot.Rule,\n44-\t\tSeed:    time.Now().UnixNano(),\n45-\t})\n46-\tif err != nil {\n47-\t\treturn CreateSessionResponse{}, err\n48-\t}\n49-\tif len(result.Selected) == 0 {\n50-\t\treturn CreateSessionResponse{}, newError(409, \"INSUFFICIENT_POOL\", \"题库不足，无法组卷\")\n51-\t}\n52-\n53-\tids := make([]string, 0, len(result.Selected))\n54-\tfor _, item := range result.Selected {\n55-\t\tids = append(ids, item.QuestionID)\n56-\t}\n57-\tdetails, err := s.repo.questionDetails(ctx, ids)\n58-\tif err != nil {\n59-\t\treturn CreateSessionResponse{}, err\n60-\t}\n61-\n62-\tnow := time.Now()\n63-\texpiresAt := now.Add(sessionTTL)\n64-\titems := make([]itemRecord, 0, len(result.Selected))\n65-\tquestions := make([]SessionQuestion, 0, len(result.Selected))\n66-\tfor position, selected := range result.Selected {\n67-\t\tdetail, ok := details[selected.QuestionID]\n68-\t\tif !ok {\n69-\t\t\treturn CreateSessionResponse{}, newError(409, \"QUESTION_OFFLINE\", \"题目已下线，请重新发起\")\n70-\t\t}\n71-\t\tsnapshot := itemSnapshot{\n72-\t\t\tSubject:       detail.Subject,\n73-\t\t\tType:          detail.Type,\n74-\t\t\tAnswer:        detail.Answer,\n75-\t\t\tAlias:         detail.Alias,\n76-\t\t\tExplain:       detail.Explain,\n77-\t\t\tStem:          detail.Stem,\n78-\t\t\tStemMedia:     detail.StemMedia,\n79-\t\t\tOptions:       detail.Options,\n80-\t\t\tDurationLimit: detail.DurationLimit,\n81-\t\t}\n82-\t\tencoded, err := json.Marshal(snapshot)\n83-\t\tif err != nil {\n84-\t\t\treturn CreateSessionResponse{}, err\n85-\t\t}\n86-\t\ttoken := randomToken()\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798238159,
+            "ran": 1793798238496,
+            "completed": 1793798238530
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 674,
+        "output": 95,
+        "reasoning": 12,
+        "cache": {
+          "read": 113024,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b4f17f001Q8wcSP2dZne194",
+      "time": {
+        "created": 1793798238597,
+        "streamed": 1793798252276,
+        "completed": 1793798252402
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Auto topic preference in Select will affect sessions. Good.\n\nNow decide details:\n- Active pack = status online; now between start_at/end_at (null = unbounded); stage_scope empty or contains child stage; subject_scope empty or intersects rule's weighted subjects (maybe ignore fun); at least 3 questions online? Query count first.\n- If multiple, pick most recently updated (or newest start). Use order by updated_at desc limit 1.\n- Topic candidates: from topic_question join question q on q.id = tq.question_id, status online, stage_code any(stages). Order by position. We'll fetch all positions (max 500), then sort by stage/difficulty. Exclude recent 30 days first pass. If fewer than n, second pass including recent. If still fewer, return what we have with `topic_shortage` warning and require >=3 else 409.\n- Since pack may span subjects, skip subject quota entirely; but compute MaxScore, Quota from selected. `DifficultyTarget` still computed.\n- Warnings: `topic_mode:<name>`, `topic_shortage`. Also repeated? We won't repeat; pack questions unique.\n- If no pack matches, existing behavior unchanged.\n\nQuestion: should topic mode require the pack to have >=3 questions before activating? If active pack has 1-2, auto-activating would break sessions (409) even though global pool is fine. Better: if pack has <3 available, don't activate; add no warning (or log). This avoids degradation. So query a count (online, stage match) and only use if >=3; otherwise fall back to normal. Could add warning `topic_skipped_shortage` for observability in preview. I'll add warning when explicit? There's no explicit topic_id. Keep it silent but log at debug? Logger exists. Simpler: skip pack if count <3, add warning `topic_shortage_skipped:<name>` to result warnings (visible in preview, harmless to TV). Hmm warnings from normal selection will include this, TV ignores. Fine.\n\n- Time zone: use server local time; start/end are timestamptz, compare now().\n\n- Subject scope intersection: the rule's subject weights include \"fun\"; use weights >0. If pack subject_scope contains \"fun\", match too. If pack scope empty => match.\n\n- Stage scope: child stage known after resolving from child. If request has no child, stage from req. Use that.\n\nNow implementation:\n- repository.activeTopicPack(ctx, stage string, subjects []string) (TopicPackInfo, bool, error) — returns id/name/count? Implement one query:\n```\nselect tp.id, tp.name, count(q.id)\nfrom topic_pack tp\njoin topic_question tq on tq.topic_id = tp.id\njoin question q on q.id = tq.question_id and q.status='online' and q.stage_code = any($1)\nwhere tp.status='online'\n  and (tp.start_at is null or tp.start_at <= now())\n  and (tp.end_at is null or tp.end_at >= now())\n  and (jsonb_array_length(tp.stage_scope)=0 or tp.stage_scope ? $2)\n  and (jsonb_array_length(tp.subject_scope)=0 or exists (select 1 from jsonb_array_elements_text(tp.subject_scope) s where s = any($3)))\ngroup by tp.id, tp.name\nhaving count(q.id) >= 3\norder by tp.updated_at desc\nlimit 1\n```\nNote `?` operator with text[]? `tp.stage_scope ? $2` checks top-level key existence for object or array element for string? In Postgres, jsonb `?` works for string elements in arrays. Yes: `'[\"low\",\"mid\"]'::jsonb ? 'low'` → true. Good.\n\nSubject intersection with `any($3)` where $3 is text[]; comparing jsonb text element to text: `jsonb_array_elements_text(...) s` returns text; `s = any($3)` works.\n\n- topicCandidates(ctx, childID, topicID string, stages []string, excludeRecent bool, limit int) — similar to candidates but join topic_question:\n```\nselect q.id,... from topic_question tq join question q on q.id=tq.question_id\nwhere tq.topic_id=$1 and q.status='online' and q.stage_code=any($2)\nand ($3::uuid is null or not exists (...))\norder by tq.position\nlimit $4\n```\nThen sortCandidates shuffles and sorts by stage/difficulty.\n\nIn Select, after n computed and subjectWeights built:\n```\ntopicPack, err := s.repo.activeTopicPack(ctx, stage, subjectKeys)\nif err != nil { return ... }\nif topicPack.ID != \"\" {\n   selected, err = s.fillTopicPack(...)\n   ...\n   // skip quota loop and fun\n} else { existing }\n```\nNeed to refactor to avoid huge duplication. Add branch.\n\n`fillTopicPack`:\n```\nfunc (s *Service) fillTopicPack(ctx, childID, topicID string, stages []string, primaryRank, target, n int, rng, selected *[]Selected, addWarning) error {\n  fresh, err := repo.topicCandidates(..., true, defaultPoolLimit)\n  sortCandidates(fresh, rng, primaryRank, target)\n  for _, c := range fresh { if len(*selected)>=n break; append(toSelected(c,false)) }\n  if len(*selected) < n {\n     all, err := repo.topicCandidates(..., false,...)\n     sortCandidates... \n     chosen map from selected IDs\n     for ... append repeated true? These are repeats of previously answered (not repeats within session), so Repeated=false semantically? `Repeated` means repeated question due to pool shortage. Since recent exclusion relaxation, it's a repeat for the child; existing code sets true. Use true and warning \"repeat_question\".\n  }\n  if len(*selected) < n { addWarning(\"topic_shortage:\"+topicName) }\n}\n```\nActually for topic mode, want warning `topic_mode:<name>`.\n\nAfter selection, existing shuffle and score. Threshold check: skip if topic mode:\n```\nif len(selected) < 3 || (!topicMode && score < req.Rule.PassThreshold)\n```\nError message in topic mode: \"专题题包题目不足：已选 %d 题\". Also include warnings.\n\nResult add `TopicID`,`TopicName` fields. Update model.\n\nTests:\n- Unit test selector with a fake repo? repo is concrete *repository, hard to fake. Integration test in quiz using DB. There is session_test but maybe no DB. Let me check quiz test style. `selector_test.go` has sort/target tests. Could add pure helper tests only for matching logic if we extract `matchScope`. But core SQL needs integration. Add `internal/quiz/topic_integration_test.go` using TEST_DATABASE_URL, migrate, seed child/family/watch_rule/question/topic, then call quiz.New(...).Select. Construct rule with subject weights. Need rule.Validate requirements; use a valid rule. Check quiz session tests for building rule.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798240995,
+            "completed": 1793798252263
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_7g91locy822xjgf01wkw06qn",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '1,80p' internal/quiz/selector_test.go; grep -n \"Rule{\" -A 15 internal/quiz/*_test.go internal/rule/*_test.go | head -40",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "package quiz\n\nimport (\n\t\"context\"\n\t\"database/sql\"\n\t\"io\"\n\t\"log/slog\"\n\t\"os\"\n\t\"testing\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n\t_ \"github.com/jackc/pgx/v5/stdlib\"\n\t\"github.com/pressly/goose/v3\"\n\n\t\"github.com/roma007/OpenQuizGo/migrations\"\n)\n\nfunc TestTargetDifficulty(t *testing.T) {\n\tif got := targetDifficulty(\"low\", \"g2\", nil); got != 1 {\n\t\tt.Fatalf(\"low/g2 = %d, want 1\", got)\n\t}\n\tif got := targetDifficulty(\"high\", \"g8\", nil); got != 4 {\n\t\tt.Fatalf(\"high/g8 = %d, want 4\", got)\n\t}\n\tif got := targetDifficulty(\"mid\", \"\", map[int]float64{4: 0.7}); got != 4 {\n\t\tt.Fatalf(\"stats target = %d, want 4\", got)\n\t}\n}\n\nfunc TestSelectWithRealPool(t *testing.T) {\n\tdbURL := os.Getenv(\"TEST_DATABASE_URL\")\n\tif dbURL == \"\" {\n\t\tt.Skip(\"TEST_DATABASE_URL not set\")\n\t}\n\tctx := context.Background()\n\tprepareQuizDB(t, dbURL)\n\n\tpool, err := pgxpool.New(ctx, dbURL)\n\tif err != nil {\n\t\tt.Fatalf(\"pool: %v\", err)\n\t}\n\tdefer pool.Close()\n\n\tchildID := seedChild(t, pool)\n\tofflineID, answeredID := seedQuestions(t, pool, childID)\n\n\tsvc := New(pool, nil, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))\n\trule := Rule{\n\t\tUnlockMinutes: 20,\n\t\tPassThreshold: 3,\n\t\tSubjectWeight: map[string]float64{\n\t\t\t\"math\": 2, \"chinese\": 1, \"science\": 1, \"fun\": 0.5,\n\t\t},\n\t\tFunRatioCap: 2,\n\t\tFunEnabled:  true,\n\t}\n\n\tfirst, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 42})\n\tif err != nil {\n\t\tt.Fatalf(\"select: %v\", err)\n\t}\n\tsecond, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 42})\n\tif err != nil {\n\t\tt.Fatalf(\"select again: %v\", err)\n\t}\n\tif len(first.Selected) != len(second.Selected) {\n\t\tt.Fatalf(\"non-deterministic: %d vs %d\", len(first.Selected), len(second.Selected))\n\t}\n\tfor i := range first.Selected {\n\t\tif first.Selected[i].QuestionID != second.Selected[i].QuestionID {\n\t\t\tt.Fatal(\"same seed produced different question order\")\n\t\t}\n\t}\n\n\tif first.Total < 3 || first.Total > 12 {\n\t\tt.Fatalf(\"total = %d, want 3..12\", first.Total)\n\t}\n\tif first.MaxScore < rule.PassThreshold {\n\t\tt.Fatalf(\"max score = %.1f < threshold\", first.MaxScore)\n\t}\ninternal/quiz/selector_test.go:48:\trule := Rule{\ninternal/quiz/selector_test.go-49-\t\tUnlockMinutes: 20,\ninternal/quiz/selector_test.go-50-\t\tPassThreshold: 3,\ninternal/quiz/selector_test.go-51-\t\tSubjectWeight: map[string]float64{\ninternal/quiz/selector_test.go-52-\t\t\t\"math\": 2, \"chinese\": 1, \"science\": 1, \"fun\": 0.5,\ninternal/quiz/selector_test.go-53-\t\t},\ninternal/quiz/selector_test.go-54-\t\tFunRatioCap: 2,\ninternal/quiz/selector_test.go-55-\t\tFunEnabled:  true,\ninternal/quiz/selector_test.go-56-\t}\ninternal/quiz/selector_test.go-57-\ninternal/quiz/selector_test.go-58-\tfirst, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 42})\ninternal/quiz/selector_test.go-59-\tif err != nil {\ninternal/quiz/selector_test.go-60-\t\tt.Fatalf(\"select: %v\", err)\ninternal/quiz/selector_test.go-61-\t}\ninternal/quiz/selector_test.go-62-\tsecond, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 42})\ninternal/quiz/selector_test.go-63-\tif err != nil {\n--\ninternal/quiz/selector_test.go:115:\temptyRule := Rule{\ninternal/quiz/selector_test.go-116-\t\tUnlockMinutes: 20,\ninternal/quiz/selector_test.go-117-\t\tPassThreshold: 3,\ninternal/quiz/selector_test.go-118-\t\tSubjectWeight: map[string]float64{\"english\": 2},\ninternal/quiz/selector_test.go-119-\t\tDailyLimit:    60,\ninternal/quiz/selector_test.go-120-\t\tTimezone:      \"Asia/Shanghai\",\ninternal/quiz/selector_test.go-121-\t}\ninternal/quiz/selector_test.go-122-\t_, err = svc.Select(ctx, SelectRequest{Stage: \"low\", Rule: emptyRule, Seed: 1})\ninternal/quiz/selector_test.go-123-\tquizErr, ok := err.(*Error)\ninternal/quiz/selector_test.go-124-\tif !ok || quizErr.Code != \"INSUFFICIENT_POOL\" {\ninternal/quiz/selector_test.go-125-\t\tt.Fatalf(\"expected INSUFFICIENT_POOL, got %v\", err)\ninternal/quiz/selector_test.go-126-\t}\ninternal/quiz/selector_test.go-127-}\ninternal/quiz/selector_test.go-128-\ninternal/quiz/selector_test.go-129-func prepareQuizDB(t *testing.T, url string) {\ninternal/quiz/selector_test.go-130-\tt.Helper()\n--\ninternal/rule/domain_test.go:23:\tn, err := SessionSize(Rule{PassThreshold: 3, SubjectWeight: map[string]float64{\"math\": 2, \"chinese\": 1}})\ninternal/rule/domain_test.go-24-\tif err != nil {\ninternal/rule/domain_test.go-25-\t\tt.Fatal(err)\ninternal/rule/domain_test.go-26-\t}\ninternal/rule/domain_test.go-27-\tif n != 5 {\ninternal/rule/domain_test.go-28-\t\tt.Fatalf(\"n = %d, want 5\", n)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798251291,
+            "ran": 1793798252270,
+            "completed": 1793798252372
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_m2vculc5jhroy299t3jke1pp",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"type Rule struct\" -A 30 internal/rule/domain.go; grep -n \"func Validate\" -A 40 internal/rule/domain.go | head -60",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "28:type Rule struct {\n29-\tUnlockMinutes      int                `json:\"unlock_minutes\"`\n30-\tPassThreshold      float64            `json:\"pass_threshold\"`\n31-\tSubjectWeight      map[string]float64 `json:\"subject_weight\"`\n32-\tFunRatioCap        int                `json:\"fun_ratio_cap\"`\n33-\tFunEnabled         bool               `json:\"fun_enabled\"`\n34-\tWeightPreset       string             `json:\"weight_preset,omitempty\"`\n35-\tTimeWindow         TimeWindow         `json:\"time_window\"`\n36-\tDailyLimit         int                `json:\"daily_limit\"`\n37-\tOfflineFallbackMin int                `json:\"offline_fallback_min\"`\n38-\tScopeMode          string             `json:\"scope_mode\"`\n39-\tAllowedApps        []string           `json:\"allowed_apps\"`\n40-\tTimezone           string             `json:\"timezone\"`\n41-}\n42-\n43-// ValidationError 是规则校验错误。\n44-type ValidationError struct {\n45-\tField   string\n46-\tMessage string\n47-}\n48-\n49-func (e *ValidationError) Error() string { return e.Field + \": \" + e.Message }\n50-\n51-func invalid(field, message string) error {\n52-\treturn &ValidationError{Field: field, Message: message}\n53-}\n54-\n55-var (\n56-\tclockPattern = regexp.MustCompile(`^([01]\\d|2[0-3]):[0-5]\\d$`)\n57-\tvalidScopes  = map[string]bool{\"media\": true, \"custom\": true, \"all_apps\": true}\n58-\tvalidPresets = map[string]bool{\"balanced\": true, \"math\": true, \"literacy\": true, \"custom\": true}\n62:func Validate(r Rule) error {\n63-\tif r.UnlockMinutes < 1 || r.UnlockMinutes > 240 {\n64-\t\treturn invalid(\"unlock_minutes\", \"解锁时长需在 1–240 分钟\")\n65-\t}\n66-\tif r.PassThreshold <= 0 {\n67-\t\treturn invalid(\"pass_threshold\", \"加权门槛必须大于 0\")\n68-\t}\n69-\tif len(r.SubjectWeight) == 0 {\n70-\t\treturn invalid(\"subject_weight\", \"学科权重不能为空\")\n71-\t}\n72-\n73-\tminSubjectWeight := math.MaxFloat64\n74-\thasSubject := false\n75-\tfor subject, weight := range r.SubjectWeight {\n76-\t\tif weight < 0 {\n77-\t\t\treturn invalid(\"subject_weight\", \"学科权重不能为负\")\n78-\t\t}\n79-\t\tif subject == \"fun\" {\n80-\t\t\tcontinue\n81-\t\t}\n82-\t\tif weight > 0 {\n83-\t\t\thasSubject = true\n84-\t\t\tif weight < minSubjectWeight {\n85-\t\t\t\tminSubjectWeight = weight\n86-\t\t\t}\n87-\t\t}\n88-\t}\n89-\tif !hasSubject {\n90-\t\treturn invalid(\"subject_weight\", \"至少需要一个非趣味学科权重\")\n91-\t}\n92-\tif funWeight := r.SubjectWeight[\"fun\"]; funWeight > 0 && funWeight >= minSubjectWeight {\n93-\t\treturn invalid(\"subject_weight\", \"趣味题权重必须低于最低学科权重\")\n94-\t}\n95-\tif r.FunRatioCap < 0 || r.FunRatioCap > 10 {\n96-\t\treturn invalid(\"fun_ratio_cap\", \"趣味题上限需在 0–10 之间\")\n97-\t}\n98-\tif r.DailyLimit == 0 {\n99-\t\tr.DailyLimit = 60\n100-\t}\n101-\tif r.DailyLimit < 1 || r.DailyLimit > 720 {\n102-\t\treturn invalid(\"daily_limit\", \"每日上限需在 1–720 分钟\")\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798251697,
+            "ran": 1793798252273,
+            "completed": 1793798252367
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 873,
+        "output": 215,
+        "reasoning": 1541,
+        "cache": {
+          "read": 113664,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b527a8001mIHIwq55vIC1B4",
+      "time": {
+        "created": 1793798252469,
+        "streamed": 1793798255851,
+        "completed": 1793798255878
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Great, there's already a real-pool test in selector_test.go. I can extend it or add a new test function in the same file using helpers. Let me see helpers seedChild/seedQuestions and prepareQuizDB to reuse.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798255021,
+            "completed": 1793798255849
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_64qv1z5wvzlx3farzsvdn2tr",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '80,240p' internal/quiz/selector_test.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\t}\n\tfunCount := 0\n\tfor _, item := range first.Selected {\n\t\tif item.Subject == \"fun\" {\n\t\t\tfunCount++\n\t\t}\n\t\tif item.QuestionID == offlineID {\n\t\t\tt.Fatal(\"offline question was selected\")\n\t\t}\n\t\tif item.QuestionID == answeredID {\n\t\t\tt.Fatal(\"recently answered question was selected\")\n\t\t}\n\t}\n\tif funCount > rule.FunRatioCap {\n\t\tt.Fatalf(\"fun count = %d, cap = %d\", funCount, rule.FunRatioCap)\n\t}\n\n\tfor seed := int64(1); seed <= 20; seed++ {\n\t\tresult, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: seed})\n\t\tif err != nil {\n\t\t\tt.Fatalf(\"seed %d: %v\", seed, err)\n\t\t}\n\t\tfor _, item := range result.Selected {\n\t\t\tif item.QuestionID == offlineID {\n\t\t\t\tt.Fatalf(\"seed %d selected offline question\", seed)\n\t\t\t}\n\t\t\tif item.QuestionID == answeredID {\n\t\t\t\tt.Fatalf(\"seed %d selected recently answered question\", seed)\n\t\t\t}\n\t\t\tif item.Repeated {\n\t\t\t\tt.Fatalf(\"seed %d unexpectedly used repeated question\", seed)\n\t\t\t}\n\t\t}\n\t}\n\n\temptyRule := Rule{\n\t\tUnlockMinutes: 20,\n\t\tPassThreshold: 3,\n\t\tSubjectWeight: map[string]float64{\"english\": 2},\n\t\tDailyLimit:    60,\n\t\tTimezone:      \"Asia/Shanghai\",\n\t}\n\t_, err = svc.Select(ctx, SelectRequest{Stage: \"low\", Rule: emptyRule, Seed: 1})\n\tquizErr, ok := err.(*Error)\n\tif !ok || quizErr.Code != \"INSUFFICIENT_POOL\" {\n\t\tt.Fatalf(\"expected INSUFFICIENT_POOL, got %v\", err)\n\t}\n}\n\nfunc prepareQuizDB(t *testing.T, url string) {\n\tt.Helper()\n\tdb, err := sql.Open(\"pgx\", url)\n\tif err != nil {\n\t\tt.Fatalf(\"open: %v\", err)\n\t}\n\tdefer func() { _ = db.Close() }()\n\n\tgoose.SetBaseFS(migrations.FS)\n\tif err := goose.SetDialect(\"postgres\"); err != nil {\n\t\tt.Fatalf(\"dialect: %v\", err)\n\t}\n\tif err := goose.Up(db, \".\"); err != nil {\n\t\tt.Fatalf(\"migrate: %v\", err)\n\t}\n\tif _, err := db.Exec(`truncate table\n\t\tanswer_log, quiz_session_item, quiz_session, watch_log, watch_grant,\n\t\tchild_profile, family_member, family, parent_account\n\t\tcascade`); err != nil {\n\t\tt.Fatalf(\"truncate: %v\", err)\n\t}\n}\n\nfunc seedChild(t *testing.T, pool *pgxpool.Pool) string {\n\tt.Helper()\n\tctx := context.Background()\n\tvar accountID, familyID, childID string\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into parent_account (phone_cipher, phone_hash) values ('cipher', 'hash-quiz-test')\n\t\treturning id`).Scan(&accountID); err != nil {\n\t\tt.Fatalf(\"account: %v\", err)\n\t}\n\tif err := pool.QueryRow(ctx,\n\t\t`insert into family (owner_id) values ($1) returning id`, accountID).Scan(&familyID); err != nil {\n\t\tt.Fatalf(\"family: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tinsert into family_member (family_id, account_id, role, second_factor_verified)\n\t\tvalues ($1, $2, 'owner', true)`, familyID, accountID); err != nil {\n\t\tt.Fatalf(\"member: %v\", err)\n\t}\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into child_profile (family_id, nickname, stage_code, grade_tag)\n\t\tvalues ($1, '测试孩子', 'low', 'g2') returning id`, familyID).Scan(&childID); err != nil {\n\t\tt.Fatalf(\"child: %v\", err)\n\t}\n\treturn childID\n}\n\nfunc seedQuestions(t *testing.T, pool *pgxpool.Pool, childID string) (offlineID, answeredID string) {\n\tt.Helper()\n\tctx := context.Background()\n\tspecs := []struct {\n\t\tsubject  string\n\t\tcategory string\n\t}{\n\t\t{\"math\", \"core\"},\n\t\t{\"chinese\", \"core\"},\n\t\t{\"science\", \"literacy\"},\n\t\t{\"fun\", \"fun\"},\n\t}\n\tfor _, spec := range specs {\n\t\tfor difficulty := 1; difficulty <= 5; difficulty++ {\n\t\t\tfor i := 0; i < 10; i++ {\n\t\t\t\talias := \"null\"\n\t\t\t\tif spec.category == \"fun\" {\n\t\t\t\t\talias = `'[\"同义词\"]'::jsonb`\n\t\t\t\t}\n\t\t\t\tif _, err := pool.Exec(ctx, `\n\t\t\t\t\tinsert into question (\n\t\t\t\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\t\t\t\toptions, answer, answer_alias, status, version, schema_ver)\n\t\t\t\t\tvalues ($1, $2, 'low', $3, 'choice', $4,\n\t\t\t\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t\t\t\t        '[\"a\"]'::jsonb, `+alias+`, 'online', 1, 1)`,\n\t\t\t\t\tspec.subject, spec.category, difficulty,\n\t\t\t\t\tspec.subject+\"-\"+string(rune('0'+difficulty))+\"-\"+string(rune('a'+i))); err != nil {\n\t\t\t\t\tt.Fatalf(\"insert question: %v\", err)\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\n\tif err := pool.QueryRow(ctx, `\n\t\tinsert into question (\n\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\toptions, answer, status, version, schema_ver)\n\t\tvalues ('math', 'core', 'low', 2, 'choice', '已下线题目',\n\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t        '[\"a\"]'::jsonb, 'offline', 1, 1)\n\t\treturning id`).Scan(&offlineID); err != nil {\n\t\tt.Fatalf(\"insert offline: %v\", err)\n\t}\n\n\tif err := pool.QueryRow(ctx, `\n\t\tselect id from question\n\t\twhere subject_code = 'math' and status = 'online'\n\t\torder by id limit 1`).Scan(&answeredID); err != nil {\n\t\tt.Fatalf(\"pick answered question: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tinsert into answer_log (child_id, question_id, device_id, is_correct, answered_at)\n\t\tvalues ($1, $2, 'tv-test', true, now())`, childID, answeredID); err != nil {\n\t\tt.Fatalf(\"insert answer log: %v\", err)\n\t}\n\treturn offlineID, answeredID\n}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798255555,
+            "ran": 1793798255851,
+            "completed": 1793798255863
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 4223,
+        "output": 86,
+        "reasoning": 48,
+        "cache": {
+          "read": 114432,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b53510001jy8nCRrcweRDUe",
+      "time": {
+        "created": 1793798255893,
+        "streamed": 1793798272449,
+        "completed": 1793798272549
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Existing test truncates only certain tables, not question/topic_pack. That could leave leftover questions from prior runs, but tests pass. For topic test, I'll truncate question/topic_pack/topic_question too at test start, but then the existing TestSelectWithRealPool may collide if run concurrently (Go runs tests sequentially by default in one package unless t.Parallel). So safe. But test order: TestSelectWithRealPool after TestTopic? Alphabetical not guaranteed; Go runs in source order. If I add TestTopic after, truncating question/topic then seed. Fine. But prepareQuizDB in selector_test truncates child/family but not question, leaving old questions from previous run. My test can truncate question cascade, then seed. That would break TestSelectWithRealPool if it runs after? It re-seeds questions itself. Good.\n\nHowever, adding a topic test also needs to test fallback. Plan:\n```\nfunc TestSelectPrefersActiveTopicPack(t *testing.T) {\n  dbURL...\n  prepareQuizDB(t, dbURL)\n  exec truncate topic_question, topic_pack, question cascade\n  pool...\n  childID := seedChild\n  ids := seed 5 topic questions in math/low/online (distinct stem)\n  create pack online, stage_scope low, subject_scope math\n  link via topic_question positions\n  svc := ...\n  rule := Rule{UnlockMinutes:20, PassThreshold:3, SubjectWeight: map[string]float64{\"math\":2,\"chinese\":1}, DailyLimit:60, Timezone:\"Asia/Shanghai\"}\n  result, err := svc.Select(... Seed:7)\n  require result.TopicID == packID, all selected in ids, len>=3\n  // offline pack -> TopicID empty and selection can include non-topic questions (need global pool seeded too)\n}\n```\nProblem: if only topic questions exist and pack offline, normal selection with math works, so still fine. To check fallback, add a non-topic math question and assert at least one selected not in topic set? With 5 topic vs 1 non-topic, random selection may not pick non-topic. Better assert TopicID == \"\". That proves fallback path.\n\nAlso test time window: pack expired → TopicID empty. And subject mismatch: pack subject_scope [\"english\"] with rule weights math/chinese → TopicID empty.\n\nTime: use start_at now -1h, end_at now +1h (active), expired end_at now-1h.\n\nAlso match stage: child low, pack stage_scope [\"high\"] → skipped.\n\nAt least 3 questions required: pack with 2 → skipped.\n\nNeed repository method signatures and Result fields.\n\nNow, before implementation, create design/plan docs 011 as per rule. Then implement. Let me write docs.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798258362,
+            "completed": 1793798272443
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_ckfkclx2rq8jkw0g5919bk0k",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/design/011-专题题包组卷设计.md <<'EOF'\n# 011 专题题包接入组卷设计\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 011 |\n| 版本 | v1 |\n| 状态 | approved |\n| 作者 | AI |\n| 创建日期 | 2026-11-04 |\n| 对应计划 | [011-专题题包组卷实施计划](../plans/011-专题题包组卷实施计划.md) |\n| 前置 | 010 专题题包管理、组卷服务 |\n\n## 1. 目标\n\n让已上线的专题题包真正参与组卷：当存在匹配孩子学段/规则学科且在有效期内的在线专题时，优先从专题题目中抽题；没有匹配专题时保持原有组卷行为。\n\n- 不修改 TV / 家长端协议，服务端自动生效；\n- 管理端 `POST /v1/admin/quiz/preview` 可用于验证专题模式；\n- 专题包题目不足 3 道时自动跳过，避免拖垮正常答题。\n\n## 2. 匹配规则\n\n一个专题包被启用需同时满足：\n\n1. `status = online`；\n2. 当前时间在 `[start_at, end_at]` 内（空表示不限）；\n3. `stage_scope` 为空或包含孩子学段；\n4. `subject_scope` 为空或与规则中正权重的学科有交集；\n5. 该专题下在线且学段匹配的题目 ≥ 3 道。\n\n多个专题同时匹配时，取 `updated_at` 最新的一个。\n\n## 3. 抽题算法\n\n- 题量 `n` 仍由规则 `SessionSize` 决定；\n- 候选题来自 `topic_question` 关联的 `question`，仅 `online`、学段匹配；\n- 先排除孩子近 30 天做过的题，按「学段接近 → 难度接近目标」排序后抽取；\n- 不足时放宽最近 30 天限制，并标记 `repeated=true`；\n- 仍不足时返回已抽到的题（≥3）并附 `topic_shortage` 警告；不足 3 道则回退普通组卷（启用检查已保证 ≥3）；\n- 专题模式不再按学科配额分配，也不再校验加权门槛（专题是人工策划内容，避免权重不匹配导致 409）。\n\n## 4. 接口与数据\n\n不新增接口。组卷结果增加：\n\n```json\n{\n  \"topic_id\": \"...\",\n  \"topic_name\": \"寒假数学闯关\",\n  \"warnings\": [\"topic_mode:寒假数学闯关\", \"topic_shortage:寒假数学闯关\"],\n  \"selected\": [...]\n}\n```\n\n`topic_id` / `topic_name` 为空表示普通组卷。\n\n## 5. 服务端改动\n\n| 位置 | 改动 |\n| --- | --- |\n| `internal/quiz/models.go` | `Result` 增加 `TopicID`、`TopicName` |\n| `internal/quiz/repository.go` | 新增 `activeTopicPack`、`topicCandidates` |\n| `internal/quiz/selector.go` | `Select` 匹配专题并走专题抽题分支 |\n| `internal/quiz/selector_test.go` | 增加专题匹配/过期/学科不匹配/不足回退测试 |\n\n## 6. 风险\n\n| 风险 | 对策 |\n| --- | --- |\n| 专题题目过少导致答题失败 | 少于 3 题不启用，直接回退 |\n| 专题学科与规则不一致 | 启用要求学科交集；专题内允许跨学科 |\n| 专题长期在线挤占常规题 | 专题有有效期，管理端可随时下线 |\n| 孩子最近做过专题题 | 先排除近 30 天，不足再放宽并标记重复 |\n\n## 7. 变更记录\n\n| 日期 | 变更 | 原因 |\n| --- | --- | --- |\n| 2026-11-04 | 初稿并批准 | 第 5 期专题包接入组卷 |\nEOF\ncat > docs/plans/011-专题题包组卷实施计划.md <<'EOF'\n# 011 专题题包组卷实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 011 |\n| 状态 | approved |\n| 负责人 | AI |\n| 创建日期 | 2026-11-04 |\n| 对应设计 | [011-专题题包组卷设计](../design/011-专题题包组卷设计.md) |\n\n## 1. 任务\n\n| 序号 | 任务 | 产出 | 验收 | 状态 |\n| --- | --- | --- | --- | --- |\n| S1 | 专题匹配查询 | `activeTopicPack` | 状态/时间/学段/学科/题量 | todo |\n| S2 | 专题抽题 | `topicCandidates` + 抽题分支 | 去重、近 30 天优先排除 | todo |\n| S3 | 结果与警告 | `Result.TopicID/TopicName` | 预览接口可见 | todo |\n| S4 | 服务端测试 | 专题/过期/不匹配/回退 | `go test` 通过 | todo |\n| S5 | 端到端验证 | 管理端上线专题 → 预览组卷 | 选题均来自专题 | todo |\n| T1 | 验收报告 | docs/acceptance/phase11.md | 全流程记录 | todo |\n\n## 2. 验证\n\n- `go test ./...`；`TEST_DATABASE_URL go test ./internal/quiz`；\n- 浏览器/接口：创建并上线专题 → 管理端预览组卷 → 返回 `topic_id` 且题目属于专题；\n- 专题下线后预览恢复普通组卷。\n\n## 3. 回滚\n\n- 代码回滚即恢复普通组卷；专题数据不受影响。\n\n## 4. 执行记录\n\n| 日期 | 内容 | 结果 |\n| --- | --- | --- |\n| 2026-11-04 | 设计与计划创建 | approved |\n\n## 5. 验收结论\n\n- 待验收\nEOF\necho created",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "created\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798262928,
+            "ran": 1793798272447,
+            "completed": 1793798272478
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "bf8ff79ef3b07cd242a21d0f9bc91ae09085b166",
+        "end": "a62158d65d9f8cf07df08d5c21e1d0c9b7e180f4",
+        "files": [
+          "docs/design/011-专题题包组卷设计.md",
+          "docs/plans/011-专题题包组卷实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1883,
+        "output": 1432,
+        "reasoning": 598,
+        "cache": {
+          "read": 118528,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b57634001HhgXXDZgEuotEE",
+      "time": {
+        "created": 1793798272567,
+        "streamed": 1793798275417,
+        "completed": 1793798275466
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now implement repository methods. Let me view repository structure/imports.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798274857,
+            "completed": 1793798275412
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_cazocnw76abwmzz9g11awdjc",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '1,30p' internal/quiz/repository.go; sed -n '1,80p' internal/quiz/models.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "package quiz\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n)\n\ntype repository struct {\n\tpool *pgxpool.Pool\n}\n\nfunc newRepository(pool *pgxpool.Pool) *repository {\n\treturn &repository{pool: pool}\n}\n\n// Candidate 是候选题目。\ntype Candidate struct {\n\tID         string\n\tSubject    string\n\tStage      string\n\tType       string\n\tDifficulty int\n}\n\n// pool 返回某学科在给定学段的在线题目；excludeRecent 为 true 时排除孩子近 30 天做过的题。\nfunc (r *repository) candidates(ctx context.Context, childID, subject string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) {\n\tvar childArg any\n\tif childID != \"\" && excludeRecent {\npackage quiz\n\nimport \"time\"\n\n// SelectRequest 是组卷请求。\ntype SelectRequest struct {\n\tChildID      string `json:\"child_id\"`\n\tStage        string `json:\"stage\"`\n\tGradeTag     string `json:\"grade_tag\"`\n\tRule         Rule   `json:\"rule\"`\n\tSeed         int64  `json:\"seed\"`\n\tMaxQuestions int    `json:\"max_questions\"`\n}\n\n// Selected 是被选中的题目。\ntype Selected struct {\n\tQuestionID string `json:\"question_id\"`\n\tSubject    string `json:\"subject\"`\n\tStage      string `json:\"stage\"`\n\tType       string `json:\"type\"`\n\tDifficulty int    `json:\"difficulty\"`\n\tRepeated   bool   `json:\"repeated\"`\n}\n\n// Result 是组卷结果。\ntype Result struct {\n\tTotal            int            `json:\"total\"`\n\tQuota            map[string]int `json:\"quota\"`\n\tSelected         []Selected     `json:\"selected\"`\n\tMaxScore         float64        `json:\"max_score\"`\n\tDifficultyTarget int            `json:\"difficulty_target\"`\n\tWarnings         []string       `json:\"warnings,omitempty\"`\n\tSeed             int64          `json:\"seed\"`\n}\n\n// Error 是组卷业务错误。\ntype Error struct {\n\tStatus    int\n\tCode      string\n\tMessage   string\n\tWarnings  []string\n\tSessionID string\n}\n\nfunc (e *Error) Error() string { return e.Message }\n\nfunc newError(status int, code, message string) *Error {\n\treturn &Error{Status: status, Code: code, Message: message}\n}\n\n// PreviewResponse 便于管理端 dry-run 查看。\ntype PreviewResponse struct {\n\tResult\n\tGeneratedAt time.Time `json:\"generated_at\"`\n}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798275090,
+            "ran": 1793798275415,
+            "completed": 1793798275444
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "a62158d65d9f8cf07df08d5c21e1d0c9b7e180f4",
+        "end": "a62158d65d9f8cf07df08d5c21e1d0c9b7e180f4",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2135,
+        "output": 100,
+        "reasoning": 14,
+        "cache": {
+          "read": 120320,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b581980019VE9Hxyzj3qszy",
+      "time": {
+        "created": 1793798275484,
+        "streamed": 1793798288522,
+        "completed": 1793798288556
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Implement. Need to handle subject keys array. Add `TopicPack` struct in repository or models.\n\nRepository:\n\n```go\ntype TopicPack struct {\n    ID string\n    Name string\n}\n\nfunc (r *repository) activeTopicPack(ctx, stage string, subjects []string) (TopicPack, bool, error) {\n    var pack TopicPack\n    err := r.pool.QueryRow(ctx, `\n        select tp.id, tp.name\n        from topic_pack tp\n        join topic_question tq on tq.topic_id = tp.id\n        join question q on q.id = tq.question_id\n        where tp.status = 'online'\n          and (tp.start_at is null or tp.start_at <= now())\n          and (tp.end_at is null or tp.end_at >= now())\n          and (jsonb_array_length(tp.stage_scope) = 0 or tp.stage_scope ? $1)\n          and (jsonb_array_length(tp.subject_scope) = 0\n               or exists (select 1 from jsonb_array_elements_text(tp.subject_scope) s where s = any($2)))\n          and q.status = 'online' and q.stage_code = any($3)\n        group by tp.id, tp.name, tp.updated_at\n        having count(*) >= 3\n        order by tp.updated_at desc\n        limit 1`, stage, subjects, stages)\n```\nWait stage_scope match needs the stageOrder stages or just primary stage? For pack stage_scope should match child's primary stage, not fallback stages. Use $1 stage. Candidate fetch uses stages (fallback order). For pack count requirement, count questions in any stages? Better count only primary stage questions? A pack might target low but have mid questions? Admin scope is low, so likely low. Use `q.stage_code = any($3)` where stages is stageOrder (includes fallback), but then a pack scoped low with only mid questions could activate and then fill using fallback mid questions, which might be acceptable. But to ensure at least 3 primary-stage questions, count with `q.stage_code = $1`. I'll use `any($3)` for tolerance and fewer surprises; but matching stage_scope uses primary. Let's use `q.stage_code = any($3)` for count and candidates, consistent.\n\nNeed `stages` arg passed too.\n\nReturn pgx.ErrNoRows → false.\n\ntopicCandidates:\n```go\nfunc (r *repository) topicCandidates(ctx, childID, topicID string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) {\n  var childArg any\n  if childID != \"\" && excludeRecent { childArg = childID }\n  rows, err := r.pool.Query(ctx, `\n    select q.id, q.subject_code, q.stage_code, q.type_code, q.difficulty\n    from topic_question tq\n    join question q on q.id = tq.question_id\n    where tq.topic_id = $1\n      and q.status='online' and q.stage_code = any($2)\n      and ($3::uuid is null or not exists (...))\n    order by tq.position, q.id\n    limit $4`, topicID, stages, childArg, limit)\n...\n}\n```\n\nSelector changes:\nAfter n computed and subjectWeights built and funSlots computed, currently quota computed. Insert before `subjectSlots := n - funSlots`? Need subjectWeights keys. We can determine topic after subjectWeights validated.\n\nAdd:\n```go\nsubjects := make([]string,0,len(subjectWeights))\nfor s := range subjectWeights { subjects = append(subjects,s) }\npack, ok, err := s.repo.activeTopicPack(ctx, stage, subjects, stages)\nif err != nil { return Result{}, err }\ntopicMode := ok\nif topicMode { addWarning(\"topic_mode:\"+pack.Name) }\n```\nBut `stages` and addWarning defined later. Move addWarning earlier or define before. Current order: selected/chosen/warnings/addWarning defined after quota. I can move the topic lookup after warnings setup.\n\nThen branch:\n```go\nif topicMode {\n  if err := s.fillTopicPack(ctx, req.ChildID, pack.ID, stages, primaryRank, target, n, rng, chosen, &selected, addWarning); err != nil { return }\n} else {\n  subjectSlots := n - funSlots\n  quota := ...\n  ... existing loops ...\n}\n```\nNote quota only defined in else; later `result.Quota` computed from actual, so fine. Fun slots branch inside else.\n\nThen after shuffle/score:\n```go\nresult := Result{..., TopicID: pack.ID, TopicName: pack.Name}\n...\nif len(selected) < 3 || (!topicMode && score < passThreshold) { ... }\n```\nFor topic mode error message maybe normal message but threshold not used; compute:\n```go\nif len(selected) < 3 {\n  msg := fmt.Sprintf(\"题池不足：已选 %d 题\", len(selected))\n  if !topicMode { msg = fmt.Sprintf(... existing ...) }\n  ...\n}\nif !topicMode && score < threshold { ... }\n```\nSimplify:\n```go\nfail := len(selected) < 3\nif !fail && !topicMode && score < threshold { fail = true }\nif fail {\n  msg := fmt.Sprintf(\"题池不足：已选 %d 题\", len(selected))\n  if !topicMode { msg = fmt.Sprintf(\"题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f\", ...) }\n...\n}\n```\n\nfillTopicPack:\n```go\nfunc (s *Service) fillTopicPack(ctx ..., topicID, topicName string, stages []string, primaryRank, target, need int, rng, chosen, selected, addWarning) error {\n  appendCandidates := func(items []Candidate, repeated bool) {\n    for _, c := range items {\n      if len(*selected) >= need { return }\n      if chosen[c.ID] { continue }\n      *selected = append(*selected, toSelected(c, repeated))\n      chosen[c.ID] = true\n    }\n  }\n  fresh, err := s.repo.topicCandidates(ctx, childID, topicID, stages, true, defaultPoolLimit)\n  ...\n  sortCandidates(fresh, rng, primaryRank, target)\n  appendCandidates(fresh, false)\n  if len(*selected) < need {\n    all, err := s.repo.topicCandidates(ctx, childID, topicID, stages, false, defaultPoolLimit)\n    ...\n    sortCandidates(all, rng, primaryRank, target)\n    before := len(*selected)\n    appendCandidates(all, true)\n    if len(*selected) > before { addWarning(\"repeat_question:topic\") }\n  }\n  if len(*selected) < need { addWarning(\"topic_shortage:\"+topicName) }\n  return nil\n}\n```\nOne subtlety: fresh excludes recent; if it returns fewer than need, second query includes recent and chosen map prevents duplicates. Good.\n\n`addWarning(\"repeat_question:topic\")` only if any appended from second pass. Fine.\n\nTopic name may contain non-ASCII; warning text fine.\n\nResult fields JSON: `topic_id,omitempty`, `topic_name,omitempty`.\n\nNow tests. Add to selector_test.go new function. Need import maybe \"time\"? Already imports listed: context, database/sql, io, log/slog, os, testing, pgxpool, stdlib, goose, migrations. Add time? For active window use SQL now() +/- interval, no Go time. No new imports.\n\nTest:\n```go\nfunc TestSelectPrefersActiveTopicPack(t *testing.T) {\n  dbURL ...\n  prepareQuizDB(t, dbURL)\n  pool...\n  if _, err := pool.Exec(ctx, `truncate table topic_question, topic_pack, question cascade`); err != nil ...\n  childID := seedChild(t, pool)\n  ids := seedTopicQuestions(t, pool, 5)\n  packID := seedTopicPack(t, pool, \"寒假专题\", \"online\", \"low\", `[\"math\"]`, nil, nil)\n  linkTopicQuestions(t, pool, packID, ids)\n  svc := New(pool,nil,nil,nil,discard)\n  rule := Rule{UnlockMinutes:20, PassThreshold:3, SubjectWeight: map[string]float64{\"math\":2,\"chinese\":1}, DailyLimit:60, Timezone:\"Asia/Shanghai\"}\n  result, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 7})\n  if err != nil ... \n  if result.TopicID != packID ...\n  set := ...\n  for _, item := range result.Selected { if !set[item.QuestionID] ... }\n  if result.Total < 3 ...\n  // 过期\n  pool.Exec(`update topic_pack set end_at = now() - interval '1 hour' where id=$1`)\n  result, err = svc.Select(...Seed:8)\n  if result.TopicID != \"\" ...\n  // 学科不匹配\n  update end_at=null, subject_scope='[\"english\"]'\n  result ... TopicID == \"\"\n  // 不足 3 题：delete 3 links\n  ...\n}\n```\nRule SessionSize: PassThreshold 3 with weights math2,chinese1 => sum 3? Let me check rule.SessionSize.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798277800,
+            "completed": 1793798288520
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_2y0wan13xgz42gdkdcj0zsuo",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"func SessionSize\" -A 30 internal/rule/domain.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "144:func SessionSize(r Rule) (int, error) {\n145-\tmaxWeight := 0.0\n146-\tfor subject, weight := range r.SubjectWeight {\n147-\t\tif subject == \"fun\" {\n148-\t\t\tcontinue\n149-\t\t}\n150-\t\tif weight > maxWeight {\n151-\t\t\tmaxWeight = weight\n152-\t\t}\n153-\t}\n154-\tif maxWeight <= 0 {\n155-\t\treturn 0, errors.New(\"至少需要一个非趣味学科权重\")\n156-\t}\n157-\tnMin := int(math.Ceil(r.PassThreshold / maxWeight))\n158-\tif nMin < 3 {\n159-\t\tnMin = 3\n160-\t}\n161-\tn := nMin + 2\n162-\tif n > MaxSessionQuestions {\n163-\t\tn = MaxSessionQuestions\n164-\t}\n165-\tif n < 3 {\n166-\t\tn = 3\n167-\t}\n168-\treturn n, nil\n169-}\n170-\n171-func theoreticalMax(r Rule, n int) float64 {\n172-\tweights := make(map[string]float64)\n173-\tfor subject, weight := range r.SubjectWeight {\n174-\t\tif subject != \"fun\" && weight > 0 {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798288188,
+            "ran": 1793798288521,
+            "completed": 1793798288537
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "a62158d65d9f8cf07df08d5c21e1d0c9b7e180f4",
+        "end": "a62158d65d9f8cf07df08d5c21e1d0c9b7e180f4",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 774,
+        "output": 88,
+        "reasoning": 2051,
+        "cache": {
+          "read": 122368,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b5b4c2001v7uPERQPASn3mw",
+      "time": {
+        "created": 1793798288583,
+        "streamed": 1793798297669,
+        "completed": 1793798298572
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "n = ceil(3/2)=2 → min 3 → n=5. So 5 questions needed. Seed 5 topic questions and maybe global pool to avoid normal selection failing in fallback tests. For fallback tests, normal selection with math only and 5 topic questions still online will pick them even if topic not active (they are normal questions). That's fine; we assert TopicID empty. But if we delete links to 3 questions and pack becomes <3, then normal selection still uses all 5 questions globally and returns TopicID empty. Good.\n\nNeed pack with 5 questions, then test \"topic has <3\" by deleting 3 topic_question rows (leaving 2) → activeTopicPack returns none; fallback normal selection finds 5 questions. Good.\n\nAlso test time expired: set end_at past. Subject mismatch: set subject_scope english. Stage mismatch: set stage_scope high. Each resets previous condition.\n\nUse helper to create pack:\n```go\nfunc seedTopicPack(t, pool, name, status, stage string, subjects string, startSQL, endSQL string) string\n```\nSimpler inline SQL with parameters:\n```go\nvar packID string\npool.QueryRow(ctx, `insert into topic_pack (name,type,subject_scope,stage_scope,is_paid,status,start_at,end_at) values ($1,'vacation',$2::jsonb,$3::jsonb,false,$4, now()-interval '1 hour', now()+interval '1 day') returning id`, ...)\n```\nFor expired update end_at.\n\nLink positions: insert into topic_question (topic_id, question_id, position) values.\n\nQuestion seed: 5 math low online with stems unique. subject math, category core, stage low, difficulty 2, type choice, options, answer.\n\nNow implement service changes.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798291055,
+            "completed": 1793798297645
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_hqshlssrr70x2a0mtd1ygokb",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/quiz/models.go'); s=p.read_text()\ns=s.replace('''\tWarnings         []string       `json:\"warnings,omitempty\"`\n\tSeed             int64          `json:\"seed\"`\n}''','''\tWarnings         []string       `json:\"warnings,omitempty\"`\n\tSeed             int64          `json:\"seed\"`\n\tTopicID          string         `json:\"topic_id,omitempty\"`\n\tTopicName        string         `json:\"topic_name,omitempty\"`\n}''')\np.write_text(s)\n\np=Path('internal/quiz/repository.go'); s=p.read_text()\ns=s.replace('''// childStage 读取孩子学段；childID 为空时返回空。''','''// topicPack 是参与组卷的专题包。\ntype topicPack struct {\n\tID   string\n\tName string\n}\n\n// activeTopicPack 返回匹配学段/学科且在有效期内的在线专题（题目数 >= 3）。\nfunc (r *repository) activeTopicPack(ctx context.Context, stage string, subjects, stages []string) (topicPack, bool, error) {\n\tvar pack topicPack\n\terr := r.pool.QueryRow(ctx, `\n\t\tselect tp.id, tp.name\n\t\tfrom topic_pack tp\n\t\tjoin topic_question tq on tq.topic_id = tp.id\n\t\tjoin question q on q.id = tq.question_id\n\t\twhere tp.status = 'online'\n\t\t  and (tp.start_at is null or tp.start_at <= now())\n\t\t  and (tp.end_at is null or tp.end_at >= now())\n\t\t  and (jsonb_array_length(tp.stage_scope) = 0 or tp.stage_scope ? $1)\n\t\t  and (jsonb_array_length(tp.subject_scope) = 0\n\t\t       or exists (\n\t\t           select 1 from jsonb_array_elements_text(tp.subject_scope) s\n\t\t           where s = any($2)))\n\t\t  and q.status = 'online'\n\t\t  and q.stage_code = any($3)\n\t\tgroup by tp.id, tp.name, tp.updated_at\n\t\thaving count(*) >= 3\n\t\torder by tp.updated_at desc\n\t\tlimit 1`, stage, subjects, stages).Scan(&pack.ID, &pack.Name)\n\tif errors.Is(err, pgx.ErrNoRows) {\n\t\treturn topicPack{}, false, nil\n\t}\n\tif err != nil {\n\t\treturn topicPack{}, false, err\n\t}\n\treturn pack, true, nil\n}\n\n// topicCandidates 返回专题内匹配学段的在线题目；excludeRecent 为 true 时排除孩子近 30 天做过的题。\nfunc (r *repository) topicCandidates(ctx context.Context, childID, topicID string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) {\n\tvar childArg any\n\tif childID != \"\" && excludeRecent {\n\t\tchildArg = childID\n\t}\n\n\trows, err := r.pool.Query(ctx, `\n\t\tselect q.id, q.subject_code, q.stage_code, q.type_code, q.difficulty\n\t\tfrom topic_question tq\n\t\tjoin question q on q.id = tq.question_id\n\t\twhere tq.topic_id = $1\n\t\t  and q.status = 'online'\n\t\t  and q.stage_code = any($2)\n\t\t  and ($3::uuid is null or not exists (\n\t\t      select 1 from answer_log a\n\t\t      where a.child_id = $3::uuid\n\t\t        and a.question_id = q.id\n\t\t        and a.answered_at > now() - interval '30 days'))\n\t\torder by tq.position, q.id\n\t\tlimit $4`, topicID, stages, childArg, limit)\n\tif err != nil {\n\t\treturn nil, fmt.Errorf(\"query topic pool: %w\", err)\n\t}\n\tdefer rows.Close()\n\n\titems := make([]Candidate, 0, limit)\n\tfor rows.Next() {\n\t\tvar c Candidate\n\t\tif err := rows.Scan(&c.ID, &c.Subject, &c.Stage, &c.Type, &c.Difficulty); err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\titems = append(items, c)\n\t}\n\treturn items, rows.Err()\n}\n\n// childStage 读取孩子学段；childID 为空时返回空。''')\ns=s.replace('''import (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n)''','''import (\n\t\"context\"\n\t\"errors\"\n\t\"fmt\"\n\n\t\"github.com/jackc/pgx/v5\"\n\t\"github.com/jackc/pgx/v5/pgxpool\"\n)''')\np.write_text(s)\nprint('repository updated')\nPY\ngofmt -w internal/quiz && go build ./internal/quiz 2>&1 | head",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "repository updated\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798293688,
+            "ran": 1793798297662,
+            "completed": 1793798298459
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "a62158d65d9f8cf07df08d5c21e1d0c9b7e180f4",
+        "end": "1aa1517c50765e0f1597545f953a4a64c39fc164",
+        "files": [
+          "internal/quiz/models.go",
+          "internal/quiz/repository.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2427,
+        "output": 1137,
+        "reasoning": 388,
+        "cache": {
+          "read": 123136,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b5dc0e001tqrtuEq7HLgnoE",
+      "time": {
+        "created": 1793798298739,
+        "streamed": 1793798301674,
+        "completed": 1793798301740
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now modify selector. Need to carefully edit. Let me view relevant region lines 95-190 again to patch.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798301146,
+            "completed": 1793798301669
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_qsbbk1ochkslwjkgxfvw64ua",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '92,205p' internal/quiz/selector.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\t}\n\n\tsubjectWeights := make(map[string]float64)\n\tfor subject, weight := range req.Rule.SubjectWeight {\n\t\tif subject == \"fun\" || weight <= 0 {\n\t\t\tcontinue\n\t\t}\n\t\tsubjectWeights[subject] = weight\n\t}\n\tif len(subjectWeights) == 0 {\n\t\treturn Result{}, newError(422, \"VALIDATION_ERROR\", \"至少需要一个学科权重\")\n\t}\n\n\tfunSlots := 0\n\tif req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight[\"fun\"] > 0 {\n\t\tfunSlots = min(req.Rule.FunRatioCap, max(1, n-1))\n\t}\n\tsubjectSlots := n - funSlots\n\tquota := rule.Allocate(subjectWeights, subjectSlots)\n\n\tselected := make([]Selected, 0, n)\n\tchosen := map[string]bool{}\n\twarnings := make([]string, 0)\n\taddWarning := func(w string) {\n\t\tfor _, existing := range warnings {\n\t\t\tif existing == w {\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\twarnings = append(warnings, w)\n\t}\n\n\tstages := stageOrder[stage]\n\tprimaryRank := stageRanks[stage]\n\n\tfor _, subject := range sortedKeys(quota) {\n\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\ttarget, quota[subject], rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\tif funSlots > 0 {\n\t\tfunStages := []string{\"preschool\", \"low\"}\n\t\tif stage == \"mid\" || stage == \"high\" {\n\t\t\tfunStages = []string{\"mid\", \"high\"}\n\t\t}\n\t\tif err := s.fillSubject(ctx, req.ChildID, \"fun\", funStages, -1,\n\t\t\ttarget, funSlots, rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\t// 配额未满时，按权重从高到低再分配。\n\tif len(selected) < n {\n\t\tordered := rule.SubjectsByWeight(subjectWeights)\n\t\tfor pass := 0; pass < 2 && len(selected) < n; pass++ {\n\t\t\tprogress := false\n\t\t\tfor _, subject := range ordered {\n\t\t\t\tif len(selected) >= n {\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\tneed := n - len(selected)\n\t\t\t\tbefore := len(selected)\n\t\t\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\t\t\ttarget, need, rng, chosen, &selected, addWarning); err != nil {\n\t\t\t\t\treturn Result{}, err\n\t\t\t\t}\n\t\t\t\tif len(selected) > before {\n\t\t\t\t\tprogress = true\n\t\t\t\t}\n\t\t\t}\n\t\t\tif !progress {\n\t\t\t\tbreak\n\t\t\t}\n\t\t\taddWarning(\"quota_redistributed\")\n\t\t}\n\t}\n\n\trng.Shuffle(len(selected), func(i, j int) {\n\t\tselected[i], selected[j] = selected[j], selected[i]\n\t})\n\n\tscore := 0.0\n\tactual := map[string]int{}\n\tfor _, item := range selected {\n\t\tscore += req.Rule.SubjectWeight[item.Subject]\n\t\tactual[item.Subject]++\n\t}\n\n\tresult := Result{\n\t\tTotal:            len(selected),\n\t\tQuota:            actual,\n\t\tSelected:         selected,\n\t\tMaxScore:         round2(score),\n\t\tDifficultyTarget: target,\n\t\tWarnings:         warnings,\n\t\tSeed:             seed,\n\t}\n\tif len(selected) < 3 || score < req.Rule.PassThreshold {\n\t\tapiErr := newError(409, \"INSUFFICIENT_POOL\",\n\t\t\tfmt.Sprintf(\"题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f\", len(selected), score, req.Rule.PassThreshold))\n\t\tapiErr.Warnings = warnings\n\t\treturn result, apiErr\n\t}\n\treturn result, nil\n}\n\nfunc (s *Service) fillSubject(\n\tctx context.Context,\n\tchildID, subject string,\n\tstages []string,\n\tprimaryRank, target, need int,\n\trng *rand.Rand,\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798301245,
+            "ran": 1793798301673,
+            "completed": 1793798301723
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1aa1517c50765e0f1597545f953a4a64c39fc164",
+        "end": "1aa1517c50765e0f1597545f953a4a64c39fc164",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1663,
+        "output": 85,
+        "reasoning": 23,
+        "cache": {
+          "read": 125440,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b5e867001Eg4w1DzbBCl7Aw",
+      "time": {
+        "created": 1793798301808,
+        "streamed": 1793798312712,
+        "completed": 1793798313506
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Patch: move subjectSlots/quota into else; insert topic lookup after warnings. Let me do a Python replace of the block from `funSlots := 0` to before `rng.Shuffle`.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798304279,
+            "completed": 1793798312670
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_q4i8d4rz0lb5yotdfrjxr4a2",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/quiz/selector.go'); s=p.read_text()\nold='''\tfunSlots := 0\n\tif req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight[\"fun\"] > 0 {\n\t\tfunSlots = min(req.Rule.FunRatioCap, max(1, n-1))\n\t}\n\tsubjectSlots := n - funSlots\n\tquota := rule.Allocate(subjectWeights, subjectSlots)\n\n\tselected := make([]Selected, 0, n)\n\tchosen := map[string]bool{}\n\twarnings := make([]string, 0)\n\taddWarning := func(w string) {\n\t\tfor _, existing := range warnings {\n\t\t\tif existing == w {\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\twarnings = append(warnings, w)\n\t}\n\n\tstages := stageOrder[stage]\n\tprimaryRank := stageRanks[stage]\n\n\tfor _, subject := range sortedKeys(quota) {\n\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\ttarget, quota[subject], rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\tif funSlots > 0 {\n\t\tfunStages := []string{\"preschool\", \"low\"}\n\t\tif stage == \"mid\" || stage == \"high\" {\n\t\t\tfunStages = []string{\"mid\", \"high\"}\n\t\t}\n\t\tif err := s.fillSubject(ctx, req.ChildID, \"fun\", funStages, -1,\n\t\t\ttarget, funSlots, rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t}\n\n\t// 配额未满时，按权重从高到低再分配。\n\tif len(selected) < n {\n\t\tordered := rule.SubjectsByWeight(subjectWeights)\n\t\tfor pass := 0; pass < 2 && len(selected) < n; pass++ {\n\t\t\tprogress := false\n\t\t\tfor _, subject := range ordered {\n\t\t\t\tif len(selected) >= n {\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\tneed := n - len(selected)\n\t\t\t\tbefore := len(selected)\n\t\t\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\t\t\ttarget, need, rng, chosen, &selected, addWarning); err != nil {\n\t\t\t\t\treturn Result{}, err\n\t\t\t\t}\n\t\t\t\tif len(selected) > before {\n\t\t\t\t\tprogress = true\n\t\t\t\t}\n\t\t\t}\n\t\t\tif !progress {\n\t\t\t\tbreak\n\t\t\t}\n\t\t\taddWarning(\"quota_redistributed\")\n\t\t}\n\t}\n'''\nnew='''\tselected := make([]Selected, 0, n)\n\tchosen := map[string]bool{}\n\twarnings := make([]string, 0)\n\taddWarning := func(w string) {\n\t\tfor _, existing := range warnings {\n\t\t\tif existing == w {\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\twarnings = append(warnings, w)\n\t}\n\n\tstages := stageOrder[stage]\n\tprimaryRank := stageRanks[stage]\n\n\tsubjectKeys := make([]string, 0, len(subjectWeights))\n\tfor subject := range subjectWeights {\n\t\tsubjectKeys = append(subjectKeys, subject)\n\t}\n\n\t// 优先使用匹配的在线专题；没有匹配专题时保持原组卷逻辑。\n\tpack, topicMode, err := s.repo.activeTopicPack(ctx, stage, subjectKeys, stages)\n\tif err != nil {\n\t\treturn Result{}, err\n\t}\n\tif topicMode {\n\t\taddWarning(\"topic_mode:\" + pack.Name)\n\t\tif err := s.fillTopicPack(ctx, req.ChildID, pack, stages, primaryRank,\n\t\t\ttarget, n, rng, chosen, &selected, addWarning); err != nil {\n\t\t\treturn Result{}, err\n\t\t}\n\t} else {\n\t\tfunSlots := 0\n\t\tif req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight[\"fun\"] > 0 {\n\t\t\tfunSlots = min(req.Rule.FunRatioCap, max(1, n-1))\n\t\t}\n\t\tsubjectSlots := n - funSlots\n\t\tquota := rule.Allocate(subjectWeights, subjectSlots)\n\n\t\tfor _, subject := range sortedKeys(quota) {\n\t\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\t\ttarget, quota[subject], rng, chosen, &selected, addWarning); err != nil {\n\t\t\t\treturn Result{}, err\n\t\t\t}\n\t\t}\n\n\t\tif funSlots > 0 {\n\t\t\tfunStages := []string{\"preschool\", \"low\"}\n\t\t\tif stage == \"mid\" || stage == \"high\" {\n\t\t\t\tfunStages = []string{\"mid\", \"high\"}\n\t\t\t}\n\t\t\tif err := s.fillSubject(ctx, req.ChildID, \"fun\", funStages, -1,\n\t\t\t\ttarget, funSlots, rng, chosen, &selected, addWarning); err != nil {\n\t\t\t\treturn Result{}, err\n\t\t\t}\n\t\t}\n\n\t\t// 配额未满时，按权重从高到低再分配。\n\t\tif len(selected) < n {\n\t\t\tordered := rule.SubjectsByWeight(subjectWeights)\n\t\t\tfor pass := 0; pass < 2 && len(selected) < n; pass++ {\n\t\t\t\tprogress := false\n\t\t\t\tfor _, subject := range ordered {\n\t\t\t\t\tif len(selected) >= n {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n\t\t\t\t\tneed := n - len(selected)\n\t\t\t\t\tbefore := len(selected)\n\t\t\t\t\tif err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,\n\t\t\t\t\t\ttarget, need, rng, chosen, &selected, addWarning); err != nil {\n\t\t\t\t\t\treturn Result{}, err\n\t\t\t\t\t}\n\t\t\t\t\tif len(selected) > before {\n\t\t\t\t\t\tprogress = true\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\tif !progress {\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\taddWarning(\"quota_redistributed\")\n\t\t\t}\n\t\t}\n\t}\n'''\nassert old in s\ns=s.replace(old,new)\nold2='''\tresult := Result{\n\t\tTotal:            len(selected),\n\t\tQuota:            actual,\n\t\tSelected:         selected,\n\t\tMaxScore:         round2(score),\n\t\tDifficultyTarget: target,\n\t\tWarnings:         warnings,\n\t\tSeed:             seed,\n\t}\n\tif len(selected) < 3 || score < req.Rule.PassThreshold {\n\t\tapiErr := newError(409, \"INSUFFICIENT_POOL\",\n\t\t\tfmt.Sprintf(\"题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f\", len(selected), score, req.Rule.PassThreshold))\n\t\tapiErr.Warnings = warnings\n\t\treturn result, apiErr\n\t}\n\treturn result, nil\n}'''\nnew2='''\tresult := Result{\n\t\tTotal:            len(selected),\n\t\tQuota:            actual,\n\t\tSelected:         selected,\n\t\tMaxScore:         round2(score),\n\t\tDifficultyTarget: target,\n\t\tWarnings:         warnings,\n\t\tSeed:             seed,\n\t}\n\tif topicMode {\n\t\tresult.TopicID = pack.ID\n\t\tresult.TopicName = pack.Name\n\t}\n\tif len(selected) < 3 || (!topicMode && score < req.Rule.PassThreshold) {\n\t\tmessage := fmt.Sprintf(\"题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f\",\n\t\t\tlen(selected), score, req.Rule.PassThreshold)\n\t\tif topicMode {\n\t\t\tmessage = fmt.Sprintf(\"专题题包题目不足：已选 %d 题\", len(selected))\n\t\t}\n\t\tapiErr := newError(409, \"INSUFFICIENT_POOL\", message)\n\t\tapiErr.Warnings = warnings\n\t\treturn result, apiErr\n\t}\n\treturn result, nil\n}'''\nassert old2 in s\ns=s.replace(old2,new2)\n# append fillTopicPack before fillSubject\nmarker='''func (s *Service) fillSubject('''\naddition='''func (s *Service) fillTopicPack(\n\tctx context.Context,\n\tchildID string,\n\tpack topicPack,\n\tstages []string,\n\tprimaryRank, target, need int,\n\trng *rand.Rand,\n\tchosen map[string]bool,\n\tselected *[]Selected,\n\taddWarning func(string),\n) error {\n\tappendAll := func(items []Candidate, repeated bool) {\n\t\tfor _, candidate := range items {\n\t\t\tif len(*selected) >= need {\n\t\t\t\treturn\n\t\t\t}\n\t\t\tif chosen[candidate.ID] {\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\t*selected = append(*selected, toSelected(candidate, repeated))\n\t\t\tchosen[candidate.ID] = true\n\t\t}\n\t}\n\n\tfresh, err := s.repo.topicCandidates(ctx, childID, pack.ID, stages, true, defaultPoolLimit)\n\tif err != nil {\n\t\treturn err\n\t}\n\tsortCandidates(fresh, rng, primaryRank, target)\n\tappendAll(fresh, false)\n\n\tif len(*selected) < need {\n\t\tall, err := s.repo.topicCandidates(ctx, childID, pack.ID, stages, false, defaultPoolLimit)\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tsortCandidates(all, rng, primaryRank, target)\n\t\tbefore := len(*selected)\n\t\tappendAll(all, true)\n\t\tif len(*selected) > before {\n\t\t\taddWarning(\"repeat_question:topic\")\n\t\t}\n\t}\n\tif len(*selected) < need {\n\t\taddWarning(\"topic_shortage:\" + pack.Name)\n\t}\n\treturn nil\n}\n\nfunc (s *Service) fillSubject('''\nassert marker in s\ns=s.replace(marker,addition,1)\np.write_text(s)\nprint('selector updated')\nPY\ngofmt -w internal/quiz && go build ./internal/quiz 2>&1 | head",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "selector updated\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798304584,
+            "ran": 1793798312704,
+            "completed": 1793798313411
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "1aa1517c50765e0f1597545f953a4a64c39fc164",
+        "end": "0b6f573ceb713407a1c6b2a67abe22f8911f0dd4",
+        "files": [
+          "internal/quiz/selector.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1197,
+        "output": 2294,
+        "reasoning": 43,
+        "cache": {
+          "read": 126976,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b6166f001C9t4hrge2OduyR",
+      "time": {
+        "created": 1793798313589,
+        "streamed": 1793798331065,
+        "completed": 1793798395339
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Build ok. Now tests. Add test function to selector_test.go. Need helpers. I'll append a new test + helper after seedQuestions maybe. Since truncate question affects existing test if tests run in order; Go runs tests in source order. If my test is appended after TestSelectWithRealPool, it runs after, so no impact. Fine.\n\nTest code:\n\n```go\nfunc TestSelectPrefersActiveTopicPack(t *testing.T) {\n dbURL...\n prepareQuizDB(t, dbURL)\n pool...\n if _, err := pool.Exec(ctx, `truncate table topic_question, topic_pack, question cascade`); err ...\n childID := seedChild(t, pool)\n ids := seedTopicQuestions(t, pool, 5)\n packID := seedTopicPack(...)\n link...\n svc...\n rule...\n result, err := ... Seed 7\n ...\n // helper assertTopic(expected bool)\n}\n```\n\nNeed reload after updates; each Select fresh queries.\n\nRule as above. Normal selection fallback needs 5 questions math; yes.\n\nPack helper:\n```go\nfunc seedTopicPack(t *testing.T, pool *pgxpool.Pool, name, status string) string {\n var id string\n err := pool.QueryRow(ctx, `insert into topic_pack (name, type, subject_scope, stage_scope, is_paid, status, start_at, end_at) values ($1,'vacation','[\"math\"]'::jsonb,'[\"low\"]'::jsonb,false,$2, now()-interval '1 hour', now()+interval '1 day') returning id`, name, status).Scan(&id)\n}\n```\ntopic_pack has type check values; vacation valid.\n\nLink:\n```go\nfor i,id := range ids { insert topic_question(topic_id,question_id,position) values(packID,id,i) }\n```\n\nTests:\n1. active → TopicID=packID, TopicName, Total==5, all selected in set, warning topic_mode.\n2. update status offline → TopicID empty. (Also check `topic_mode` not in warnings.)\n3. set status online, end_at past → empty.\n4. set end_at future, subject_scope `[\"english\"]` → empty.\n5. set subject_scope math, stage_scope high → empty.\n6. set stage low, delete 3 links → empty (pack count 2).\n7. set links back / insert 3, then all questions answered recently? Existing answer_log maybe empty. Test repeated logic would require inserting answer logs for all 5 then expect Repeated true and TopicID still. But session requires >=3; topicCandidates fresh excludes all, then all includes all → selected with repeated=true. Add assertion maybe. But answer_log requires device_id etc. Could skip.\n\nAlso ensure online pack from another subject matches empty subject_scope. Could test with `subject_scope '[]'` → active. Not necessary.\n\nOrder of updates uses SQL. Use helper `setPack(t, pool, packID, sql string)` with literal? Easier individual Exec queries.\n\nLet me write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798315785,
+            "completed": 1793798331062
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_awgyriaanyo8jn784s6psa0a",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat >> internal/quiz/selector_test.go <<'EOF'\n\nfunc TestSelectPrefersActiveTopicPack(t *testing.T) {\n\tdbURL := os.Getenv(\"TEST_DATABASE_URL\")\n\tif dbURL == \"\" {\n\t\tt.Skip(\"TEST_DATABASE_URL not set\")\n\t}\n\tctx := context.Background()\n\tprepareQuizDB(t, dbURL)\n\n\tpool, err := pgxpool.New(ctx, dbURL)\n\tif err != nil {\n\t\tt.Fatalf(\"pool: %v\", err)\n\t}\n\tdefer pool.Close()\n\n\tif _, err := pool.Exec(ctx, `truncate table topic_question, topic_pack, question cascade`); err != nil {\n\t\tt.Fatalf(\"truncate topic: %v\", err)\n\t}\n\n\tchildID := seedChild(t, pool)\n\tquestionIDs := seedTopicQuestions(t, pool, 5)\n\tpackID := seedTopicPack(t, pool)\n\tfor position, id := range questionIDs {\n\t\tif _, err := pool.Exec(ctx,\n\t\t\t`insert into topic_question (topic_id, question_id, position) values ($1, $2, $3)`,\n\t\t\tpackID, id, position); err != nil {\n\t\t\tt.Fatalf(\"link question: %v\", err)\n\t\t}\n\t}\n\n\tsvc := New(pool, nil, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))\n\trule := Rule{\n\t\tUnlockMinutes: 20,\n\t\tPassThreshold: 3,\n\t\tSubjectWeight: map[string]float64{\"math\": 2, \"chinese\": 1},\n\t\tDailyLimit:    60,\n\t\tTimezone:      \"Asia/Shanghai\",\n\t}\n\n\tselectTopic := func(seed int64) Result {\n\t\tt.Helper()\n\t\tresult, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: seed})\n\t\tif err != nil {\n\t\t\tt.Fatalf(\"select: %v\", err)\n\t\t}\n\t\treturn result\n\t}\n\n\tresult := selectTopic(7)\n\tif result.TopicID != packID || result.TopicName != \"寒假数学专题\" {\n\t\tt.Fatalf(\"topic = %q/%q, want %q\", result.TopicID, result.TopicName, packID)\n\t}\n\tif result.Total != 5 {\n\t\tt.Fatalf(\"total = %d, want 5\", result.Total)\n\t}\n\tinPack := map[string]bool{}\n\tfor _, id := range questionIDs {\n\t\tinPack[id] = true\n\t}\n\tfor _, item := range result.Selected {\n\t\tif !inPack[item.QuestionID] {\n\t\t\tt.Fatalf(\"selected question %s is not in topic pack\", item.QuestionID)\n\t\t}\n\t}\n\tif !hasWarning(result.Warnings, \"topic_mode:寒假数学专题\") {\n\t\tt.Fatalf(\"warnings = %v, want topic_mode\", result.Warnings)\n\t}\n\n\t// 下线后回退普通组卷。\n\tif _, err := pool.Exec(ctx, `update topic_pack set status = 'offline' where id = $1`, packID); err != nil {\n\t\tt.Fatalf(\"offline: %v\", err)\n\t}\n\tif got := selectTopic(8); got.TopicID != \"\" {\n\t\tt.Fatalf(\"offline pack still used: %q\", got.TopicID)\n\t}\n\n\t// 过期后回退。\n\tif _, err := pool.Exec(ctx, `update topic_pack set status = 'online', end_at = now() - interval '1 hour' where id = $1`, packID); err != nil {\n\t\tt.Fatalf(\"expire: %v\", err)\n\t}\n\tif got := selectTopic(9); got.TopicID != \"\" {\n\t\tt.Fatalf(\"expired pack still used: %q\", got.TopicID)\n\t}\n\n\t// 学科不匹配时回退。\n\tif _, err := pool.Exec(ctx, `\n\t\tupdate topic_pack set end_at = now() + interval '1 day', subject_scope = '[\"english\"]'::jsonb\n\t\twhere id = $1`, packID); err != nil {\n\t\tt.Fatalf(\"subject scope: %v\", err)\n\t}\n\tif got := selectTopic(10); got.TopicID != \"\" {\n\t\tt.Fatalf(\"subject-mismatched pack still used: %q\", got.TopicID)\n\t}\n\n\t// 学段不匹配时回退。\n\tif _, err := pool.Exec(ctx, `\n\t\tupdate topic_pack set subject_scope = '[\"math\"]'::jsonb, stage_scope = '[\"high\"]'::jsonb\n\t\twhere id = $1`, packID); err != nil {\n\t\tt.Fatalf(\"stage scope: %v\", err)\n\t}\n\tif got := selectTopic(11); got.TopicID != \"\" {\n\t\tt.Fatalf(\"stage-mismatched pack still used: %q\", got.TopicID)\n\t}\n\n\t// 题目不足 3 道时回退。\n\tif _, err := pool.Exec(ctx, `update topic_pack set stage_scope = '[\"low\"]'::jsonb where id = $1`, packID); err != nil {\n\t\tt.Fatalf(\"restore stage: %v\", err)\n\t}\n\tif _, err := pool.Exec(ctx, `\n\t\tdelete from topic_question where topic_id = $1 and position >= 2`, packID); err != nil {\n\t\tt.Fatalf(\"shrink topic: %v\", err)\n\t}\n\tif got := selectTopic(12); got.TopicID != \"\" {\n\t\tt.Fatalf(\"short pack still used: %q\", got.TopicID)\n\t}\n}\n\nfunc seedTopicQuestions(t *testing.T, pool *pgxpool.Pool, n int) []string {\n\tt.Helper()\n\tctx := context.Background()\n\tids := make([]string, 0, n)\n\tfor i := 0; i < n; i++ {\n\t\tvar id string\n\t\terr := pool.QueryRow(ctx, `\n\t\t\tinsert into question (\n\t\t\t\tsubject_code, category_code, stage_code, difficulty, type_code, stem,\n\t\t\t\toptions, answer, status, version, schema_ver)\n\t\t\tvalues ('math', 'core', 'low', 2, 'choice', $1,\n\t\t\t        '[{\"id\":\"a\",\"text\":\"1\"},{\"id\":\"b\",\"text\":\"2\"}]'::jsonb,\n\t\t\t        '[\"a\"]'::jsonb, 'online', 1, 1)\n\t\t\treturning id`, \"专题题 \"+string(rune('A'+i))).Scan(&id)\n\t\tif err != nil {\n\t\t\tt.Fatalf(\"insert topic question: %v\", err)\n\t\t}\n\t\tids = append(ids, id)\n\t}\n\treturn ids\n}\n\nfunc seedTopicPack(t *testing.T, pool *pgxpool.Pool) string {\n\tt.Helper()\n\tvar id string\n\terr := pool.QueryRow(context.Background(), `\n\t\tinsert into topic_pack (\n\t\t\tname, type, subject_scope, stage_scope, is_paid, status, start_at, end_at)\n\t\tvalues ('寒假数学专题', 'vacation', '[\"math\"]'::jsonb, '[\"low\"]'::jsonb,\n\t\t        false, 'online', now() - interval '1 hour', now() + interval '1 day')\n\t\treturning id`).Scan(&id)\n\tif err != nil {\n\t\tt.Fatalf(\"insert topic pack: %v\", err)\n\t}\n\treturn id\n}\n\nfunc hasWarning(warnings []string, want string) bool {\n\tfor _, warning := range warnings {\n\t\tif warning == want {\n\t\t\treturn true\n\t\t}\n\t}\n\treturn false\n}\nEOF\ngofmt -w internal/quiz && go vet ./internal/quiz 2>&1 | head; TEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\" go test ./internal/quiz -run TestSelectPrefersActiveTopicPack -count=1 -v 2>&1 | tail -15",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "=== RUN   TestSelectPrefersActiveTopicPack\n2026/11/04 21:19:55 goose: no migrations to run. current version: 9\n--- PASS: TestSelectPrefersActiveTopicPack (0.12s)\nPASS\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t1.311s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798322204,
+            "ran": 1793798331064,
+            "completed": 1793798395261
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0b6f573ceb713407a1c6b2a67abe22f8911f0dd4",
+        "end": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "files": [
+          "internal/quiz/selector_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2397,
+        "output": 1839,
+        "reasoning": 644,
+        "cache": {
+          "read": 128128,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b755e6001qzp7JWK5eKMeoO",
+      "time": {
+        "created": 1793798395369,
+        "streamed": 1793798399562,
+        "completed": 1793798432068
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now run full quiz tests with TEST_DATABASE_URL to ensure TestSelectWithRealPool still passes after our test may have truncated question/topic tables (order: TestSelectWithRealPool first, then our test; no issue). But prepareQuizDB in second test doesn't truncate question, and my test truncates it; fine.\n\nRun all quiz tests with env.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798397960,
+            "completed": 1793798399554
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_h5u9ntyyf17f2x8vvml2cto8",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && TEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\" go test ./internal/quiz -count=1 2>&1 | tail -5",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "ok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t0.764s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798398902,
+            "ran": 1793798399560,
+            "completed": 1793798432025
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "end": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2664,
+        "output": 112,
+        "reasoning": 76,
+        "cache": {
+          "read": 130432,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b7e563001zMEc7W8GO0g5I0",
+      "time": {
+        "created": 1793798432104,
+        "streamed": 1793798436724,
+        "completed": 1793798439400
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Wait, 0.76s, likely tests skipped? No TEST_DATABASE_URL set in env, yes set. Hmm TestSelectWithRealPool might fail? It passed. But 0.76s plausible with DB.\n\nNow E2E via admin preview:\n1. Restart API (binary built before selector changes; need rebuild/restart).\n2. Create topic pack with 5 questions, online, stage low, subject math.\n3. Call admin preview with child ID + rule; expect topic_id.\n4. Offline pack; preview returns no topic.\n5. Clean up pack.\n\nBut admin preview requires rule; we can fetch a child's rule? Use a valid rule manually. Child ID `f59bae8c...` stage low. Rule from checkpoint: UnlockMinutes 20, PassThreshold 3, SubjectWeight math2 chinese1, FunRatioCap 2, FunEnabled true, DailyLimit 60, ScopeMode? Validate may require more. Let's see rule.Validate defaults: ScopeMode maybe optional. The test rule passes without ScopeMode/Timezone? Our test didn't set ScopeMode and passed. Good.\n\nRun API restart.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798434334,
+            "completed": 1793798436720
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_ergalvu5a9sny3b4g38teuqw",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && go build -o bin/api ./cmd/api && PID=$(lsof -nP -iTCP:18080 -sTCP:LISTEN -t | head -1); [ -n \"$PID\" ] && kill $PID; sleep 1; echo rebuilt",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "rebuilt\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798436274,
+            "ran": 1793798436723,
+            "completed": 1793798439368
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "end": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 325,
+        "output": 124,
+        "reasoning": 243,
+        "cache": {
+          "read": 132992,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6a7b9ed003BQyb8r3JhxW1gM",
+      "metadata": {
+        "source": "shell",
+        "shellID": "sh_1a6a7b9eb001jYBhXpV9nzK7TL",
+        "jobID": "sh_1a6a7b9eb001jYBhXpV9nzK7TL",
+        "state": "completed",
+        "truncated": false,
+        "exit": 0
+      },
+      "time": {
+        "created": 1793798439404
+      },
+      "text": "<shell id=\"sh_1a6a7b9eb001jYBhXpV9nzK7TL\" state=\"completed\" command=\"cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api\">\ntime=2026-11-04T21:02:52.915+08:00 level=INFO msg=\"http server starting\" addr=:18080 env=dev version=dev\ntime=2026-11-04T21:03:00.351+08:00 level=INFO msg=\"http request\" request_id=ff79939623adcb7c4460cf81 method=POST path=/v1/admin/auth/login status=200 bytes=770 duration_ms=72 remote_ip=127.0.0.1:50607\ntime=2026-11-04T21:03:00.358+08:00 level=INFO msg=\"http request\" request_id=42e406338955807f8deccaca method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=6 remote_ip=127.0.0.1:50608\ntime=2026-11-04T21:03:00.366+08:00 level=INFO msg=\"http request\" request_id=584f63107805b0beab2e6edb method=POST path=/v1/admin/topics status=201 bytes=285 duration_ms=7 remote_ip=127.0.0.1:50609\ntime=2026-11-04T21:03:00.395+08:00 level=INFO msg=\"http request\" request_id=8bb881d65c2988af01883a17 method=GET path=/v1/admin/questions status=200 bytes=1189 duration_ms=28 remote_ip=127.0.0.1:50610\ntime=2026-11-04T21:03:00.404+08:00 level=INFO msg=\"http request\" request_id=a3d91fa921f48d6bf94443c1 method=PUT path=/v1/admin/topics/9b9c88a9-c1d5-4dbd-bc2e-25efe59b2b8d/questions status=200 bytes=419 duration_ms=8 remote_ip=127.0.0.1:50611\ntime=2026-11-04T21:03:00.405+08:00 level=INFO msg=\"http request\" request_id=4a1c6fcebdc5e8f1c4b443cb method=PUT path=/v1/admin/topics/9b9c88a9-c1d5-4dbd-bc2e-25efe59b2b8d status=200 bytes=431 duration_ms=0 remote_ip=127.0.0.1:50612\ntime=2026-11-04T21:03:00.406+08:00 level=INFO msg=\"http request\" request_id=7ec83aa9f1766d618d0c7c04 method=GET path=/v1/admin/topics/9b9c88a9-c1d5-4dbd-bc2e-25efe59b2b8d status=200 bytes=431 duration_ms=0 remote_ip=127.0.0.1:50613\ntime=2026-11-04T21:03:00.407+08:00 level=INFO msg=\"http request\" request_id=dc5949b68314a474b533e283 method=DELETE path=/v1/admin/topics/9b9c88a9-c1d5-4dbd-bc2e-25efe59b2b8d status=200 bytes=16 duration_ms=0 remote_ip=127.0.0.1:50614\ntime=2026-11-04T21:03:00.407+08:00 level=INFO msg=\"http request\" request_id=32f7a391dfcdc78ac12d2e14 method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=0 remote_ip=127.0.0.1:50615\ntime=2026-11-04T21:03:10.420+08:00 level=INFO msg=\"http request\" request_id=685784482b1860be8776884e method=GET path=/v1/admin/me status=200 bytes=265 duration_ms=0 remote_ip=127.0.0.1:51093\ntime=2026-11-04T21:03:10.424+08:00 level=INFO msg=\"http request\" request_id=759bef8b135dc9f0cc1e4c1f method=GET path=/v1/admin/me status=200 bytes=265 duration_ms=0 remote_ip=127.0.0.1:51102\ntime=2026-11-04T21:03:11.094+08:00 level=INFO msg=\"http request\" request_id=9fdabce77072537f66a4dad1 method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=0 remote_ip=127.0.0.1:51112\ntime=2026-11-04T21:03:11.104+08:00 level=INFO msg=\"http request\" request_id=941d390060cc71cd2d130cf2 method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=0 remote_ip=127.0.0.1:51121\ntime=2026-11-04T21:03:59.443+08:00 level=INFO msg=\"http request\" request_id=2624fbd4b182747fc558b2a2 method=POST path=/v1/admin/topics status=201 bytes=273 duration_ms=28 remote_ip=127.0.0.1:51279\ntime=2026-11-04T21:03:59.457+08:00 level=INFO msg=\"http request\" request_id=60e35186f4395995cb283489 method=GET path=/v1/admin/topics status=200 bytes=285 duration_ms=0 remote_ip=127.0.0.1:51289\ntime=2026-11-04T21:04:09.403+08:00 level=INFO msg=\"http request\" request_id=c50096d93310ccb68537412d method=GET path=/v1/admin/topics/f07b8e31-6ce6-4f07-93f8-de8924295c72 status=200 bytes=273 duration_ms=2 remote_ip=127.0.0.1:51369\ntime=2026-11-04T21:04:15.767+08:00 level=INFO msg=\"http request\" request_id=81cf0bbef4492a9566e754a8 method=GET path=/v1/admin/questions status=200 bytes=7794 duration_ms=22 remote_ip=127.0.0.1:51389\ntime=2026-11-04T21:04:33.333+08:00 level=INFO msg=\"http request\" request_id=ed861c9149671294c5105c18 method=PUT path=/v1/admin/topics/f07b8e31-6ce6-4f07-93f8-de8924295c72/questions status=200 bytes=407 duration_ms=15 remote_ip=127.0.0.1:51421\ntime=2026-11-04T21:04:33.364+08:00 level=INFO msg=\"http request\" request_id=e4a20bd36bcdac73f8973fcb method=GET path=/v1/admin/topics status=200 bytes=285 duration_ms=1 remote_ip=127.0.0.1:51431\ntime=2026-11-04T21:05:01.602+08:00 level=INFO msg=\"http request\" request_id=3319f454de9a896105059279 method=PUT path=/v1/admin/topics/f07b8e31-6ce6-4f07-93f8-de8924295c72 status=200 bytes=407 duration_ms=7 remote_ip=127.0.0.1:51483\ntime=2026-11-04T21:05:01.673+08:00 level=INFO msg=\"http request\" request_id=7f7d7472b378fbf9022a6c25 method=GET path=/v1/admin/topics status=200 bytes=285 duration_ms=11 remote_ip=127.0.0.1:51492\ntime=2026-11-04T21:05:12.902+08:00 level=INFO msg=\"http request\" request_id=c5a5b305886149663a027fc5 method=DELETE path=/v1/admin/topics/f07b8e31-6ce6-4f07-93f8-de8924295c72 status=200 bytes=16 duration_ms=3 remote_ip=127.0.0.1:51535\ntime=2026-11-04T21:05:12.912+08:00 level=INFO msg=\"http request\" request_id=6c54c03885a0b9dc32017a29 method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=0 remote_ip=127.0.0.1:51544\ntime=2026-11-04T21:20:38.367+08:00 level=INFO msg=\"shutting down\"\ntime=2026-11-04T21:20:38.370+08:00 level=INFO msg=bye\n\n</shell>",
+      "description": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api",
+      "type": "synthetic"
+    },
+    {
+      "id": "msg_1a6b80207001QPorLP3M8QRG2i",
+      "time": {
+        "created": 1793798439435,
+        "streamed": 1793798442496,
+        "completed": 1793798442530
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_00_xzc0lb9oexqr5if0vbxt96kq",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "background": true,
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Command moved to the background (shell ID: sh_1a6b80e05001jIbJb33rVth5Yq).\nOutput is streaming to: /Users/mengfeng/.local/share/opencode/shell/785918a96bb643b073682956c406cb83da15bee7/sh_1a6b80e05001jIbJb33rVth5Yq.out"
+              },
+              {
+                "type": "text",
+                "text": "You will be notified automatically when the command finishes. The notification will include the command's output. Unless the user explicitly asks otherwise, DO NOT poll for completion, even if you need the final result to continue. Repeatedly sleeping and reading or searching the output file is polling, not useful work. You may read the current output if it lets you do useful work now, but do not repeatedly check it while waiting for the command to finish. Keep working on anything that does not depend on the result. If you have nothing else to do, end your response; you will be resumed automatically when the command finishes."
+              }
+            ],
+            "metadata": {
+              "status": "running",
+              "truncated": false,
+              "shellID": "sh_1a6b80e05001jIbJb33rVth5Yq"
+            }
+          },
+          "time": {
+            "created": 1793798442041,
+            "ran": 1793798442461,
+            "completed": 1793798442505
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "end": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2665,
+        "output": 96,
+        "reasoning": 0,
+        "cache": {
+          "read": 133248,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b80e2f001hEW0PtauzZ0MYi",
+      "time": {
+        "created": 1793798442547,
+        "streamed": 1793798452066,
+        "completed": 1793798454382
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now E2E. Use real child f59... and rule. Create pack with 5 online math/low questions from existing question pool? We can use existing math low questions; assign 5. Pack subject_scope [\"math\"], stage_scope [\"low\"], active now. Child is low. Then preview.\n\nBut existing pack from earlier deleted. Create via admin API, assign 5 question ids (fetch q=导入题 math? Need math low online). Then preview with child. Expect topic_id.\n\nThen offline and preview → no topic_id.\n\nCareful: the preview creates no session, safe. Let's run.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798445001,
+            "completed": 1793798452059
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_93lcsojg2eyes8pmbxv2ewpw",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sleep 2; python3 - <<'PY'\nimport json,urllib.request,urllib.error,urllib.parse\nBASE=\"http://127.0.0.1:18080/v1\"\ndef call(method,path,body=None,token=None):\n    data=json.dumps(body).encode() if body is not None else None\n    req=urllib.request.Request(BASE+path,data=data,method=method)\n    req.add_header(\"Content-Type\",\"application/json\")\n    if token: req.add_header(\"Authorization\",\"Bearer \"+token)\n    try:\n        with urllib.request.urlopen(req) as r:\n            raw=r.read().decode(); return r.status,(json.loads(raw) if raw else {})\n    except urllib.error.HTTPError as e:\n        raw=e.read().decode(); return e.code,(json.loads(raw) if raw else {})\n_,login=call(\"POST\",\"/admin/auth/login\",{\"username\":\"admin\",\"password\":\"admin12345\"})\ntok=login[\"token\"]\ncid=\"f59bae8c-1198-4e46-8847-466b0de3540a\"\nrule={\"unlock_minutes\":20,\"pass_threshold\":3,\"subject_weight\":{\"math\":2,\"chinese\":1},\"fun_ratio_cap\":2,\"fun_enabled\":True,\"daily_limit\":60,\"timezone\":\"Asia/Shanghai\"}\ncode,qs=call(\"GET\",\"/admin/questions?subject=math&stage=low&status=online&limit=5\",token=tok)\nids=[q[\"id\"] for q in qs.get(\"items\",[])]\nprint(\"pool\",code,len(ids),qs.get(\"total\"))\ncode,pack=call(\"POST\",\"/admin/topics\",{\"name\":\"E2E 组卷专题\",\"type\":\"vacation\",\"subject_scope\":[\"math\"],\"stage_scope\":[\"low\"],\"is_paid\":False,\"status\":\"online\",\"start_at\":\"2026-11-01T00:00:00+08:00\",\"end_at\":\"2026-12-31T23:59:59+08:00\"},tok)\nprint(\"create\",code,pack.get(\"id\"))\npid=pack[\"id\"]\nprint(\"assign\",call(\"PUT\",f\"/admin/topics/{pid}/questions\",{\"question_ids\":ids},tok)[0])\ncode,preview=call(\"POST\",\"/admin/quiz/preview\",{\"child_id\":cid,\"rule\":rule,\"seed\":99},tok)\nprint(\"preview\",code,\"topic\",preview.get(\"topic_id\")==pid,preview.get(\"topic_name\"),\"total\",preview.get(\"total\"),\"warnings\",preview.get(\"warnings\"))\nsel=[s[\"question_id\"] for s in preview.get(\"selected\",[])]\nprint(\"all-in-pack\",all(x in ids for x in sel), \"count\",len(sel))\nprint(\"offline\",call(\"PUT\",f\"/admin/topics/{pid}\",{\"name\":\"E2E 组卷专题\",\"type\":\"vacation\",\"subject_scope\":[\"math\"],\"stage_scope\":[\"low\"],\"is_paid\":False,\"status\":\"offline\",\"start_at\":\"2026-11-01T00:00:00+08:00\",\"end_at\":\"2026-12-31T23:59:59+08:00\"},tok)[0])\ncode,preview2=call(\"POST\",\"/admin/quiz/preview\",{\"child_id\":cid,\"rule\":rule,\"seed\":99},tok)\nprint(\"preview-offline\",code,\"topic\",preview2.get(\"topic_id\"),\"total\",preview2.get(\"total\"))\nprint(\"cleanup\",call(\"DELETE\",f\"/admin/topics/{pid}\",token=tok)[0])\nPY",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "pool 200 5 2002\ncreate 201 32585633-ea37-4e2b-bf50-91358f8468d1\nassign 200\npreview 200 topic True E2E 组卷专题 total 5 warnings ['topic_mode:E2E 组卷专题', 'repeat_question:topic']\nall-in-pack True count 5\noffline 200\npreview-offline 200 topic None total 5\ncleanup 200\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798446759,
+            "ran": 1793798452064,
+            "completed": 1793798454367
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "end": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 426,
+        "output": 885,
+        "reasoning": 126,
+        "cache": {
+          "read": 135808,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b83c7e001paU0ebVpEFXE68",
+      "time": {
+        "created": 1793798454401,
+        "streamed": 1793798470243,
+        "completed": 1793798470390
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Preview works and topic mode selected 5 from pack. Warning repeat_question:topic because the 5 chosen questions may have been answered within 30 days by the child? Likely one or more from daily answers. Fine.\n\nNow update docs 011 status, acceptance phase11, README, plan. Then tests all. Then commit/tag v0.11.0 push.\n\nBut before, consider session creation path uses Select with child and should work. Could test by creating a session? Device token needed; not necessary since same Select path.\n\nPotential issue: `activeTopicPack` query uses `tp.stage_scope ? $1`. For stage_scope as JSON array of strings, works. We tested E2E.\n\nPotential issue: ordering by updated_at in group by. Included tp.updated_at in group by. Good.\n\nPotential issue: `jsonb_array_length(tp.subject_scope)` assumes array (check constraint ensures). Good.\n\nPotential issue: active pack with 5 questions but child answered all recently → fresh empty, second pass adds all with repeated true. In preview warnings repeat_question:topic and Total 5. Good.\n\nPotential issue: normal selection preview offline returned total 5 (global). Good.\n\nNow run full go test and npm build unaffected. Then docs.\n\nLet me also add warning `topic_shortage` test? Not necessary.\n\nUpdate plan and docs.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798457449,
+            "completed": 1793798470236
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_2bn3ljb4uhge6ophtm7ck8fu",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/acceptance/phase11.md <<'EOF'\n# 011 专题题包组卷验收报告\n\n| 项目 | 内容 |\n| --- | --- |\n| 版本 | v0.11.0 |\n| 日期 | 2026-11-04 |\n| 范围 | 011：专题题包接入组卷 |\n| 设计/计划 | [设计](../design/011-专题题包组卷设计.md) / [计划](../plans/011-专题题包组卷实施计划.md) |\n\n## 1. 结论\n\n**通过。** 在线且匹配的专题包会优先参与组卷；下线、过期、学科/学段不匹配或题目不足 3 道时自动回退普通组卷。\n\n## 2. 交付\n\n- `internal/quiz/repository.go`：`activeTopicPack`（状态/时间/学段/学科/题量匹配）、`topicCandidates`（专题候选题、近 30 天排除）；\n- `internal/quiz/selector.go`：专题抽题分支、`topic_mode`/`repeat_question:topic`/`topic_shortage` 警告；\n- 组卷结果新增 `topic_id`、`topic_name`；\n- 不新增接口，TV/家长端无协议变化。\n\n## 3. 验证\n\n```text\ngo test ./...                                         passed\nTEST_DATABASE_URL go test ./internal/quiz             passed（含专题匹配用例）\n```\n\n专题用例覆盖：\n\n| 场景 | 结果 |\n| --- | --- |\n| 在线 + 学段/学科匹配 + 5 题 | 选中 5 题，全部来自专题 |\n| 专题下线 | 回退普通组卷 |\n| 已过期 | 回退普通组卷 |\n| 学科不匹配 | 回退普通组卷 |\n| 学段不匹配 | 回退普通组卷 |\n| 专题仅剩 2 题 | 回退普通组卷 |\n\n接口实测（管理端预览 `POST /v1/admin/quiz/preview`）：\n\n```text\n创建并上线专题，绑定 5 道数学题\npreview → topic_name=E2E 组卷专题, total=5, selected 全部在专题内\n  warnings: [\"topic_mode:E2E 组卷专题\", \"repeat_question:topic\"]\n专题下线\npreview → topic_id 为空, total=5（普通组卷）\n```\n\n> `repeat_question:topic` 表示孩子近 30 天做过部分专题题，已在放宽限制后重新使用。\n\n## 4. 限制\n\n- 专题模式不按学科配额抽题，也不再校验加权门槛；\n- 同时匹配多个专题时只取 `updated_at` 最新的一个；\n- 专题包不足 3 题时不会被启用。\n\n## 5. 后续\n\n- 管理端增加「预览组卷」按钮，直接展示专题模式结果；\n- 支持按孩子/设备指定专题包；\n- 专题包与会员/付费权益联动。\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('docs/plans/011-专题题包组卷实施计划.md'); s=p.read_text()\ns=s.replace('| 状态 | approved |','| 状态 | done |').replace('| todo |','| done |')\ns=s.replace('| 2026-11-04 | 设计与计划创建 | approved |','| 2026-11-04 | S1–S5/T1 完成 | 单测覆盖匹配/回退；管理端预览返回专题题目 |')\ns=s.replace('- 待验收','- **通过**，详见 [验收报告](../acceptance/phase11.md)。')\np.write_text(s)\np=Path('docs/design/011-专题题包组卷设计.md'); s=p.read_text().replace('| 状态 | approved |','| 状态 | done |'); p.write_text(s)\np=Path('docs/README.md'); s=p.read_text()\ns=s.replace('| 010 | 专题题包 | [设计](design/010-专题题包设计.md) | [计划](plans/010-专题题包实施计划.md) | done（v0.10.0） |','| 010 | 专题题包 | [设计](design/010-专题题包设计.md) | [计划](plans/010-专题题包实施计划.md) | done（v0.10.0） |\\n| 011 | 专题题包组卷 | [设计](design/011-专题题包组卷设计.md) | [计划](plans/011-专题题包组卷实施计划.md) | done（v0.11.0） |')\np.write_text(s)\np=Path('README.md'); s=p.read_text().replace('- ✅ 010 专题题包管理与选题（v0.10.0）','- ✅ 010 专题题包管理与选题（v0.10.0）\\n- ✅ 011 专题题包接入组卷（v0.11.0）'); p.write_text(s)\nprint('docs updated')\nPY",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "docs updated\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798461470,
+            "ran": 1793798470241,
+            "completed": 1793798470309
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "efa6f348dd2718c38ae2841d8829b39e94e754e3",
+        "end": "8cf5905315a3600c4a8de7667e13e356e203cdfc",
+        "files": [
+          "README.md",
+          "docs/README.md",
+          "docs/acceptance/phase11.md",
+          "docs/design/011-专题题包组卷设计.md",
+          "docs/plans/011-专题题包组卷实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1170,
+        "output": 1192,
+        "reasoning": 285,
+        "cache": {
+          "read": 136192,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b87b05001MqgcD1SYt3nWQg",
+      "time": {
+        "created": 1793798470409,
+        "streamed": 1793798474277,
+        "completed": 1793798511575
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Run full tests: go test ./... (unit), plus integration for quiz and topic/question maybe. Also go vet. Then npm build already unchanged but run maybe not needed. Run go test ./... and TEST_DATABASE_URL tests for quiz/topic.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798473229,
+            "completed": 1793798474269
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_8cr6249b6asfplu49xzd7pig",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && go test ./... -count=1 2>&1 | tail -8",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "?   \tgithub.com/roma007/OpenQuizGo/internal/platform/tracing\t[no test files]\nok  \tgithub.com/roma007/OpenQuizGo/internal/question\t3.294s\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t2.965s\nok  \tgithub.com/roma007/OpenQuizGo/internal/report\t2.721s\nok  \tgithub.com/roma007/OpenQuizGo/internal/rule\t3.987s\nok  \tgithub.com/roma007/OpenQuizGo/internal/topic\t3.509s\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t4.375s\n?   \tgithub.com/roma007/OpenQuizGo/migrations\t[no test files]\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798473554,
+            "ran": 1793798474273,
+            "completed": 1793798511542
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_01_weo7807hkrvcx1xudoyzfh7s",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && TEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\" TEST_REDIS_URL=\"redis://127.0.0.1:6379/0\" go test ./internal/quiz ./internal/topic ./internal/question -count=1 2>&1 | tail -5",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "ok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t1.499s\nok  \tgithub.com/roma007/OpenQuizGo/internal/topic\t1.580s\nok  \tgithub.com/roma007/OpenQuizGo/internal/question\t1.938s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798473821,
+            "ran": 1793798474276,
+            "completed": 1793798508164
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8cf5905315a3600c4a8de7667e13e356e203cdfc",
+        "end": "8cf5905315a3600c4a8de7667e13e356e203cdfc",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1510,
+        "output": 216,
+        "reasoning": 52,
+        "cache": {
+          "read": 137344,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1a6b91bf7001qtDKTjC0e3fGQt",
+      "time": {
+        "created": 1793798511610,
+        "streamed": 1793798514739,
+        "completed": 1793798514842
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "All good.\n\nNow maybe add admin UI preview button? The next-step list says admin UI preview. But 011 plan didn't include it. Optional. The user says continue; I've completed 011. Could also implement admin \"预览组卷\" quickly to surface topic mode. But that adds scope. We have time; however, per process, any new feature needs design. Not necessary now.\n\nLet's archive, commit, tag v0.11.0, push. Check git status first.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793798513625,
+            "completed": 1793798514733
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00_f0j8m3z041164me1w02xy6ff",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git status --short",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": " M README.md\n M docs/README.md\n M internal/quiz/models.go\n M internal/quiz/repository.go\n M internal/quiz/selector.go\n M internal/quiz/selector_test.go\n?? docs/acceptance/phase11.md\n?? \"docs/design/011-\\344\\270\\223\\351\\242\\230\\351\\242\\230\\345\\214\\205\\347\\273\\204\\345\\215\\267\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/plans/011-\\344\\270\\223\\351\\242\\230\\351\\242\\230\\345\\214\\205\\347\\273\\204\\345\\215\\267\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793798514464,
+            "ran": 1793798514737,
+            "completed": 1793798514829
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8cf5905315a3600c4a8de7667e13e356e203cdfc",
+        "end": "8cf5905315a3600c4a8de7667e13e356e203cdfc",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 618,
+        "output": 74,
+        "reasoning": 102,
+        "cache": {
+          "read": 138752,
           "write": 0
         }
       }

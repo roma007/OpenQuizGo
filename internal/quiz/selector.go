@@ -102,13 +102,6 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 		return Result{}, newError(422, "VALIDATION_ERROR", "至少需要一个学科权重")
 	}
 
-	funSlots := 0
-	if req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight["fun"] > 0 {
-		funSlots = min(req.Rule.FunRatioCap, max(1, n-1))
-	}
-	subjectSlots := n - funSlots
-	quota := rule.Allocate(subjectWeights, subjectSlots)
-
 	selected := make([]Selected, 0, n)
 	chosen := map[string]bool{}
 	warnings := make([]string, 0)
@@ -124,47 +117,72 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 	stages := stageOrder[stage]
 	primaryRank := stageRanks[stage]
 
-	for _, subject := range sortedKeys(quota) {
-		if err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,
-			target, quota[subject], rng, chosen, &selected, addWarning); err != nil {
-			return Result{}, err
-		}
+	subjectKeys := make([]string, 0, len(subjectWeights))
+	for subject := range subjectWeights {
+		subjectKeys = append(subjectKeys, subject)
 	}
 
-	if funSlots > 0 {
-		funStages := []string{"preschool", "low"}
-		if stage == "mid" || stage == "high" {
-			funStages = []string{"mid", "high"}
-		}
-		if err := s.fillSubject(ctx, req.ChildID, "fun", funStages, -1,
-			target, funSlots, rng, chosen, &selected, addWarning); err != nil {
+	// 优先使用匹配的在线专题；没有匹配专题时保持原组卷逻辑。
+	pack, topicMode, err := s.repo.activeTopicPack(ctx, stage, subjectKeys, stages)
+	if err != nil {
+		return Result{}, err
+	}
+	if topicMode {
+		addWarning("topic_mode:" + pack.Name)
+		if err := s.fillTopicPack(ctx, req.ChildID, pack, stages, primaryRank,
+			target, n, rng, chosen, &selected, addWarning); err != nil {
 			return Result{}, err
 		}
-	}
+	} else {
+		funSlots := 0
+		if req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight["fun"] > 0 {
+			funSlots = min(req.Rule.FunRatioCap, max(1, n-1))
+		}
+		subjectSlots := n - funSlots
+		quota := rule.Allocate(subjectWeights, subjectSlots)
 
-	// 配额未满时，按权重从高到低再分配。
-	if len(selected) < n {
-		ordered := rule.SubjectsByWeight(subjectWeights)
-		for pass := 0; pass < 2 && len(selected) < n; pass++ {
-			progress := false
-			for _, subject := range ordered {
-				if len(selected) >= n {
+		for _, subject := range sortedKeys(quota) {
+			if err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,
+				target, quota[subject], rng, chosen, &selected, addWarning); err != nil {
+				return Result{}, err
+			}
+		}
+
+		if funSlots > 0 {
+			funStages := []string{"preschool", "low"}
+			if stage == "mid" || stage == "high" {
+				funStages = []string{"mid", "high"}
+			}
+			if err := s.fillSubject(ctx, req.ChildID, "fun", funStages, -1,
+				target, funSlots, rng, chosen, &selected, addWarning); err != nil {
+				return Result{}, err
+			}
+		}
+
+		// 配额未满时，按权重从高到低再分配。
+		if len(selected) < n {
+			ordered := rule.SubjectsByWeight(subjectWeights)
+			for pass := 0; pass < 2 && len(selected) < n; pass++ {
+				progress := false
+				for _, subject := range ordered {
+					if len(selected) >= n {
+						break
+					}
+					need := n - len(selected)
+					before := len(selected)
+					if err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,
+						target, need, rng, chosen, &selected, addWarning); err != nil {
+						return Result{}, err
+					}
+					if len(selected) > before {
+						progress = true
+					}
+				}
+				if !progress {
 					break
 				}
-				need := n - len(selected)
-				before := len(selected)
-				if err := s.fillSubject(ctx, req.ChildID, subject, stages, primaryRank,
-					target, need, rng, chosen, &selected, addWarning); err != nil {
-					return Result{}, err
-				}
-				if len(selected) > before {
-					progress = true
-				}
+				addWarning("quota_redistributed")
 			}
-			if !progress {
-				break
-			}
-			addWarning("quota_redistributed")
 		}
 	}
 
@@ -188,13 +206,70 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 		Warnings:         warnings,
 		Seed:             seed,
 	}
-	if len(selected) < 3 || score < req.Rule.PassThreshold {
-		apiErr := newError(409, "INSUFFICIENT_POOL",
-			fmt.Sprintf("题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f", len(selected), score, req.Rule.PassThreshold))
+	if topicMode {
+		result.TopicID = pack.ID
+		result.TopicName = pack.Name
+	}
+	if len(selected) < 3 || (!topicMode && score < req.Rule.PassThreshold) {
+		message := fmt.Sprintf("题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f",
+			len(selected), score, req.Rule.PassThreshold)
+		if topicMode {
+			message = fmt.Sprintf("专题题包题目不足：已选 %d 题", len(selected))
+		}
+		apiErr := newError(409, "INSUFFICIENT_POOL", message)
 		apiErr.Warnings = warnings
 		return result, apiErr
 	}
 	return result, nil
+}
+
+func (s *Service) fillTopicPack(
+	ctx context.Context,
+	childID string,
+	pack topicPack,
+	stages []string,
+	primaryRank, target, need int,
+	rng *rand.Rand,
+	chosen map[string]bool,
+	selected *[]Selected,
+	addWarning func(string),
+) error {
+	appendAll := func(items []Candidate, repeated bool) {
+		for _, candidate := range items {
+			if len(*selected) >= need {
+				return
+			}
+			if chosen[candidate.ID] {
+				continue
+			}
+			*selected = append(*selected, toSelected(candidate, repeated))
+			chosen[candidate.ID] = true
+		}
+	}
+
+	fresh, err := s.repo.topicCandidates(ctx, childID, pack.ID, stages, true, defaultPoolLimit)
+	if err != nil {
+		return err
+	}
+	sortCandidates(fresh, rng, primaryRank, target)
+	appendAll(fresh, false)
+
+	if len(*selected) < need {
+		all, err := s.repo.topicCandidates(ctx, childID, pack.ID, stages, false, defaultPoolLimit)
+		if err != nil {
+			return err
+		}
+		sortCandidates(all, rng, primaryRank, target)
+		before := len(*selected)
+		appendAll(all, true)
+		if len(*selected) > before {
+			addWarning("repeat_question:topic")
+		}
+	}
+	if len(*selected) < need {
+		addWarning("topic_shortage:" + pack.Name)
+	}
+	return nil
 }
 
 func (s *Service) fillSubject(
