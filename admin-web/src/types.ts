@@ -108,3 +108,25 @@ export interface TopicPack {
 export interface TopicPackList {
   items: TopicPack[]
 }
+
+export interface QuizSelected {
+  question_id: string
+  subject: string
+  stage: string
+  type: string
+  difficulty: number
+  repeated: boolean
+}
+
+export interface QuizPreviewResult {
+  total: number
+  quota: Record<string, number>
+  selected: QuizSelected[]
+  max_score: number
+  difficulty_target: number
+  warnings?: string[]
+  seed: number
+  topic_id?: string
+  topic_name?: string
+  generated_at: string
+}

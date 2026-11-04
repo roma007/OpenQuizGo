@@ -7,6 +7,7 @@ import {
   GiftOutlined,
   LogoutOutlined,
   PieChartOutlined,
+  PlayCircleOutlined,
 } from '@ant-design/icons'
 import { Button, Layout, Menu, Spin, Typography } from 'antd'
 import { useEffect, useState } from 'react'
@@ -27,6 +28,7 @@ import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
 import QuestionEdit from './pages/QuestionEdit'
 import Questions from './pages/Questions'
+import QuizPreviewPage from './pages/QuizPreviewPage'
 import TopicsPage from './pages/TopicsPage'
 
 const { Header, Sider, Content } = Layout
@@ -107,6 +109,11 @@ export default function App() {
                 label: '专题题包',
               },
               {
+                key: '/quiz-preview',
+                icon: <PlayCircleOutlined />,
+                label: '组卷预览',
+              },
+              {
                 key: '/coverage',
                 icon: <PieChartOutlined />,
                 label: '覆盖率',
@@ -160,6 +167,7 @@ export default function App() {
               <Route path="/questions/new" element={<QuestionEdit />} />
               <Route path="/questions/:id" element={<QuestionEdit />} />
               <Route path="/topics" element={<TopicsPage />} />
+              <Route path="/quiz-preview" element={<QuizPreviewPage />} />
               <Route path="/import" element={<ImportPage />} />
               <Route path="/audit" element={<AuditPage />} />
               <Route path="/coverage" element={<CoveragePage />} />
