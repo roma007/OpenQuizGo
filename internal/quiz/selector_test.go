@@ -395,3 +395,94 @@ func hasWarning(warnings []string, want string) bool {
 	}
 	return false
 }
+
+func TestPaidTopicRequiresEntitlement(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareQuizDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	if _, err := pool.Exec(ctx, `truncate table
+		topic_question, topic_pack, question,
+		membership_order, account_membership, membership_plan cascade`); err != nil {
+		t.Fatalf("truncate: %v", err)
+	}
+
+	childID := seedChild(t, pool)
+	questionIDs := seedTopicQuestions(t, pool, 5)
+	packID := seedTopicPack(t, pool)
+	if _, err := pool.Exec(ctx, `update topic_pack set is_paid = true where id = $1`, packID); err != nil {
+		t.Fatalf("paid pack: %v", err)
+	}
+	for position, id := range questionIDs {
+		if _, err := pool.Exec(ctx,
+			`insert into topic_question (topic_id, question_id, position) values ($1, $2, $3)`,
+			packID, id, position); err != nil {
+			t.Fatalf("link: %v", err)
+		}
+	}
+
+	var ownerID, familyID string
+	if err := pool.QueryRow(ctx, `
+		select f.owner_id, f.id from child_profile cp
+		join family f on f.id = cp.family_id where cp.id = $1`, childID).
+		Scan(&ownerID, &familyID); err != nil {
+		t.Fatalf("owner: %v", err)
+	}
+
+	svc := New(pool, nil, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	rule := Rule{
+		UnlockMinutes: 20,
+		PassThreshold: 3,
+		SubjectWeight: map[string]float64{"math": 2},
+		DailyLimit:    60,
+		Timezone:      "Asia/Shanghai",
+	}
+
+	if result, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 21}); err != nil {
+		t.Fatalf("select without membership: %v", err)
+	} else if result.TopicID != "" {
+		t.Fatalf("paid topic used without entitlement: %q", result.TopicID)
+	}
+
+	var planID string
+	if err := pool.QueryRow(ctx, `
+		insert into membership_plan (code, name, duration_days, price_cents, features, entitlement_codes, status, sort)
+		values ('test-topic', '专题权益卡', 30, 0, '[]'::jsonb, '["topic_pack"]'::jsonb, 'online', 1)
+		returning id`).Scan(&planID); err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		insert into account_membership (account_id, plan_id, plan_name, status, starts_at, expires_at)
+		values ($1, $2, '专题权益卡', 'active', now(), now() + interval '30 days')`,
+		ownerID, planID); err != nil {
+		t.Fatalf("membership: %v", err)
+	}
+
+	result, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 22})
+	if err != nil {
+		t.Fatalf("select with membership: %v", err)
+	}
+	if result.TopicID != packID {
+		t.Fatalf("paid topic not used with entitlement: %q", result.TopicID)
+	}
+
+	if _, err := pool.Exec(ctx, `
+		update account_membership set expires_at = now() - interval '1 hour' where account_id = $1`,
+		ownerID); err != nil {
+		t.Fatalf("expire: %v", err)
+	}
+	if result, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 23}); err != nil {
+		t.Fatalf("select expired: %v", err)
+	} else if result.TopicID != "" {
+		t.Fatalf("paid topic used after expiry: %q", result.TopicID)
+	}
+}

@@ -49,17 +49,19 @@ func TestMembershipWorkflow(t *testing.T) {
 	plan, err := svc.CreatePlan(ctx, PlanInput{
 		Code: "test-daily", Name: "测试日卡", Description: "测试",
 		DurationDays: 1, PriceCents: 100, Features: []string{"权益 A"},
-		Status: "online", Sort: 1,
+		EntitlementCodes: []string{"topic_pack"}, Status: "online", Sort: 1,
 	})
 	if err != nil {
 		t.Fatalf("create plan: %v", err)
 	}
-	if plan.Code != "test-daily" || plan.PriceCents != 100 || len(plan.Features) != 1 {
+	if plan.Code != "test-daily" || plan.PriceCents != 100 || len(plan.Features) != 1 ||
+		len(plan.EntitlementCodes) != 1 || plan.EntitlementCodes[0] != "topic_pack" {
 		t.Fatalf("unexpected plan: %+v", plan)
 	}
 
 	if _, err := svc.CreatePlan(ctx, PlanInput{
 		Code: "test-daily", Name: "重复", DurationDays: 1, Status: "online",
+		EntitlementCodes: []string{"topic_pack"},
 	}); err == nil || !isCode(err, "PLAN_CODE_EXISTS") {
 		t.Fatalf("duplicate code = %v, want PLAN_CODE_EXISTS", err)
 	}
@@ -68,16 +70,24 @@ func TestMembershipWorkflow(t *testing.T) {
 	}); err == nil || !isCode(err, "VALIDATION_ERROR") {
 		t.Fatalf("bad code = %v, want VALIDATION_ERROR", err)
 	}
+	if _, err := svc.CreatePlan(ctx, PlanInput{
+		Code: "test-bad-ent", Name: "x", DurationDays: 1, Status: "online",
+		EntitlementCodes: []string{"unknown"},
+	}); err == nil || !isCode(err, "VALIDATION_ERROR") {
+		t.Fatalf("bad entitlement = %v, want VALIDATION_ERROR", err)
+	}
 
 	updated, err := svc.UpdatePlan(ctx, plan.ID, PlanInput{
 		Code: "test-daily", Name: "测试日卡（改）", Description: "改",
 		DurationDays: 1, PriceCents: 150, Features: []string{"权益 A", "权益 B"},
-		Status: "online", Sort: 2,
+		EntitlementCodes: []string{"topic_pack", "report_advanced"},
+		Status:           "online", Sort: 2,
 	})
 	if err != nil {
 		t.Fatalf("update plan: %v", err)
 	}
-	if updated.Name != "测试日卡（改）" || updated.PriceCents != 150 || len(updated.Features) != 2 {
+	if updated.Name != "测试日卡（改）" || updated.PriceCents != 150 || len(updated.Features) != 2 ||
+		len(updated.EntitlementCodes) != 2 {
 		t.Fatalf("unexpected updated plan: %+v", updated)
 	}
 
@@ -93,7 +103,8 @@ func TestMembershipWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("pay order: %v", err)
 	}
-	if paid.Order.Status != "paid" || !paid.Membership.Active || paid.Membership.Status != "active" {
+	if paid.Order.Status != "paid" || !paid.Membership.Active || paid.Membership.Status != "active" ||
+		len(paid.Membership.Entitlements) != 2 {
 		t.Fatalf("unexpected pay result: %+v", paid)
 	}
 	firstExpiry := *paid.Membership.ExpiresAt
@@ -165,7 +176,8 @@ func TestMembershipWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("center expired: %v", err)
 	}
-	if expired.Membership == nil || expired.Membership.Active || expired.Membership.Status != "expired" {
+	if expired.Membership == nil || expired.Membership.Active ||
+		expired.Membership.Status != "expired" || len(expired.Membership.Entitlements) != 0 {
 		t.Fatalf("unexpected expired membership: %+v", expired.Membership)
 	}
 }

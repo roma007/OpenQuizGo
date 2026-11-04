@@ -13,6 +13,7 @@ MembershipPlan _plan() => MembershipPlan(
   durationDays: 30,
   priceCents: 1990,
   features: const ['权益 A'],
+  entitlementCodes: const ['topic_pack', 'report_advanced'],
   status: 'online',
   sort: 10,
 );
@@ -23,6 +24,7 @@ MembershipInfo _active() => MembershipInfo(
   planName: '月度会员',
   expiresAt: DateTime(2026, 12, 4, 12),
   daysRemaining: 30,
+  entitlements: const ['topic_pack', 'report_advanced'],
 );
 
 class _FakeMembershipRepository implements MembershipRepository {

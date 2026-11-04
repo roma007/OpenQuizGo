@@ -116,6 +116,12 @@ final membershipRepositoryProvider = Provider<MembershipRepository>((ref) {
   return MembershipRepository(ref.watch(apiClientProvider));
 });
 
+final membershipCenterProvider = FutureProvider.autoDispose<MembershipCenter>((
+  ref,
+) {
+  return ref.watch(membershipRepositoryProvider).center();
+});
+
 final alertRepositoryProvider = Provider<AlertRepository>((ref) {
   return AlertRepository(ref.watch(apiClientProvider));
 });

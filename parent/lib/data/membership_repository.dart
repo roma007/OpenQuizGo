@@ -9,6 +9,7 @@ class MembershipPlan {
     required this.durationDays,
     required this.priceCents,
     required this.features,
+    required this.entitlementCodes,
     required this.status,
     required this.sort,
   });
@@ -20,11 +21,13 @@ class MembershipPlan {
   final int durationDays;
   final int priceCents;
   final List<String> features;
+  final List<String> entitlementCodes;
   final String status;
   final int sort;
 
   factory MembershipPlan.fromJson(Map<String, dynamic> json) {
     final raw = json['features'];
+    final rawCodes = json['entitlement_codes'];
     return MembershipPlan(
       id: json['id'] as String? ?? '',
       code: json['code'] as String? ?? '',
@@ -34,6 +37,9 @@ class MembershipPlan {
       priceCents: (json['price_cents'] as num?)?.toInt() ?? 0,
       features: raw is List
           ? raw.map((e) => '$e').toList(growable: false)
+          : const [],
+      entitlementCodes: rawCodes is List
+          ? rawCodes.map((e) => '$e').toList(growable: false)
           : const [],
       status: json['status'] as String? ?? 'draft',
       sort: (json['sort'] as num?)?.toInt() ?? 0,
@@ -48,6 +54,7 @@ class MembershipInfo {
     required this.planName,
     required this.expiresAt,
     required this.daysRemaining,
+    required this.entitlements,
   });
 
   final bool active;
@@ -55,6 +62,7 @@ class MembershipInfo {
   final String planName;
   final DateTime? expiresAt;
   final int daysRemaining;
+  final List<String> entitlements;
 
   factory MembershipInfo.fromJson(Map<String, dynamic> json) => MembershipInfo(
     active: json['active'] as bool? ?? false,
@@ -64,6 +72,11 @@ class MembershipInfo {
         ? DateTime.tryParse(json['expires_at'] as String)
         : null,
     daysRemaining: (json['days_remaining'] as num?)?.toInt() ?? 0,
+    entitlements: json['entitlements'] is List
+        ? (json['entitlements'] as List)
+              .map((e) => '$e')
+              .toList(growable: false)
+        : const [],
   );
 }
 

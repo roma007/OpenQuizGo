@@ -123,7 +123,7 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 	}
 
 	// 优先使用匹配的在线专题；没有匹配专题时保持原组卷逻辑。
-	pack, topicMode, err := s.repo.activeTopicPack(ctx, stage, subjectKeys, stages)
+	pack, topicMode, err := s.repo.activeTopicPack(ctx, stage, subjectKeys, stages, req.ChildID)
 	if err != nil {
 		return Result{}, err
 	}

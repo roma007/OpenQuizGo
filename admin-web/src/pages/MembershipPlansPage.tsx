@@ -24,6 +24,15 @@ const statusLabel: Record<string, string> = {
   online: '已上线',
   offline: '已下线',
 }
+const entitlementLabel: Record<string, string> = {
+  topic_pack: '付费专题题包',
+  report_advanced: '进阶报告',
+  customer_service: '专属客服',
+}
+const entitlementOptions = Object.entries(entitlementLabel).map(([value, label]) => ({
+  value,
+  label,
+}))
 const statusColor: Record<string, string> = {
   draft: 'default',
   online: 'success',
@@ -68,6 +77,7 @@ export default function MembershipPlansPage() {
       status: 'draft',
       sort: 0,
       features_text: '',
+      entitlement_codes: [],
     })
     setOpen(true)
   }
@@ -83,6 +93,7 @@ export default function MembershipPlansPage() {
       status: plan.status,
       sort: plan.sort,
       features_text: (plan.features || []).join('\n'),
+      entitlement_codes: plan.entitlement_codes || [],
     })
     setOpen(true)
   }
@@ -97,6 +108,7 @@ export default function MembershipPlansPage() {
       price_cents: Math.round(values.price_yuan * 100),
       status: values.status,
       sort: values.sort || 0,
+      entitlement_codes: values.entitlement_codes || [],
       features: (values.features_text || '')
         .split('\n')
         .map((item: string) => item.trim())
@@ -154,6 +166,23 @@ export default function MembershipPlansPage() {
           <Space wrap>
             {features.map((item) => (
               <Tag key={item}>{item}</Tag>
+            ))}
+          </Space>
+        ) : (
+          '—'
+        ),
+    },
+    {
+      title: '功能权益',
+      dataIndex: 'entitlement_codes',
+      width: 200,
+      render: (codes: string[]) =>
+        codes && codes.length > 0 ? (
+          <Space wrap>
+            {codes.map((code) => (
+              <Tag color="green" key={code}>
+                {entitlementLabel[code] || code}
+              </Tag>
             ))}
           </Space>
         ) : (
@@ -280,9 +309,16 @@ export default function MembershipPlansPage() {
           <Form.Item name="description" label="描述">
             <Input.TextArea rows={2} placeholder="套餐说明" />
           </Form.Item>
+          <Form.Item name="entitlement_codes" label="功能权益（实际生效）">
+            <Select
+              mode="multiple"
+              placeholder="选择会员实际解锁的功能"
+              options={entitlementOptions}
+            />
+          </Form.Item>
           <Form.Item
             name="features_text"
-            label="权益（每行一条）"
+            label="权益文案（每行一条，仅展示）"
             extra="权益暂只展示，后续接入具体功能开关"
           >
             <Input.TextArea rows={4} placeholder={'专题题包优先体验\n成长报告进阶分析'} />

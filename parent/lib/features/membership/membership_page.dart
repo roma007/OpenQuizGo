@@ -6,6 +6,12 @@ import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/membership_repository.dart';
 
+const entitlementLabels = <String, String>{
+  'topic_pack': '付费专题题包',
+  'report_advanced': '进阶报告',
+  'customer_service': '专属客服',
+};
+
 class MembershipPage extends ConsumerStatefulWidget {
   const MembershipPage({super.key});
 
@@ -184,6 +190,20 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(subtitle),
+                  if (active && membership!.entitlements.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final code in membership.entitlements)
+                          Chip(
+                            avatar: const Icon(Icons.check_circle, size: 16),
+                            label: Text(entitlementLabels[code] ?? code),
+                          ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -226,6 +246,20 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
             ),
             const SizedBox(height: 4),
             Text('${plan.durationDays} 天 · ${plan.description}'),
+            if (plan.entitlementCodes.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final code in plan.entitlementCodes)
+                    Chip(
+                      avatar: const Icon(Icons.lock_open, size: 16),
+                      label: Text('功能：${entitlementLabels[code] ?? code}'),
+                    ),
+                ],
+              ),
+            ],
             if (plan.features.isNotEmpty) ...[
               const SizedBox(height: 12),
               Wrap(

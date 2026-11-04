@@ -71,7 +71,7 @@ type topicPack struct {
 }
 
 // activeTopicPack 返回匹配学段/学科且在有效期内的在线专题（题目数 >= 3）。
-func (r *repository) activeTopicPack(ctx context.Context, stage string, subjects, stages []string) (topicPack, bool, error) {
+func (r *repository) activeTopicPack(ctx context.Context, stage string, subjects, stages []string, childID string) (topicPack, bool, error) {
 	var pack topicPack
 	err := r.pool.QueryRow(ctx, `
 		select tp.id, tp.name
@@ -88,10 +88,18 @@ func (r *repository) activeTopicPack(ctx context.Context, stage string, subjects
 		           where s = any($2)))
 		  and q.status = 'online'
 		  and q.stage_code = any($3)
+		  and (not tp.is_paid or ($4::uuid is not null and exists (
+		      select 1 from child_profile cp
+		      join family_member fm on fm.family_id = cp.family_id
+		      join account_membership am on am.account_id = fm.account_id
+		      join membership_plan mp on mp.id = am.plan_id
+		      where cp.id = $4::uuid
+		        and am.status = 'active' and am.expires_at > now()
+		        and mp.entitlement_codes ? 'topic_pack')))
 		group by tp.id, tp.name, tp.updated_at
 		having count(*) >= 3
 		order by tp.updated_at desc
-		limit 1`, stage, subjects, stages).Scan(&pack.ID, &pack.Name)
+		limit 1`, stage, subjects, stages, nullIfEmpty(childID)).Scan(&pack.ID, &pack.Name)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return topicPack{}, false, nil
 	}
@@ -102,6 +110,13 @@ func (r *repository) activeTopicPack(ctx context.Context, stage string, subjects
 }
 
 // topicCandidates 返回专题内匹配学段的在线题目；excludeRecent 为 true 时排除孩子近 30 天做过的题。
+func nullIfEmpty(value string) any {
+	if value == "" {
+		return nil
+	}
+	return value
+}
+
 func (r *repository) topicCandidates(ctx context.Context, childID, topicID string, stages []string, excludeRecent bool, limit int) ([]Candidate, error) {
 	var childArg any
 	if childID != "" && excludeRecent {

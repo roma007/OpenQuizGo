@@ -139,6 +139,7 @@ export interface MembershipPlan {
   duration_days: number
   price_cents: number
   features: string[]
+  entitlement_codes: string[]
   status: string
   sort: number
   created_at: string

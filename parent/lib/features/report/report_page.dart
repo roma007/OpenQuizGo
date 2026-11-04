@@ -160,7 +160,10 @@ class _ReportBody extends ConsumerWidget {
                 ),
               )
             : null;
-        final latest = _LatestReportCard(report: items.first);
+        final latest = _LatestReportCard(
+          report: items.first,
+          previous: items.length > 1 ? items[1] : null,
+        );
         final history = [
           for (final report in items.skip(1)) _HistoryTile(report: report),
         ];
@@ -216,13 +219,14 @@ class _ReportBody extends ConsumerWidget {
   }
 }
 
-class _LatestReportCard extends StatelessWidget {
-  const _LatestReportCard({required this.report});
+class _LatestReportCard extends ConsumerWidget {
+  const _LatestReportCard({required this.report, this.previous});
 
   final GrowthReport report;
+  final GrowthReport? previous;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final dateFormat = DateFormat('MM-dd');
     final range =
         '${report.periodStart == null ? '' : dateFormat.format(report.periodStart!.toLocal())}'
@@ -269,6 +273,8 @@ class _LatestReportCard extends StatelessWidget {
               const Text('本期没有答题记录')
             else
               ..._subjectRows(report),
+            const SizedBox(height: 8),
+            _AdvancedInsights(report: report, previous: previous),
           ],
         ),
       ),
@@ -291,6 +297,108 @@ class _LatestReportCard extends StatelessWidget {
       rows.add(_SubjectBar(label: '趣味', stat: report.funStats));
     }
     return rows;
+  }
+}
+
+class _AdvancedInsights extends ConsumerWidget {
+  const _AdvancedInsights({required this.report, this.previous});
+
+  final GrowthReport report;
+  final GrowthReport? previous;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membership = ref.watch(membershipCenterProvider);
+    final entitled =
+        membership.value?.membership?.active == true &&
+        (membership.value?.membership?.entitlements.contains(
+              'report_advanced',
+            ) ??
+            false);
+    if (!entitled) {
+      return Card(
+        color: const Color(0xFFF5F7F6),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const Icon(Icons.lock_outline),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('进阶分析', style: TextStyle(fontWeight: FontWeight.bold)),
+                    SizedBox(height: 4),
+                    Text('开通会员后可查看薄弱学科、较上期变化与练习建议。'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final entries =
+        report.subjectStats.entries
+            .where((entry) => entry.value.answered > 0)
+            .toList()
+          ..sort((a, b) => a.value.accuracy.compareTo(b.value.accuracy));
+    if (entries.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('进阶分析：本期暂无足够答题数据。'),
+        ),
+      );
+    }
+    final weakest = entries.first;
+    final accuracy = (weakest.value.accuracy * 100).toStringAsFixed(0);
+    final previousAccuracy = previous == null
+        ? null
+        : previous!.subjectStats[weakest.key]?.accuracy ??
+              previous!.funStats.accuracy;
+    final delta = previousAccuracy == null
+        ? null
+        : (weakest.value.accuracy - previousAccuracy) * 100;
+    final suggestion = weakest.value.accuracy < 0.6
+        ? '建议优先复习「${subjectLabels[weakest.key] ?? weakest.key}」基础题，每天 5–10 题。'
+        : weakest.value.accuracy < 0.8
+        ? '「${subjectLabels[weakest.key] ?? weakest.key}」还有提升空间，保持每日练习。'
+        : '各科表现稳定，可尝试更高难度或专题题包。';
+    return Card(
+      color: const Color(0xFFEFF7F2),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.auto_graph, size: 20),
+                SizedBox(width: 8),
+                Text('进阶分析', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '薄弱学科：${subjectLabels[weakest.key] ?? weakest.key} · 正确率 $accuracy%',
+            ),
+            if (delta != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                delta >= 0
+                    ? '较上期提升 ${delta.toStringAsFixed(1)}%'
+                    : '较上期下降 ${(-delta).toStringAsFixed(1)}%',
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(suggestion),
+          ],
+        ),
+      ),
+    );
   }
 }
 

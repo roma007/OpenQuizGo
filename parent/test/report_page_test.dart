@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:openquizgo_parent/core/api/models.dart';
 import 'package:openquizgo_parent/core/cache/cache_store.dart';
 import 'package:openquizgo_parent/core/providers.dart';
+import 'package:openquizgo_parent/data/membership_repository.dart';
 import 'package:openquizgo_parent/data/report_repository.dart';
 import 'package:openquizgo_parent/features/report/report_page.dart';
 
@@ -43,6 +44,9 @@ void main() {
           reportRepositoryProvider.overrideWithValue(
             _FakeReportRepository([_report()]),
           ),
+          membershipCenterProvider.overrideWith(
+            (ref) async => MembershipCenter(membership: null, plans: const []),
+          ),
         ],
         child: const MaterialApp(home: Scaffold(body: ReportPage())),
       ),
@@ -67,6 +71,9 @@ void main() {
           reportRepositoryProvider.overrideWithValue(
             _FakeReportRepository(const []),
           ),
+          membershipCenterProvider.overrideWith(
+            (ref) async => MembershipCenter(membership: null, plans: const []),
+          ),
         ],
         child: const MaterialApp(home: Scaffold(body: ReportPage())),
       ),
@@ -76,5 +83,42 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     await tester.pump(const Duration(milliseconds: 200));
     expect(find.textContaining('还没有'), findsWidgets);
+  });
+
+  testWidgets('会员解锁进阶分析', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          childrenProvider.overrideWith(
+            (ref) async =>
+                Cached.fresh([Child(id: 'c1', nickname: '小明', stage: 'low')]),
+          ),
+          reportRepositoryProvider.overrideWithValue(
+            _FakeReportRepository([_report()]),
+          ),
+          membershipCenterProvider.overrideWith(
+            (ref) async => MembershipCenter(
+              membership: MembershipInfo(
+                active: true,
+                status: 'active',
+                planName: '月度会员',
+                expiresAt: DateTime(2026, 12, 4),
+                daysRemaining: 30,
+                entitlements: const ['report_advanced'],
+              ),
+              plans: const [],
+            ),
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: ReportPage())),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('进阶分析'), findsOneWidget);
+    expect(find.textContaining('薄弱学科：数学'), findsOneWidget);
+    expect(find.textContaining('还有提升空间'), findsOneWidget);
   });
 }

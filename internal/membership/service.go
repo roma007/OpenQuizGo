@@ -21,28 +21,30 @@ import (
 )
 
 type Plan struct {
-	ID           string    `json:"id"`
-	Code         string    `json:"code"`
-	Name         string    `json:"name"`
-	Description  string    `json:"description"`
-	DurationDays int       `json:"duration_days"`
-	PriceCents   int       `json:"price_cents"`
-	Features     []string  `json:"features"`
-	Status       string    `json:"status"`
-	Sort         int       `json:"sort"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID               string    `json:"id"`
+	Code             string    `json:"code"`
+	Name             string    `json:"name"`
+	Description      string    `json:"description"`
+	DurationDays     int       `json:"duration_days"`
+	PriceCents       int       `json:"price_cents"`
+	Features         []string  `json:"features"`
+	EntitlementCodes []string  `json:"entitlement_codes"`
+	Status           string    `json:"status"`
+	Sort             int       `json:"sort"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 type PlanInput struct {
-	Code         string   `json:"code"`
-	Name         string   `json:"name"`
-	Description  string   `json:"description"`
-	DurationDays int      `json:"duration_days"`
-	PriceCents   int      `json:"price_cents"`
-	Features     []string `json:"features"`
-	Status       string   `json:"status"`
-	Sort         int      `json:"sort"`
+	Code             string   `json:"code"`
+	Name             string   `json:"name"`
+	Description      string   `json:"description"`
+	DurationDays     int      `json:"duration_days"`
+	PriceCents       int      `json:"price_cents"`
+	Features         []string `json:"features"`
+	EntitlementCodes []string `json:"entitlement_codes"`
+	Status           string   `json:"status"`
+	Sort             int      `json:"sort"`
 }
 
 type Order struct {
@@ -65,6 +67,7 @@ type Membership struct {
 	StartsAt      *time.Time `json:"starts_at,omitempty"`
 	ExpiresAt     *time.Time `json:"expires_at,omitempty"`
 	DaysRemaining int        `json:"days_remaining"`
+	Entitlements  []string   `json:"entitlements"`
 }
 
 type Center struct {
@@ -192,7 +195,7 @@ func (s *Service) handlePayOrder(w http.ResponseWriter, r *http.Request) {
 func (s *Service) ListPlans(ctx context.Context, onlineOnly bool) ([]Plan, error) {
 	query := `
 		select id, code, name, description, duration_days, price_cents,
-		       features::text, status, sort, created_at, updated_at
+		       features::text, entitlement_codes::text, status, sort, created_at, updated_at
 		from membership_plan`
 	if onlineOnly {
 		query += ` where status = 'online'`
@@ -218,14 +221,16 @@ func (s *Service) CreatePlan(ctx context.Context, in PlanInput) (Plan, error) {
 	if err := validatePlan(in); err != nil {
 		return Plan{}, err
 	}
-	features := encodeFeatures(in.Features)
+	features := encodeList(in.Features)
+	codes := encodeList(in.EntitlementCodes)
 	var id string
 	err := s.pool.QueryRow(ctx, `
-		insert into membership_plan (code, name, description, duration_days, price_cents, features, status, sort)
-		values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)
+		insert into membership_plan (
+			code, name, description, duration_days, price_cents, features, entitlement_codes, status, sort)
+		values ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8, $9)
 		returning id`,
 		in.Code, in.Name, in.Description, in.DurationDays, in.PriceCents,
-		features, in.Status, in.Sort).Scan(&id)
+		features, codes, in.Status, in.Sort).Scan(&id)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return Plan{}, apiError{409, "PLAN_CODE_EXISTS", "套餐编码已存在"}
@@ -239,14 +244,15 @@ func (s *Service) UpdatePlan(ctx context.Context, id string, in PlanInput) (Plan
 	if err := validatePlan(in); err != nil {
 		return Plan{}, err
 	}
-	features := encodeFeatures(in.Features)
+	features := encodeList(in.Features)
+	codes := encodeList(in.EntitlementCodes)
 	tag, err := s.pool.Exec(ctx, `
 		update membership_plan set code = $2, name = $3, description = $4,
 		       duration_days = $5, price_cents = $6, features = $7::jsonb,
-		       status = $8, sort = $9, updated_at = now()
+		       entitlement_codes = $8::jsonb, status = $9, sort = $10, updated_at = now()
 		where id = $1`,
 		id, in.Code, in.Name, in.Description, in.DurationDays, in.PriceCents,
-		features, in.Status, in.Sort)
+		features, codes, in.Status, in.Sort)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return Plan{}, apiError{409, "PLAN_CODE_EXISTS", "套餐编码已存在"}
@@ -318,7 +324,7 @@ func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Or
 	var plan Plan
 	row := s.pool.QueryRow(ctx, `
 		select id, code, name, description, duration_days, price_cents,
-		       features::text, status, sort, created_at, updated_at
+		       features::text, entitlement_codes::text, status, sort, created_at, updated_at
 		from membership_plan where id = $1`, planID)
 	plan, err := scanPlan(row)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -425,10 +431,14 @@ func (s *Service) current(ctx context.Context, accountID string) (*Membership, e
 	var member Membership
 	var expiresAt time.Time
 	var startsAt time.Time
+	var codes string
 	err := s.pool.QueryRow(ctx, `
-		select coalesce(plan_name, ''), status, starts_at, expires_at
-		from account_membership where account_id = $1`, accountID).
-		Scan(&member.PlanName, &member.Status, &startsAt, &expiresAt)
+		select coalesce(am.plan_name, ''), am.status, am.starts_at, am.expires_at,
+		       coalesce(mp.entitlement_codes::text, '[]')
+		from account_membership am
+		left join membership_plan mp on mp.id = am.plan_id
+		where am.account_id = $1`, accountID).
+		Scan(&member.PlanName, &member.Status, &startsAt, &expiresAt, &codes)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
@@ -438,10 +448,15 @@ func (s *Service) current(ctx context.Context, accountID string) (*Membership, e
 	now := time.Now()
 	member.StartsAt = &startsAt
 	member.ExpiresAt = &expiresAt
+	member.Entitlements = []string{}
 	if expiresAt.After(now) {
 		member.Active = true
 		member.Status = "active"
 		member.DaysRemaining = int(math.Ceil(expiresAt.Sub(now).Hours() / 24))
+		_ = json.Unmarshal([]byte(codes), &member.Entitlements)
+		if member.Entitlements == nil {
+			member.Entitlements = []string{}
+		}
 	} else {
 		member.Active = false
 		member.Status = "expired"
@@ -453,7 +468,7 @@ func (s *Service) current(ctx context.Context, accountID string) (*Membership, e
 func (s *Service) getPlan(ctx context.Context, id string) (Plan, error) {
 	row := s.pool.QueryRow(ctx, `
 		select id, code, name, description, duration_days, price_cents,
-		       features::text, status, sort, created_at, updated_at
+		       features::text, entitlement_codes::text, status, sort, created_at, updated_at
 		from membership_plan where id = $1`, id)
 	plan, err := scanPlan(row)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -468,15 +483,19 @@ type scanner interface {
 
 func scanPlan(row scanner) (Plan, error) {
 	var plan Plan
-	var features string
+	var features, codes string
 	if err := row.Scan(&plan.ID, &plan.Code, &plan.Name, &plan.Description,
-		&plan.DurationDays, &plan.PriceCents, &features, &plan.Status, &plan.Sort,
+		&plan.DurationDays, &plan.PriceCents, &features, &codes, &plan.Status, &plan.Sort,
 		&plan.CreatedAt, &plan.UpdatedAt); err != nil {
 		return Plan{}, err
 	}
 	_ = json.Unmarshal([]byte(features), &plan.Features)
 	if plan.Features == nil {
 		plan.Features = []string{}
+	}
+	_ = json.Unmarshal([]byte(codes), &plan.EntitlementCodes)
+	if plan.EntitlementCodes == nil {
+		plan.EntitlementCodes = []string{}
 	}
 	return plan, nil
 }
@@ -500,6 +519,22 @@ func validatePlan(in PlanInput) error {
 	if !statuses[in.Status] {
 		return apiError{422, "VALIDATION_ERROR", "状态不合法"}
 	}
+	allowedEntitlements := map[string]bool{
+		"topic_pack": true, "report_advanced": true, "customer_service": true,
+	}
+	if len(in.EntitlementCodes) > 10 {
+		return apiError{422, "VALIDATION_ERROR", "功能权益最多 10 项"}
+	}
+	seen := map[string]bool{}
+	for _, code := range in.EntitlementCodes {
+		if !allowedEntitlements[code] {
+			return apiError{422, "VALIDATION_ERROR", "不支持的功能权益：" + code}
+		}
+		if seen[code] {
+			return apiError{422, "VALIDATION_ERROR", "功能权益重复：" + code}
+		}
+		seen[code] = true
+	}
 	if len(in.Features) > 20 {
 		return apiError{422, "VALIDATION_ERROR", "权益最多 20 条"}
 	}
@@ -514,7 +549,7 @@ func validatePlan(in PlanInput) error {
 	return nil
 }
 
-func encodeFeatures(items []string) string {
+func encodeList(items []string) string {
 	if items == nil {
 		items = []string{}
 	}
