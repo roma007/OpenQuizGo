@@ -70,6 +70,7 @@ func TestLoadDefaults(t *testing.T) {
 }
 
 func TestLoadOverrides(t *testing.T) {
+	t.Setenv("APP_ENV", "dev")
 	t.Setenv("DATABASE_URL", "postgres://example")
 	t.Setenv("HTTP_ADDR", ":9090")
 	t.Setenv("DB_MAX_CONNS", "3")
