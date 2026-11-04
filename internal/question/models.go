@@ -48,6 +48,22 @@ type Input struct {
 	SchemaVer     int             `json:"schema_ver"`
 }
 
+// CoverageCell 是题库覆盖率聚合单元。
+type CoverageCell struct {
+	Subject    string `json:"subject"`
+	Stage      string `json:"stage"`
+	Type       string `json:"type"`
+	Status     string `json:"status"`
+	Difficulty int    `json:"difficulty"`
+	Count      int    `json:"count"`
+}
+
+// CoverageResult 是覆盖率看板数据。
+type CoverageResult struct {
+	Cells []CoverageCell `json:"cells"`
+	Total int            `json:"total"`
+}
+
 // Filter 是四维检索条件。
 type Filter struct {
 	Subject    string

@@ -36,5 +36,6 @@ node scripts/archive-conversation.mjs --all
 | 002 | Android TV 守护端 | [设计](design/002-Android TV 守护端设计.md) | [计划](plans/002-Android TV 守护端实施计划.md) | done（T1–T11，单机型，v0.2.0） |
 | 003 | 家长端 App | [设计](design/003-家长端%20App%20设计.md) | [计划](plans/003-家长端%20App%20实施计划.md) | done（v0.3.1，模拟器走查） |
 | 004 | 家长端告警中心 | [设计](design/004-家长端告警中心设计.md) | [计划](plans/004-家长端告警中心实施计划.md) | done（v0.4.0） |
+| 005 | 题库治理后台 UI | [设计](design/005-题库治理后台UI设计.md) | [计划](plans/005-题库治理后台UI实施计划.md) | done（v0.5.0，浏览器验收） |
 
 > 新增设计/计划后，请同步更新此表。

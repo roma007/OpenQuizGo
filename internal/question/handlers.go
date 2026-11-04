@@ -35,7 +35,17 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("question.write")).Post("/admin/questions/{id}/resubmit", s.handleAction("resubmit"))
 
 		r.With(guard.Require("audit.read")).Get("/admin/audit", s.handleAudit)
+		r.With(guard.Require("question.read")).Get("/admin/coverage", s.handleCoverage)
 	})
+}
+
+func (s *Service) handleCoverage(w http.ResponseWriter, r *http.Request) {
+	result, err := s.Coverage(r.Context())
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 func (s *Service) handleList(w http.ResponseWriter, r *http.Request) {

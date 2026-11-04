@@ -100,6 +100,32 @@ func (r *repository) get(ctx context.Context, id string) (Question, error) {
 	return scanQuestion(r.pool.QueryRow(ctx, `select `+questionColumns+` from question where id = $1`, id))
 }
 
+// Coverage 聚合题库分布。
+func (r *repository) Coverage(ctx context.Context) ([]CoverageCell, int, error) {
+	rows, err := r.pool.Query(ctx, `
+		select subject_code, stage_code, type_code, status, difficulty, count(*)
+		from question
+		group by subject_code, stage_code, type_code, status, difficulty
+		order by subject_code, stage_code, type_code, status, difficulty`)
+	if err != nil {
+		return nil, 0, fmt.Errorf("coverage query: %w", err)
+	}
+	defer rows.Close()
+
+	cells := make([]CoverageCell, 0)
+	total := 0
+	for rows.Next() {
+		var cell CoverageCell
+		if err := rows.Scan(&cell.Subject, &cell.Stage, &cell.Type, &cell.Status,
+			&cell.Difficulty, &cell.Count); err != nil {
+			return nil, 0, fmt.Errorf("scan coverage: %w", err)
+		}
+		total += cell.Count
+		cells = append(cells, cell)
+	}
+	return cells, total, rows.Err()
+}
+
 func (r *repository) list(ctx context.Context, f Filter) (ListResult, error) {
 	where := []string{"true"}
 	args := make([]any, 0, 8)

@@ -24,6 +24,7 @@
 - ✅ 002 Android TV 守护端（v0.2.0，单机型验收通过）
 - ✅ 003 家长端 App（v0.3.1，MVP + 模拟器走查）
 - ✅ 004 家长端告警中心（v0.4.0）
+- ✅ 005 题库治理后台 UI（v0.5.0）
 
 **第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。
 

@@ -122,6 +122,15 @@ func (s *Service) Get(ctx context.Context, id string) (Question, error) {
 }
 
 // List 四维检索。
+// Coverage 返回题库覆盖率聚合。
+func (s *Service) Coverage(ctx context.Context) (CoverageResult, error) {
+	cells, total, err := s.repo.Coverage(ctx)
+	if err != nil {
+		return CoverageResult{}, err
+	}
+	return CoverageResult{Cells: cells, Total: total}, nil
+}
+
 func (s *Service) List(ctx context.Context, f Filter) (ListResult, error) {
 	if f.Limit <= 0 || f.Limit > 100 {
 		f.Limit = 20
