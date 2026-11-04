@@ -214,3 +214,16 @@ adb shell am broadcast -n com.openquizgo.quiz/com.openquizgo.guard.debug.DebugRe
 ```
 
 验收报告见 [`docs/acceptance/phase2.md`](acceptance/phase2.md)。
+
+## 13. 题库治理后台（admin-web）
+
+```bash
+cd admin-web
+npm install
+npm run dev -- --host 127.0.0.1 --port 5175   # 代理 /v1 → 127.0.0.1:18080
+npm run build                                  # 产物 dist/
+```
+
+- 管理员账号：`go run ./cmd/admin create -username admin -password '********' -role super_admin -name 管理员`
+- 生产建议与 API 同源托管：`/admin/` 指向 `admin-web/dist`，`/v1/` 反向代理到 Go 服务；
+- 同源部署可避免 CORS；令牌存 localStorage，需配置 CSP。

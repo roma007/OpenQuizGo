@@ -757,6 +757,32 @@ paths:
         - { name: limit, in: query, schema: { type: integer, default: 50 } }
       responses:
         "200": { description: OK }
+  /v1/admin/coverage:
+    get:
+      tags: [admin]
+      summary: 题库覆盖率聚合
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 按学科/学段/题型/状态/难度聚合
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cells:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject: { type: string }
+                        stage: { type: string }
+                        type: { type: string }
+                        status: { type: string }
+                        difficulty: { type: integer }
+                        count: { type: integer }
+                  total: { type: integer }
+
   /v1/admin/quiz/preview:
     post:
       tags: [admin]
