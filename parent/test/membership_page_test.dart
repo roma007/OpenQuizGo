@@ -36,6 +36,26 @@ class _FakeMembershipRepository implements MembershipRepository {
       MembershipCenter(membership: paid ? _active() : null, plans: [_plan()]);
 
   @override
+  Future<MembershipAutoRenew> autoRenew() async =>
+      const MembershipAutoRenew(
+        enabled: false,
+        planId: '',
+        planName: '',
+        canEdit: true,
+      );
+
+  @override
+  Future<MembershipAutoRenew> setAutoRenew({
+    required bool enabled,
+    required String planId,
+  }) async => MembershipAutoRenew(
+    enabled: enabled,
+    planId: planId,
+    planName: '月度会员',
+    canEdit: true,
+  );
+
+  @override
   Future<List<MembershipInvoice>> invoices() async => const [];
 
   @override
@@ -160,6 +180,8 @@ void main() {
         child: const MaterialApp(home: MembershipPage()),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
     expect(find.textContaining('已退款'), findsOneWidget);
     expect(find.textContaining('退款原因：用户申请退款：误购'), findsOneWidget);

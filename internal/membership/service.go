@@ -105,6 +105,7 @@ type Sharing struct {
 type Center struct {
 	Membership *Membership `json:"membership,omitempty"`
 	Sharing    Sharing     `json:"sharing"`
+	AutoRenew  AutoRenew   `json:"auto_renew"`
 	Plans      []Plan      `json:"plans"`
 }
 
@@ -160,6 +161,14 @@ type ReconciliationReport struct {
 	To     string              `json:"to"`
 	Days   []ReconciliationDay `json:"days"`
 	Totals ReconciliationDay   `json:"totals"`
+}
+
+// AutoRenew 是自动续费预约设置。
+type AutoRenew struct {
+	Enabled  bool   `json:"enabled"`
+	PlanID   string `json:"plan_id,omitempty"`
+	PlanName string `json:"plan_name,omitempty"`
+	CanEdit  bool   `json:"can_edit"`
 }
 
 // Invoice 是会员发票申请。
@@ -241,6 +250,8 @@ func (s *Service) ParentRoutes(r chi.Router) {
 	r.Post("/family/membership/orders", s.handleCreateOrder)
 	r.Post("/family/membership/coupons/validate", s.handleValidateCoupon)
 	r.Get("/family/membership/invoices", s.handleInvoices)
+	r.Get("/family/membership/auto-renew", s.handleAutoRenew)
+	r.Put("/family/membership/auto-renew", s.handleSetAutoRenew)
 	r.Post("/family/membership/orders/{orderID}/invoice", s.handleCreateInvoice)
 	r.Post("/family/membership/orders/{orderID}/pay", s.handlePayOrder)
 }
@@ -406,6 +417,33 @@ func (s *Service) handleReconciliationExport(w http.ResponseWriter, r *http.Requ
 			strconv.Itoa(day.DiscountCents), strconv.Itoa(day.NetCents)})
 	}
 	writer.Flush()
+}
+
+func (s *Service) handleAutoRenew(w http.ResponseWriter, r *http.Request) {
+	setting, err := s.AutoRenew(r.Context(), identity.AccountIDFrom(r.Context()))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, setting)
+}
+
+func (s *Service) handleSetAutoRenew(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Enabled bool   `json:"enabled"`
+		PlanID  string `json:"plan_id"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	setting, err := s.SetAutoRenew(
+		r.Context(), identity.AccountIDFrom(r.Context()), req.Enabled, req.PlanID)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, setting)
 }
 
 func (s *Service) handleAdminList(w http.ResponseWriter, r *http.Request) {
@@ -735,7 +773,11 @@ func (s *Service) Center(ctx context.Context, accountID string) (Center, error) 
 	if err != nil {
 		return Center{}, err
 	}
-	return Center{Membership: member, Sharing: sharing, Plans: plans}, nil
+	autoRenew, err := s.AutoRenew(ctx, accountID)
+	if err != nil {
+		return Center{}, err
+	}
+	return Center{Membership: member, Sharing: sharing, AutoRenew: autoRenew, Plans: plans}, nil
 }
 
 func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error) {
@@ -1044,6 +1086,100 @@ func (s *Service) Reconciliation(ctx context.Context, from, to string) (Reconcil
 	}
 	report.Totals.NetCents = report.Totals.PaidCents - report.Totals.RefundedCents
 	return report, rows.Err()
+}
+
+// AutoRenew 返回当前账号的自动续费预约。
+func (s *Service) AutoRenew(ctx context.Context, accountID string) (AutoRenew, error) {
+	var item AutoRenew
+	var planName string
+	err := s.pool.QueryRow(ctx, `
+		select ar.enabled, ar.plan_id, coalesce(mp.name, '')
+		from membership_auto_renew ar
+		left join membership_plan mp on mp.id = ar.plan_id
+		where ar.account_id = $1`, accountID).Scan(&item.Enabled, &item.PlanID, &planName)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return AutoRenew{CanEdit: true}, nil
+	}
+	if err != nil {
+		return AutoRenew{}, err
+	}
+	item.PlanName = planName
+	item.CanEdit = true
+	return item, nil
+}
+
+// SetAutoRenew 开启/关闭自动续费预约。
+func (s *Service) SetAutoRenew(ctx context.Context, accountID string, enabled bool, planID string) (AutoRenew, error) {
+	if accountID == "" {
+		return AutoRenew{}, apiError{401, "AUTH_REQUIRED", "家长未登录"}
+	}
+	if planID == "" {
+		return AutoRenew{}, apiError{422, "VALIDATION_ERROR", "请选择续费套餐"}
+	}
+	var planName, status string
+	err := s.pool.QueryRow(ctx,
+		`select name, status from membership_plan where id = $1`, planID).Scan(&planName, &status)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return AutoRenew{}, apiError{404, "PLAN_NOT_FOUND", "套餐不存在"}
+	}
+	if err != nil {
+		return AutoRenew{}, err
+	}
+	if status != "online" {
+		return AutoRenew{}, apiError{409, "PLAN_OFFLINE", "套餐未上线"}
+	}
+	if _, err := s.pool.Exec(ctx, `
+		insert into membership_auto_renew (account_id, plan_id, enabled, updated_at)
+		values ($1, $2, $3, now())
+		on conflict (account_id) do update set
+		    plan_id = excluded.plan_id, enabled = excluded.enabled, updated_at = now()`,
+		accountID, planID, enabled); err != nil {
+		return AutoRenew{}, err
+	}
+	return AutoRenew{Enabled: enabled, PlanID: planID, PlanName: planName, CanEdit: true}, nil
+}
+
+// ProcessAutoRenew 为即将到期且开启预约的账号创建待支付续费订单。
+func (s *Service) ProcessAutoRenew(ctx context.Context) (int, error) {
+	rows, err := s.pool.Query(ctx, `
+		select ar.account_id, ar.plan_id
+		from membership_auto_renew ar
+		join account_membership am on am.account_id = ar.account_id
+		join membership_plan mp on mp.id = ar.plan_id
+		where ar.enabled
+		  and mp.status = 'online'
+		  and am.expires_at between now() - interval '3 days' and now() + interval '3 days'
+		  and (ar.last_order_at is null or ar.last_order_at < now() - interval '24 hours')`)
+	if err != nil {
+		return 0, err
+	}
+	type due struct{ accountID, planID string }
+	items := make([]due, 0)
+	for rows.Next() {
+		var item due
+		if err := rows.Scan(&item.accountID, &item.planID); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		items = append(items, item)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	created := 0
+	for _, item := range items {
+		if _, err := s.CreateOrder(ctx, item.accountID, item.planID); err != nil {
+			continue
+		}
+		if _, err := s.pool.Exec(ctx, `
+			update membership_auto_renew set last_order_at = now(), updated_at = now()
+			where account_id = $1`, item.accountID); err != nil {
+			return created, err
+		}
+		created++
+	}
+	return created, nil
 }
 
 const invoiceColumns = `id, order_id, account_id, title_type, title, tax_no, email,

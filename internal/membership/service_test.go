@@ -719,6 +719,78 @@ func TestRefundCallback(t *testing.T) {
 	}
 }
 
+func TestAutoRenewProcess(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'auto-renew-test')
+		returning id`).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	svc := New(pool, "")
+	plan, err := svc.CreatePlan(ctx, PlanInput{
+		Code: "auto-renew-plan", Name: "自动续费套餐", DurationDays: 30, PriceCents: 1000,
+		Status: "online", EntitlementCodes: []string{"topic_pack"},
+	})
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		insert into account_membership (account_id, plan_id, plan_name, status, starts_at, expires_at)
+		values ($1, $2, '自动续费套餐', 'active', now() - interval '29 days',
+		        now() + interval '1 day')`, accountID, plan.ID); err != nil {
+		t.Fatalf("membership: %v", err)
+	}
+	setting, err := svc.SetAutoRenew(ctx, accountID, true, plan.ID)
+	if err != nil {
+		t.Fatalf("set auto renew: %v", err)
+	}
+	if !setting.Enabled || setting.PlanID != plan.ID {
+		t.Fatalf("unexpected setting: %+v", setting)
+	}
+
+	created, err := svc.ProcessAutoRenew(ctx)
+	if err != nil {
+		t.Fatalf("process: %v", err)
+	}
+	if created != 1 {
+		t.Fatalf("created = %d, want 1", created)
+	}
+	var pending int
+	if err := pool.QueryRow(ctx, `
+		select count(*) from membership_order
+		where account_id = $1 and plan_id = $2 and status = 'pending'`,
+		accountID, plan.ID).Scan(&pending); err != nil {
+		t.Fatalf("pending: %v", err)
+	}
+	if pending != 1 {
+		t.Fatalf("pending = %d, want 1", pending)
+	}
+	again, err := svc.ProcessAutoRenew(ctx)
+	if err != nil || again != 0 {
+		t.Fatalf("second process = %d err=%v, want 0", again, err)
+	}
+	got, err := svc.AutoRenew(ctx, accountID)
+	if err != nil || !got.Enabled || got.PlanName == "" {
+		t.Fatalf("auto renew = %+v err=%v", got, err)
+	}
+	if _, err := svc.SetAutoRenew(ctx, accountID, false, plan.ID); err != nil {
+		t.Fatalf("disable: %v", err)
+	}
+}
+
 func prepareDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)

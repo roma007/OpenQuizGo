@@ -42,7 +42,7 @@ erDiagram
 | 身份 | `parent_account`、`parent_session`、`family`、`family_member`、`family_invite`、`child_profile` | 家长、登录会话、家庭组、邀请、孩子档案 |
 | 设备 | `device_bind`、`device_capability`、`tamper_event`、`device_diagnostic` | 绑定、能力/权限、异常上报、诊断日志 |
 | 规则 | `watch_rule` | 每孩子一条，带版本 |
-| 会员 | `account_membership`、`membership_order`、`membership_plan`、`membership_coupon`、`membership_invoice`、`family.membership_shared` | 会员、订单、套餐、优惠券、发票、共享开关 |
+| 会员 | `account_membership`、`membership_order`、`membership_plan`、`membership_coupon`、`membership_invoice`、`membership_auto_renew`、`family.membership_shared` | 会员、订单、套餐、优惠券、发票、共享开关 |
 | 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话（规则快照/得分）、题目快照、答题记录 |
 | 授权 | `watch_grant`、`watch_log`、`offline_lease` | 使用授权、应用使用、离线租约 |
 | 报告 | `growth_report`、`coverage_snapshot` | 周/月聚合、覆盖率日快照 |

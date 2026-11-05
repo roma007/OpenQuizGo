@@ -10,6 +10,7 @@ import (
 
 	"github.com/roma007/OpenQuizGo/internal/config"
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/membership"
 	"github.com/roma007/OpenQuizGo/internal/platform/database"
 	"github.com/roma007/OpenQuizGo/internal/platform/logx"
 	"github.com/roma007/OpenQuizGo/internal/question"
@@ -39,6 +40,7 @@ func main() {
 
 	svc := report.New(pool, logger)
 	questionSvc := question.New(pool, logger)
+	membershipSvc := membership.New(pool, cfg.PaymentCallbackSecret)
 	run := func() {
 		start := time.Now()
 		count, err := svc.GenerateAll(ctx)
@@ -51,6 +53,11 @@ func main() {
 			logger.Error("capture coverage snapshot", "error", err)
 		} else {
 			logger.Info("coverage snapshot captured", "date", snap.CapturedOn, "total", snap.Total)
+		}
+		if count, err := membershipSvc.ProcessAutoRenew(ctx); err != nil {
+			logger.Error("process auto renew", "error", err)
+		} else if count > 0 {
+			logger.Info("auto renew orders created", "count", count)
 		}
 		if cfg.DeviceStaleDays > 0 {
 			count, err := identity.UnbindStaleDevices(ctx, pool, cfg.DeviceStaleDays)

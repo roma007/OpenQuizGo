@@ -25,6 +25,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
   List<MembershipInvoice> _invoices = const [];
   bool _loading = true;
   bool _sharingSaving = false;
+  bool _autoRenewSaving = false;
   String? _payingPlanId;
 
   @override
@@ -214,6 +215,8 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
                     _statusCard(context),
                     const SizedBox(height: 12),
                     _sharingCard(context),
+                    const SizedBox(height: 12),
+                    _autoRenewCard(context),
                     const SizedBox(height: 20),
                     Text(
                       '会员套餐',
@@ -267,6 +270,97 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
     } finally {
       if (mounted) setState(() => _sharingSaving = false);
     }
+  }
+
+  Future<void> _configureAutoRenew() async {
+    final plans = _center?.plans ?? const <MembershipPlan>[];
+    if (plans.isEmpty) {
+      _toast('暂无可用套餐');
+      return;
+    }
+    var enabled = _center?.autoRenew.enabled ?? false;
+    var planId = _center?.autoRenew.planId ?? plans.first.id;
+    if (!plans.any((plan) => plan.id == planId)) planId = plans.first.id;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('自动续费预约'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('到期前生成待支付订单'),
+                subtitle: const Text('不会自动扣款，需手动确认支付'),
+                value: enabled,
+                onChanged: (value) =>
+                    setDialogState(() => enabled = value),
+              ),
+              DropdownButtonFormField<String>(
+                initialValue: planId,
+                decoration: const InputDecoration(labelText: '续费套餐'),
+                items: [
+                  for (final plan in plans)
+                    DropdownMenuItem(value: plan.id, child: Text(plan.name)),
+                ],
+                onChanged: (value) =>
+                    setDialogState(() => planId = value ?? planId),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (saved != true || !mounted) return;
+    setState(() => _autoRenewSaving = true);
+    try {
+      await ref.read(membershipRepositoryProvider).setAutoRenew(
+        enabled: enabled,
+        planId: planId,
+      );
+      await _load();
+      _toast(enabled ? '自动续费预约已开启' : '自动续费预约已关闭');
+    } on ApiException catch (error) {
+      _toast(error.message);
+    } finally {
+      if (mounted) setState(() => _autoRenewSaving = false);
+    }
+  }
+
+  Widget _autoRenewCard(BuildContext context) {
+    final autoRenew = _center?.autoRenew;
+    if (autoRenew == null || !autoRenew.canEdit) {
+      return const SizedBox.shrink();
+    }
+    final subtitle = autoRenew.enabled
+        ? '已开启 · ${autoRenew.planName.isEmpty ? '未选套餐' : autoRenew.planName}（到期前生成待支付订单）'
+        : '开启后到期前 3 天生成待支付续费订单，不会自动扣款';
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.autorenew),
+        title: const Text('自动续费预约'),
+        subtitle: Text(subtitle),
+        trailing: _autoRenewSaving
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.chevron_right),
+        onTap: _autoRenewSaving ? null : _configureAutoRenew,
+      ),
+    );
   }
 
   Widget _sharingCard(BuildContext context) {

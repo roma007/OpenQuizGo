@@ -96,16 +96,45 @@ class MembershipInfo {
   );
 }
 
+class MembershipAutoRenew {
+  const MembershipAutoRenew({
+    required this.enabled,
+    required this.planId,
+    required this.planName,
+    required this.canEdit,
+  });
+
+  final bool enabled;
+  final String planId;
+  final String planName;
+  final bool canEdit;
+
+  factory MembershipAutoRenew.fromJson(Map<String, dynamic> json) =>
+      MembershipAutoRenew(
+        enabled: json['enabled'] as bool? ?? false,
+        planId: json['plan_id'] as String? ?? '',
+        planName: json['plan_name'] as String? ?? '',
+        canEdit: json['can_edit'] as bool? ?? true,
+      );
+}
+
 class MembershipCenter {
   MembershipCenter({
     required this.membership,
     required this.plans,
     this.sharing = const MembershipSharing(shared: false, canEdit: false),
+    this.autoRenew = const MembershipAutoRenew(
+      enabled: false,
+      planId: '',
+      planName: '',
+      canEdit: true,
+    ),
   });
 
   final MembershipInfo? membership;
   final List<MembershipPlan> plans;
   final MembershipSharing sharing;
+  final MembershipAutoRenew autoRenew;
 
   factory MembershipCenter.fromJson(Map<String, dynamic> json) {
     final rawMembership = json['membership'];
@@ -118,6 +147,16 @@ class MembershipCenter {
       sharing: rawSharing is Map<String, dynamic>
           ? MembershipSharing.fromJson(rawSharing)
           : const MembershipSharing(shared: false, canEdit: false),
+      autoRenew: json['auto_renew'] is Map<String, dynamic>
+          ? MembershipAutoRenew.fromJson(
+              json['auto_renew'] as Map<String, dynamic>,
+            )
+          : const MembershipAutoRenew(
+              enabled: false,
+              planId: '',
+              planName: '',
+              canEdit: true,
+            ),
       plans: rawPlans is List
           ? rawPlans
                 .whereType<Map<String, dynamic>>()
@@ -292,6 +331,22 @@ class MembershipRepository {
       },
     );
     return MembershipInvoice.fromJson(json);
+  }
+
+  Future<MembershipAutoRenew> autoRenew() async {
+    final json = await _api.getJson('/v1/family/membership/auto-renew');
+    return MembershipAutoRenew.fromJson(json);
+  }
+
+  Future<MembershipAutoRenew> setAutoRenew({
+    required bool enabled,
+    required String planId,
+  }) async {
+    final json = await _api.putJson('/v1/family/membership/auto-renew', {
+      'enabled': enabled,
+      'plan_id': planId,
+    });
+    return MembershipAutoRenew.fromJson(json);
   }
 
   Future<MembershipSharing> sharing() async {
