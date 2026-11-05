@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -12,6 +13,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+
+	"github.com/redis/go-redis/v9"
 
 	"github.com/roma007/OpenQuizGo/migrations"
 )
@@ -32,7 +35,7 @@ func TestBattleWorkflow(t *testing.T) {
 
 	accountID, childID := seedFamily(t, pool)
 	questionIDs := seedQuestions(t, pool, 5)
-	svc := New(pool)
+	svc := New(pool, nil)
 
 	state, err := svc.Create(ctx, accountID, childID, 5, "same_device")
 	if err != nil {
@@ -214,7 +217,7 @@ func TestRoomBattleWorkflow(t *testing.T) {
 
 	accountID, childID := seedFamily(t, pool)
 	questionIDs := seedQuestions(t, pool, 5)
-	svc := New(pool)
+	svc := New(pool, nil)
 
 	room, err := svc.Create(ctx, accountID, childID, 5, "room")
 	if err != nil {
@@ -353,7 +356,7 @@ func TestFamilyRanking(t *testing.T) {
 	// 40 天前的旧对局只应出现在总榜。
 	insert(childA, 2, 0, 40*24*60)
 
-	svc := New(pool)
+	svc := New(pool, nil)
 	items, err := svc.Ranking(ctx, accountID, "all")
 	if err != nil {
 		t.Fatalf("ranking: %v", err)
@@ -399,18 +402,18 @@ func TestFamilyRanking(t *testing.T) {
 }
 
 func TestEventBroker(t *testing.T) {
-	broker := newEventBroker()
-	ch, unsubscribe := broker.subscribe("battle-1")
+	broker := newEventBroker(nil)
+	ch, unsubscribe := broker.subscribe(context.Background(), "battle-1")
 	defer unsubscribe()
 
-	broker.publish("other-battle")
+	broker.publish(context.Background(), "other-battle")
 	select {
 	case <-ch:
 		t.Fatal("received event for another battle")
 	default:
 	}
 
-	broker.publish("battle-1")
+	broker.publish(context.Background(), "battle-1")
 	select {
 	case <-ch:
 	case <-time.After(time.Second):
@@ -418,7 +421,7 @@ func TestEventBroker(t *testing.T) {
 	}
 
 	unsubscribe()
-	broker.publish("battle-1")
+	broker.publish(context.Background(), "battle-1")
 	select {
 	case <-ch:
 		t.Fatal("received event after unsubscribe")
@@ -433,4 +436,32 @@ func hasMedal(entry RankingEntry, medal string) bool {
 		}
 	}
 	return false
+}
+
+func TestRedisEventBroker(t *testing.T) {
+	redisURL := os.Getenv("TEST_REDIS_URL")
+	if redisURL == "" {
+		t.Skip("TEST_REDIS_URL not set")
+	}
+	opts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		t.Fatalf("redis url: %v", err)
+	}
+	rdb := redis.NewClient(opts)
+	defer func() { _ = rdb.Close() }()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	battleID := fmt.Sprintf("redis-test-%d", time.Now().UnixNano())
+	publisher := newEventBroker(rdb)
+	subscriber := newEventBroker(rdb)
+	ch, unsubscribe := subscriber.subscribe(ctx, battleID)
+	defer unsubscribe()
+
+	publisher.publish(ctx, battleID)
+	select {
+	case <-ch:
+	case <-ctx.Done():
+		t.Fatal("did not receive Redis event")
+	}
 }

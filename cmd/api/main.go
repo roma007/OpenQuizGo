@@ -97,7 +97,7 @@ func main() {
 	questionService := question.New(pool, logger)
 	reportService := report.New(pool, logger)
 	dailyService := daily.New(pool, logger)
-	battleService := battle.New(pool)
+	battleService := battle.New(pool, rdb)
 	topicService := topic.New(pool)
 	membershipService := membership.New(pool, cfg.PaymentCallbackSecret)
 	dashboardService := dashboard.New(pool)

@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
 )
@@ -30,8 +31,8 @@ type Service struct {
 	events *eventBroker
 }
 
-func New(pool *pgxpool.Pool) *Service {
-	return &Service{pool: pool, events: newEventBroker()}
+func New(pool *pgxpool.Pool, rdb *redis.Client) *Service {
+	return &Service{pool: pool, events: newEventBroker(rdb)}
 }
 
 func (s *Service) Routes(r chi.Router) {
@@ -246,11 +247,11 @@ func (s *Service) handleEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("X-Accel-Buffering", "no")
 	w.WriteHeader(http.StatusOK)
+
+	ch, unsubscribe := s.events.subscribe(r.Context(), battleID)
+	defer unsubscribe()
 	_, _ = w.Write([]byte("event: update\ndata: {}\n\n"))
 	flusher.Flush()
-
-	ch, unsubscribe := s.events.subscribe(battleID)
-	defer unsubscribe()
 	ticker := time.NewTicker(20 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -580,7 +581,7 @@ func (s *Service) Join(ctx context.Context, accountID, childID, code string) (St
 	if err := tx.Commit(ctx); err != nil {
 		return State{}, err
 	}
-	s.events.publish(battleID)
+	s.events.publish(ctx, battleID)
 	return s.Get(ctx, childID, battleID)
 }
 
@@ -721,7 +722,7 @@ func (s *Service) Submit(ctx context.Context, childID, battleID, side string, su
 	if err := tx.Commit(ctx); err != nil {
 		return State{}, err
 	}
-	s.events.publish(battleID)
+	s.events.publish(ctx, battleID)
 	return s.Get(ctx, childID, battleID)
 }
 
