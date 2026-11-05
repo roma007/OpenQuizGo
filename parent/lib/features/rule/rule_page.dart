@@ -6,6 +6,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
 import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
+import '../../core/storage/pending_rule_store.dart';
 import '../../data/rule_repository.dart';
 
 class RulePage extends ConsumerStatefulWidget {
@@ -88,6 +89,8 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
   RulePreview? _preview;
   String? _previewError;
   bool _busy = false;
+  bool _syncing = false;
+  PendingRule? _pending;
 
   @override
   void initState() {
@@ -112,6 +115,39 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
       for (final entry in subjectLabels.entries)
         entry.key: _numController(rule.subjectWeight[entry.key] ?? 0),
     };
+    _loadPending();
+  }
+
+  Future<void> _loadPending() async {
+    final pending = await ref
+        .read(pendingRuleStoreProvider)
+        .read(widget.childId);
+    if (!mounted || pending == null) return;
+    setState(() => _pending = pending);
+    _applyRuleValues(pending.rule);
+  }
+
+  void _applyRuleValues(Rule rule) {
+    setState(() {
+      _unlock.text = _formatNum(rule.unlockMinutes);
+      _threshold.text = _formatNum(rule.passThreshold);
+      _daily.text = _formatNum(rule.dailyLimit);
+      _offline.text = _formatNum(rule.offlineFallbackMin);
+      _funCap.text = _formatNum(rule.funRatioCap);
+      _allowedApps.text = rule.allowedApps.join(', ');
+      _preset = rule.weightPreset;
+      _scope = rule.scopeMode;
+      _funEnabled = rule.funEnabled;
+      _windowEnabled = rule.timeWindow.isNotEmpty;
+      final window = rule.timeWindow.isNotEmpty ? rule.timeWindow.first : null;
+      _windowStart =
+          _parseTime(window?.start) ?? const TimeOfDay(hour: 7, minute: 0);
+      _windowEnd =
+          _parseTime(window?.end) ?? const TimeOfDay(hour: 21, minute: 0);
+      for (final entry in _weights.entries) {
+        entry.value.text = _formatNum(rule.subjectWeight[entry.key] ?? 0);
+      }
+    });
   }
 
   TextEditingController _numController(num value) =>
@@ -223,11 +259,44 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
     setState(() => _busy = true);
     try {
       await ref.read(ruleRepositoryProvider).update(widget.childId, pin, rule);
+      await ref.read(pendingRuleStoreProvider).clear(widget.childId);
       if (mounted) Navigator.of(context).pop(true);
+    } on ApiException catch (error) {
+      if (error.statusCode == null) {
+        await ref.read(pendingRuleStoreProvider).save(widget.childId, rule);
+        if (mounted) {
+          setState(() {
+            _pending = PendingRule(rule: rule, savedAt: DateTime.now());
+          });
+          _snack('网络不可用，规则已暂存；联网后请在页面顶部同步');
+        }
+      } else {
+        _snack(error.message);
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _syncPending() async {
+    final pending = _pending;
+    if (pending == null) return;
+    final pin = await _askPin();
+    if (pin == null) return;
+    setState(() => _syncing = true);
+    try {
+      await ref
+          .read(ruleRepositoryProvider)
+          .update(widget.childId, pin, pending.rule);
+      await ref.read(pendingRuleStoreProvider).clear(widget.childId);
+      if (!mounted) return;
+      setState(() => _pending = null);
+      ref.invalidate(ruleProvider(widget.childId));
+      _snack('待同步规则已保存');
     } on ApiException catch (error) {
       _snack(error.message);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _syncing = false);
     }
   }
 
@@ -276,6 +345,38 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        if (_pending != null)
+          Card(
+            color: Colors.orange.shade50,
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '有未同步的规则修改（${_pending!.savedAt.month}-'
+                      '${_pending!.savedAt.day} '
+                      '${_pending!.savedAt.hour.toString().padLeft(2, '0')}:'
+                      '${_pending!.savedAt.minute.toString().padLeft(2, '0')}）',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _busy || _syncing ? null : _syncPending,
+                    child: _syncing
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('同步'),
+                  ),
+                ],
+              ),
+            ),
+          ),
         if (widget.staleAt != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),

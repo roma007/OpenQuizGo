@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 18299750,
-      "output": 1162766,
-      "reasoning": 664772,
+      "input": 18335281,
+      "output": 1171217,
+      "reasoning": 669496,
       "cache": {
-        "read": 1221659776,
+        "read": 1229786368,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793874052867,
-      "busy": 1793873874546,
-      "idle": 1793873090375,
-      "viewed": 1793873090375
+      "updated": 1793876171398,
+      "busy": 1793874194861,
+      "idle": 1793874084452,
+      "viewed": 1793874084452
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -229385,6 +229385,2270 @@
         "reasoning": 32,
         "cache": {
           "read": 252800,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab39c0150011HNYyBW0vJT6RA",
+      "time": {
+        "created": 1793874051096,
+        "streamed": 1793874054207,
+        "completed": 1793874077435
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Commit. Include migration. Then tag.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874052872,
+            "completed": 1793874054202
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_8024e7fdbac64ea2baf8b05c",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -1 && git add -A && git commit -q -m \"feat(052): 覆盖率趋势图\n\n- 新增 coverage_snapshot 迁移与今日快照 UPSERT\n- 采集/趋势接口，worker 周期自动采集\n- 管理端覆盖率趋势与手动快照\n- 管理端 0.44.0；验收/ROADMAP/OpenAPI/数据模型更新\" && git tag -a v0.44.0 -m \"OpenQuizGo v0.44.0（覆盖率趋势）\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git push github v0.44.0 2>&1 | tail -1 && git push gitee v0.44.0 2>&1 | tail -1 && scripts/auto-continue.sh status",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   99e8c9a..2942068  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   99e8c9a..2942068  main -> master\n * [new tag]         v0.44.0 -> v0.44.0\n * [new tag]         v0.44.0 -> v0.44.0\n[2026-11-05 18:21:17] 未运行\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874053079,
+            "ran": 1793874054206,
+            "completed": 1793874077286
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0133f8569a8d8961f23391b1438ff84f9872f473",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 625,
+        "output": 280,
+        "reasoning": 8,
+        "cache": {
+          "read": 254336,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3a2712001bEl3A1sWMsrXtU",
+      "time": {
+        "created": 1793874077461,
+        "streamed": 1793874084423,
+        "completed": 1793874084449
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Report v0.44.0. Mention migration applied to dev DB, API running. Timer stopped. Remaining local items. Keep concise.\n\nNote API background is running; previous shell cancellation note. Good.\n\nAlso mention 052 completed, tests, live checks, commit.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874080986,
+            "completed": 1793874084418
+          }
+        },
+        {
+          "type": "text",
+          "text": "**v0.44.0 已发布**（commit `2942068`，GitHub/Gitee 与标签已同步），本轮完成 052 覆盖率趋势图。\n\n## 052 交付\n\n| 部分 | 内容 |\n| --- | --- |\n| 迁移 | `00022_coverage_snapshot.sql`，已应用到开发库（版本 22） |\n| 采集 | `POST /v1/admin/coverage/snapshot`，同日 UPSERT |\n| 趋势 | `GET /v1/admin/coverage/trend?days=30`，按日期升序 |\n| 自动采集 | worker 每个报告周期顺带采集今日快照 |\n| 管理端 | 覆盖率趋势条 + 「记录今日快照」按钮 |\n\n## 验证\n\n```text\ngofmt / go build                       通过\ngo test -p 1 ./...（测试库/Redis）      全部通过\ngo run ./cmd/migrate up                OK 00022\n管理端 npm run build                   通过\n管理端 Playwright E2E                  7/7 通过\n```\n\n接口实测：\n\n```text\nPOST /admin/coverage/snapshot    200 {captured_on:\"2026-11-05\", total:2007, online:2003, ...}\n再次 POST                        200 同日覆盖，数值一致\nGET /admin/coverage/trend?days=7 200 返回该日快照\n```\n\n集成测试覆盖同日 UPSERT、趋势返回和 editor 采集权限。\n\nROADMAP 当前 **111 项 `[x]` / 37 项 `[ ]`**。\n\n## 状态\n\n- API 已重新构建并在 `:18080` 运行\n- 自动循环：**未运行**\n- 本轮新增：`docs/design/052-…`、`docs/plans/052-…`、`docs/acceptance/phase52.md`，并更新数据模型文档\n- 版本：管理端 `0.44.0`；TV 保持 `0.3.4`\n\n剩余可本地继续项：TV 端加入房间、家长端离线写操作队列、电视端家长 PIN 输入、篡改类型补齐、TV 远程诊断上传、离线租约失败缓存、儿童锁、家庭会员共享策略。"
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 683,
+        "output": 500,
+        "reasoning": 55,
+        "cache": {
+          "read": 254720,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3a4264001ruKKPhO1XWwSgH",
+      "time": {
+        "created": 1793874084452
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1ab3928bb003bvtsQN2Bnw4wEL",
+      "metadata": {
+        "source": "shell",
+        "shellID": "sh_1ab3928b90018PekHIgeXyq0zb",
+        "jobID": "sh_1ab3928b90018PekHIgeXyq0zb",
+        "state": "cancelled"
+      },
+      "time": {
+        "created": 1793874194895
+      },
+      "text": "<shell id=\"sh_1ab3928b90018PekHIgeXyq0zb\" state=\"cancelled\" command=\"cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api\">\nCommand cancelled because the server restarted\n</shell>",
+      "description": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api",
+      "type": "synthetic"
+    },
+    {
+      "id": "msg_1ab3bf1690017jv9XnuirgFE50",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793874194899
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_1ab3bf1de001HKjrXI7Sg43Nj1",
+      "time": {
+        "created": 1793874194914,
+        "streamed": 1793874202024,
+        "completed": 1793874202089
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Again server restarted and background API canceled. User says continue. Pick next local item: 家长端离线写操作队列 (rules save/unlock) or TV 端加入房间 / 电视端家长 PIN 输入 / 篡改类型补齐 / TV 远程诊断上传 / 离线租约失败缓存 / 儿童锁 / 家庭会员共享.\n\nConsider next best: **053 家长端离线写操作队列**. This is a significant parent app feature; but PIN handling complexity. Let's examine current parent rule save and unlock flows to design properly. Or choose **TV 端加入房间** which requires battle backend and parent auth on TV — likely blocked by auth architecture (TV device token vs parent token). Let's inspect battle create/join and TV capabilities. TV as second player likely needs a parent account token/child selection; TV only has device principal. Could use device token to join as child? Battle routes under `/family/...` require parent auth. TV could act as parent? No. So TV join is complex and maybe not feasible without pairing. Skip.\n\n**电视端家长 PIN 输入** — TV BlockerActivity has ParentUnlockScreen but likely requires PIN entry via server? Let's inspect.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874198318,
+            "completed": 1793874202019
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_c9cf9948b2d242dd93d7c6fe",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '200,270p' tv/app/src/main/java/com/openquizgo/guard/ui/BlockerActivity.kt && grep -rn \"parent.*pin\\|Pin\\|PIN\\|unlock\" tv/app/src/main/java/com/openquizgo/guard | head -30",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "            fontSize = 22.sp,\n            color = Color(0xFFB0B0B0),\n        )\n        Spacer(Modifier.height(48.dp))\n        Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {\n            Button(onClick = onRetryQuiz, modifier = Modifier.widthIn(min = 220.dp)) {\n                Text(\"重新答题\", fontSize = 28.sp)\n            }\n            Button(onClick = onParentUnlock, modifier = Modifier.widthIn(min = 220.dp)) {\n                Text(\"家长解锁\", fontSize = 28.sp)\n            }\n        }\n    }\n}\n\n@Composable\nprivate fun ParentUnlockScreen(\n    status: String,\n    networkError: Boolean,\n    onBack: () -> Unit,\n) {\n    Column(\n        modifier = Modifier\n            .fillMaxSize()\n            .background(Color(0xFF0B0B0B))\n            .padding(72.dp),\n        verticalArrangement = Arrangement.Center,\n        horizontalAlignment = Alignment.CenterHorizontally,\n    ) {\n        Text(\n            text = \"家长解锁\",\n            fontSize = 48.sp,\n            fontWeight = FontWeight.Bold,\n            color = Color.White,\n        )\n        Spacer(Modifier.height(20.dp))\n        Text(\n            text = \"请打开家长端，选择「设备管理」→「临时解锁」\",\n            fontSize = 26.sp,\n            color = Color(0xFFD0D0D0),\n        )\n        Spacer(Modifier.height(12.dp))\n        Text(\n            text = status,\n            fontSize = 22.sp,\n            color = if (networkError) Color(0xFFFFC107) else Color(0xFF7CC7FF),\n        )\n        Spacer(Modifier.height(44.dp))\n        Button(onClick = onBack, modifier = Modifier.widthIn(min = 220.dp)) {\n            Text(\"返回\", fontSize = 26.sp)\n        }\n    }\n}\n\nprivate fun reasonText(reason: String?): String = when (reason) {\n    \"quiz_failed\" -> \"本次答题未通过\"\n    \"time_window\" -> \"当前不在允许观看的时段\"\n    \"revoked\" -> \"观看授权已失效\"\n    else -> \"当前不能继续观看\"\n}\ntv/app/src/main/java/com/openquizgo/guard/ui/BlockerActivity.kt:83:                            GuardLog.i(\"parent unlock accepted, state=$guardState\")\ntv/app/src/main/java/com/openquizgo/guard/ui/BlockerActivity.kt:93:                                        \"parent unlock grant=${active.grantId} \" +\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874201644,
+            "ran": 1793874202023,
+            "completed": 1793874202070
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 817,
+        "output": 129,
+        "reasoning": 251,
+        "cache": {
+          "read": 255232,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c0df7001fPhS2EglMDNKY9",
+      "time": {
+        "created": 1793874202107,
+        "streamed": 1793874204477,
+        "completed": 1793874204520
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "TV PIN input requires server endpoint to verify parent PIN. Parent PIN verification likely exists (`/parent/pin/verify`?). Check identity.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874203870,
+            "completed": 1793874204473
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_242629724cd84a1296daab82",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -rn \"PIN\\|pin\" internal/identity/*.go | head -40 && grep -rn \"pin\" internal/identity/handlers.go | head -20",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "internal/identity/handlers.go:149:\t\tr.Post(\"/family/pin\", s.handleSetPIN)\ninternal/identity/handlers.go:150:\t\tr.Post(\"/family/pin/verify\", s.handleVerifyPIN)\ninternal/identity/handlers.go:289:func (s *Service) handleSetPIN(w http.ResponseWriter, r *http.Request) {\ninternal/identity/handlers.go:291:\t\tCurrentPIN string `json:\"current_pin\"`\ninternal/identity/handlers.go:292:\t\tNewPIN     string `json:\"new_pin\"`\ninternal/identity/handlers.go:298:\tif err := s.SetPIN(r.Context(), AccountIDFrom(r.Context()), req.CurrentPIN, req.NewPIN); err != nil {\ninternal/identity/handlers.go:305:func (s *Service) handleVerifyPIN(w http.ResponseWriter, r *http.Request) {\ninternal/identity/handlers.go:307:\t\tPIN string `json:\"pin\"`\ninternal/identity/handlers.go:313:\tif err := s.VerifyPIN(r.Context(), AccountIDFrom(r.Context()), req.PIN); err != nil {\ninternal/identity/integration_test.go:135:\tc.expect(http.MethodPost, \"/family/pin\", map[string]string{\"new_pin\": \"1234\"},\ninternal/identity/integration_test.go:137:\tc.expect(http.MethodPost, \"/family/pin/verify\", map[string]string{\"pin\": \"1234\"},\ninternal/identity/integration_test.go:139:\tc.expect(http.MethodPost, \"/family/pin/verify\", map[string]string{\"pin\": \"0000\"},\ninternal/identity/models.go:103:\tErrPINNotSet         = newError(\"PIN_NOT_SET\", 409, \"尚未设置家长 PIN\")\ninternal/identity/models.go:104:\tErrPINInvalid        = newError(\"PIN_INVALID\", 403, \"家长 PIN 不正确\")\ninternal/identity/models.go:105:\tErrPINLocked         = newError(\"PIN_LOCKED\", 429, \"PIN 错误次数过多，请 10 分钟后再试\")\ninternal/identity/repository.go:18:\tPINHash     string\ninternal/identity/repository.go:33:\t\tselect pa.id, pa.phone_cipher, coalesce(pa.pin_hash, ''),\ninternal/identity/repository.go:45:\t\t&rec.ID, &rec.PhoneCipher, &rec.PINHash, &rec.FamilyID, &rec.Role)\ninternal/identity/repository.go:54:\t\tselect pa.id, pa.phone_cipher, coalesce(pa.pin_hash, ''), fm.family_id, fm.role\ninternal/identity/repository.go:65:\t\t&rec.ID, &rec.PhoneCipher, &rec.PINHash, &rec.FamilyID, &rec.Role)\ninternal/identity/repository.go:240:func (r *repository) pinHash(ctx context.Context, accountID string) (string, error) {\ninternal/identity/repository.go:243:\t\t`select coalesce(pin_hash, '') from parent_account where id = $1`, accountID).Scan(&hash)\ninternal/identity/repository.go:247:func (r *repository) setPIN(ctx context.Context, accountID, hash string) error {\ninternal/identity/repository.go:249:\t\t`update parent_account set pin_hash = $2, pin_updated_at = now(), updated_at = now() where id = $1`,\ninternal/identity/service.go:32:\tpinMaxFailures   = 5\ninternal/identity/service.go:33:\tpinLockTTL       = 10 * time.Minute\ninternal/identity/service.go:41:\tpinPattern   = regexp.MustCompile(`^\\d{4,6}$`)\ninternal/identity/service.go:66:// Service 承载身份、家庭、孩子、设备与 PIN 的业务逻辑。\ninternal/identity/service.go:318:/* ------------------------------ PIN ------------------------------ */\ninternal/identity/service.go:320:// SetPIN 设置或修改家长 PIN。\ninternal/identity/service.go:321:func (s *Service) SetPIN(ctx context.Context, accountID, current, next string) error {\ninternal/identity/service.go:322:\tif !pinPattern.MatchString(next) {\ninternal/identity/service.go:323:\t\treturn newError(\"VALIDATION_ERROR\", 422, \"PIN 需为 4–6 位数字\")\ninternal/identity/service.go:325:\texisting, err := s.repo.pinHash(ctx, accountID)\ninternal/identity/service.go:331:\t\t\treturn ErrPINInvalid\ninternal/identity/service.go:336:\t\treturn fmt.Errorf(\"hash pin: %w\", err)\ninternal/identity/service.go:338:\treturn s.repo.setPIN(ctx, accountID, string(hash))\ninternal/identity/service.go:341:// VerifyPIN 校验家长 PIN；连续错误 5 次锁定 10 分钟。\ninternal/identity/service.go:342:func (s *Service) VerifyPIN(ctx context.Context, accountID, pin string) error {\ninternal/identity/service.go:343:\tkey := pinFailKey(accountID)\ninternal/identity/handlers.go:149:\t\tr.Post(\"/family/pin\", s.handleSetPIN)\ninternal/identity/handlers.go:150:\t\tr.Post(\"/family/pin/verify\", s.handleVerifyPIN)\ninternal/identity/handlers.go:291:\t\tCurrentPIN string `json:\"current_pin\"`\ninternal/identity/handlers.go:292:\t\tNewPIN     string `json:\"new_pin\"`\ninternal/identity/handlers.go:307:\t\tPIN string `json:\"pin\"`\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874204141,
+            "ran": 1793874204476,
+            "completed": 1793874204503
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1128,
+        "output": 107,
+        "reasoning": 28,
+        "cache": {
+          "read": 255872,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c1778001GyZRWv0p7hFxtj",
+      "time": {
+        "created": 1793874204539,
+        "streamed": 1793874211923,
+        "completed": 1793874211972
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Parent routes require parent account JWT, not device token. TV could verify via new device-scoped endpoint with PIN and device principal, but PIN belongs to parent account and TV knows child/family? Device token principal has ChildID; can look up family and verify PIN of any parent in family? Risky. Need design. This is doable but security-sensitive.\n\n**离线租约失败补报缓存** — TV stores failed watch log reports to local SharedPreferences and retries. Local, straightforward, no hardware. But requires understanding watch log reconciliation. Could be good.\n\n**篡改类型补齐** — TV detect clock skew, uninstall attempt, package tampered. Local device logic + server already supports arbitrary types? Server tamper_event type check enum maybe. Could implement TV detection (clock skew, package signature) and report. Build-level. This is local and completes roadmap item.\n\n**儿童锁** — product feature, needs parent UI + TV enforcement. Bigger.\n\n**家庭会员共享策略可配置** — backend membership/family; local but requires product semantics.\n\n**家长端离线写操作队列** — high value but PIN complexity; can design prompt-on-sync.\n\nGiven \"continue\" and prior pattern, choose one that is clearly feasible and testable. I'd pick **053 家长端离线写操作队列（规则保存）** with secure design:\n\nActually let's look at parent rule save flow: `RuleRepository.update(childId, pin, rule)` calls API. If offline, UI shows error. Queue design:\n- Store pending mutations in SharedPreferences (CacheStore or new PendingStore): key `pending:rule:<childId>` with payload + createdAt, NO PIN.\n- On save offline (network error), save pending and show \"已保存到本地，联网后需输入 PIN 同步\".\n- On app start or rule page open, if pending exists show banner with \"立即同步\" -> prompt PIN -> call update -> on success clear pending.\n- Only keep latest pending per child.\n- Tests: pending store unit tests, repository? Widget test maybe. Flutter tests.\n- Files: new `lib/core/storage/pending_store.dart`, `lib/data/rule_repository.dart` maybe wrapper, `lib/core/providers.dart`, `lib/features/rule/rule_page.dart`, tests. This is moderate and local.\n\nBut implementing robust UI in Flutter without running app may be risky; Flutter tests can verify store. We can write widget tests. The project has many tests; adding queue tests doable.\n\nAlternatively **053 离线租约失败补报缓存** TV side: easier? Let's inspect TV offline lease/report code.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874207473,
+            "completed": 1793874211917
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_00e704310bf341be9e590eff",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -rn \"lease\\|offline\\|watch/logs\\|report\" tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt | head -40 && grep -rn \"watch/logs\\|offline/lease\" tv/app/src/main/java/com/openquizgo/guard/data/remote/GuardApi.kt",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:63:    private var offline = false\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:66:    private var lease: StoredLease? = null\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:160:        offline = false\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:224:        lease = preferences.storedLease()\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:263:        if (offline) {\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:289:            offline = false\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:311:            reportPendingOffline()\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:313:            offline = true\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:352:                offline = false\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:372:                reportPendingOffline()\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:376:                offline = true\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:382:        runCatching { watchRepository.offlineLease() }\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:383:            .onSuccess { offlineLease ->\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:384:                if (offlineLease == null) {\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:385:                    GuardLog.i(\"offline lease unavailable\")\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:386:                    lease = null\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:390:                val expires = parseMillis(offlineLease.expiresAt) ?: 0\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:392:                    leaseId = offlineLease.leaseId,\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:393:                    maxMinutes = offlineLease.maxMinutes,\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:395:                    allowedApps = offlineLease.allowedApps.orEmpty(),\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:397:                lease = stored\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:399:                GuardLog.i(\"offline lease=${stored.leaseId} max=${stored.maxMinutes}m\")\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:401:            .onFailure { GuardLog.w(\"offline lease failed: ${it.message}\") }\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:406:        val currentLease = lease ?: return\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:410:            GuardLog.w(\"offline allowance exhausted\")\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:416:            leaseId = currentLease.leaseId,\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:425:    private suspend fun reportPendingOffline() {\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:432:        val currentLease = lease\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:433:        if (currentLease == null || snapshot.leaseId == null) {\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:434:            GuardLog.w(\"offline usage without lease, dropping ${snapshot.watchedSeconds}s\")\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:446:        runCatching { watchRepository.reportOffline(currentLease.leaseId, listOf(entry)) }\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:449:                    \"offline reported=${result.reportedMinutes}m remaining=${result.remainingMinutes}m \" +\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:456:                GuardLog.w(\"offline report failed: ${error.message}\")\ntv/app/src/main/java/com/openquizgo/guard/data/remote/GuardApi.kt:67:    @GET(\"v1/offline/lease\")\ntv/app/src/main/java/com/openquizgo/guard/data/remote/GuardApi.kt:72:    @POST(\"v1/watch/logs\")\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874210986,
+            "ran": 1793874211921,
+            "completed": 1793874211949
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1604,
+        "output": 141,
+        "reasoning": 548,
+        "cache": {
+          "read": 256768,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c3499001k6hc7aYe0V7MKX",
+      "time": {
+        "created": 1793874211997,
+        "streamed": 1793874215874,
+        "completed": 1793874215943
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "There is already reportPendingOffline; on failure it just logs (drops). The roadmap item \"离线租约失败补报缓存\" is exactly to persist failed reports and retry. This is a well-scoped TV feature, no hardware needed, can unit test with fake store/repository. Better than Flutter UI. Let's do 053.\n\nInspect GuardEngine relevant sections and preferences.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874214560,
+            "completed": 1793874215868
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_5dbb169a7f8b430f9c055f86",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '40,90p' tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt && sed -n '400,470p' tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt && grep -rn \"class .*Preferences\\|storedLease\\|fun .*Lease\" tv/app/src/main/java/com/openquizgo/guard | head -20",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "    private val watchRepository: WatchRepository,\n    private val scope: CoroutineScope,\n) {\n    private val _state = MutableStateFlow(GuardState.UNBOUND)\n    val state: StateFlow<GuardState> = _state.asStateFlow()\n\n    private val _watchSeconds = MutableStateFlow(0L)\n    val watchSeconds: StateFlow<Long> = _watchSeconds.asStateFlow()\n\n    private val _grantMinutes = MutableStateFlow(0)\n    val grantMinutes: StateFlow<Int> = _grantMinutes.asStateFlow()\n\n    /** 当前授权剩余秒数（本地倒计时，心跳后以服务端为准）。 */\n    private val _grantSeconds = MutableStateFlow(0L)\n    val grantSeconds: StateFlow<Long> = _grantSeconds.asStateFlow()\n\n    /** 进入 BLOCKED 的原因（quiz_failed / time_window / revoked）。 */\n    private val _blockReason = MutableStateFlow<String?>(null)\n    val blockReason: StateFlow<String?> = _blockReason.asStateFlow()\n\n    private var grantId: String? = null\n    private var grantValidUntilMillis: Long = 0\n    private var lastHeartbeatMillis: Long = 0\n    private var offline = false\n\n    @Volatile\n    private var lease: StoredLease? = null\n\n    @Volatile\n    private var pending: PendingOffline? = null\n\n    init {\n        scope.launch { restore() }\n        scope.launch {\n            preferences.deviceToken.distinctUntilChanged().collect { token ->\n                if (token.isNullOrBlank()) {\n                    transition(GuardState.UNBOUND)\n                } else {\n                    if (_state.value == GuardState.UNBOUND) {\n                        transition(GuardState.IDLE)\n                    }\n                    refreshLease()\n                }\n            }\n        }\n        scope.launch {\n            foregroundDetector.state.collect { foreground ->\n                val current = _state.value\n                if (_state.value == GuardState.UNBOUND) return@collect\n                if (foreground.mediaActive && (current == GuardState.IDLE || current == GuardState.GRANTED)) {\n                    transition(GuardState.WATCHING)\n            }\n            .onFailure { GuardLog.w(\"offline lease failed: ${it.message}\") }\n    }\n\n    private fun recordOfflineTick() {\n        val now = System.currentTimeMillis()\n        val currentLease = lease ?: return\n        if (currentLease.expiresAtMillis in 1..now) return\n        val existing = pending\n        if (existing != null && existing.watchedSeconds >= currentLease.maxMinutes * 60) {\n            GuardLog.w(\"offline allowance exhausted\")\n            transition(GuardState.QUIZ_REQUIRED)\n            return\n        }\n        val start = existing?.startMillis ?: now\n        pending = PendingOffline(\n            leaseId = currentLease.leaseId,\n            startMillis = start,\n            endMillis = now,\n            watchedSeconds = (existing?.watchedSeconds ?: 0) + 1,\n            pausedSeconds = existing?.pausedSeconds ?: 0,\n            targetApp = foregroundDetector.state.value.packageName ?: existing?.targetApp,\n        )\n    }\n\n    private suspend fun reportPendingOffline() {\n        val snapshot = pending ?: return\n        if (snapshot.watchedSeconds <= 0) {\n            pending = null\n            preferences.savePendingOffline(null)\n            return\n        }\n        val currentLease = lease\n        if (currentLease == null || snapshot.leaseId == null) {\n            GuardLog.w(\"offline usage without lease, dropping ${snapshot.watchedSeconds}s\")\n            pending = null\n            preferences.savePendingOffline(null)\n            return\n        }\n        val entry = OfflineEntry(\n            startAt = Instant.ofEpochMilli(snapshot.startMillis).toString(),\n            endAt = Instant.ofEpochMilli(snapshot.endMillis).toString(),\n            watchedSeconds = snapshot.watchedSeconds,\n            pausedSeconds = snapshot.pausedSeconds,\n            targetApp = snapshot.targetApp,\n        )\n        runCatching { watchRepository.reportOffline(currentLease.leaseId, listOf(entry)) }\n            .onSuccess { result ->\n                GuardLog.i(\n                    \"offline reported=${result.reportedMinutes}m remaining=${result.remainingMinutes}m \" +\n                        \"clamped=${result.clamped}\",\n                )\n                pending = null\n                preferences.savePendingOffline(null)\n            }\n            .onFailure { error ->\n                GuardLog.w(\"offline report failed: ${error.message}\")\n                if (error is com.openquizgo.guard.data.watch.WatchApiException &&\n                    error.httpStatus in listOf(404, 409, 410, 422)\n                ) {\n                    pending = null\n                    preferences.savePendingOffline(null)\n                }\n            }\n    }\n\n    private fun clearGrant() {\n        grantId = null\n        grantValidUntilMillis = 0\n        _grantSeconds.value = 0\n        scope.launch { preferences.saveStoredGrant(null) }\ntv/app/src/main/java/com/openquizgo/guard/data/local/GuardPreferences.kt:18:class GuardPreferences(private val context: Context) {\ntv/app/src/main/java/com/openquizgo/guard/data/local/GuardPreferences.kt:70:    suspend fun storedLease(): StoredLease? = readJson(KEY_STORED_LEASE, StoredLease::class.java)\ntv/app/src/main/java/com/openquizgo/guard/data/local/GuardPreferences.kt:72:    suspend fun saveStoredLease(lease: StoredLease?) {\ntv/app/src/main/java/com/openquizgo/guard/data/watch/WatchRepository.kt:56:    suspend fun offlineLease(): OfflineLease? {\ntv/app/src/main/java/com/openquizgo/guard/data/remote/GuardApi.kt:68:    suspend fun offlineLease(\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:224:        lease = preferences.storedLease()\ntv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt:380:    private suspend fun refreshLease() {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874215268,
+            "ran": 1793874215871,
+            "completed": 1793874215918
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2024,
+        "output": 162,
+        "reasoning": 82,
+        "cache": {
+          "read": 258176,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c4440001i55qwlAGmLENy6",
+      "time": {
+        "created": 1793874216007,
+        "streamed": 1793874218569,
+        "completed": 1793874218630
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "PendingOffline is already persisted (`savePendingOffline`) but on report failure it keeps pending in memory and preferences (unless 4xx). The issue: after process restart, `restore()` loads pending; does it retry? Let's inspect restore and where reportPendingOffline called.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874217812,
+            "completed": 1793874218567
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_7b8be177395a465b94bfcf7e",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '210,260p' tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt && sed -n '300,380p' tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt && sed -n '1,110p' tv/app/src/main/java/com/openquizgo/guard/data/local/GuardPreferences.kt",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "        val now = System.currentTimeMillis()\n        if (stored != null && stored.remainingSeconds > 0 && stored.validUntilMillis > now) {\n            grantId = stored.grantId\n            grantValidUntilMillis = stored.validUntilMillis\n            _grantSeconds.value = stored.remainingSeconds.toLong()\n            _grantMinutes.value = stored.minutes\n            GuardLog.i(\"restored grant id=${stored.grantId} remaining=${stored.remainingSeconds}\")\n        } else {\n            if (stored != null) {\n                GuardLog.i(\"stored grant expired, clearing\")\n                preferences.saveStoredGrant(null)\n            }\n        }\n        pending = preferences.pendingOffline()\n        lease = preferences.storedLease()\n\n        val restored = runCatching { GuardState.valueOf(snapshot.first) }.getOrNull()\n        var state = when (restored) {\n            // 重启后答题界面已不存在，QUIZZING 视为待答题，后续按授权/媒体状态恢复。\n            GuardState.QUIZZING -> GuardState.QUIZ_REQUIRED\n            GuardState.WATCHING, GuardState.QUIZ_REQUIRED,\n            GuardState.GRANTED, GuardState.BLOCKED -> restored\n            else -> GuardState.IDLE\n        }\n        if (!hasUsableGrant() && (state == GuardState.GRANTED || state == GuardState.WATCHING)) {\n            state = GuardState.QUIZ_REQUIRED\n        }\n        val token = preferences.deviceToken.first()\n        _state.value = if (token.isNullOrBlank()) GuardState.UNBOUND else state\n        GuardLog.i(\"restored state=${_state.value} seconds=${_watchSeconds.value}\")\n\n        if (!token.isNullOrBlank()) {\n            syncActiveGrant()\n        }\n    }\n\n    private fun tick() {\n        val current = _state.value\n        if (current != GuardState.WATCHING) return\n        if (!foregroundDetector.state.value.mediaActive) return\n\n        _watchSeconds.value += 1\n        if (!hasUsableGrant()) {\n            GuardLog.w(\"watching without usable grant\")\n            transition(GuardState.QUIZ_REQUIRED)\n            return\n        }\n        val next = (_grantSeconds.value - 1).coerceAtLeast(0)\n        _grantSeconds.value = next\n        if (next <= 0) {\n            GuardLog.i(\"grant exhausted locally\")\n                result.revoked == true -> {\n                    clearGrant()\n                    _blockReason.value = result.reason ?: \"revoked\"\n                    transition(GuardState.BLOCKED)\n                }\n                !active -> {\n                    clearGrant()\n                    transition(GuardState.QUIZ_REQUIRED)\n                }\n                _grantSeconds.value <= 0 -> transition(GuardState.QUIZ_REQUIRED)\n            }\n            reportPendingOffline()\n        }.onFailure { error ->\n            offline = true\n            GuardLog.w(\"heartbeat\", \"failed: ${error.message}\")\n            if (error is com.openquizgo.guard.data.watch.WatchApiException) {\n                when (error.httpStatus) {\n                    401 -> transition(GuardState.UNBOUND)\n                    404 -> {\n                        grantId = null\n                        _grantSeconds.value = 0\n                        scope.launch { preferences.saveStoredGrant(null) }\n                        syncActiveGrant()\n                    }\n                }\n            }\n        }\n    }\n\n    private suspend fun syncActiveGrant() {\n        if (_state.value == GuardState.UNBOUND || _state.value == GuardState.QUIZZING) return\n        runCatching { watchRepository.activeGrant() }\n            .onSuccess { grant ->\n                if (grant == null) {\n                    GuardLog.w(\"no active grant\")\n                    if (grantId != null) {\n                        grantId = null\n                        _grantSeconds.value = 0\n                        preferences.saveStoredGrant(null)\n                    }\n                    if (foregroundDetector.state.value.mediaActive &&\n                        _state.value != GuardState.QUIZ_REQUIRED\n                    ) {\n                        transition(GuardState.QUIZ_REQUIRED)\n                    }\n                    return@onSuccess\n                }\n                grantId = grant.grantId\n                grantValidUntilMillis = parseMillis(grant.validUntil) ?: grantValidUntilMillis\n                _grantSeconds.value = grant.remainingSeconds.toLong().coerceAtLeast(0)\n                _grantMinutes.value = grant.minutes\n                lastHeartbeatMillis = System.currentTimeMillis()\n                offline = false\n                GuardLog.i(\n                    \"grant\",\n                    \"refreshed id=${grant.grantId} remaining=${grant.remainingSeconds} \" +\n                        \"status=${grant.status}\",\n                )\n                preferences.saveStoredGrant(\n                    StoredGrant(\n                        grantId = grant.grantId,\n                        minutes = grant.minutes,\n                        remainingSeconds = grant.remainingSeconds,\n                        validUntilMillis = grantValidUntilMillis,\n                    ),\n                )\n                if (_state.value == GuardState.QUIZ_REQUIRED) {\n                    transition(GuardState.GRANTED)\n                    if (foregroundDetector.state.value.mediaActive) {\n                        transition(GuardState.WATCHING)\n                    }\n                }\n                reportPendingOffline()\n            }\n            .onFailure { error ->\n                GuardLog.w(\"grant\", \"refresh failed: ${error.message}\")\n                offline = true\n            }\n    }\n\n    private suspend fun refreshLease() {\npackage com.openquizgo.guard.data.local\n\nimport android.content.Context\nimport androidx.datastore.preferences.core.edit\nimport androidx.datastore.preferences.core.longPreferencesKey\nimport androidx.datastore.preferences.core.stringPreferencesKey\nimport androidx.datastore.preferences.preferencesDataStore\nimport com.google.gson.Gson\nimport com.openquizgo.guard.data.watch.PendingOffline\nimport com.openquizgo.guard.data.watch.StoredGrant\nimport com.openquizgo.guard.data.watch.StoredLease\nimport kotlinx.coroutines.flow.Flow\nimport kotlinx.coroutines.flow.first\nimport kotlinx.coroutines.flow.map\n\nprivate val Context.guardDataStore by preferencesDataStore(name = \"guard\")\n\nclass GuardPreferences(private val context: Context) {\n\n    private val cipher = TokenCipher()\n    private val gson = Gson()\n\n    val deviceToken: Flow<String?> = context.guardDataStore.data.map { prefs ->\n        prefs[KEY_DEVICE_TOKEN]?.let { cipher.decrypt(it) ?: it }\n    }\n\n    val childName: Flow<String?> = context.guardDataStore.data.map { prefs ->\n        prefs[KEY_CHILD_NAME]\n    }\n\n    val childId: Flow<String?> = context.guardDataStore.data.map { prefs ->\n        prefs[KEY_CHILD_ID]\n    }\n\n    suspend fun deviceId(): String {\n        val existing = context.guardDataStore.data.map { it[KEY_DEVICE_ID] }.first()\n        if (!existing.isNullOrBlank()) return existing\n        val generated = java.util.UUID.randomUUID().toString()\n        context.guardDataStore.edit { it[KEY_DEVICE_ID] = generated }\n        return generated\n    }\n\n    suspend fun saveBinding(token: String, childId: String?, childName: String?) {\n        val stored = cipher.encrypt(token) ?: token\n        context.guardDataStore.edit { prefs ->\n            prefs[KEY_DEVICE_TOKEN] = stored\n            if (childId.isNullOrBlank()) prefs.remove(KEY_CHILD_ID) else prefs[KEY_CHILD_ID] = childId\n            if (childName.isNullOrBlank()) prefs.remove(KEY_CHILD_NAME) else prefs[KEY_CHILD_NAME] = childName\n        }\n    }\n\n    suspend fun guardSnapshot(): Pair<String, Long> {\n        val prefs = context.guardDataStore.data.first()\n        return (prefs[KEY_GUARD_STATE] ?: \"IDLE\") to (prefs[KEY_WATCH_SECONDS] ?: 0L)\n    }\n\n    suspend fun saveGuardSnapshot(state: String, watchSeconds: Long) {\n        context.guardDataStore.edit { prefs ->\n            prefs[KEY_GUARD_STATE] = state\n            prefs[KEY_WATCH_SECONDS] = watchSeconds\n        }\n    }\n\n    suspend fun storedGrant(): StoredGrant? = readJson(KEY_STORED_GRANT, StoredGrant::class.java)\n\n    suspend fun saveStoredGrant(grant: StoredGrant?) {\n        writeJson(KEY_STORED_GRANT, grant)\n    }\n\n    suspend fun storedLease(): StoredLease? = readJson(KEY_STORED_LEASE, StoredLease::class.java)\n\n    suspend fun saveStoredLease(lease: StoredLease?) {\n        writeJson(KEY_STORED_LEASE, lease)\n    }\n\n    suspend fun pendingOffline(): PendingOffline? =\n        readJson(KEY_PENDING_OFFLINE, PendingOffline::class.java)\n\n    suspend fun savePendingOffline(pending: PendingOffline?) {\n        writeJson(KEY_PENDING_OFFLINE, pending)\n    }\n\n    private suspend fun <T> readJson(key: androidx.datastore.preferences.core.Preferences.Key<String>, type: Class<T>): T? {\n        val raw = context.guardDataStore.data.first()[key] ?: return null\n        return runCatching { gson.fromJson(raw, type) }.getOrNull()\n    }\n\n    private suspend fun writeJson(key: androidx.datastore.preferences.core.Preferences.Key<String>, value: Any?) {\n        context.guardDataStore.edit { prefs ->\n            if (value == null) prefs.remove(key) else prefs[key] = gson.toJson(value)\n        }\n    }\n\n    suspend fun clearBinding() {\n        context.guardDataStore.edit { prefs ->\n            prefs.remove(KEY_DEVICE_TOKEN)\n            prefs.remove(KEY_CHILD_ID)\n            prefs.remove(KEY_CHILD_NAME)\n        }\n    }\n\n    suspend fun setDeviceToken(token: String?) {\n        context.guardDataStore.edit { prefs ->\n            if (token.isNullOrBlank()) prefs.remove(KEY_DEVICE_TOKEN) else prefs[KEY_DEVICE_TOKEN] = token\n        }\n    }\n\n    suspend fun setChildName(name: String?) {\n        context.guardDataStore.edit { prefs ->\n            if (name.isNullOrBlank()) prefs.remove(KEY_CHILD_NAME) else prefs[KEY_CHILD_NAME] = name\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874218129,
+            "ran": 1793874218569,
+            "completed": 1793874218599
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1826,
+        "output": 154,
+        "reasoning": 60,
+        "cache": {
+          "read": 259968,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c4e98001UjNZxDSIjo3W9s",
+      "time": {
+        "created": 1793874218655,
+        "streamed": 1793874224268,
+        "completed": 1793874224318
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Actually pending already persisted and restored; reportPendingOffline is called on heartbeat success and syncActiveGrant success. So \"离线租约失败补报缓存\" may already be implemented! The roadmap item remains unchecked but code has pending + persistence + retry. Maybe missing: retry when app starts offline and later online? It retries on heartbeat/sync. Lease ID stored with pending; on restore, lease loaded. Seems done. Could mark as done after verifying? But user wants new work; maybe the item is effectively complete. We could verify and mark with acceptance. But no code needed. Better choose another.\n\n**篡改类型补齐**: check server tamper type constraint and TV detection.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874222017,
+            "completed": 1793874224266
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_98e9cb47a6f64c6699a2612e",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -rn \"permission_revoked\\|clock_skew\\|uninstall\\|package_tampered\\|tamper\" migrations/00001_init.sql internal/watch/*.go internal/identity/*.go tv/app/src/main/java/com/openquizgo/guard | head -40",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "migrations/00001_init.sql:420:create table tamper_event (\nmigrations/00001_init.sql:427:    constraint tamper_event_type_chk check (type in ('permission_revoked', 'uninstall_attempt', 'package_tampered', 'clock_skew', 'other'))\nmigrations/00001_init.sql:430:create index tamper_event_device_idx on tamper_event (device_id, reported_at desc);\nmigrations/00001_init.sql:431:create index tamper_event_child_idx on tamper_event (child_id, reported_at desc);\nmigrations/00001_init.sql:472:drop table if exists tamper_event;\ninternal/watch/handlers.go:47:\tr.Post(\"/device/tamper\", s.handleTamper)\ninternal/watch/models.go:75:// Alert 是家长端告警条目（来源于 tamper_event）。\ninternal/watch/repository.go:199:\t\tfrom tamper_event te\ninternal/watch/repository.go:240:\t\tupdate tamper_event te set read_at = now()\ninternal/watch/repository.go:403:\t\tinsert into tamper_event (device_id, child_id, type, detail)\ninternal/watch/service.go:22:\t\"permission_revoked\": true,\ninternal/watch/service.go:23:\t\"uninstall_attempt\":  true,\ninternal/watch/service.go:24:\t\"package_tampered\":   true,\ninternal/watch/service.go:25:\t\"clock_skew\":         true,\ninternal/watch/service_test.go:159:\t\tType:   \"permission_revoked\",\ninternal/watch/service_test.go:162:\t\tt.Fatalf(\"tamper: %v\", err)\ninternal/watch/service_test.go:255:\t\tinsert into tamper_event (device_id, child_id, type, detail)\ninternal/watch/service_test.go:256:\t\tvalues ('tv-alert', $1, 'permission_revoked', '{\"permission\":\"accessibility\"}'::jsonb)`,\ninternal/watch/service_test.go:258:\t\tt.Fatalf(\"insert tamper: %v\", err)\ninternal/watch/service_test.go:273:\tif len(alerts) != 1 || alerts[0].Type != \"permission_revoked\" || alerts[0].Read {\ntv/app/src/main/java/com/openquizgo/guard/platform/DiagnosticsReporter.kt:20: * - 无障碍、使用情况访问被关闭时上报 permission_revoked；\ntv/app/src/main/java/com/openquizgo/guard/platform/DiagnosticsReporter.kt:64:            GuardLog.i(\"tamper reported type=$type detail=$detail\")\ntv/app/src/main/java/com/openquizgo/guard/platform/DiagnosticsReporter.kt:65:        }.onFailure { GuardLog.w(\"tamper report failed: ${it.message}\") }\ntv/app/src/main/java/com/openquizgo/guard/platform/DiagnosticsReporter.kt:95:            reportTamper(\"permission_revoked\", mapOf(\"permission\" to \"accessibility\"))\ntv/app/src/main/java/com/openquizgo/guard/platform/DiagnosticsReporter.kt:99:            reportTamper(\"permission_revoked\", mapOf(\"permission\" to \"usage_stats\"))\ntv/app/src/main/java/com/openquizgo/guard/platform/DiagnosticsReporter.kt:103:            reportTamper(\"permission_revoked\", mapOf(\"permission\" to \"notifications\"))\ntv/app/src/main/java/com/openquizgo/guard/data/remote/GuardApi.kt:84:    @POST(\"v1/device/tamper\")\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874223051,
+            "ran": 1793874224268,
+            "completed": 1793874224300
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2664,
+        "output": 130,
+        "reasoning": 141,
+        "cache": {
+          "read": 261632,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c64d7001BXcKJCX2JxE7BM",
+      "time": {
+        "created": 1793874224349,
+        "streamed": 1793874229361,
+        "completed": 1793874229415
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Server supports types, TV only reports permission_revoked. Add clock_skew, uninstall_attempt, package_tampered detection:\n- clock_skew: compare server time from heartbeat response vs device time > threshold. Need API response includes server time? Check heartbeat model. Could use HTTP Date header? Ktor client response maybe. More complex.\n- package_tampered: verify own APK signature hash against expected? Hard without known signature.\n- uninstall_attempt: detect `ACTION_PACKAGE_REMOVED` for own package impossible (app is being removed); can detect DeviceAdmin? no.\nThis item is partially infeasible. Skip.\n\n**家庭会员共享策略可配置**: backend membership; local. Could implement config flag per family? Product semantics unclear. Skip.\n\n**家长端离线写操作队列**: doable and valuable. Let's commit to 053. Need design.\n\nExplore parent app structure for rule save + PIN. Read rule_page save and repository update.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874227016,
+            "completed": 1793874229359
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_5258f5ecb0574b0786aa84a0",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && sed -n '140,195p' lib/data/rule_repository.dart && sed -n '190,270p' lib/features/rule/rule_page.dart && sed -n '430,460p' lib/features/rule/rule_page.dart && sed -n '1,65p' lib/core/providers.dart",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "    );\n  }\n}\n\nclass RuleRepository {\n  RuleRepository(this._api);\n\n  final ApiClient _api;\n\n  Future<RuleWithVersion> getRule(String childId) async {\n    final json = await _api.getJson('/v1/family/children/$childId/rule');\n    return RuleWithVersion(\n      rule: Rule.fromJson(json['rule'] as Map<String, dynamic>),\n      version: (json['version'] as num?)?.toInt() ?? 0,\n    );\n  }\n\n  Future<RulePreview> preview(String childId, Rule rule) async {\n    final json = await _api.postJson(\n      '/v1/family/children/$childId/rule/preview',\n      {'rule': rule.toJson()},\n    );\n    return RulePreview.fromJson(json);\n  }\n\n  Future<void> update(String childId, String pin, Rule rule) async {\n    await _api.putJson('/v1/family/children/$childId/rule', {\n      'pin': pin,\n      'rule': rule.toJson(),\n    });\n  }\n}\n\nconst subjectLabels = <String, String>{\n  'math': '数学',\n  'chinese': '语文',\n  'english': '英语',\n  'science': '科学',\n  'logic': '逻辑',\n  'safety': '安全',\n  'fun': '趣味',\n};\n\nconst weightPresets = <String, Map<String, double>>{\n  'balanced': {\n    'math': 1.5,\n    'chinese': 1.5,\n    'english': 1.5,\n    'science': 1,\n    'logic': 1,\n    'safety': 1,\n    'fun': 0.5,\n  },\n  'math': {\n    'math': 2,\n    'chinese': 1.2,\n        });\n      }\n    });\n  }\n\n  Future<void> _previewRule() async {\n    setState(() {\n      _busy = true;\n      _previewError = null;\n    });\n    try {\n      final preview = await ref\n          .read(ruleRepositoryProvider)\n          .preview(widget.childId, _buildRule());\n      setState(() => _preview = preview);\n    } on ApiException catch (error) {\n      setState(() {\n        _preview = null;\n        _previewError = error.message;\n      });\n    } finally {\n      if (mounted) setState(() => _busy = false);\n    }\n  }\n\n  Future<void> _save() async {\n    final rule = _buildRule();\n    if (_previewError != null) {\n      _snack('请先修正规则：$_previewError');\n      return;\n    }\n    final pin = await _askPin();\n    if (pin == null) return;\n    setState(() => _busy = true);\n    try {\n      await ref.read(ruleRepositoryProvider).update(widget.childId, pin, rule);\n      if (mounted) Navigator.of(context).pop(true);\n    } on ApiException catch (error) {\n      _snack(error.message);\n    } finally {\n      if (mounted) setState(() => _busy = false);\n    }\n  }\n\n  Future<String?> _askPin() async {\n    final controller = TextEditingController();\n    final result = await showDialog<String>(\n      context: context,\n      builder: (context) => AlertDialog(\n        title: const Text('输入家长 PIN'),\n        content: TextField(\n          controller: controller,\n          autofocus: true,\n          obscureText: true,\n          keyboardType: TextInputType.number,\n          inputFormatters: [FilteringTextInputFormatter.digitsOnly],\n          maxLength: 6,\n          decoration: const InputDecoration(\n            labelText: '家长 PIN',\n            counterText: '',\n          ),\n        ),\n        actions: [\n          TextButton(\n            onPressed: () => Navigator.pop(context),\n            child: const Text('取消'),\n          ),\n          FilledButton(\n            onPressed: () => Navigator.pop(context, controller.text.trim()),\n            child: const Text('确认保存'),\n          ),\n        ],\n      ),\n    );\n    controller.dispose();\n    return result;\n  }\n\n  void _snack(String message) {\n    ScaffoldMessenger.of(\n      context,\n        const SizedBox(height: 8),\n        Row(\n          children: [\n            Expanded(\n              child: OutlinedButton(\n                onPressed: _busy ? null : _previewRule,\n                child: const Text('预览可达性'),\n              ),\n            ),\n            const SizedBox(width: 12),\n            Expanded(\n              child: FilledButton(\n                onPressed: _busy ? null : _save,\n                child: _busy\n                    ? const SizedBox(\n                        width: 20,\n                        height: 20,\n                        child: CircularProgressIndicator(strokeWidth: 2),\n                      )\n                    : const Text('保存规则'),\n              ),\n            ),\n          ],\n        ),\n      ],\n    );\n  }\n\n  Widget _numberField(TextEditingController controller, String label) {\n    return TextField(\n      controller: controller,\nimport '../features/auth/login_screen.dart';\nimport '../features/shell/home_shell.dart';\nimport 'api/api_client.dart';\nimport 'cache/cache_store.dart';\nimport 'api/models.dart';\nimport 'auth/auth_controller.dart';\nimport 'auth/auth_repository.dart';\nimport '../data/family_repository.dart';\nimport '../data/device_repository.dart';\nimport '../data/rule_repository.dart';\nimport '../data/report_repository.dart';\nimport '../data/daily_repository.dart';\nimport '../data/battle_repository.dart';\nimport '../data/membership_repository.dart';\nimport '../data/alert_repository.dart';\nimport 'storage/token_store.dart';\nimport 'package:flutter_riverpod/flutter_riverpod.dart';\nimport 'package:flutter_riverpod/legacy.dart';\nimport 'package:go_router/go_router.dart';\n\nfinal tokenStoreProvider = Provider<TokenStore>((ref) => SecureTokenStore());\n\nfinal cacheStoreProvider = Provider<CacheStore>((ref) => CacheStore());\n\nfinal apiClientProvider = Provider<ApiClient>((ref) {\n  return ApiClient(ref.watch(tokenStoreProvider));\n});\n\nfinal familyRepositoryProvider = Provider<FamilyRepository>((ref) {\n  return FamilyRepository(ref.watch(apiClientProvider));\n});\n\nfinal childrenProvider = FutureProvider<Cached<List<Child>>>((ref) async {\n  final repository = ref.watch(familyRepositoryProvider);\n  final cache = ref.watch(cacheStoreProvider);\n  try {\n    final children = await repository.listChildren();\n    await cache.write(\n      'children',\n      children.map((child) => child.toJson()).toList(),\n    );\n    return Cached.fresh(children);\n  } on ApiException {\n    final entry = await cache.read('children');\n    final raw = entry?.data;\n    if (raw is List) {\n      final children = raw\n          .map((item) => Child.fromJson(Map<String, dynamic>.from(item as Map)))\n          .toList(growable: false);\n      return Cached.stale(children, entry!.cachedAt);\n    }\n    rethrow;\n  }\n});\n\nfinal membersProvider = FutureProvider<List<FamilyMember>>((ref) {\n  return ref.watch(familyRepositoryProvider).listMembers();\n});\n\nfinal deviceRepositoryProvider = Provider<DeviceRepository>((ref) {\n  return DeviceRepository(ref.watch(apiClientProvider));\n});\n\nfinal devicesProvider = FutureProvider<List<DeviceInfo>>((ref) {\n  return ref.watch(deviceRepositoryProvider).listDevices();\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874228480,
+            "ran": 1793874229360,
+            "completed": 1793874229400
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1285,
+        "output": 143,
+        "reasoning": 203,
+        "cache": {
+          "read": 264064,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c78b20015WkpdcfB4z5LHy",
+      "time": {
+        "created": 1793874229431,
+        "streamed": 1793874232721,
+        "completed": 1793874232769
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Offline rule queue design:\n- New `PendingRuleStore` using SharedPreferences (similar CacheStore). Store key `pending-rule:<childId>` JSON {rule: ... , savedAt}. No PIN.\n- On save: try update; if ApiException due network (status? ApiException has statusCode/network?), queue instead of error. Need inspect ApiClient exception semantics.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874231621,
+            "completed": 1793874232716
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_965bb863035d40b38f985aa7",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && sed -n '1,160p' lib/core/api/api_client.dart && cat lib/core/cache/cache_store.dart",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "import 'dart:convert';\n\nimport 'package:dio/dio.dart';\n\nimport '../config.dart';\nimport '../storage/token_store.dart';\n\nclass ApiException implements Exception {\n  ApiException(this.message, {this.code, this.statusCode});\n\n  final String message;\n  final String? code;\n  final int? statusCode;\n\n  @override\n  String toString() => message;\n}\n\n/// 统一 HTTP 客户端：附加令牌、错误码转中文、预留 401 刷新入口。\nclass ApiClient {\n  ApiClient(this._tokenStore, {Dio? dio, String? baseUrl})\n    : _dio =\n          dio ??\n          Dio(\n            BaseOptions(\n              baseUrl: baseUrl ?? AppConfig.apiBaseUrl,\n              connectTimeout: const Duration(seconds: 10),\n              receiveTimeout: const Duration(seconds: 20),\n              headers: {'Content-Type': 'application/json'},\n            ),\n          ) {\n    _dio.interceptors.add(\n      InterceptorsWrapper(\n        onRequest: (options, handler) async {\n          if (options.extra['noAuth'] != true) {\n            final token = await _tokenStore.accessToken();\n            if (token != null && token.isNotEmpty) {\n              options.headers['Authorization'] = 'Bearer $token';\n            }\n          }\n          handler.next(options);\n        },\n        onError: (error, handler) async {\n          final request = error.requestOptions;\n          final unauthorized = error.response?.statusCode == 401;\n          if (unauthorized &&\n              request.extra['noAuth'] != true &&\n              request.extra['retried'] != true) {\n            final refreshed = await _refreshTokens();\n            if (refreshed) {\n              try {\n                final response = await _dio.fetch<dynamic>(\n                  request.copyWith(extra: {...request.extra, 'retried': true}),\n                );\n                handler.resolve(response);\n                return;\n              } catch (_) {\n                // 落到下方的原始错误。\n              }\n            }\n          }\n          handler.next(error);\n        },\n      ),\n    );\n  }\n\n  final Dio _dio;\n  final TokenStore _tokenStore;\n  Future<bool>? _refreshing;\n\n  late final Dio _refreshDio = Dio(\n    BaseOptions(\n      baseUrl: _dio.options.baseUrl,\n      connectTimeout: const Duration(seconds: 10),\n      receiveTimeout: const Duration(seconds: 20),\n      headers: {'Content-Type': 'application/json'},\n    ),\n  );\n\n  Dio get raw => _dio;\n\n  Future<bool> _refreshTokens() {\n    return _refreshing ??= _doRefresh().whenComplete(() => _refreshing = null);\n  }\n\n  Future<bool> _doRefresh() async {\n    final refresh = await _tokenStore.refreshToken();\n    if (refresh == null || refresh.isEmpty) return false;\n    try {\n      final response = await _refreshDio.post<Map<String, dynamic>>(\n        'v1/auth/refresh',\n        data: {'refresh_token': refresh},\n      );\n      final body = response.data;\n      final access = body?['access_token'] as String?;\n      if (access == null || access.isEmpty) return false;\n      final nextRefresh = body?['refresh_token'] as String? ?? refresh;\n      await _tokenStore.save(access: access, refresh: nextRefresh);\n      return true;\n    } catch (_) {\n      await _tokenStore.clear();\n      return false;\n    }\n  }\n\n  /// 读取 text/event-stream，逐条产出 data: 内容。\n  Stream<String> eventStream(String path) async* {\n    final response = await _dio.get<ResponseBody>(\n      path,\n      options: Options(\n        responseType: ResponseType.stream,\n        receiveTimeout: const Duration(minutes: 30),\n        headers: {'Accept': 'text/event-stream'},\n      ),\n    );\n    final stream = response.data?.stream;\n    if (stream == null) return;\n    final lines = stream\n        .cast<List<int>>()\n        .transform(utf8.decoder)\n        .transform(const LineSplitter());\n    await for (final line in lines) {\n      if (line.startsWith('data:')) {\n        yield line.substring(5).trim();\n      }\n    }\n  }\n\n  Future<Map<String, dynamic>> getJson(\n    String path, {\n    Map<String, dynamic>? query,\n  }) async {\n    return _request(\n      () => _dio.get<Map<String, dynamic>>(path, queryParameters: query),\n    );\n  }\n\n  Future<Map<String, dynamic>> postJson(\n    String path,\n    Map<String, dynamic> body, {\n    bool noAuth = false,\n  }) async {\n    return _request(\n      () => _dio.post<Map<String, dynamic>>(\n        path,\n        data: body,\n        options: Options(extra: {'noAuth': noAuth}),\n      ),\n    );\n  }\n\n  Future<List<dynamic>> getList(\n    String path, {\n    Map<String, dynamic>? query,\n  }) async {\n    try {\n      final response = await _dio.get<List<dynamic>>(\n        path,\n        queryParameters: query,\nimport 'dart:convert';\n\nimport 'package:shared_preferences/shared_preferences.dart';\n\nclass Cached<T> {\n  Cached.fresh(this.data) : stale = false, cachedAt = null;\n\n  Cached.stale(this.data, this.cachedAt) : stale = true;\n\n  final T data;\n  final bool stale;\n  final DateTime? cachedAt;\n}\n\nclass CacheEntry {\n  CacheEntry({required this.data, required this.cachedAt});\n\n  final dynamic data;\n  final DateTime cachedAt;\n}\n\n/// 轻量离线缓存：SharedPreferences 存 JSON + 时间戳。\nclass CacheStore {\n  static const _prefix = 'cache:';\n\n  Future<void> write(String key, Object? data) async {\n    final prefs = await SharedPreferences.getInstance();\n    await prefs.setString(\n      '$_prefix$key',\n      jsonEncode({'at': DateTime.now().millisecondsSinceEpoch, 'data': data}),\n    );\n  }\n\n  Future<CacheEntry?> read(String key) async {\n    String? raw;\n    try {\n      final prefs = await SharedPreferences.getInstance();\n      raw = prefs.getString('$_prefix$key');\n    } catch (_) {\n      return null;\n    }\n    if (raw == null) return null;\n    try {\n      final json = jsonDecode(raw) as Map<String, dynamic>;\n      final at = (json['at'] as num?)?.toInt() ?? 0;\n      return CacheEntry(\n        data: json['data'],\n        cachedAt: DateTime.fromMillisecondsSinceEpoch(at),\n      );\n    } catch (_) {\n      return null;\n    }\n  }\n}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874232415,
+            "ran": 1793874232719,
+            "completed": 1793874232745
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2223,
+        "output": 98,
+        "reasoning": 78,
+        "cache": {
+          "read": 265088,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c85d0001DqWuVA32mfTzp3",
+      "time": {
+        "created": 1793874232788,
+        "streamed": 1793874236803,
+        "completed": 1793874236828
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Need `_request` mapping network errors.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874235997,
+            "completed": 1793874236800
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_9f512e6cf99e4cfa9e6ec61b",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && grep -n \"Future<T> _request\\|_request<\\|DioException\" -A 40 lib/core/api/api_client.dart | tail -60",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "163:    } on DioException catch (error) {\n164-      throw _mapError(error);\n165-    }\n166-  }\n167-\n168-  Future<Map<String, dynamic>> putJson(\n169-    String path,\n170-    Map<String, dynamic> body,\n171-  ) async {\n172-    return _request(() => _dio.put<Map<String, dynamic>>(path, data: body));\n173-  }\n174-\n175-  Future<void> delete(String path) async {\n176-    await _request(() => _dio.delete<Map<String, dynamic>>(path));\n177-  }\n178-\n179-  Future<Map<String, dynamic>> _request(\n180-    Future<Response<Map<String, dynamic>>> Function() call,\n181-  ) async {\n182-    try {\n183-      final response = await call();\n184-      return response.data ?? <String, dynamic>{};\n185:    } on DioException catch (error) {\n186-      throw _mapError(error);\n187-    }\n188-  }\n189-\n190:  ApiException _mapError(DioException error) {\n191-    final data = error.response?.data;\n192-    if (data is Map && data['message'] is String) {\n193-      return ApiException(\n194-        data['message'] as String,\n195-        code: data['code'] as String?,\n196-        statusCode: error.response?.statusCode,\n197-      );\n198-    }\n199:    if (error.type == DioExceptionType.connectionTimeout ||\n200:        error.type == DioExceptionType.receiveTimeout ||\n201:        error.type == DioExceptionType.connectionError) {\n202-      return ApiException('网络连接失败，请检查网络后重试');\n203-    }\n204-    return ApiException(\n205-      '请求失败（${error.response?.statusCode ?? '未知'}）',\n206-      statusCode: error.response?.statusCode,\n207-    );\n208-  }\n209-}\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874236231,
+            "ran": 1793874236802,
+            "completed": 1793874236814
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1808,
+        "output": 105,
+        "reasoning": 9,
+        "cache": {
+          "read": 267136,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3c95a80010ZPJwCWq8ezdqR",
+      "time": {
+        "created": 1793874236843,
+        "streamed": 1793874240319,
+        "completed": 1793874240357
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Network errors have statusCode null and message \"网络连接失败\". We can detect `statusCode == null` for queue. But other non-Dio errors? Dio always mapped. Good.\n\nQueue store:\n```\nclass PendingRule {\n  final String childId; final Rule rule; final DateTime savedAt;\n}\nclass PendingRuleStore {\n  key = 'pending-rule:'\n  Future<void> save(childId, rule)\n  Future<PendingRule?> read(childId)\n  Future<List<PendingRule>> all()? // only current child needed\n  Future<void> clear(childId)\n}\n```\nProvider.\n\nRule page:\n- On init (or build), read pending and show banner? Better in `_load`? Let's see rule page state initialization.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874238881,
+            "completed": 1793874240313
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_5391592ec6094deb8d2d40f6",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && sed -n '1,190p' lib/features/rule/rule_page.dart",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "import 'package:flutter/material.dart';\nimport 'package:flutter/services.dart';\nimport 'package:flutter_riverpod/flutter_riverpod.dart';\n\nimport '../../core/api/api_client.dart';\nimport '../../core/api/models.dart';\nimport '../../core/layout/adaptive.dart';\nimport '../../core/providers.dart';\nimport '../../data/rule_repository.dart';\n\nclass RulePage extends ConsumerStatefulWidget {\n  const RulePage({super.key, required this.child});\n\n  final Child child;\n\n  @override\n  ConsumerState<RulePage> createState() => _RulePageState();\n}\n\nclass _RulePageState extends ConsumerState<RulePage> {\n  @override\n  Widget build(BuildContext context) {\n    final rule = ref.watch(ruleProvider(widget.child.id));\n    return Scaffold(\n      appBar: AppBar(title: Text('${widget.child.nickname} 的观看规则')),\n      body: rule.when(\n        loading: () => const Center(child: CircularProgressIndicator()),\n        error: (error, _) => Center(\n          child: Column(\n            mainAxisSize: MainAxisSize.min,\n            children: [\n              Text('加载规则失败：$error'),\n              const SizedBox(height: 12),\n              OutlinedButton(\n                onPressed: () => ref.invalidate(ruleProvider(widget.child.id)),\n                child: const Text('重试'),\n              ),\n            ],\n          ),\n        ),\n        data: (cached) => ContentFrame(\n          maxWidth: 900,\n          child: _RuleForm(\n            childId: widget.child.id,\n            initial: cached.data.rule,\n            version: cached.data.version,\n            staleAt: cached.stale ? cached.cachedAt : null,\n          ),\n        ),\n      ),\n    );\n  }\n}\n\nclass _RuleForm extends ConsumerStatefulWidget {\n  const _RuleForm({\n    required this.childId,\n    required this.initial,\n    required this.version,\n    this.staleAt,\n  });\n\n  final String childId;\n  final Rule initial;\n  final int version;\n  final DateTime? staleAt;\n\n  @override\n  ConsumerState<_RuleForm> createState() => _RuleFormState();\n}\n\nclass _RuleFormState extends ConsumerState<_RuleForm> {\n  late final TextEditingController _unlock;\n  late final TextEditingController _threshold;\n  late final TextEditingController _daily;\n  late final TextEditingController _offline;\n  late final TextEditingController _funCap;\n  late final TextEditingController _allowedApps;\n  late final Map<String, TextEditingController> _weights;\n\n  late String _preset;\n  late String _scope;\n  late bool _funEnabled;\n  late bool _windowEnabled;\n  late TimeOfDay _windowStart;\n  late TimeOfDay _windowEnd;\n\n  RulePreview? _preview;\n  String? _previewError;\n  bool _busy = false;\n\n  @override\n  void initState() {\n    super.initState();\n    final rule = widget.initial;\n    _unlock = _numController(rule.unlockMinutes);\n    _threshold = _numController(rule.passThreshold);\n    _daily = _numController(rule.dailyLimit);\n    _offline = _numController(rule.offlineFallbackMin);\n    _funCap = _numController(rule.funRatioCap);\n    _allowedApps = TextEditingController(text: rule.allowedApps.join(', '));\n    _preset = rule.weightPreset;\n    _scope = rule.scopeMode;\n    _funEnabled = rule.funEnabled;\n    _windowEnabled = rule.timeWindow.isNotEmpty;\n    final window = rule.timeWindow.isNotEmpty ? rule.timeWindow.first : null;\n    _windowStart =\n        _parseTime(window?.start) ?? const TimeOfDay(hour: 7, minute: 0);\n    _windowEnd =\n        _parseTime(window?.end) ?? const TimeOfDay(hour: 21, minute: 0);\n    _weights = {\n      for (final entry in subjectLabels.entries)\n        entry.key: _numController(rule.subjectWeight[entry.key] ?? 0),\n    };\n  }\n\n  TextEditingController _numController(num value) =>\n      TextEditingController(text: _formatNum(value));\n\n  String _formatNum(num value) {\n    if (value is double && value == value.roundToDouble()) {\n      return value.toInt().toString();\n    }\n    return value.toString();\n  }\n\n  @override\n  void dispose() {\n    for (final controller in [\n      _unlock,\n      _threshold,\n      _daily,\n      _offline,\n      _funCap,\n      _allowedApps,\n      ..._weights.values,\n    ]) {\n      controller.dispose();\n    }\n    super.dispose();\n  }\n\n  int _int(TextEditingController controller, int fallback) =>\n      int.tryParse(controller.text.trim()) ?? fallback;\n\n  double _double(TextEditingController controller, double fallback) =>\n      double.tryParse(controller.text.trim()) ?? fallback;\n\n  Rule _buildRule() {\n    final weights = <String, double>{\n      for (final entry in _weights.entries) entry.key: _double(entry.value, 0),\n    };\n    return Rule(\n      unlockMinutes: _int(_unlock, 20),\n      passThreshold: _double(_threshold, 3),\n      subjectWeight: weights,\n      funRatioCap: _int(_funCap, 2),\n      funEnabled: _funEnabled,\n      weightPreset: _preset,\n      timeWindow: _windowEnabled\n          ? [\n              TimeWindow(\n                start: _formatTime(_windowStart),\n                end: _formatTime(_windowEnd),\n              ),\n            ]\n          : const [],\n      dailyLimit: _int(_daily, 60),\n      offlineFallbackMin: _int(_offline, 10),\n      scopeMode: _scope,\n      allowedApps: _scope == 'custom'\n          ? _allowedApps.text\n                .split(',')\n                .map((e) => e.trim())\n                .where((e) => e.isNotEmpty)\n                .toList()\n          : const [],\n      timezone: widget.initial.timezone,\n    );\n  }\n\n  void _applyPreset(String? preset) {\n    if (preset == null) return;\n    setState(() {\n      _preset = preset;\n      final presetWeights = weightPresets[preset];\n      if (presetWeights != null) {\n        presetWeights.forEach((subject, weight) {\n          _weights[subject]?.text = _formatNum(weight);\n        });\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874239878,
+            "ran": 1793874240317,
+            "completed": 1793874240335
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 703,
+        "output": 91,
+        "reasoning": 157,
+        "cache": {
+          "read": 268800,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3ca374001rmXNwoFqvCJi0E",
+      "time": {
+        "created": 1793874240376,
+        "streamed": 1793874247926,
+        "completed": 1793874247963
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Offline queue implementation:\n- When `_save` catches ApiException with statusCode == null (network), if PIN provided? We already have PIN in memory at that point. We could immediately queue and optionally retry later requiring PIN. Store rule payload only. Show snack \"网络不可用，规则已暂存；联网后需输入 PIN 同步\". Pop page? Maybe keep page with banner. Better: queue and pop(true) so user knows saved locally. Then when reopening page / app resumes, show banner \"有 1 条待同步规则\" with \"同步\" button prompting PIN.\n- Where to show banner? In RulePage body above form: wrap data with Column containing pending banner. Need load pending async. Could create FutureProvider family for pending. But simplest: `_RuleForm` initState loads pending store and sets `_pending`; build shows a `MaterialBanner`/Card at top if pending.\n- On sync: prompt PIN (existing `_askPin`), call repository.update, clear pending, invalidate ruleProvider/refresh form fields? Since form already reflects pending rule (if loaded from cache? Actually server rule vs pending). We should load pending into form on init if newer than initial? If pending exists, apply pending rule values to form so user sees unsaved. That's more work. At minimum banner + sync sends pending payload, then invalidate provider and pop? After sync success, show success and call `ref.invalidate(ruleProvider)`, but current form may stay old. Could pop page. Simpler: sync success -> clear pending -> `Navigator.pop(true)` (return to list) to reload.\n- Also on save success, clear any pending for child.\n\nNeed pending store API:\n```\nclass PendingRule {\n Rule rule; DateTime savedAt;\n}\nclass PendingRuleStore {\n Future<void> save(String childId, Rule rule)\n Future<PendingRule?> read(String childId)\n Future<void> clear(String childId)\n}\n```\nUses SharedPreferences + JSON (`rule.toJson()`).\n\nProvider `pendingRuleStoreProvider`.\n\nRepository? Could put in `lib/data/pending_rule_store.dart` or `core/storage`. Use core/storage.\n\nTests: `test/pending_rule_store_test.dart` using SharedPreferences.setMockInitialValues({}); verify save/read/clear and overwrite latest. Flutter tests.\n\nUI changes moderate. Could also add global sync on app start? Requirement \"规则保存/解锁补发\" includes unlock, but we focus rule save. Maybe title design says \"规则保存与解锁补发\"; implementing only rule save is partial. Could add unlock queue too? Parent device unlock request (`device_repository.unlock` with minutes/pin) might similarly fail offline. Let's inspect device unlock.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874242852,
+            "completed": 1793874247924
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_fd264fccb7f74bb3b83b9981",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && grep -n \"unlock\\|pin\" -i lib/data/device_repository.dart lib/features/device/*.dart | head -40",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "lib/data/device_repository.dart:28:  Future<UnlockGrant> unlock({\nlib/data/device_repository.dart:30:    required String pin,\nlib/data/device_repository.dart:33:    final json = await _api.postJson('/v1/family/devices/$bindId/unlock', {\nlib/data/device_repository.dart:34:      'pin': pin,\nlib/data/device_repository.dart:37:    return UnlockGrant.fromJson(json);\nlib/data/device_repository.dart:41:class UnlockGrant {\nlib/data/device_repository.dart:42:  UnlockGrant({\nlib/data/device_repository.dart:52:  factory UnlockGrant.fromJson(Map<String, dynamic> json) => UnlockGrant(\nlib/features/device/bind_device_page.dart:73:                prefixIcon: Icon(Icons.pin_outlined),\nlib/features/device/device_page.dart:59:                        onUnlock: () => _unlock(context, ref, device),\nlib/features/device/device_page.dart:107:  Future<void> _unlock(\nlib/features/device/device_page.dart:112:    final input = await showDialog<_UnlockInput>(\nlib/features/device/device_page.dart:114:      builder: (_) => _UnlockDialog(childName: device.childName),\nlib/features/device/device_page.dart:120:          .unlock(bindId: device.id, pin: input.pin, minutes: input.minutes);\nlib/features/device/device_page.dart:179:    required this.onUnlock,\nlib/features/device/device_page.dart:184:  final VoidCallback onUnlock;\nlib/features/device/device_page.dart:213:              onPressed: onUnlock,\nlib/features/device/device_page.dart:279:class _UnlockInput {\nlib/features/device/device_page.dart:280:  _UnlockInput({required this.pin, required this.minutes});\nlib/features/device/device_page.dart:282:  final String pin;\nlib/features/device/device_page.dart:286:class _UnlockDialog extends StatefulWidget {\nlib/features/device/device_page.dart:287:  const _UnlockDialog({required this.childName});\nlib/features/device/device_page.dart:292:  State<_UnlockDialog> createState() => _UnlockDialogState();\nlib/features/device/device_page.dart:295:class _UnlockDialogState extends State<_UnlockDialog> {\nlib/features/device/device_page.dart:296:  final _pin = TextEditingController();\nlib/features/device/device_page.dart:301:    _pin.dispose();\nlib/features/device/device_page.dart:328:            controller: _pin,\nlib/features/device/device_page.dart:334:              labelText: '家长 PIN',\nlib/features/device/device_page.dart:347:            final pin = _pin.text.trim();\nlib/features/device/device_page.dart:348:            if (pin.isEmpty) return;\nlib/features/device/device_page.dart:349:            Navigator.pop(context, _UnlockInput(pin: pin, minutes: _minutes));\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874247575,
+            "ran": 1793874247926,
+            "completed": 1793874247944
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1843,
+        "output": 104,
+        "reasoning": 573,
+        "cache": {
+          "read": 269312,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3cc1340017afby1hXjwUhRB",
+      "time": {
+        "created": 1793874247992,
+        "streamed": 1793874255460,
+        "completed": 1793874255500
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Unlock queue is dangerous: a delayed unlock grant when device is offline could grant access later unexpectedly; and unlock has limited validity. Probably not queue. Roadmap says \"规则保存/解锁补发\" but we can scope to rule save and rename item? Better not overreach. Maybe implement rule save only, mark roadmap item `[x] 家长端离线规则保存队列` and leave `[ ] 解锁补发`. That's honest.\n\nAlternatively choose a different item entirely. But 053 is good.\n\nLet's implement 053 家长端离线规则保存队列. Design/plan first.\n\nFiles:\n- lib/core/storage/pending_rule_store.dart\n- lib/core/providers.dart\n- lib/features/rule/rule_page.dart\n- test/pending_rule_store_test.dart\n- maybe README/parent docs.\n\nImplementation details:\n\nPendingRuleStore:\n```\nclass PendingRuleEntry {\n  final String childId; final Rule rule; final DateTime savedAt;\n}\nclass PendingRuleStore {\n  static const _prefix='pending-rule:';\n  Future<void> save(String childId, Rule rule) ...\n  Future<PendingRuleEntry?> read(String childId) ...\n  Future<void> clear(String childId) ...\n}\n```\nImport Rule.\n\nRule page:\n- import pending store.\n- `_RuleFormState` add `PendingRuleEntry? _pending; bool _syncing=false;`\n- initState: `_loadPending()`; after setting controllers, maybe apply pending rule values? I'd apply pending to controllers for visibility? If pending exists, user expects their unsaved changes. But applying requires resetting all fields; add method `_applyRule(Rule)`. Could be error-prone. Simpler: banner says \"有未同步的规则（保存于...）\" and sync sends stored payload; form may show server values. Acceptable but confusing. Better apply pending values to form on load. We can factor initial setup into `_applyRule(rule)` used in initState and pending load. But note weights controllers etc already created; `_applyRule` can set text and toggles with setState if mounted. Let's do:\n\n```\nvoid _applyRule(Rule rule) {\n _unlock.text = _formatNum(...); ...\n _preset=...; _scope=...; etc; _windowStart=...\n _weights.forEach((k,c)=>c.text=_formatNum(rule.subjectWeight[k]??0));\n}\n```\nCall in initState after controllers initialized instead of current assignments? Current init sets fields. Could refactor: initialize controllers with empty then `_applyRule(rule)`. But `_weights` built before. Do:\n- Keep init as-is.\n- `_loadPending` after init; if pending != null, setState(() { _pending=entry; _applyRuleValues(entry.rule); }); Need avoid setState during init? Fine after await.\n`_applyRuleValues` sets controllers/text and fields, wrapped in setState.\n\n- Build: before existing `ContentFrame`? In data builder:\n```\ndata: (cached) => ContentFrame(maxWidth:900, child: Column(children:[ if pending Banner..., Expanded(child: _RuleForm...)]))\n```\nBut _pending state lives inside _RuleForm. Easier: put banner inside _RuleForm's build. Need locate build method. We saw `_buildBody`? Search build.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874249845,
+            "completed": 1793874255417
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_4ad0ce0270374c0b88355bd3",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && grep -n \"Widget build\\|_previewError\\|staleAt\" lib/features/rule/rule_page.dart | head -20 && sed -n '270,360p' lib/features/rule/rule_page.dart",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "22:  Widget build(BuildContext context) {\n47:            staleAt: cached.stale ? cached.cachedAt : null,\n60:    this.staleAt,\n66:  final DateTime? staleAt;\n89:  String? _previewError;\n198:      _previewError = null;\n208:        _previewError = error.message;\n217:    if (_previewError != null) {\n218:      _snack('请先修正规则：$_previewError');\n275:  Widget build(BuildContext context) {\n279:        if (widget.staleAt != null)\n283:              '离线数据 · 最后同步 ${widget.staleAt!.month}-${widget.staleAt!.day} '\n284:              '${widget.staleAt!.hour.toString().padLeft(2, '0')}:'\n285:              '${widget.staleAt!.minute.toString().padLeft(2, '0')}',\n422:        if (_previewError != null)\n426:              _previewError!,\n      context,\n    ).showSnackBar(SnackBar(content: Text(message)));\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return ListView(\n      padding: const EdgeInsets.all(20),\n      children: [\n        if (widget.staleAt != null)\n          Padding(\n            padding: const EdgeInsets.only(bottom: 8),\n            child: Text(\n              '离线数据 · 最后同步 ${widget.staleAt!.month}-${widget.staleAt!.day} '\n              '${widget.staleAt!.hour.toString().padLeft(2, '0')}:'\n              '${widget.staleAt!.minute.toString().padLeft(2, '0')}',\n              style: const TextStyle(color: Colors.orange, fontSize: 13),\n            ),\n          ),\n        Text(\n          '规则版本 v${widget.version}',\n          style: Theme.of(context).textTheme.bodySmall,\n        ),\n        const SizedBox(height: 12),\n        DropdownButtonFormField<String>(\n          initialValue: _preset,\n          decoration: const InputDecoration(labelText: '权重预设'),\n          items: [\n            for (final entry in presetLabels.entries)\n              DropdownMenuItem(value: entry.key, child: Text(entry.value)),\n          ],\n          onChanged: _applyPreset,\n        ),\n        const SizedBox(height: 16),\n        Row(\n          children: [\n            Expanded(child: _numberField(_unlock, '解锁时长（分钟）')),\n            const SizedBox(width: 12),\n            Expanded(child: _numberField(_daily, '每日上限（分钟）')),\n          ],\n        ),\n        const SizedBox(height: 12),\n        Row(\n          children: [\n            Expanded(child: _numberField(_threshold, '加权门槛')),\n            const SizedBox(width: 12),\n            Expanded(child: _numberField(_offline, '离线降级（分钟）')),\n          ],\n        ),\n        const SizedBox(height: 12),\n        SwitchListTile(\n          contentPadding: EdgeInsets.zero,\n          title: const Text('包含趣味题'),\n          subtitle: const Text('趣味题权重需低于最低学科权重'),\n          value: _funEnabled,\n          onChanged: (value) => setState(() => _funEnabled = value),\n        ),\n        Row(children: [Expanded(child: _numberField(_funCap, '趣味题上限'))]),\n        const SizedBox(height: 12),\n        DropdownButtonFormField<String>(\n          initialValue: _scope,\n          decoration: const InputDecoration(labelText: '管控范围'),\n          items: [\n            for (final entry in scopeLabels.entries)\n              DropdownMenuItem(value: entry.key, child: Text(entry.value)),\n          ],\n          onChanged: (value) => setState(() => _scope = value ?? 'media'),\n        ),\n        if (_scope == 'custom') ...[\n          const SizedBox(height: 12),\n          TextField(\n            controller: _allowedApps,\n            decoration: const InputDecoration(\n              labelText: '允许的应用包名（逗号分隔）',\n              hintText: 'com.tianci.movieplatform, com.qiyi.video',\n            ),\n          ),\n        ],\n        SwitchListTile(\n          contentPadding: EdgeInsets.zero,\n          title: const Text('限制观看时段'),\n          subtitle: const Text('关闭表示不限时段'),\n          value: _windowEnabled,\n          onChanged: (value) => setState(() => _windowEnabled = value),\n        ),\n        if (_windowEnabled)\n          Row(\n            children: [\n              Expanded(\n                child: OutlinedButton(\n                  onPressed: () => _pickTime(isStart: true),\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874255140,
+            "ran": 1793874255458,
+            "completed": 1793874255480
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1561,
+        "output": 121,
+        "reasoning": 711,
+        "cache": {
+          "read": 270976,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3cdea00016rGwdk5Kkm41VC",
+      "time": {
+        "created": 1793874255523,
+        "streamed": 1793874265828,
+        "completed": 1793874265918
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Add banner at top of ListView:\n```\nif (_pending != null) Card(color orange...) with text + sync button\n```\nSync method:\n```\nFuture<void> _syncPending() async {\n final pending=_pending; if null return;\n final pin=await _askPin(); if null return;\n setState busy/syncing\n try { repo.update(childId,pin,pending.rule); await store.clear; setState pending=null; ref.invalidate(ruleProvider(childId)); _snack('已同步'); }\n on ApiException catch(e) { _snack(e.message); }\n finally...\n}\n```\nIf success and values already applied, invalidate will reload server. Good. Could pop? Keep page.\n\nSave method: catch network:\n```\non ApiException catch(error) {\n if (error.statusCode == null) {\n   await store.save(childId, rule);\n   if (mounted) setState(()=>_pending=PendingRuleEntry(...));\n   _snack('网络不可用，规则已暂存；联网后点击“同步”并输入 PIN');\n   if (mounted) Navigator.pop(true)? \n } else _snack(error.message)\n}\n```\nIf we pop, user loses banner. Better stay on page and show banner. But the save button returns false? Fine. Show pending banner immediately. Do not pop.\n- On successful save: `await store.clear(childId); if mounted Navigator.pop(true);`\n\nNeed ensure network errors also potentially thrown as generic? ApiException statusCode null covers.\n\nStore provider.\n\nTest uses SharedPreferences mock. Need `TestWidgetsFlutterBinding.ensureInitialized()`.\n\nLet's create design/plan 053 first, then code.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874257421,
+            "completed": 1793874265821
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_88f7df8384a44f6f99a954aa",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/design/053-家长端离线规则保存队列设计.md <<'EOF'\n# 053 家长端离线规则保存队列设计\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 053 |\n| 版本 | v1 |\n| 状态 | approved |\n| 作者 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应计划 | [053-家长端离线规则保存队列实施计划](../plans/053-家长端离线规则保存队列实施计划.md) |\n| 前置 | 003 家长端、T7 规则引擎 |\n\n## 1. 目标\n\n家长在弱网/离线时修改观看规则，不再直接失败：\n\n- 规则暂存到本地；\n- 联网后在规则页提示并输入 PIN 同步；\n- 只保留每个孩子最新一条待同步规则；\n- 不在本地保存 PIN。\n\n## 2. 数据\n\nSharedPreferences 键 `pending-rule:<childId>`：\n\n```json\n{\"saved_at\":1730000000000,\"rule\":{...Rule JSON...}}\n```\n\n- 每次保存覆盖旧记录；\n- 同步成功或用户主动放弃时清除；\n- 不存 PIN、不存令牌。\n\n## 3. 流程\n\n1. 保存规则时先请求服务端；\n2. 网络错误（`ApiException.statusCode == null`）→ 写入待同步队列并提示；\n3. 规则页加载时读取待同步记录，回填表单并展示提示条；\n4. 点击「同步」→ 输入 PIN → 调用现有更新接口；\n5. 成功清除本地记录并刷新规则；业务错误（4xx/5xx）保留记录并提示。\n\n## 4. 安全\n\n| 风险 | 对策 |\n| --- | --- |\n| PIN 泄漏 | 不持久化 PIN，仅同步时临时输入 |\n| 旧规则覆盖新规则 | 每孩子只保留最新一条，保存时间可见 |\n| 离线修改冲突 | 同步走服务端版本校验；失败保留待同步 |\n\n## 5. 范围\n\n本期只做规则保存队列；设备临时解锁补发另行设计（涉及授权时效与安全）。\n\n## 6. 后续\n\n- 设备解锁补发；\n- 待同步队列全局入口；\n- 冲突合并提示。\n\n## 7. 变更记录\n\n| 日期 | 变更 | 原因 |\n| --- | --- | --- |\n| 2026-11-05 | 初稿并批准 | 弱网体验 |\nEOF\ncat > docs/plans/053-家长端离线规则保存队列实施计划.md <<'EOF'\n# 053-家长端离线规则保存队列实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 053 |\n| 状态 | approved |\n| 负责人 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应设计 | [053-家长端离线规则保存队列设计](../design/053-家长端离线规则保存队列设计.md) |\n\n## 1. 任务\n\n| 序号 | 任务 | 产出 | 验收 | 状态 |\n| --- | --- | --- | --- | --- |\n| T1 | 本地队列 | PendingRuleStore | 单测通过 | todo |\n| T2 | 保存入队 | 网络错误暂存 | 代码路径 | todo |\n| T3 | 页面提示/同步 | 提示条 + PIN 同步 | 构建/单测 | todo |\n| T4 | 验收 | flutter test | 记录 | todo |\n\n## 2. 验证\n\n- 保存/读取/覆盖/清除队列；\n- 网络失败入队、成功后清除；\n- 同步需要 PIN，业务错误保留；\n- `flutter test`、`flutter analyze` 通过。\n\n## 3. 回滚\n\n- 移除队列提示与入队逻辑，恢复直接报错。\n\n## 4. 执行记录\n\n| 日期 | 内容 | 结果 |\n| --- | --- | --- |\n| 2026-11-05 | 设计与计划创建 | approved |\n\n## 5. 验收结论\n\n- 待验收\nEOF\necho docs created",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "docs created\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874259917,
+            "ran": 1793874265826,
+            "completed": 1793874265854
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2f4890ab136d39bb713851452f24ef293d286d1e",
+        "end": "174bd74981a48471d0741bfc711c8808a5bd4866",
+        "files": [
+          "docs/design/053-家长端离线规则保存队列设计.md",
+          "docs/plans/053-家长端离线规则保存队列实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1974,
+        "output": 978,
+        "reasoning": 347,
+        "cache": {
+          "read": 272384,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3d074b001q1vEgf6OBZilvU",
+      "time": {
+        "created": 1793874265934,
+        "streamed": 1793874271057,
+        "completed": 1793874271176
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Implement store.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874268762,
+            "completed": 1793874271051
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_e53699cab5554d199b240b84",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && mkdir -p lib/core/storage && cat > lib/core/storage/pending_rule_store.dart <<'EOF'\nimport 'dart:convert';\n\nimport 'package:shared_preferences/shared_preferences.dart';\n\nimport '../../data/rule_repository.dart';\n\nclass PendingRule {\n  PendingRule({\n    required this.rule,\n    required this.savedAt,\n  });\n\n  final Rule rule;\n  final DateTime savedAt;\n\n  Map<String, dynamic> toJson() => {\n    'saved_at': savedAt.millisecondsSinceEpoch,\n    'rule': rule.toJson(),\n  };\n\n  factory PendingRule.fromJson(Map<String, dynamic> json) => PendingRule(\n    rule: Rule.fromJson(Map<String, dynamic>.from(json['rule'] as Map)),\n    savedAt: DateTime.fromMillisecondsSinceEpoch(\n      (json['saved_at'] as num?)?.toInt() ?? 0,\n    ),\n  );\n}\n\n/// 离线规则保存队列：每个孩子只保留最新一条待同步规则，不保存 PIN。\nclass PendingRuleStore {\n  static const _prefix = 'pending-rule:';\n\n  Future<void> save(String childId, Rule rule) async {\n    final prefs = await SharedPreferences.getInstance();\n    final pending = PendingRule(rule: rule, savedAt: DateTime.now());\n    await prefs.setString('$_prefix$childId', jsonEncode(pending.toJson()));\n  }\n\n  Future<PendingRule?> read(String childId) async {\n    final prefs = await SharedPreferences.getInstance();\n    final raw = prefs.getString('$_prefix$childId');\n    if (raw == null) return null;\n    try {\n      return PendingRule.fromJson(jsonDecode(raw) as Map<String, dynamic>);\n    } catch (_) {\n      return null;\n    }\n  }\n\n  Future<void> clear(String childId) async {\n    final prefs = await SharedPreferences.getInstance();\n    await prefs.remove('$_prefix$childId');\n  }\n}\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('lib/core/providers.dart'); s=p.read_text()\ns=s.replace(\"\"\"import 'storage/token_store.dart';\"\"\",\"\"\"import 'storage/pending_rule_store.dart';\nimport 'storage/token_store.dart';\"\"\")\ns=s.replace(\"\"\"final cacheStoreProvider = Provider<CacheStore>((ref) => CacheStore());\"\"\",\"\"\"final cacheStoreProvider = Provider<CacheStore>((ref) => CacheStore());\n\nfinal pendingRuleStoreProvider = Provider<PendingRuleStore>(\n  (ref) => PendingRuleStore(),\n);\"\"\")\np.write_text(s)\nprint('provider added')\nPY",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "provider added\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874268847,
+            "ran": 1793874271055,
+            "completed": 1793874271123
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "174bd74981a48471d0741bfc711c8808a5bd4866",
+        "end": "8443c5757ab7363f1a312e0e30806bb221333376",
+        "files": [
+          "parent/lib/core/providers.dart",
+          "parent/lib/core/storage/pending_rule_store.dart"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1521,
+        "output": 641,
+        "reasoning": 3,
+        "cache": {
+          "read": 274176,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3d1bd4001skZGQx9brWRcHy",
+      "time": {
+        "created": 1793874271192,
+        "streamed": 1793874281791,
+        "completed": 1793874285444
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now rule page edits. Need add import PendingRule, PendingRuleStore? via provider. Add `import '../../core/storage/pending_rule_store.dart';`.\n\nState: `PendingRule? _pending; bool _syncing = false;`\n\ninitState call `_loadPending()` after fields init. Add method after initState.\n\n`_applyRuleValues(Rule rule)`:\n```\nsetState(() {\n _unlock.text=... etc\n ...\n});\n```\nCareful `_formatTime` exists. `_parseTime`. Set _windowEnabled etc.\nSet _scope, _preset, _funEnabled, _weights, _funCap, _daily, _offline, _threshold, _allowedApps.\nTime window start/end.\n\n`_loadPending`:\n```\nfinal pending = await ref.read(pendingRuleStoreProvider).read(widget.childId);\nif (!mounted || pending==null) return;\nsetState(() { _pending=pending; });\n_applyRuleValues(pending.rule);\n```\n\nSync method uses `_askPin()`.\nWhen success:\n```\nawait store.clear;\nif (!mounted) return;\nsetState(()=>_pending=null);\nref.invalidate(ruleProvider(widget.childId));\n_snack('待同步规则已保存');\n```\nNo pop.\n\nSave catch modification. Current:\n```\n} on ApiException catch (error) {\n  _snack(error.message);\n} finally ...\n```\nChange:\n```\n} on ApiException catch (error) {\n  if (error.statusCode == null) {\n    await ref.read(pendingRuleStoreProvider).save(widget.childId, rule);\n    if (mounted) { setState(()=>_pending=PendingRule(rule: rule, savedAt: DateTime.now())); _snack('网络不可用，规则已暂存...'); }\n  } else { _snack(error.message); }\n}\n```\nAlso on success clear pending:\n```\nawait store.clear(widget.childId);\nif (mounted) Navigator.pop(true);\n```\nEven if no pending.\n\nBuild banner top:\n```\nif (_pending != null) Card(... Text('有未同步规则 · 保存于 ...') FilledButton(onPressed: _busy||_syncing?null:_syncPending, child: Text('同步'))\n```\nSince build is ListView children, add before staleAt.\n\nNeed `_syncing` set in _syncPending via setState; use `_busy` too? Use separate.\n\nImplement.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874273102,
+            "completed": 1793874281786
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_98025de5d2844c2c81ca28a1",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && python3 - <<'PY'\nfrom pathlib import Path\np=Path('lib/features/rule/rule_page.dart'); s=p.read_text()\ns=s.replace(\"\"\"import '../../core/providers.dart';\nimport '../../data/rule_repository.dart';\"\"\",\"\"\"import '../../core/providers.dart';\nimport '../../core/storage/pending_rule_store.dart';\nimport '../../data/rule_repository.dart';\"\"\")\ns=s.replace(\"\"\"  RulePreview? _preview;\n  String? _previewError;\n  bool _busy = false;\n\n  @override\n  void initState() {\n    super.initState();\"\"\",\"\"\"  RulePreview? _preview;\n  String? _previewError;\n  bool _busy = false;\n  bool _syncing = false;\n  PendingRule? _pending;\n\n  @override\n  void initState() {\n    super.initState();\"\"\")\n# call load pending at end of initState (before closing brace after weights map)\ns=s.replace(\"\"\"    _weights = {\n      for (final entry in subjectLabels.entries)\n        entry.key: _numController(rule.subjectWeight[entry.key] ?? 0),\n    };\n  }\"\"\",\"\"\"    _weights = {\n      for (final entry in subjectLabels.entries)\n        entry.key: _numController(rule.subjectWeight[entry.key] ?? 0),\n    };\n    _loadPending();\n  }\n\n  Future<void> _loadPending() async {\n    final pending = await ref\n        .read(pendingRuleStoreProvider)\n        .read(widget.childId);\n    if (!mounted || pending == null) return;\n    setState(() => _pending = pending);\n    _applyRuleValues(pending.rule);\n  }\n\n  void _applyRuleValues(Rule rule) {\n    setState(() {\n      _unlock.text = _formatNum(rule.unlockMinutes);\n      _threshold.text = _formatNum(rule.passThreshold);\n      _daily.text = _formatNum(rule.dailyLimit);\n      _offline.text = _formatNum(rule.offlineFallbackMin);\n      _funCap.text = _formatNum(rule.funRatioCap);\n      _allowedApps.text = rule.allowedApps.join(', ');\n      _preset = rule.weightPreset;\n      _scope = rule.scopeMode;\n      _funEnabled = rule.funEnabled;\n      _windowEnabled = rule.timeWindow.isNotEmpty;\n      final window = rule.timeWindow.isNotEmpty ? rule.timeWindow.first : null;\n      _windowStart =\n          _parseTime(window?.start) ?? const TimeOfDay(hour: 7, minute: 0);\n      _windowEnd =\n          _parseTime(window?.end) ?? const TimeOfDay(hour: 21, minute: 0);\n      for (final entry in _weights.entries) {\n        entry.value.text = _formatNum(rule.subjectWeight[entry.key] ?? 0);\n      }\n    });\n  }\"\"\")\n# save success clear pending\ns=s.replace(\"\"\"      await ref.read(ruleRepositoryProvider).update(widget.childId, pin, rule);\n      if (mounted) Navigator.of(context).pop(true);\n    } on ApiException catch (error) {\n      _snack(error.message);\n    } finally {\"\"\",\"\"\"      await ref.read(ruleRepositoryProvider).update(widget.childId, pin, rule);\n      await ref.read(pendingRuleStoreProvider).clear(widget.childId);\n      if (mounted) Navigator.of(context).pop(true);\n    } on ApiException catch (error) {\n      if (error.statusCode == null) {\n        await ref.read(pendingRuleStoreProvider).save(widget.childId, rule);\n        if (mounted) {\n          setState(() {\n            _pending = PendingRule(rule: rule, savedAt: DateTime.now());\n          });\n          _snack('网络不可用，规则已暂存；联网后请在页面顶部同步');\n        }\n      } else {\n        _snack(error.message);\n      }\n    } finally {\"\"\")\n# sync method before _askPin\ns=s.replace(\"\"\"  Future<String?> _askPin() async {\"\"\",\"\"\"  Future<void> _syncPending() async {\n    final pending = _pending;\n    if (pending == null) return;\n    final pin = await _askPin();\n    if (pin == null) return;\n    setState(() => _syncing = true);\n    try {\n      await ref\n          .read(ruleRepositoryProvider)\n          .update(widget.childId, pin, pending.rule);\n      await ref.read(pendingRuleStoreProvider).clear(widget.childId);\n      if (!mounted) return;\n      setState(() => _pending = null);\n      ref.invalidate(ruleProvider(widget.childId));\n      _snack('待同步规则已保存');\n    } on ApiException catch (error) {\n      _snack(error.message);\n    } finally {\n      if (mounted) setState(() => _syncing = false);\n    }\n  }\n\n  Future<String?> _askPin() async {\"\"\")\n# banner at top of ListView before staleAt\ns=s.replace(\"\"\"      children: [\n        if (widget.staleAt != null)\"\"\",\"\"\"      children: [\n        if (_pending != null)\n          Card(\n            color: Colors.orange.shade50,\n            margin: const EdgeInsets.only(bottom: 12),\n            child: Padding(\n              padding: const EdgeInsets.all(12),\n              child: Row(\n                children: [\n                  Expanded(\n                    child: Text(\n                      '有未同步的规则修改（${_pending!.savedAt.month}-'\n                      '${_pending!.savedAt.day} '\n                      '${_pending!.savedAt.hour.toString().padLeft(2, '0')}:'\n                      '${_pending!.savedAt.minute.toString().padLeft(2, '0')}）',\n                      style: const TextStyle(fontSize: 13),\n                    ),\n                  ),\n                  const SizedBox(width: 8),\n                  FilledButton(\n                    onPressed: _busy || _syncing ? null : _syncPending,\n                    child: _syncing\n                        ? const SizedBox(\n                            width: 18,\n                            height: 18,\n                            child: CircularProgressIndicator(strokeWidth: 2),\n                          )\n                        : const Text('同步'),\n                  ),\n                ],\n              ),\n            ),\n          ),\n        if (widget.staleAt != null)\"\"\")\np.write_text(s)\nprint('rule page updated')\nPY\nflutter analyze 2>&1 | tail -5",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "rule page updated\n[stderr] #22     _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:666)\n[stderr] #23     _microtaskLoop (dart:async/schedule_microtask.dart:40)\n[stderr] #24     _startMicrotaskLoop (dart:async/schedule_microtask.dart:49)\n[stderr] #25     _runPendingImmediateCallback (dart:isolate-patch/isolate_patch.dart:127)\n[stderr] #26     _RawReceivePort._handleMessage (dart:isolate-patch/isolate_patch.dart:193)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874276450,
+            "ran": 1793874281789,
+            "completed": 1793874285373
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8443c5757ab7363f1a312e0e30806bb221333376",
+        "end": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "files": [
+          "parent/lib/features/rule/rule_page.dart"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 899,
+        "output": 1467,
+        "reasoning": 513,
+        "cache": {
+          "read": 275456,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3d5398001JRoRWJCSdIK5fZ",
+      "time": {
+        "created": 1793874285467,
+        "streamed": 1793874289498,
+        "completed": 1793874291851
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Analyze output tail only stderr stack; need full result.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874287694,
+            "completed": 1793874289490
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_a5a4ef0f32b046fa891e2bfc",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && flutter analyze 2>&1 | grep -E \"error|warning|issues|No issues|Analyzing\" | head -30",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Analyzing parent...                                             \n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874288575,
+            "ran": 1793874289496,
+            "completed": 1793874291820
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "end": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2395,
+        "output": 100,
+        "reasoning": 13,
+        "cache": {
+          "read": 276096,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3d6c9d001ezINtUPqQ6A7aj",
+      "time": {
+        "created": 1793874291873,
+        "streamed": 1793874294237,
+        "completed": 1793874296759
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "No issues printed? Perhaps command still running/crashed? Let's capture full output to file and tail.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874293797,
+            "completed": 1793874294231
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_7a03ea55292b4522af615f3f",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && flutter analyze > /tmp/parent-analyze.txt 2>&1; echo \"exit=$?\"; tail -20 /tmp/parent-analyze.txt",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "exit=255\n[stderr] #7      LspByteStreamServerChannel.listen.<anonymous closure> (package:analysis_server/src/lsp/channel/lsp_byte_stream_channel.dart:67)\n[stderr] #8      _rootRunUnary (dart:async/zone_root.dart:48)\n[stderr] #9      _CustomZone.runUnary (dart:async/zone.dart:733)\n[stderr] #10     _CustomZone.runUnaryGuarded (dart:async/zone.dart:633)\n[stderr] #11     _BufferingStreamSubscription._sendData (dart:async/stream_impl.dart:381)\n[stderr] #12     _DelayedData.perform (dart:async/stream_impl.dart:573)\n[stderr] #13     _PendingEvents.handleNext (dart:async/stream_impl.dart:678)\n[stderr] #14     _PendingEvents.schedule.<anonymous closure> (dart:async/stream_impl.dart:649)\n[stderr] #15     _rootRun (dart:async/zone_root.dart:27)\n[stderr] #16     _CustomZone.run (dart:async/zone.dart:726)\n[stderr] #17     _CustomZone.runGuarded (dart:async/zone.dart:625)\n[stderr] #18     _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:666)\n[stderr] #19     _rootRun (dart:async/zone_root.dart:35)\n[stderr] #20     _CustomZone.run (dart:async/zone.dart:726)\n[stderr] #21     _CustomZone.runGuarded (dart:async/zone.dart:625)\n[stderr] #22     _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:666)\n[stderr] #23     _microtaskLoop (dart:async/schedule_microtask.dart:40)\n[stderr] #24     _startMicrotaskLoop (dart:async/schedule_microtask.dart:49)\n[stderr] #25     _runPendingImmediateCallback (dart:isolate-patch/isolate_patch.dart:127)\n[stderr] #26     _RawReceivePort._handleMessage (dart:isolate-patch/isolate_patch.dart:193)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874293962,
+            "ran": 1793874294235,
+            "completed": 1793874296731
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "end": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 349,
+        "output": 106,
+        "reasoning": 22,
+        "cache": {
+          "read": 278272,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3d7fc7001H2G8dN62ph4T4V",
+      "time": {
+        "created": 1793874296781,
+        "streamed": 1793874300174,
+        "completed": 1793874300217
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Flutter analyze crashes due analysis server issue, not code. Run `dart analyze lib` maybe. Or `flutter test` will compile. Let's add test and run flutter test.\n\nTest file:\n```\nimport 'package:flutter_test/flutter_test.dart';\nimport 'package:shared_preferences/shared_preferences.dart';\nimport 'package:openquizgo_parent/...'; // package name?\n```\nCheck pubspec name.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874299366,
+            "completed": 1793874300170
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_2bd696c21951421b8f03705a",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && head -3 pubspec.yaml && ls test | head",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "name: openquizgo_parent\ndescription: \"OpenQuizGo 家长端\"\n# The following line prevents the package from being accidentally published to\nalert_repository_test.dart\nalerts_page_test.dart\nauth_test.dart\nbattle_page_test.dart\nbattle_record_page_test.dart\nbattle_repository_test.dart\ncache_store_test.dart\nchild_page_test.dart\ndaily_repository_test.dart\ndaily_test.dart\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874299947,
+            "ran": 1793874300173,
+            "completed": 1793874300198
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "end": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 891,
+        "output": 84,
+        "reasoning": 86,
+        "cache": {
+          "read": 278400,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3d8d48001y5jhJB3Gqv1zCL",
+      "time": {
+        "created": 1793874300236,
+        "streamed": 1793874304848,
+        "completed": 1793874309398
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Create test pending_rule_store_test.dart. Rule constructor requires many fields; use `Rule.fromJson` minimal. Test save/read/overwrite/clear and JSON. Use SharedPreferences.setMockInitialValues({}).\n\nAlso test that PIN not stored? Store has no pin parameter, so implicit. Could inspect raw prefs keys.\n\nLet's write.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874302115,
+            "completed": 1793874304841
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_35f578e9612b45988f7bac93",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && cat > test/pending_rule_store_test.dart <<'EOF'\nimport 'package:flutter_test/flutter_test.dart';\nimport 'package:openquizgo_parent/core/storage/pending_rule_store.dart';\nimport 'package:openquizgo_parent/data/rule_repository.dart';\nimport 'package:shared_preferences/shared_preferences.dart';\n\nRule testRule(int unlockMinutes) => Rule.fromJson({\n  'unlock_minutes': unlockMinutes,\n  'pass_threshold': 3,\n  'daily_limit': 60,\n  'fun_ratio_cap': 2,\n  'fun_enabled': true,\n  'weight_preset': 'balanced',\n  'time_window': {\n    'allow': [\n      {'start': '07:00', 'end': '21:00'},\n    ],\n  },\n  'offline_fallback_min': 10,\n  'scope_mode': 'media',\n  'allowed_apps': <String>[],\n  'timezone': 'Asia/Shanghai',\n});\n\nvoid main() {\n  TestWidgetsFlutterBinding.ensureInitialized();\n\n  setUp(() {\n    SharedPreferences.setMockInitialValues({});\n  });\n\n  test('保存、读取并清除待同步规则', () async {\n    final store = PendingRuleStore();\n    await store.save('child-1', testRule(30));\n\n    final pending = await store.read('child-1');\n    expect(pending, isNotNull);\n    expect(pending!.rule.unlockMinutes, 30);\n    expect(pending.rule.dailyLimit, 60);\n    expect(pending.savedAt.millisecondsSinceEpoch, greaterThan(0));\n\n    await store.clear('child-1');\n    expect(await store.read('child-1'), isNull);\n  });\n\n  test('每个孩子只保留最新一条规则', () async {\n    final store = PendingRuleStore();\n    await store.save('child-1', testRule(20));\n    await store.save('child-1', testRule(45));\n\n    final pending = await store.read('child-1');\n    expect(pending!.rule.unlockMinutes, 45);\n    expect(await store.read('child-2'), isNull);\n  });\n\n  test('队列不包含 PIN 字段', () async {\n    final store = PendingRuleStore();\n    await store.save('child-1', testRule(20));\n    final prefs = await SharedPreferences.getInstance();\n    final raw = prefs.getString('pending-rule:child-1') ?? '';\n    expect(raw.contains('pin'), isFalse);\n  });\n}\nEOF\nflutter test test/pending_rule_store_test.dart 2>&1 | tail -8",
+              "timeout": 900000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Got dependencies!\n24 packages have newer versions incompatible with dependency constraints.\nTry `flutter pub outdated` for more information.\n00:00 +0: loading /Users/mengfeng/我的文档/源码/OpenQuizGo/parent/test/pending_rule_store_test.dart\n00:00 +0: 保存、读取并清除待同步规则\n00:00 +1: 每个孩子只保留最新一条规则\n00:00 +2: 队列不包含 PIN 字段\n00:00 +3: All tests passed!\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874302690,
+            "ran": 1793874304847,
+            "completed": 1793874309066
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "40e31b95f2edfa3d988264dbd41c71a2b1046a3d",
+        "end": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "files": [
+          "parent/test/pending_rule_store_test.dart"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 518,
+        "output": 632,
+        "reasoning": 72,
+        "cache": {
+          "read": 279040,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3db19e001343EmcSr6dJBtS",
+      "time": {
+        "created": 1793874309538,
+        "streamed": 1793874311842,
+        "completed": 1793874323088
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Run full flutter test.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874311513,
+            "completed": 1793874311838
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_710c984ae6ed4f3c8e0d1f8a",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && flutter test 2>&1 | tail -5",
+              "timeout": 1200000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "00:06 +39: /Users/mengfeng/我的文档/源码/OpenQuizGo/parent/test/report_page_test.dart: 报告页展示统计与学科正确率\n00:06 +40: /Users/mengfeng/我的文档/源码/OpenQuizGo/parent/test/report_page_test.dart: 报告页展示统计与学科正确率\n00:06 +41: /Users/mengfeng/我的文档/源码/OpenQuizGo/parent/test/report_page_test.dart: 报告页空态\n00:06 +42: /Users/mengfeng/我的文档/源码/OpenQuizGo/parent/test/report_page_test.dart: 会员解锁进阶分析\n00:07 +43: All tests passed!\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793874311571,
+            "ran": 1793874311841,
+            "completed": 1793874323058
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "end": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1087,
+        "output": 84,
+        "reasoning": 5,
+        "cache": {
+          "read": 279296,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab3de6af0011sg3z8YlNuhZzI",
+      "time": {
+        "created": 1793874323124,
+        "streamed": 1793874330390,
+        "completed": 1793876130508
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "43 tests pass (was 40 +3). Good.\n\nBut we need ensure UI code compiles (flutter test compiles lib? Widget tests import app pieces; rule_page may not be compiled unless imported by tests. Flutter test compiles all? It compiles test dependencies only; rule_page might be imported by some tests? Probably not. `flutter build apk --debug` would confirm, but time. Run `flutter build apk --debug` maybe heavy but doable. Or `dart compile`? Let's run `flutter build apk --debug` to verify. Android SDK available (TV builds).",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793874327030,
+            "completed": 1793874330379
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_244ca65318624d168499273d",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && flutter build apk --debug 2>&1 | tail -5",
+              "timeout": 1800000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "(no output)\n\nCommand exceeded timeout of 1800000 ms. Retry with a larger timeout if the command is expected to take longer."
+              },
+              {
+                "type": "text",
+                "text": "Timed out before completion"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "timeout": true
+            }
+          },
+          "time": {
+            "created": 1793874329582,
+            "ran": 1793874330386,
+            "completed": 1793876130463
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "end": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 449,
+        "output": 88,
+        "reasoning": 127,
+        "cache": {
+          "read": 280192,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab597b01001UXVw7FYIUJ0vuP",
+      "time": {
+        "created": 1793876130568,
+        "streamed": 1793876135755,
+        "completed": 1793876135803
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Hmm build timed out at 30 min? That's odd. Maybe Gradle downloading or hung. It may still be running? Command killed. Not essential; flutter test compiles most. But we should ensure rule_page compiles. We can run `flutter build apk --debug` in background with longer? 30 min already. Could run `flutter analyze` crashed. Try `dart analyze lib/features/rule/rule_page.dart`? Dart analyze may need package config and can handle single file? `dart analyze lib/features/rule/rule_page.dart` uses analyzer directly, likely works. Let's try with timeout 5 min.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793876133317,
+            "completed": 1793876135747
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_e8920fd3277b49a1b06d7bd9",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && timeout 300 dart analyze lib/features/rule/rule_page.dart lib/core/storage/pending_rule_store.dart lib/core/providers.dart 2>&1 | tail -20; echo \"exit=$?\"",
+              "timeout": 360000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "zsh:1: command not found: timeout\nexit=0\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793876135630,
+            "ran": 1793876135753,
+            "completed": 1793876135780
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "end": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 452,
+        "output": 117,
+        "reasoning": 135,
+        "cache": {
+          "read": 280448,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab598f8a001YEA20tf39I2X02",
+      "time": {
+        "created": 1793876135821,
+        "streamed": 1793876139062,
+        "completed": 1793876140816
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "macOS no timeout. Use `dart analyze ...` with tool timeout 300000.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793876137849,
+            "completed": 1793876139053
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_c7ca47f34dfe4e2eb6eb8dc8",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && dart analyze lib/features/rule/rule_page.dart lib/core/storage/pending_rule_store.dart lib/core/providers.dart 2>&1 | tail -25",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Analyzing rule_page.dart, pending_rule_store.dart, providers.dart...\nNo issues found!\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793876138282,
+            "ran": 1793876139060,
+            "completed": 1793876140801
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "end": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 474,
+        "output": 108,
+        "reasoning": 19,
+        "cache": {
+          "read": 280704,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab59a31c001Hg5F4paBAmrefs",
+      "time": {
+        "created": 1793876140832,
+        "streamed": 1793876146178,
+        "completed": 1793876146208
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Great, code compiles/analyzes.\n\nAPK build timed out perhaps due Gradle daemon issue; not needed but mention not run. We can avoid.\n\nNow docs/acceptance 053, plan/design done, docs README, root README, parent version? Parent app version currently 0.29.0. Bump to 0.30.0? Feature addition. Check pubspec version.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793876145440,
+            "completed": 1793876146175
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_7e6a729af6d44a3aa2dc2df0",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/parent && grep -n \"^version:\" pubspec.yaml && cd .. && grep -n \"parent\\|0.29.0\" docs/README.md README.md | head",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "19:version: 0.29.0+21\ndocs/README.md:69:| 031 | 对战勋章 | [设计](design/031-对战勋章设计.md) | [计划](plans/031-对战勋章实施计划.md) | done（v0.29.0） |\nREADME.md:54:- ✅ 031 对战勋章（v0.29.0）\nREADME.md:307:- 追踪：设置 `OTEL_EXPORTER_OTLP_ENDPOINT` 后启用 OTLP/HTTP，自动透传 `traceparent`。\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793876145872,
+            "ran": 1793876146177,
+            "completed": 1793876146194
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "end": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 375,
+        "output": 107,
+        "reasoning": 86,
+        "cache": {
+          "read": 280960,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab59b82e001iA5h9JVkB1uz7z",
+      "time": {
+        "created": 1793876146226,
+        "streamed": 1793876156761,
+        "completed": 1793876156917
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Bump parent to 0.30.0+22. This is independent of release version? Release tag v0.45.0. Update docs acceptance version v0.45.0 (parent 0.30.0). Admin unchanged 0.44.0. TV 0.3.4.\n\nWrite phase53, update plan/design, docs/README row, root README, ROADMAP:\n- `[ ] 家长端离线写操作队列（规则保存/解锁补发）` → split: `[x] 家长端离线规则保存队列（v0.45.0）` + `[ ] 家长端解锁补发队列`.\n- Delivery 041–053 add 053? Header currently 041–052; add 053.\n- change record.\n- last updated.\n\nAlso maybe parent version references in docs/README? The table doesn't mention app version except 003. Fine.\n\nDo it.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793876149212,
+            "completed": 1793876156751
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_6563ed59e781419184a77426",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/acceptance/phase53.md <<'EOF'\n# 053 家长端离线规则保存队列验收报告\n\n| 项目 | 内容 |\n| --- | --- |\n| 版本 | v0.45.0（家长端 0.30.0） |\n| 日期 | 2026-11-05 |\n| 范围 | 053：家长端弱网/离线规则保存队列 |\n| 设计/计划 | [设计](../design/053-家长端离线规则保存队列设计.md) / [计划](../plans/053-家长端离线规则保存队列实施计划.md) |\n\n## 1. 结论\n\n**通过（单元测试 + 静态分析级）。** 规则保存遇到网络错误时暂存本地；规则页加载后回填待同步规则并展示提示条；联网后输入 PIN 同步，成功后清除本地记录。本地不保存 PIN。\n\n## 2. 交付\n\n- 新增 `PendingRuleStore`：SharedPreferences 键 `pending-rule:<childId>`，每个孩子只保留最新一条；\n- 网络错误（`ApiException.statusCode == null`）自动入队，其他业务错误保持原提示；\n- 规则页加载待同步规则并回填表单，顶部展示保存时间与「同步」按钮；\n- 同步要求输入家长 PIN，调用现有规则更新接口；成功后清除并刷新；\n- 成功正常保存时也会清除该孩子旧队列；\n- 不持久化 PIN/令牌。\n\n## 3. 验证\n\n```text\nflutter test test/pending_rule_store_test.dart   3/3 passed\nflutter test                                     43/43 passed\ndart analyze 相关文件                            No issues found\n```\n\n测试覆盖：保存/读取/清除、覆盖为最新、不同孩子隔离、队列不含 PIN。\n\n## 4. 限制\n\n- 仅覆盖规则保存，不含设备临时解锁补发（另行设计）；\n- 未做真机弱网/断网 UI 走查；\n- 同步失败（4xx/5xx）保留队列并提示，无自动重试；\n- `flutter build apk --debug` 本机超时，未完成构建验证。\n\n## 5. 后续\n\n- 设备解锁补发；\n- 全局待同步入口与自动重试；\n- 冲突合并提示与真机走查。\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('docs/plans/053-家长端离线规则保存队列实施计划.md'); s=p.read_text()\ns=s.replace('| 状态 | approved |','| 状态 | done |').replace('| todo |','| done |')\ns=s.replace('| 2026-11-05 | 设计与计划创建 | approved |','| 2026-11-05 | 设计与计划创建 | approved |\\n| 2026-11-05 | T1–T4 完成 | 单测/静态分析通过 |')\ns=s.replace('- 待验收','- **通过（单元测试 + 静态分析级）**，详见 [验收报告](../acceptance/phase53.md)。')\np.write_text(s)\np=Path('docs/design/053-家长端离线规则保存队列设计.md'); s=p.read_text().replace('| 状态 | approved |','| 状态 | done |'); p.write_text(s)\n# docs README\np=Path('docs/README.md'); s=p.read_text()\nanchor='| 052 | 覆盖率趋势图 | [设计](design/052-覆盖率趋势图设计.md) | [计划](plans/052-覆盖率趋势图实施计划.md) | done（v0.44.0） |'\nif anchor not in s: raise SystemExit('README anchor missing')\ns=s.replace(anchor, anchor+'\\n| 053 | 家长端离线规则保存队列 | [设计](design/053-家长端离线规则保存队列设计.md) | [计划](plans/053-家长端离线规则保存队列实施计划.md) | done（v0.45.0，家长端 0.30.0） |')\np.write_text(s)\n# root README\np=Path('README.md'); s=p.read_text()\nanchor='- ✅ 052 覆盖率趋势图（v0.44.0）'\ns=s.replace(anchor, anchor+'\\n- ✅ 053 家长端离线规则保存队列（v0.45.0，家长端 0.30.0）')\np.write_text(s)\n# parent version\np=Path('parent/pubspec.yaml'); s=p.read_text().replace('version: 0.29.0+21','version: 0.30.0+22'); p.write_text(s)\n# ROADMAP\np=Path('docs/ROADMAP.md'); s=p.read_text()\ns=s.replace('- [ ] 家长端离线写操作队列（规则保存/解锁补发）','- [x] 家长端离线规则保存队列（v0.45.0）\\n- [ ] 家长端解锁补发队列')\ns=s.replace('''- [x] 052 覆盖率趋势图（v0.44.0）''','''- [x] 052 覆盖率趋势图（v0.44.0）\n- [x] 053 家长端离线规则保存队列（v0.45.0）''')\ns=s.replace('''| 2026-11-05 | 052 | 覆盖率日快照、趋势接口与 worker 自动采集 |''','''| 2026-11-05 | 052 | 覆盖率日快照、趋势接口与 worker 自动采集 |\n| 2026-11-05 | 053 | 家长端离线规则保存队列与 PIN 同步 |''')\ns=s.replace('> 最后更新：2026-11-05（041–052 已完成）','> 最后更新：2026-11-05（041–053 已完成）')\ns=s.replace('### 041–052','### 041–053')\np.write_text(s)\nprint('053 docs + versions updated')\nPY\ngrep -c '^- \\[x\\]' docs/ROADMAP.md; grep -c '^- \\[ \\]' docs/ROADMAP.md",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "053 docs + versions updated\n113\n37\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793876150069,
+            "ran": 1793876156758,
+            "completed": 1793876156855
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "db3010ae54c6d6cadaea57ae7e0f3409546df8ab",
+        "end": "8720e9b0c09fa65373c15ab431f2b9a7d8d35389",
+        "files": [
+          "README.md",
+          "docs/README.md",
+          "docs/ROADMAP.md",
+          "docs/acceptance/phase53.md",
+          "docs/design/053-家长端离线规则保存队列设计.md",
+          "docs/plans/053-家长端离线规则保存队列实施计划.md",
+          "parent/pubspec.yaml"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 575,
+        "output": 1419,
+        "reasoning": 197,
+        "cache": {
+          "read": 281088,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab59e202001TPW7uXH2ySlcO0",
+      "time": {
+        "created": 1793876156933,
+        "streamed": 1793876161080,
+        "completed": 1793876161108
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Wait counts: before 111/37; added 053 + split into 2 items (+1 x, +1 blank) → 113/37? We added one [x] and one [ ] plus 053 [x] = +2 x +1 blank. Before 111/37 → 113/38. It shows 37 blank, meaning maybe before was 36? Let me check roadmap item.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793876159533,
+            "completed": 1793876161076
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_032f698d34f9454abeb16ffd",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"家长端离线\\|053\\|最后更新\" docs/ROADMAP.md",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "5:> 最后更新：2026-11-05（041–053 已完成）\n152:### 041–053\n166:- [x] 053 家长端离线规则保存队列（v0.45.0）\n182:- [x] 家长端离线规则保存队列（v0.45.0）\n234:| 2026-11-05 | 053 | 家长端离线规则保存队列与 PIN 同步 |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793876160317,
+            "ran": 1793876161079,
+            "completed": 1793876161093
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8720e9b0c09fa65373c15ab431f2b9a7d8d35389",
+        "end": "8720e9b0c09fa65373c15ab431f2b9a7d8d35389",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1828,
+        "output": 90,
+        "reasoning": 86,
+        "cache": {
+          "read": 281472,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab59f2610014pP6wSMXxcYqs2",
+      "time": {
+        "created": 1793876161125,
+        "streamed": 1793876164182,
+        "completed": 1793876164209
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Where is \"家长端解锁补发队列\"? grep only shows no? The replacement may not have happened because original line is exactly `- [ ] 家长端离线写操作队列（规则保存/解锁补发）`; check.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793876163615,
+            "completed": 1793876164180
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_862f033dd64c4bf3b619dd1c",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '176,188p' docs/ROADMAP.md",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "- [x] 覆盖率按专题导出（v0.41.0）\n- [x] 覆盖率趋势图（v0.44.0）\n- [x] 选项图片（单图，v0.38.0）\n- [x] 选项多图（最多 3 张，v0.40.0）\n- [x] 选项音频（v0.42.0）\n- [ ] TV 端加入房间\n- [x] 家长端离线规则保存队列（v0.45.0）\n- [ ] 家长端解锁补发队列\n- [x] 共享 Redis 订阅（v0.39.0）\n- [x] 事件版本号（v0.41.0）\n\n### 3.2 外部阻塞\n\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793876163982,
+            "ran": 1793876164181,
+            "completed": 1793876164194
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8720e9b0c09fa65373c15ab431f2b9a7d8d35389",
+        "end": "8720e9b0c09fa65373c15ab431f2b9a7d8d35389",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 446,
+        "output": 86,
+        "reasoning": 49,
+        "cache": {
+          "read": 283136,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1ab59fe88001E8q66Xc4H0t3J7",
+      "time": {
+        "created": 1793876164236,
+        "streamed": 1793876167081,
+        "completed": 1793876167128
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Good. Counts fine.\n\nNow archive commit/tag v0.45.0 push. But parent `pubspec.lock` may have changed from flutter test/pub get? Check git status. Also `flutter build apk` may have generated files under parent/android? likely gitignored.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793876166273,
+            "completed": 1793876167078
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_28a2d562109c46a4af013ae0",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git status --short | head -30",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": " M README.md\n M docs/README.md\n M docs/ROADMAP.md\n M parent/lib/core/providers.dart\n M parent/lib/features/rule/rule_page.dart\n M parent/pubspec.yaml\n?? docs/acceptance/phase53.md\n?? \"docs/design/053-\\345\\256\\266\\351\\225\\277\\347\\253\\257\\347\\246\\273\\347\\272\\277\\350\\247\\204\\345\\210\\231\\344\\277\\235\\345\\255\\230\\351\\230\\237\\345\\210\\227\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/plans/053-\\345\\256\\266\\351\\225\\277\\347\\253\\257\\347\\246\\273\\347\\272\\277\\350\\247\\204\\345\\210\\231\\344\\277\\235\\345\\255\\230\\351\\230\\237\\345\\210\\227\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? parent/lib/core/storage/pending_rule_store.dart\n?? parent/test/pending_rule_store_test.dart\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793876166920,
+            "ran": 1793876167080,
+            "completed": 1793876167114
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "8720e9b0c09fa65373c15ab431f2b9a7d8d35389",
+        "end": "8720e9b0c09fa65373c15ab431f2b9a7d8d35389",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 504,
+        "output": 79,
+        "reasoning": 60,
+        "cache": {
+          "read": 283392,
           "write": 0
         }
       }
