@@ -2,6 +2,7 @@ import type {
   AdminPrincipal,
   AuditEntry,
   CoverageResult,
+  TopicCoverageResult,
   LoginResult,
   Question,
   QuestionList,
@@ -143,6 +144,19 @@ export const api = {
   },
   coverage: (threshold = 50) =>
     request<CoverageResult>(`/admin/coverage?threshold=${threshold}`),
+  coverageTopics: (threshold = 50) =>
+    request<TopicCoverageResult>(`/admin/coverage/topics?threshold=${threshold}`),
+  coverageTopicsExport: async (threshold = 50) => {
+    const response = await fetch(
+      `/v1/admin/coverage/export?threshold=${threshold}&dimension=topic`,
+      {
+        headers: { [ADMIN_REQUEST_HEADER]: '1' },
+        credentials: 'include',
+      },
+    )
+    if (!response.ok) throw new ApiError('导出失败', response.status)
+    return response.blob()
+  },
   auditExport: async (params: Record<string, string | undefined> = {}) => {
     const query = new URLSearchParams({ limit: '5000' })
     Object.entries(params).forEach(([key, value]) => {

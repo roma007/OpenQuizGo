@@ -82,5 +82,8 @@ node scripts/archive-conversation.mjs --all
 | 044 | 选项多图 | [设计](design/044-选项多图设计.md) | [计划](plans/044-选项多图实施计划.md) | done（v0.40.0，TV 0.3.2） |
 | 045 | 管理令牌 Cookie 与 CSP | [设计](design/045-管理令牌Cookie与CSP设计.md) | [计划](plans/045-管理令牌Cookie与CSP实施计划.md) | done（v0.40.0，E2E 7/7） |
 | 046 | 新授权关闭旧 active | [设计](design/046-新授权关闭旧授权设计.md) | [计划](plans/046-新授权关闭旧授权实施计划.md) | done（v0.40.0） |
+| 047 | 覆盖率按专题导出 | [设计](design/047-覆盖率按专题导出设计.md) | [计划](plans/047-覆盖率按专题导出实施计划.md) | done（v0.41.0） |
+| 048 | 对战事件版本号 | [设计](design/048-对战事件版本号设计.md) | [计划](plans/048-对战事件版本号实施计划.md) | done（v0.41.0） |
+| 049 | TV 日志落盘与诊断导出 | [设计](design/049-TV日志落盘与诊断导出设计.md) | [计划](plans/049-TV日志落盘与诊断导出实施计划.md) | done（v0.41.0，TV 0.3.3） |
 
 > 新增设计/计划后，请同步更新此表。

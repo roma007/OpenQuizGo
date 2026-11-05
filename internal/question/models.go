@@ -65,6 +65,22 @@ type CoverageResult struct {
 	Warnings []string       `json:"warnings"`
 }
 
+// TopicCoverageCell 是专题维度覆盖率聚合单元。
+// topic_id 为空表示未加入任何专题，topic_name 固定为「未分专题」。
+type TopicCoverageCell struct {
+	TopicID   string `json:"topic_id"`
+	TopicName string `json:"topic_name"`
+	Status    string `json:"status"`
+	Count     int    `json:"count"`
+}
+
+// TopicCoverageResult 是专题覆盖率看板数据；Total 为去重后的题目总量。
+type TopicCoverageResult struct {
+	Cells    []TopicCoverageCell `json:"cells"`
+	Total    int                 `json:"total"`
+	Warnings []string            `json:"warnings"`
+}
+
 // CalibrationItem 是难度校准建议。
 type CalibrationItem struct {
 	QuestionID          string  `json:"question_id"`

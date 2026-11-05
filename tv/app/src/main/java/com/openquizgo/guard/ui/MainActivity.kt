@@ -36,6 +36,7 @@ import com.openquizgo.guard.data.foreground.ForegroundState
 import com.openquizgo.guard.domain.GuardState
 import com.openquizgo.guard.platform.GuardAccessibilityService
 import com.openquizgo.guard.platform.GuardService
+import com.openquizgo.guard.platform.LogExporter
 import com.openquizgo.guard.platform.Permissions
 import kotlinx.coroutines.delay
 
@@ -375,6 +376,7 @@ private fun DiagnosticsScreen(
 ) {
     val logs by viewModel.logs.collectAsState()
     val report by viewModel.reportStatus.collectAsState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier.fillMaxSize().padding(40.dp),
@@ -402,6 +404,7 @@ private fun DiagnosticsScreen(
         )
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = { LogExporter.share(context) }) { Text("导出日志", fontSize = 14.sp) }
             Button(onClick = viewModel::reportCapabilityNow) { Text("上报能力", fontSize = 14.sp) }
             Button(onClick = onBack) { Text("返回", fontSize = 14.sp) }
         }

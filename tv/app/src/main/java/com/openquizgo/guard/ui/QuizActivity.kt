@@ -145,7 +145,8 @@ class QuizActivity : ComponentActivity() {
                     answeredBefore = started.questions.size - pending.size
                     questionIndex = 0
                     GuardLog.i(
-                        "quiz session=${started.sessionId} questions=${started.questions.size} " +
+                        "quiz",
+                        "session=${started.sessionId} questions=${started.questions.size} " +
                             "pending=${pending.size}",
                     )
                     loading = false
@@ -156,7 +157,7 @@ class QuizActivity : ComponentActivity() {
                     }
                 }
                 .onFailure { error ->
-                    GuardLog.w("quiz session failed: ${error.message}")
+                    GuardLog.w("quiz", "session failed: ${error.message}")
                     loading = false
                     errorMessage = readable(error)
                 }
@@ -182,13 +183,14 @@ class QuizActivity : ComponentActivity() {
                     submitting = false
                     answerResult = result
                     GuardLog.i(
+                        "quiz",
                         "answer pos=$questionIndex correct=${result.correct} " +
                             "score=${result.score}/${result.threshold}",
                     )
                 }
                 .onFailure { error ->
                     submitting = false
-                    GuardLog.w("answer failed: ${error.message}")
+                    GuardLog.w("quiz", "answer failed: ${error.message}")
                     errorMessage = readable(error)
                 }
         }
@@ -212,7 +214,8 @@ class QuizActivity : ComponentActivity() {
                 .onSuccess { summary ->
                     val passed = summary.state == "passed" && summary.grant != null
                     GuardLog.i(
-                        "quiz finished state=${summary.state} score=${summary.score}/${summary.passThreshold} " +
+                        "quiz",
+                        "finished state=${summary.state} score=${summary.score}/${summary.passThreshold} " +
                             "grant=${summary.grant?.minutes ?: 0}",
                     )
                     outcomeApplied = true
@@ -235,7 +238,7 @@ class QuizActivity : ComponentActivity() {
                     outcome = QuizOutcome(summary = summary, passed = passed)
                 }
                 .onFailure { error ->
-                    GuardLog.w("quiz finish failed: ${error.message}")
+                    GuardLog.w("quiz", "finish failed: ${error.message}")
                     loading = false
                     errorMessage = readable(error)
                 }

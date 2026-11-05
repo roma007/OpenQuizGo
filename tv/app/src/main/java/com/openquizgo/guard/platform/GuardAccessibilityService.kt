@@ -38,7 +38,7 @@ class GuardAccessibilityService : AccessibilityService() {
             info.flags = info.flags or AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
             setServiceInfo(info)
         }
-        GuardLog.i("accessibility connected")
+        GuardLog.i("accessibility", "connected")
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
@@ -55,8 +55,9 @@ class GuardAccessibilityService : AccessibilityService() {
     private fun launchQuiz() {
         val intent = Intent(this, QuizActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
-        GuardLog.i("quiz activity launched")
+        runCatching { startActivity(intent) }
+            .onSuccess { GuardLog.i("accessibility", "quiz activity launched") }
+            .onFailure { GuardLog.e("accessibility", "quiz launch failed", it) }
     }
 
     fun armQuiz() {
@@ -80,7 +81,7 @@ class GuardAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        GuardLog.w("accessibility interrupted")
+        GuardLog.w("accessibility", "interrupted")
     }
 
     companion object {

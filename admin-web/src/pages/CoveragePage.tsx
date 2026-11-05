@@ -1,7 +1,7 @@
 import { Alert, Button, Card, Col, InputNumber, Row, Space, Statistic, Table, Typography, message } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { api, ApiError } from '../api'
-import type { CoverageCell } from '../types'
+import type { CoverageCell, TopicCoverageCell } from '../types'
 
 const subjectLabel: Record<string, string> = {
   math: '数学', chinese: '语文', english: '英语', science: '科学',
@@ -19,16 +19,25 @@ export default function CoveragePage() {
   const [cells, setCells] = useState<CoverageCell[]>([])
   const [total, setTotal] = useState(0)
   const [warnings, setWarnings] = useState<string[]>([])
+  const [topicCells, setTopicCells] = useState<TopicCoverageCell[]>([])
+  const [topicTotal, setTopicTotal] = useState(0)
+  const [topicWarnings, setTopicWarnings] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [threshold, setThreshold] = useState(50)
 
   const load = async (next = threshold) => {
     setLoading(true)
     try {
-      const result = await api.coverage(next)
-        setCells(result.cells || [])
-        setTotal(result.total || 0)
+      const [result, topics] = await Promise.all([
+        api.coverage(next),
+        api.coverageTopics(next),
+      ])
+      setCells(result.cells || [])
+      setTotal(result.total || 0)
       setWarnings(result.warnings || [])
+      setTopicCells(topics.cells || [])
+      setTopicTotal(topics.total || 0)
+      setTopicWarnings(topics.warnings || [])
     } catch (error) {
       message.error(error instanceof ApiError ? error.message : '加载失败')
     } finally {
@@ -50,6 +59,7 @@ export default function CoveragePage() {
   }, [cells])
 
   const maxCount = Math.max(1, ...cells.map((cell) => cell.count))
+  const topicMaxCount = Math.max(1, ...topicCells.map((cell) => cell.count))
 
   return (
     <Card loading={loading}>
@@ -70,23 +80,42 @@ export default function CoveragePage() {
             <Button onClick={() => void load(threshold)}>刷新</Button>
           </span>
         </Space>
-        <Button
-          onClick={async () => {
-            try {
-              const blob = await api.coverageExport(threshold)
-              const url = URL.createObjectURL(blob)
-              const link = document.createElement('a')
-              link.href = url
-              link.download = 'coverage.csv'
-              link.click()
-              URL.revokeObjectURL(url)
-            } catch (error) {
-              message.error(error instanceof ApiError ? error.message : '导出失败')
-            }
-          }}
-        >
-          导出 CSV
-        </Button>
+        <Space>
+          <Button
+            onClick={async () => {
+              try {
+                const blob = await api.coverageExport(threshold)
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = 'coverage.csv'
+                link.click()
+                URL.revokeObjectURL(url)
+              } catch (error) {
+                message.error(error instanceof ApiError ? error.message : '导出失败')
+              }
+            }}
+          >
+            导出 CSV
+          </Button>
+          <Button
+            onClick={async () => {
+              try {
+                const blob = await api.coverageTopicsExport(threshold)
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = 'coverage-topics.csv'
+                link.click()
+                URL.revokeObjectURL(url)
+              } catch (error) {
+                message.error(error instanceof ApiError ? error.message : '导出失败')
+              }
+            }}
+          >
+            导出专题 CSV
+          </Button>
+        </Space>
       </Space>
       {warnings.length > 0 && (
         <Alert
@@ -97,6 +126,21 @@ export default function CoveragePage() {
           description={
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               {warnings.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          }
+        />
+      )}
+      {topicWarnings.length > 0 && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          title={`专题覆盖不足告警（${topicWarnings.length} 项，阈值 ${threshold}）`}
+          description={
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {topicWarnings.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
@@ -127,6 +171,43 @@ export default function CoveragePage() {
             dataIndex: 'count',
             render: (value: number) => {
               const ratio = value / maxCount
+              return (
+                <span
+                  style={{
+                    display: 'inline-block',
+                    minWidth: 80,
+                    padding: '2px 8px',
+                    borderRadius: 4,
+                    background: `rgba(24, 144, 255, ${0.08 + ratio * 0.5})`,
+                  }}
+                >
+                  {value}
+                </span>
+              )
+            },
+          },
+        ]}
+      />
+      <Typography.Title level={5} style={{ marginTop: 24 }}>
+        专题覆盖（去重题量 {topicTotal}）
+      </Typography.Title>
+      <Table
+        rowKey={(row) => `${row.topic_id || 'unassigned'}-${row.status}`}
+        size="small"
+        dataSource={topicCells}
+        pagination={{ pageSize: 20, showSizeChanger: false }}
+        columns={[
+          {
+            title: '专题',
+            dataIndex: 'topic_name',
+            render: (value: string) => value || '未分专题',
+          },
+          { title: '状态', dataIndex: 'status', render: (v) => statusLabel[v] || v },
+          {
+            title: '题量',
+            dataIndex: 'count',
+            render: (value: number) => {
+              const ratio = value / topicMaxCount
               return (
                 <span
                   style={{

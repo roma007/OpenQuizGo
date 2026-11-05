@@ -38,6 +38,7 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("audit.read")).Get("/admin/audit", s.handleAudit)
 		r.With(guard.Require("audit.read")).Get("/admin/audit/export", s.handleAuditExport)
 		r.With(guard.Require("question.read")).Get("/admin/coverage", s.handleCoverage)
+		r.With(guard.Require("question.read")).Get("/admin/coverage/topics", s.handleTopicCoverage)
 		r.With(guard.Require("question.read")).Get("/admin/coverage/export", s.handleCoverageExport)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/preview", s.handleCalibrationPreview)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/history", s.handleCalibrationHistory)
@@ -59,10 +60,28 @@ func (s *Service) handleCoverage(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+func (s *Service) handleTopicCoverage(w http.ResponseWriter, r *http.Request) {
+	threshold, err := coverageThreshold(r)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	result, err := s.TopicCoverage(r.Context(), threshold)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 func (s *Service) handleCoverageExport(w http.ResponseWriter, r *http.Request) {
 	threshold, err := coverageThreshold(r)
 	if err != nil {
 		writeServiceError(w, r, err)
+		return
+	}
+	if strings.EqualFold(strings.TrimSpace(r.URL.Query().Get("dimension")), "topic") {
+		s.exportTopicCoverage(w, r, threshold)
 		return
 	}
 	result, err := s.Coverage(r.Context(), threshold)
@@ -77,6 +96,23 @@ func (s *Service) handleCoverageExport(w http.ResponseWriter, r *http.Request) {
 	for _, cell := range result.Cells {
 		_ = writer.Write([]string{cell.Subject, cell.Stage, cell.Type, cell.Status,
 			strconv.Itoa(cell.Difficulty), strconv.Itoa(cell.Count)})
+	}
+	writer.Flush()
+}
+
+func (s *Service) exportTopicCoverage(w http.ResponseWriter, r *http.Request, threshold int) {
+	result, err := s.TopicCoverage(r.Context(), threshold)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="coverage-topics.csv"`)
+	writer := csv.NewWriter(w)
+	_ = writer.Write([]string{"topic_id", "topic_name", "status", "count"})
+	for _, cell := range result.Cells {
+		_ = writer.Write([]string{cell.TopicID, cell.TopicName, cell.Status,
+			strconv.Itoa(cell.Count)})
 	}
 	writer.Flush()
 }

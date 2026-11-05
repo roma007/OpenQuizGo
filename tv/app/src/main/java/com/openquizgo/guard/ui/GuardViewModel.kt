@@ -105,6 +105,7 @@ class GuardViewModel(
     fun resetBinding() {
         viewModelScope.launch {
             pollJob?.cancel()
+            GuardLog.i("binding", "binding reset by user")
             preferences.clearBinding()
             startActivation()
         }
@@ -114,6 +115,7 @@ class GuardViewModel(
         viewModelScope.launch {
             val token = preferences.deviceToken.first()
             if (token.isNullOrBlank()) {
+                GuardLog.i("auth", "no device token, start activation")
                 startActivation()
                 return@launch
             }
@@ -121,14 +123,18 @@ class GuardViewModel(
             _state.value = GuardUiState.Bound(cachedName ?: "已绑定")
             runCatching { api.deviceMe("Bearer $token") }
                 .onSuccess {
+                    GuardLog.i("auth", "token refresh ok")
                     preferences.saveBinding(token, it.childId, it.childName)
                     _state.value = GuardUiState.Bound(it.childName)
                 }
                 .onFailure { error ->
                     // 仅令牌失效时清除；网络异常保留本地绑定，离线可用。
                     if (error is HttpException && (error.code() == 401 || error.code() == 403)) {
+                        GuardLog.w("auth", "token rejected HTTP ${error.code()}, re-activate")
                         preferences.clearBinding()
                         startActivation()
+                    } else {
+                        GuardLog.w("auth", "token refresh failed: ${error.message}")
                     }
                 }
         }
@@ -143,6 +149,7 @@ class GuardViewModel(
                 val code = api.requestActivationCode(ActivationCodeRequest(deviceId))
                 code to deviceId
             }.onSuccess { (code, deviceId) ->
+                GuardLog.i("activation", "code issued expires=${code.expiresIn}s")
                 _state.value = GuardUiState.Activation(
                     code = code.code,
                     expiresInSeconds = code.expiresIn,
@@ -150,6 +157,7 @@ class GuardViewModel(
                 )
                 pollActivation(code.code, deviceId, code.expiresIn)
             }.onFailure {
+                GuardLog.e("activation", "request code failed", it)
                 _state.value = GuardUiState.Failure(it.message ?: "请求激活码失败")
             }
         }
@@ -173,6 +181,7 @@ class GuardViewModel(
 
                 if (response.code() == 202) continue
                 if (response.code() == 410 || response.code() == 401) {
+                    GuardLog.w("activation", "code expired or rejected HTTP ${response.code()}")
                     _state.value = GuardUiState.Failure("激活码已失效，请重新生成")
                     return@launch
                 }
@@ -180,6 +189,7 @@ class GuardViewModel(
                     val body = response.body()
                     val token = body?.deviceToken
                     if (!token.isNullOrBlank()) {
+                        GuardLog.i("binding", "device bound")
                         preferences.saveBinding(token, body.childId, body.childName)
                         _state.value = GuardUiState.Bound(body.childName ?: "孩子")
                         return@launch

@@ -62,6 +62,19 @@ export interface CoverageResult {
   warnings: string[]
 }
 
+export interface TopicCoverageCell {
+  topic_id: string
+  topic_name: string
+  status: string
+  count: number
+}
+
+export interface TopicCoverageResult {
+  cells: TopicCoverageCell[]
+  total: number
+  warnings: string[]
+}
+
 export interface AuditEntry {
   id: number
   actor_type: string

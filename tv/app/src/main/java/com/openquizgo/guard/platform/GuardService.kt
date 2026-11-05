@@ -39,6 +39,7 @@ class GuardService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        GuardLog.i("service", "guard service created")
         createChannel()
         startForeground(NOTIFICATION_ID, buildNotification("守护端启动中"))
         val container = (application as GuardApplication).container
@@ -135,7 +136,7 @@ class GuardService : Service() {
         val intent = Intent(this, BlockerActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         runCatching { startActivity(intent) }
-            .onFailure { GuardLog.e("blocker launch failed", it) }
+            .onFailure { GuardLog.e("service", "blocker launch failed", it) }
     }
 
     private fun launchQuiz() {
@@ -143,7 +144,7 @@ class GuardService : Service() {
         val intent = Intent(this, QuizActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         runCatching { startActivity(intent) }
-            .onFailure { GuardLog.e("quiz launch failed", it) }
+            .onFailure { GuardLog.e("service", "quiz launch failed", it) }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

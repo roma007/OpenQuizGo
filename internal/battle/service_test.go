@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -466,12 +467,14 @@ func TestEventBrokerSharedSubscribers(t *testing.T) {
 	}
 }
 
-func waitEvent(t *testing.T, ch <-chan struct{}, name string) {
+func waitEvent(t *testing.T, ch <-chan int64, name string) int64 {
 	t.Helper()
 	select {
-	case <-ch:
+	case version := <-ch:
+		return version
 	case <-time.After(time.Second):
 		t.Fatalf("%s did not receive published event", name)
+		return 0
 	}
 }
 
@@ -509,6 +512,115 @@ func TestRedisEventBroker(t *testing.T) {
 	case <-ch:
 	case <-ctx.Done():
 		t.Fatal("did not receive Redis event")
+	}
+}
+
+func TestEventVersionLocal(t *testing.T) {
+	ctx := context.Background()
+	broker := newEventBroker(nil)
+	ch, unsubscribe := broker.subscribe(ctx, "battle-version-local")
+	defer unsubscribe()
+
+	var last int64
+	for i := 0; i < 5; i++ {
+		published := broker.publish(ctx, "battle-version-local")
+		if published <= last {
+			t.Fatalf("published version %d is not greater than %d", published, last)
+		}
+		received := waitEvent(t, ch, "local version subscriber")
+		if received != published {
+			t.Fatalf("received version %d, want %d", received, published)
+		}
+		last = received
+	}
+}
+
+func TestEventVersionRedis(t *testing.T) {
+	redisURL := os.Getenv("TEST_REDIS_URL")
+	if redisURL == "" {
+		t.Skip("TEST_REDIS_URL not set")
+	}
+	opts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		t.Fatalf("redis url: %v", err)
+	}
+	rdb := redis.NewClient(opts)
+	t.Cleanup(func() { _ = rdb.Close() })
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	battleID := fmt.Sprintf("redis-version-test-%d", time.Now().UnixNano())
+	t.Cleanup(func() { _ = rdb.Del(context.Background(), battleVersionKey(battleID)).Err() })
+
+	publisherA := newEventBroker(rdb)
+	publisherB := newEventBroker(rdb)
+	subscriberA := newEventBroker(rdb)
+	subscriberB := newEventBroker(rdb)
+	chA, unsubscribeA := subscriberA.subscribe(ctx, battleID)
+	defer unsubscribeA()
+	chB, unsubscribeB := subscriberB.subscribe(ctx, battleID)
+	defer unsubscribeB()
+
+	first := publisherA.publish(ctx, battleID)
+	gotA := waitEvent(t, chA, "redis subscriber A")
+	gotB := waitEvent(t, chB, "redis subscriber B")
+	if gotA != first || gotB != first {
+		t.Fatalf("subscribers saw %d/%d, want %d", gotA, gotB, first)
+	}
+
+	second := publisherB.publish(ctx, battleID)
+	if second != first+1 {
+		t.Fatalf("second version = %d, want %d", second, first+1)
+	}
+	gotA = waitEvent(t, chA, "redis subscriber A")
+	gotB = waitEvent(t, chB, "redis subscriber B")
+	if gotA != second || gotB != second {
+		t.Fatalf("subscribers saw %d/%d, want %d", gotA, gotB, second)
+	}
+
+	if baseline := subscriberA.currentVersion(ctx, battleID); baseline != second {
+		t.Fatalf("baseline version = %d, want %d", baseline, second)
+	}
+}
+
+func TestEventVersionRedisFallback(t *testing.T) {
+	// 指向不可达端口，模拟 Redis 不可用，订阅与发布都应回退到本地。
+	rdb := redis.NewClient(&redis.Options{
+		Addr:         "127.0.0.1:1",
+		DialTimeout:  50 * time.Millisecond,
+		ReadTimeout:  50 * time.Millisecond,
+		WriteTimeout: 50 * time.Millisecond,
+		PoolTimeout:  50 * time.Millisecond,
+		MaxRetries:   -1,
+	})
+	defer func() { _ = rdb.Close() }()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	broker := newEventBroker(rdb)
+	ch, unsubscribe := broker.subscribe(ctx, "battle-version-fallback")
+	defer unsubscribe()
+
+	var last int64
+	for i := 0; i < 3; i++ {
+		published := broker.publish(ctx, "battle-version-fallback")
+		if published <= last {
+			t.Fatalf("fallback version %d is not greater than %d", published, last)
+		}
+		received := waitEvent(t, ch, "fallback subscriber")
+		if received != published {
+			t.Fatalf("received version %d, want %d", received, published)
+		}
+		last = received
+	}
+}
+
+func TestWriteBattleEventFormat(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	writeBattleEvent(recorder, recorder, 12)
+	want := "id: 12\nevent: update\ndata: {\"version\":12}\n\n"
+	if got := recorder.Body.String(); got != want {
+		t.Fatalf("event stream = %q, want %q", got, want)
 	}
 }
 

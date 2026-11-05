@@ -2,7 +2,10 @@ package battle
 
 import (
 	"context"
+	"strconv"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -10,23 +13,27 @@ import (
 type eventBroker struct {
 	rdb    *redis.Client
 	mu     sync.Mutex
-	subs   map[string]map[chan struct{}]struct{} // 进程内回退总线
-	shared map[string]*sharedSubscription        // 同一实例内共享的 Redis 订阅
+	subs   map[string]map[chan int64]struct{} // 进程内回退总线
+	shared map[string]*sharedSubscription     // 同一实例内共享的 Redis 订阅
+	// localVers 保存每个对局的进程内版本计数：Redis 不可用时兜底，
+	// 同时记录从 Redis 观察到的最新版本以避免回退后版本倒退。
+	localVers map[string]*atomic.Int64
 }
 
 // sharedSubscription 表示同一实例内对某个对局共享的一个 Redis PubSub。
 // refs 与 subs 由 eventBroker.mu 保护。
 type sharedSubscription struct {
 	pubsub *redis.PubSub
-	subs   map[chan struct{}]struct{}
+	subs   map[chan int64]struct{}
 	refs   int
 }
 
 func newEventBroker(rdb *redis.Client) *eventBroker {
 	return &eventBroker{
-		rdb:    rdb,
-		subs:   make(map[string]map[chan struct{}]struct{}),
-		shared: make(map[string]*sharedSubscription),
+		rdb:       rdb,
+		subs:      make(map[string]map[chan int64]struct{}),
+		shared:    make(map[string]*sharedSubscription),
+		localVers: make(map[string]*atomic.Int64),
 	}
 }
 
@@ -34,8 +41,12 @@ func battleChannel(battleID string) string {
 	return "battle:events:" + battleID
 }
 
-func (b *eventBroker) subscribe(ctx context.Context, battleID string) (<-chan struct{}, func()) {
-	ch := make(chan struct{}, 1)
+func battleVersionKey(battleID string) string {
+	return "battle:events:ver:" + battleID
+}
+
+func (b *eventBroker) subscribe(ctx context.Context, battleID string) (<-chan int64, func()) {
+	ch := make(chan int64, 1)
 	if b.rdb != nil && b.subscribeShared(ctx, battleID, ch) {
 		return ch, func() { b.unsubscribeShared(battleID, ch) }
 	}
@@ -44,7 +55,7 @@ func (b *eventBroker) subscribe(ctx context.Context, battleID string) (<-chan st
 
 // subscribeShared 尝试把订阅者挂到共享的 Redis PubSub 上，必要时创建它。
 // 返回 false 表示 Redis 订阅失败，调用方应回退到进程内总线。
-func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch chan struct{}) bool {
+func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch chan int64) bool {
 	b.mu.Lock()
 	if shared := b.shared[battleID]; shared != nil {
 		shared.subs[ch] = struct{}{}
@@ -72,7 +83,7 @@ func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch c
 	}
 	b.shared[battleID] = &sharedSubscription{
 		pubsub: pubsub,
-		subs:   map[chan struct{}]struct{}{ch: {}},
+		subs:   map[chan int64]struct{}{ch: {}},
 		refs:   1,
 	}
 	b.mu.Unlock()
@@ -81,14 +92,19 @@ func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch c
 	return true
 }
 
-// forward 把共享 PubSub 收到的事件广播给本地所有订阅者。
+// forward 把共享 PubSub 收到的事件广播给本地所有订阅者，并保留消息中的版本号。
 func (b *eventBroker) forward(battleID string, pubsub *redis.PubSub) {
-	for range pubsub.Channel() {
-		b.notify(battleID, true, false)
+	for msg := range pubsub.Channel() {
+		version, err := strconv.ParseInt(msg.Payload, 10, 64)
+		if err != nil {
+			continue
+		}
+		b.observeVersion(battleID, version)
+		b.notify(battleID, version, true, false)
 	}
 }
 
-func (b *eventBroker) unsubscribeShared(battleID string, ch chan struct{}) {
+func (b *eventBroker) unsubscribeShared(battleID string, ch chan int64) {
 	b.mu.Lock()
 	shared := b.shared[battleID]
 	if shared == nil {
@@ -112,10 +128,10 @@ func (b *eventBroker) unsubscribeShared(battleID string, ch chan struct{}) {
 	_ = shared.pubsub.Close()
 }
 
-func (b *eventBroker) subscribeLocal(battleID string, ch chan struct{}) (<-chan struct{}, func()) {
+func (b *eventBroker) subscribeLocal(battleID string, ch chan int64) (<-chan int64, func()) {
 	b.mu.Lock()
 	if b.subs[battleID] == nil {
-		b.subs[battleID] = make(map[chan struct{}]struct{})
+		b.subs[battleID] = make(map[chan int64]struct{})
 	}
 	b.subs[battleID][ch] = struct{}{}
 	b.mu.Unlock()
@@ -131,24 +147,88 @@ func (b *eventBroker) subscribeLocal(battleID string, ch chan struct{}) (<-chan 
 	}
 }
 
-func (b *eventBroker) publish(ctx context.Context, battleID string) {
-	if b.rdb != nil {
-		if err := b.rdb.Publish(ctx, battleChannel(battleID), "1").Err(); err == nil {
-			// 共享订阅者会由 Redis 推送；仍需通知因订阅失败而落在进程内总线的订阅者。
-			b.notify(battleID, false, true)
+// counter 返回对局的进程内版本计数；map 由 b.mu 保护，原子计数本身无锁。
+func (b *eventBroker) counter(battleID string) *atomic.Int64 {
+	b.mu.Lock()
+	counter := b.localVers[battleID]
+	if counter == nil {
+		counter = &atomic.Int64{}
+		b.localVers[battleID] = counter
+	}
+	b.mu.Unlock()
+	return counter
+}
+
+// observeVersion 记录从 Redis 观察到的最新版本，保证后续本地兜底不会倒退。
+func (b *eventBroker) observeVersion(battleID string, version int64) {
+	counter := b.counter(battleID)
+	for {
+		current := counter.Load()
+		if version <= current {
+			return
+		}
+		if counter.CompareAndSwap(current, version) {
 			return
 		}
 	}
-	b.notify(battleID, true, true)
+}
+
+// nextVersion 优先使用 Redis INCR 保证跨实例单调递增；
+// Redis 未配置或失败时回退到进程内原子计数。
+func (b *eventBroker) nextVersion(ctx context.Context, battleID string) int64 {
+	counter := b.counter(battleID)
+	if b.rdb != nil {
+		if version, err := b.rdb.Incr(ctx, battleVersionKey(battleID)).Result(); err == nil {
+			b.observeVersion(battleID, version)
+			return version
+		}
+	}
+	for {
+		current := counter.Load()
+		next := current + 1
+		if counter.CompareAndSwap(current, next) {
+			return next
+		}
+	}
+}
+
+// currentVersion 返回对局当前已知版本基线，不产生新的版本号。
+func (b *eventBroker) currentVersion(ctx context.Context, battleID string) int64 {
+	counter := b.counter(battleID)
+	if b.rdb != nil {
+		// 基线只是可选的初始提示，不能阻塞事件流建立。
+		readCtx, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
+		version, err := b.rdb.Get(readCtx, battleVersionKey(battleID)).Int64()
+		cancel()
+		if err == nil {
+			b.observeVersion(battleID, version)
+			return version
+		}
+	}
+	return counter.Load()
+}
+
+func (b *eventBroker) publish(ctx context.Context, battleID string) int64 {
+	version := b.nextVersion(ctx, battleID)
+	if b.rdb != nil {
+		if err := b.rdb.Publish(ctx, battleChannel(battleID), strconv.FormatInt(version, 10)).Err(); err == nil {
+			// 共享订阅者会由 Redis 推送；仍需通知因订阅失败而落在进程内总线的订阅者。
+			b.notify(battleID, version, false, true)
+			return version
+		}
+	}
+	// Redis 不可用时，共享订阅者与本地订阅者都由本进程直接通知。
+	b.notify(battleID, version, true, true)
+	return version
 }
 
 // notify 在锁内对订阅者做快照，锁外投递，避免慢订阅者阻塞订阅/取消操作。
-func (b *eventBroker) notify(battleID string, includeShared, includeLocal bool) {
+func (b *eventBroker) notify(battleID string, version int64, includeShared, includeLocal bool) {
 	b.mu.Lock()
-	var targets []chan struct{}
+	var targets []chan int64
 	if includeShared {
 		if shared := b.shared[battleID]; shared != nil {
-			targets = make([]chan struct{}, 0, len(shared.subs))
+			targets = make([]chan int64, 0, len(shared.subs))
 			for ch := range shared.subs {
 				targets = append(targets, ch)
 			}
@@ -163,7 +243,7 @@ func (b *eventBroker) notify(battleID string, includeShared, includeLocal bool) 
 
 	for _, ch := range targets {
 		select {
-		case ch <- struct{}{}:
+		case ch <- version:
 		default:
 		}
 	}

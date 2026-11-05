@@ -254,6 +254,46 @@ func (s *Service) Coverage(ctx context.Context, threshold int) (CoverageResult, 
 
 const coverageMinOnline = 50
 
+// TopicCoverage 返回按专题聚合的覆盖率与阈值告警。
+func (s *Service) TopicCoverage(ctx context.Context, threshold int) (TopicCoverageResult, error) {
+	if threshold < 1 || threshold > 10000 {
+		threshold = coverageMinOnline
+	}
+	cells, total, err := s.repo.TopicCoverage(ctx)
+	if err != nil {
+		return TopicCoverageResult{}, err
+	}
+	return TopicCoverageResult{
+		Cells:    cells,
+		Total:    total,
+		Warnings: topicCoverageWarnings(cells, threshold),
+	}, nil
+}
+
+// topicCoverageWarnings 按专题汇总在线上题量，低于阈值时生成告警。
+// 未分专题（topic_id 为空）不是真实专题，只出现在统计单元里，不参与告警。
+func topicCoverageWarnings(cells []TopicCoverageCell, threshold int) []string {
+	names := make(map[string]string)
+	online := make(map[string]int)
+	for _, cell := range cells {
+		if cell.TopicID == "" || cell.Status != "online" {
+			continue
+		}
+		names[cell.TopicID] = cell.TopicName
+		online[cell.TopicID] += cell.Count
+	}
+	warnings := make([]string, 0)
+	for key, count := range online {
+		if count >= threshold {
+			continue
+		}
+		warnings = append(warnings, fmt.Sprintf("专题「%s」上线题量 %d，低于阈值 %d",
+			names[key], count, threshold))
+	}
+	sort.Strings(warnings)
+	return warnings
+}
+
 func subjectName(code string) string {
 	switch code {
 	case "math":

@@ -244,6 +244,47 @@ func (r *repository) Coverage(ctx context.Context) ([]CoverageCell, int, error) 
 	return cells, total, rows.Err()
 }
 
+// topicCoverageUnassigned 是未加入任何专题的题目汇总名称。
+const topicCoverageUnassigned = "未分专题"
+
+// TopicCoverage 按 topic_question 多对多关系聚合专题覆盖率。
+// 同一题属于多个专题时分别计数；无关联专题的题目归入空 topic_id 的「未分专题」。
+// 返回值 total 为去重后的题目总量。
+func (r *repository) TopicCoverage(ctx context.Context) ([]TopicCoverageCell, int, error) {
+	rows, err := r.pool.Query(ctx, `
+		select coalesce(tp.id::text, ''), coalesce(tp.name, '`+topicCoverageUnassigned+`'),
+		       q.status, count(*)::int
+		from question q
+		left join topic_question tq on tq.question_id = q.id
+		left join topic_pack tp on tp.id = tq.topic_id
+		group by tp.id, tp.name, q.status
+		order by (tp.id is null), tp.name, q.status`)
+	if err != nil {
+		return nil, 0, fmt.Errorf("topic coverage query: %w", err)
+	}
+	defer rows.Close()
+
+	cells := make([]TopicCoverageCell, 0)
+	for rows.Next() {
+		var cell TopicCoverageCell
+		if err := rows.Scan(&cell.TopicID, &cell.TopicName, &cell.Status,
+			&cell.Count); err != nil {
+			return nil, 0, fmt.Errorf("scan topic coverage: %w", err)
+		}
+		cells = append(cells, cell)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+	rows.Close()
+
+	var total int
+	if err := r.pool.QueryRow(ctx, `select count(*) from question`).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("count questions: %w", err)
+	}
+	return cells, total, nil
+}
+
 func (r *repository) list(ctx context.Context, f Filter) (ListResult, error) {
 	where := []string{"true"}
 	args := make([]any, 0, 8)

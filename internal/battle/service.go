@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -250,22 +251,27 @@ func (s *Service) handleEvents(w http.ResponseWriter, r *http.Request) {
 
 	ch, unsubscribe := s.events.subscribe(r.Context(), battleID)
 	defer unsubscribe()
-	_, _ = w.Write([]byte("event: update\ndata: {}\n\n"))
-	flusher.Flush()
+	// 先建立订阅再下发当前版本基线，避免两者之间漏事件。
+	writeBattleEvent(w, flusher, s.events.currentVersion(r.Context(), battleID))
 	ticker := time.NewTicker(20 * time.Second)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-r.Context().Done():
 			return
-		case <-ch:
-			_, _ = w.Write([]byte("event: update\ndata: {}\n\n"))
-			flusher.Flush()
+		case version := <-ch:
+			writeBattleEvent(w, flusher, version)
 		case <-ticker.C:
 			_, _ = w.Write([]byte(": ping\n\n"))
 			flusher.Flush()
 		}
 	}
+}
+
+// writeBattleEvent 按 SSE 约定输出事件版本，客户端可据此去重与判断新旧。
+func writeBattleEvent(w http.ResponseWriter, flusher http.Flusher, version int64) {
+	_, _ = fmt.Fprintf(w, "id: %d\nevent: update\ndata: {\"version\":%d}\n\n", version, version)
+	flusher.Flush()
 }
 
 func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {

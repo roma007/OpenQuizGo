@@ -141,7 +141,7 @@ class GuardEngine(
 
     /** 家长端/后台签发新授权后由阻挡页调用，直接恢复观看。 */
     fun adoptGrant(grant: GrantInfo) {
-        GuardLog.i("adopt grant id=${grant.grantId} minutes=${grant.minutes}")
+        GuardLog.i("grant", "adopt id=${grant.grantId} minutes=${grant.minutes}")
         _watchSeconds.value = 0
         adoptGrantInternal(grant)
         _blockReason.value = null
@@ -169,7 +169,8 @@ class GuardEngine(
             )
         }
         GuardLog.i(
-            "grant accepted id=${grant.grantId} minutes=${grant.minutes} " +
+            "grant",
+            "accepted id=${grant.grantId} minutes=${grant.minutes} " +
                 "remaining=${grant.remainingSeconds}",
         )
     }
@@ -289,7 +290,8 @@ class GuardEngine(
             lastHeartbeatMillis = now
             _grantSeconds.value = (result.remainingSeconds ?: 0).toLong().coerceAtLeast(0)
             GuardLog.i(
-                "heartbeat status=${result.status} remaining=${result.remainingSeconds} " +
+                "heartbeat",
+                "status=${result.status} remaining=${result.remainingSeconds} " +
                     "paused=${result.paused} revoked=${result.revoked}",
             )
             scope.launch { persistGrant() }
@@ -309,7 +311,7 @@ class GuardEngine(
             reportPendingOffline()
         }.onFailure { error ->
             offline = true
-            GuardLog.w("heartbeat failed: ${error.message}")
+            GuardLog.w("heartbeat", "failed: ${error.message}")
             if (error is com.openquizgo.guard.data.watch.WatchApiException) {
                 when (error.httpStatus) {
                     401 -> transition(GuardState.UNBOUND)
@@ -349,7 +351,8 @@ class GuardEngine(
                 lastHeartbeatMillis = System.currentTimeMillis()
                 offline = false
                 GuardLog.i(
-                    "active grant id=${grant.grantId} remaining=${grant.remainingSeconds} " +
+                    "grant",
+                    "refreshed id=${grant.grantId} remaining=${grant.remainingSeconds} " +
                         "status=${grant.status}",
                 )
                 preferences.saveStoredGrant(
@@ -369,7 +372,7 @@ class GuardEngine(
                 reportPendingOffline()
             }
             .onFailure { error ->
-                GuardLog.w("active grant failed: ${error.message}")
+                GuardLog.w("grant", "refresh failed: ${error.message}")
                 offline = true
             }
     }

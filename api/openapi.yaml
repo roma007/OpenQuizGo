@@ -570,7 +570,7 @@ paths:
     get:
       tags: [battle]
       summary: 对战事件流（SSE）
-      description: "初始与状态变更时发送 event: update；每 20 秒发送心跳。"
+      description: "初始与状态变更时发送带 id 与 data.version 的 event: update；每 20 秒发送心跳。"
       security: [{ ParentAuth: [] }]
       responses:
         "200":
@@ -1095,14 +1095,46 @@ paths:
                         count: { type: integer }
                   total: { type: integer }
 
+  /v1/admin/coverage/topics:
+    get:
+      tags: [admin]
+      summary: 专题维度覆盖率聚合
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: threshold, in: query, schema: { type: integer, default: 50 } }
+      responses:
+        "200":
+          description: 按专题/状态聚合，未分专题单独汇总
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cells:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        topic_id: { type: string }
+                        topic_name: { type: string }
+                        status: { type: string }
+                        count: { type: integer }
+                  total: { type: integer }
+                  warnings:
+                    type: array
+                    items: { type: string }
+
   /v1/admin/coverage/export:
     get:
       tags: [admin]
       summary: 导出覆盖率 CSV
       security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: threshold, in: query, schema: { type: integer, default: 50 } }
+        - { name: dimension, in: query, schema: { type: string, enum: [matrix, topic], default: matrix } }
       responses:
         "200":
-          description: CSV 文件
+          description: CSV 文件（dimension=topic 时为 topic_id,topic_name,status,count）
           content:
             text/csv:
               schema: { type: string }

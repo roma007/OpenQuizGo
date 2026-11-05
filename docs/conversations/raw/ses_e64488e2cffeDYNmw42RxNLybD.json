@@ -10,20 +10,20 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 17970650,
-      "output": 1118755,
-      "reasoning": 648930,
+      "input": 18007845,
+      "output": 1129615,
+      "reasoning": 651923,
       "cache": {
-        "read": 1199473536,
+        "read": 1203428480,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793869269892,
-      "busy": 1793869030031,
-      "idle": 1793869029170,
+      "updated": 1793869756376,
+      "busy": 1793869615204,
+      "idle": 1793869539476,
       "viewed": 1793867938613
     },
     "title": "项目铁律：留档与开发计划",
@@ -221123,6 +221123,1883 @@
         "reasoning": 19,
         "cache": {
           "read": 145792,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf0c4fe001qXUnLNzdjdATJq",
+      "time": {
+        "created": 1793869268225,
+        "streamed": 1793869272309,
+        "completed": 1793869296726
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now maybe update docs/README command? no.\n\nFinal go test? Code unchanged since full test (only docs/openapi/admin version). Fine. But 046 code was changed after full test? Timeline: full test ran after 046 final correction? Let's check: 046 correction notification arrived before 045 notification; then I ran full go test. Yes after both. Good.\n\nNow archive and commit. But first check docs acceptance 044 claims `go test ./internal/question -run TestValidateOptionImages 6/6`; okay.\n\nCheck ROADMAP counts 96/43.\n\nArchive script may output and include raw JSON. Run, then commit tag v0.40.0 push.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869269897,
+            "completed": 1793869272299
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_12c78fa354a94895925ef3c5",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -1 && git add -A && git commit -q -m \"feat(044-046): 选项多图、管理端 Cookie、安全授权替换\n\n- 044 选项最多 3 图，管理端多图上传/移除，TV 0.3.2 多图渲染\n- 045 管理令牌改 HttpOnly Cookie，CSRF 自定义头、logout、CSP\n- 046 新授权签发前撤销同孩子同设备旧 active，替换不损失额度\n- OpenAPI、部署安全头、验收报告与 ROADMAP 勾选\n- 管理端 0.40.0\" && git tag -a v0.40.0 -m \"OpenQuizGo v0.40.0（选项多图 / Cookie 安全 / 授权替换）\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git push github v0.40.0 2>&1 | tail -1 && git push gitee v0.40.0 2>&1 | tail -1",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   73fb028..e8c5191  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   73fb028..e8c5191  main -> master\n * [new tag]         v0.40.0 -> v0.40.0\n * [new tag]         v0.40.0 -> v0.40.0\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869270723,
+            "ran": 1793869272306,
+            "completed": 1793869296515
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "6626cdde9392e3e8f4ab4313b48229548ee22b85",
+        "end": "36805f7cf343f0ee46fdc6d4c53af6aae81b0270",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 603,
+        "output": 329,
+        "reasoning": 142,
+        "cache": {
+          "read": 146432,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf13474001T54FEUoJq4cY2q",
+      "time": {
+        "created": 1793869296761,
+        "streamed": 1793869319184,
+        "completed": 1793869319291
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now restart timer per prior instruction. Then maybe launch next batch? User said multi-subagent accelerate continue. We've currently delivered three batches. The user's latest explicit instruction was \"多子agent加速开发，继续\"; we should keep going. But at some point token/time. We can launch another batch while timer stopped. However the last assistant message said v0.40.0 then restart timer. The user hasn't intervened. The auto-continue mechanism suggests unattended. Let me check auto-continue status; it's stopped. We can launch next batch of 3 (047-049) to keep acceleration.\n\nPick next local tasks:\n- 047 覆盖率按 topic 导出 / 趋势图 (backend + admin)\n- 048 校准趋势图 / 批量回滚 (backend + admin) → conflicts with 047 in question package; avoid parallel.\n- 048 事件版本号 (battle)\n- 049 家长端离线写操作队列 (Flutter) — PIN concern; could design queue only for rule save while app session alive with PIN kept in memory? Not persisted across restarts, less useful. Alternative: 家长端离线只读 already exists; skip.\n- 049 设备重置后服务端绑定自动解除 (backend identity)\n- 049 TV 日志落盘与远程诊断 (TV only)\n- 049 覆盖率按 topic 导出 (backend question + admin page)\n\nBatch 047–049:\n047 覆盖率按 topic 导出 (question + admin CoveragePage/api)\n048 事件版本号 (battle events + service + SSE; maybe no other)\n049 TV 日志落盘与诊断导出 (TV only; but 047 admin no TV conflict)\n\n049 TV only and 048 Go battle, 047 Go question/admin. No overlap. Good.\n\nBut this is getting long; each batch takes integration. We can launch and then wait. The user expects \"继续\". Do it.\n\nDesigns:\n047: Add `topic` dimension to coverage:\n- Current `/admin/coverage` returns cells subject/stage/type/status/difficulty. Add query `dimension=topic` returning topic_id/name cells? Better add `topics` array in response or separate endpoint `GET /admin/coverage/topics`. For export, `GET /admin/coverage/export?dimension=topic` CSV with topic_id, topic_name, status, count.\n- Query join `question_topic qt join topic_pack tp`, group by topic, status. Unassigned? Include `未分专题` group via left join? q.topic_id single + question_topic many. For simplicity use `question_topic`, exclude unassigned; or include null group. Design: include all questions, using primary `question.topic_id`? Data model has q.topic_id and question_topic. Use `question_topic` for packs; unassigned omitted, plus row \"unassigned\" count. Hmm.\nMaybe simpler: add `GET /admin/coverage/topics` that aggregates by `question.topic_id` (single primary topic) and status, join topic_pack name; export dimension=topic uses same. Current admin page shows table; add a second table/card \"专题覆盖\". Trend图 remains next item. The roadmap item is \"覆盖率按 topic 导出 / 趋势图\": we can complete export part and leave trend separately (like 040 split). Mark `[x] 覆盖率按 topic 导出` and `[ ] 覆盖率趋势图`.\n\n048 event version:\n- Add per-battle version to SSE `id:` and payload `{\"version\":N}`.\n- Need generate version. Use Redis INCR `battle:events:ver:<id>` at publish; fallback atomic local counter. Publish payload version through Redis channel (string number). EventBroker currently channels `chan struct{}`. Refactor to `chan int64`? Many changes. Subagent can do.\n- SSE handler writes `id: <v>\\ndata: {\"version\":v}\\n\\n`, and on subscribe maybe send current version? Client uses Last-Event-ID to reconnect but events are just refetch triggers; include `retry:` not needed. For dedup, include id. Tests: two publishes version increases; cross-broker Redis propagation same version; fallback local counter.\n- Risk: SSE channel buffer 1 drops intermediate versions; id may skip, acceptable (clients refetch).\n- This is independent of 047.\n\n049 TV logs:\n- Add file logging of guard events to app files dir, rotate max 1MB, diagnostics screen \"导出日志\" via FileProvider share intent.\n- No server upload. Compile-level + unit test for rotation? TV tests exist. Subagent scope TV only.\n- Files: App/DI, new LogStore.kt, MainActivity diagnostics, AndroidManifest FileProvider, res/xml/file_paths.xml, build.gradle? Could conflict with 047 none.\n\nLet's create docs 047-049 and launch.\n\nBut note: we just restarted API and timer? Not yet restart timer. We'll keep timer stopped during batch. We already committed v0.40.0. Next batch can begin. Time is fine.\n\nWrite docs concise.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869298824,
+            "completed": 1793869319172
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_93ce00187f0140139e1cd9d7",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/design/047-覆盖率按专题导出设计.md <<'EOF'\n# 047 覆盖率按专题导出设计\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 047 |\n| 版本 | v1 |\n| 状态 | approved |\n| 作者 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应计划 | [047-覆盖率按专题导出实施计划](../plans/047-覆盖率按专题导出实施计划.md) |\n| 前置 | 007 覆盖率告警与导出、010 专题题包 |\n\n## 1. 目标\n\n在现有学科/学段/题型覆盖率之外，增加按专题题包聚合与 CSV 导出，便于运营发现专题题量不足。\n\n## 2. 接口\n\n`GET /v1/admin/coverage/topics?threshold=50`\n\n```json\n{\"cells\":[{\"topic_id\":\"...\",\"topic_name\":\"寒假数学\",\"status\":\"online\",\"count\":12}],\"total\":120,\"warnings\":[\"专题「寒假数学」上线题量 12，低于阈值 50\"]}\n```\n\n`GET /v1/admin/coverage/export?threshold=50&dimension=topic`\n\n- `dimension` 默认 `matrix`（保持现有 CSV）；\n- `dimension=topic` 输出 `topic_id,topic_name,status,count`；\n- 权限 `question.read`。\n\n专题归属以 `question_topic` 多对多关系为准；同一题属于多个专题时分别计数；未加入专题的题目单独汇总为 `unassigned`。\n\n## 3. 管理端\n\n- 覆盖率页增加「专题覆盖」卡片/表格；\n- 增加「导出专题 CSV」按钮；\n- 告警沿用阈值，展示专题维度警告。\n\n## 4. 风险\n\n| 风险 | 对策 |\n| --- | --- |\n| 多专题重复计数 | 明确按关系计数，total 用去重题量 |\n| 未分专题漏统计 | `unassigned` 兜底行 |\n| 大表查询慢 | 现有索引 + 聚合查询 |\n\n## 5. 后续\n\n- 覆盖率趋势快照；\n- 按专题筛选题目；\n- 图表可视化。\n\n## 6. 变更记录\n\n| 日期 | 变更 | 原因 |\n| --- | --- | --- |\n| 2026-11-05 | 初稿并批准 | 专题运营 |\nEOF\ncat > docs/plans/047-覆盖率按专题导出实施计划.md <<'EOF'\n# 047-覆盖率按专题导出实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 047 |\n| 状态 | approved |\n| 负责人 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应设计 | [047-覆盖率按专题导出设计](../design/047-覆盖率按专题导出设计.md) |\n\n## 1. 任务\n\n| 序号 | 任务 | 产出 | 验收 | 状态 |\n| --- | --- | --- | --- | --- |\n| S1 | 专题聚合 | TopicCoverage | 单元/集成测试 | todo |\n| S2 | 接口/导出 | /coverage/topics、dimension=topic | 200/CSV | todo |\n| T3 | 管理端 | 表格 + 导出按钮 | 构建通过 | todo |\n| T4 | 验收 | 测试/接口 | 记录 | todo |\n\n## 2. 验证\n\n- 专题聚合包含多专题题目与 unassigned；\n- 默认导出矩阵 CSV 不变；\n- dimension=topic CSV 列正确；\n- `go test ./internal/question`、管理端构建通过。\n\n## 3. 回滚\n\n- 隐藏前端入口；保留默认矩阵导出。\n\n## 4. 执行记录\n\n| 日期 | 内容 | 结果 |\n| --- | --- | --- |\n| 2026-11-05 | 设计与计划创建 | approved |\n\n## 5. 验收结论\n\n- 待验收\nEOF\ncat > docs/design/048-对战事件版本号设计.md <<'EOF'\n# 048 对战事件版本号设计\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 048 |\n| 版本 | v1 |\n| 状态 | approved |\n| 作者 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应计划 | [048-对战事件版本号实施计划](../plans/048-对战事件版本号实施计划.md) |\n| 前置 | 030 SSE、042 共享 Redis 订阅 |\n\n## 1. 目标\n\n为每个对局的事件流增加单调递增版本号，SSE 通过 `id:` 与 `data.version` 暴露，便于客户端断线重连去重与判断事件新旧。\n\n## 2. 实现\n\n- 发布时生成版本：Redis `INCR battle:events:ver:<battleID>`；Redis 不可用时用进程内原子计数；\n- 版本随事件在 broker 内分发（`chan int64` 或带版本结构）；\n- SSE 输出：\n\n```text\nid: 12\nevent: update\ndata: {\"version\":12}\n\n```\n\n- 同一实例本地总线与 Redis 跨实例共享同一版本来源；\n- 订阅时先发送当前 `version` 快照（可选，便于客户端建立基线）。\n\n## 3. 语义\n\n- 版本只增不减，允许因限流合并导致跳号；\n- 客户端只处理 `version` 大于本地值的事件；\n- 无事件时心跳仍可保持连接。\n\n## 4. 风险\n\n| 风险 | 对策 |\n| --- | --- |\n| Redis 不可用 | 本地原子计数兜底 |\n| 并发发布顺序 | INCR 全局单调 |\n| 旧客户端 | 忽略新增 id/version 字段 |\n\n## 5. 后续\n\n- SSE Last-Event-ID 补发；\n- 事件持久化；\n- 指标监控。\n\n## 6. 变更记录\n\n| 日期 | 变更 | 原因 |\n| --- | --- | --- |\n| 2026-11-05 | 初稿并批准 | 断线重连去重 |\nEOF\ncat > docs/plans/048-对战事件版本号实施计划.md <<'EOF'\n# 048-对战事件版本号实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 048 |\n| 状态 | approved |\n| 负责人 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应设计 | [048-对战事件版本号设计](../design/048-对战事件版本号设计.md) |\n\n## 1. 任务\n\n| 序号 | 任务 | 产出 | 验收 | 状态 |\n| --- | --- | --- | --- | --- |\n| S1 | 版本生成 | Redis INCR + 本地兜底 | 单调 | todo |\n| S2 | 事件分发 | 版本透传到 SSE | id/data.version | todo |\n| S3 | 测试 | 本地/Redis/并发 | go test 通过 | todo |\n| S4 | 验收 | 文档/接口 | 记录 | todo |\n\n## 2. 验证\n\n- 连续发布版本递增；\n- 两个 broker 经 Redis 看到同一版本序列；\n- SSE 输出 `id:` 与 `data.version`；\n- 无 Redis 时本地计数仍递增。\n\n## 3. 回滚\n\n- 忽略版本字段，恢复空 data。\n\n## 4. 执行记录\n\n| 日期 | 内容 | 结果 |\n| --- | --- | --- |\n| 2026-11-05 | 设计与计划创建 | approved |\n\n## 5. 验收结论\n\n- 待验收\nEOF\ncat > docs/design/049-TV日志落盘与诊断导出设计.md <<'EOF'\n# 049 TV 日志落盘与诊断导出设计\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 049 |\n| 版本 | v1 |\n| 状态 | approved |\n| 作者 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应计划 | [049-TV日志落盘与诊断导出实施计划](../plans/049-TV日志落盘与诊断导出实施计划.md) |\n| 前置 | 002 TV 守护端、T11 诊断页 |\n\n## 1. 目标\n\nTV 端关键事件（启动、绑定、授权、心跳、错误、答题）写入本地日志文件，家长可在诊断页导出日志用于排障，无需远程服务器。\n\n## 2. 实现\n\n- 新增 `LogStore`：写入应用私有目录 `files/logs/guard.log`；\n- 单文件上限 1MB，超出后轮转为 `guard.log.1`（只保留一份）；\n- 统一 `GuardLog.i/w/e(tag, message)`，线程安全，失败不影响主流程；\n- 诊断页增加「导出日志」按钮，通过 `FileProvider` + `ACTION_SEND` 分享；\n- 关键路径埋点：应用启动、激活/绑定、授权刷新、心跳失败、答题提交失败、异常。\n- manifest 注册 FileProvider，`res/xml/file_paths.xml` 暴露 logs 目录。\n\n## 3. 隐私\n\n- 不记录令牌、设备密钥、完整家庭信息；\n- 日志仅保存在设备私有目录，由家长主动分享；\n- 导出文件名为 `openquizgo-tv-log-YYYYMMDD-HHmm.txt`。\n\n## 4. 风险\n\n| 风险 | 对策 |\n| --- | --- |\n| 日志无限增长 | 1MB 轮转，仅保留一份 |\n| 写日志阻塞主线程 | 同步小写入 + try/catch |\n| 分享 URI 权限 | FileProvider + FLAG_GRANT_READ_URI_PERMISSION |\n\n## 5. 后续\n\n- 远程诊断上传；\n- 日志级别配置；\n- 崩溃日志捕获。\n\n## 6. 变更记录\n\n| 日期 | 变更 | 原因 |\n| --- | --- | --- |\n| 2026-11-05 | 初稿并批准 | TV 排障 |\nEOF\ncat > docs/plans/049-TV日志落盘与诊断导出实施计划.md <<'EOF'\n# 049-TV日志落盘与诊断导出实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 049 |\n| 状态 | approved |\n| 负责人 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应设计 | [049-TV日志落盘与诊断导出设计](../design/049-TV日志落盘与诊断导出设计.md) |\n\n## 1. 任务\n\n| 序号 | 任务 | 产出 | 验收 | 状态 |\n| --- | --- | --- | --- | --- |\n| T1 | LogStore | 写入/轮转 | 单测通过 | todo |\n| T2 | 埋点 | 启动/绑定/授权/错误 | 编译通过 | todo |\n| T3 | 导出 | FileProvider + 分享 | 编译通过 | todo |\n| T4 | 验收 | 构建/测试 | 记录 | todo |\n\n## 2. 验证\n\n- 超过 1MB 触发轮转；\n- 诊断页按钮可触发分享 Intent；\n- 日志不含令牌；\n- `./gradlew :app:testDebugUnitTest`、`assembleRelease` 通过。\n\n## 3. 回滚\n\n- 隐藏导出按钮，停止写日志。\n\n## 4. 执行记录\n\n| 日期 | 内容 | 结果 |\n| --- | --- | --- |\n| 2026-11-05 | 设计与计划创建 | approved |\n\n## 5. 验收结论\n\n- 待验收\nEOF\necho docs created",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "docs created\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869306096,
+            "ran": 1793869319182,
+            "completed": 1793869319228
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "36805f7cf343f0ee46fdc6d4c53af6aae81b0270",
+        "end": "acd22e226e453606de626d4b2419f7b45762042f",
+        "files": [
+          "docs/design/047-覆盖率按专题导出设计.md",
+          "docs/design/048-对战事件版本号设计.md",
+          "docs/design/049-TV日志落盘与诊断导出设计.md",
+          "docs/plans/047-覆盖率按专题导出实施计划.md",
+          "docs/plans/048-对战事件版本号实施计划.md",
+          "docs/plans/049-TV日志落盘与诊断导出实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 824,
+        "output": 2656,
+        "reasoning": 1098,
+        "cache": {
+          "read": 146816,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf18c8f001nx4gJklK1uOiK8",
+      "time": {
+        "created": 1793869319313,
+        "streamed": 1793869330764,
+        "completed": 1793869330916
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Launch 3 subagents with scopes.\n\n047 scope:\n- internal/question/models.go, repository.go, service.go, handlers.go, maybe integration_test.go\n- admin-web/src/types.ts, api.ts, pages/CoveragePage.tsx\nNo conflict with others (048 battle, 049 TV).\nInstruct no TEST_DATABASE_URL? They may need integration. 048 no DB. 049 TV. Safe for 047 to use DB.\nNeed tests: could add to calibration_test or integration. Allow `internal/question/coverage_test.go` new (pure), integration test for topic aggregation perhaps. Let agent run with DB.\n\n048 scope:\n- internal/battle/events.go, service.go, service_test.go\nOnly.\nDesign detail: channel type changes may be invasive; let agent decide but require tests. Redis PubSub payload now version; fallback local atomic.\nSSE handler in service.go currently sends empty data. Update to write id/version.\nPotential auto-continue? no.\n\n049 scope TV:\n- tv/app/src/main/java/... new LogStore.kt, AppContainer/App, MainActivity, GuardViewModel, QuizActivity maybe, AndroidManifest.xml, res/xml/file_paths.xml, test new.\nInstruct no version bump/docs/assembleRelease (I'll do). Use compileDebugKotlin + testDebugUnitTest. But 044 just built TV; no other TV agent. Fine.\n\nLaunch.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869320944,
+            "completed": 1793869330750
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_d9d59bfa13c749caac96f335",
+          "name": "subagent",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "agent": "general",
+              "description": "实现覆盖率按专题导出",
+              "background": true,
+              "prompt": "你在 /Users/mengfeng/我的文档/源码/OpenQuizGo 工作。先读 AGENTS.md、docs/design/047-覆盖率按专题导出设计.md、docs/plans/047-覆盖率按专题导出实施计划.md，按设计实现 047。\n\n只允许改这些文件（严格）：\n- internal/question/models.go\n- internal/question/repository.go\n- internal/question/service.go\n- internal/question/handlers.go\n- internal/question/coverage_test.go（新建，可为纯单元或集成测试）\n- admin-web/src/types.ts\n- admin-web/src/api.ts\n- admin-web/src/pages/CoveragePage.tsx\n\n要求：\n1. 新增 `GET /v1/admin/coverage/topics?threshold=50`（权限 question.read），返回 `cells`（topic_id/topic_name/status/count）、`total`（去重题量）、`warnings`。\n2. 聚合以 `question_topic` 多对多关系为准，同一题属于多个专题分别计数；未加入任何专题的题目汇总为 topic_id 空、topic_name「未分专题」。\n3. 扩展 `GET /v1/admin/coverage/export` 支持 `dimension=topic`（`topic_id,topic_name,status,count`）；默认或其他值保持现有矩阵 CSV 不变。\n4. 阈值告警：按专题在线上题量低于 threshold 生成 warning，文案包含专题名。\n5. 管理端覆盖率页增加「专题覆盖」表格与「导出专题 CSV」按钮，沿用现有 threshold；类型与 api client 补充。\n6. 测试：至少覆盖多专题计数、未分专题、阈值告警；可写不依赖 DB 的辅助测试，若用集成库则设置 `TEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\"`。\n7. 运行 `gofmt -w internal/question`、`go test ./internal/question`（可带 TEST_DATABASE_URL）、`cd admin-web && npm run build`。\n\n禁止：不要改 docs/README/ROADMAP/AGENTS/版本号/其他页面/其他模块；不要 git commit/push；不要运行全量 `go test ./...`。完成后报告接口、SQL 语义、测试结果、风险。"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "The subagent is working in the background (sessionID: ses_e550e46b1ffev9r6GIF2pOjmAk). You will be notified automatically when it finishes.\nDO NOT sleep, poll for progress, ask the subagent for status, or duplicate this subagent's work; avoid working with the same files or topics it is using.\nWork on non-overlapping tasks, or briefly tell the user what you launched and end your response.\nTo send it follow-ups or change its instructions while it runs, call subagent again with this sessionID."
+              }
+            ],
+            "metadata": {
+              "sessionID": "ses_e550e46b1ffev9r6GIF2pOjmAk",
+              "status": "running",
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793869323584,
+            "ran": 1793869330754,
+            "completed": 1793869330826
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_c3be589be29847e6a3ea5320",
+          "name": "subagent",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "agent": "general",
+              "description": "实现对战事件版本号",
+              "background": true,
+              "prompt": "你在 /Users/mengfeng/我的文档/源码/OpenQuizGo 工作。先读 AGENTS.md、docs/design/048-对战事件版本号设计.md、docs/plans/048-对战事件版本号实施计划.md，按设计实现 048。\n\n只允许改这些文件（严格）：\n- internal/battle/events.go\n- internal/battle/service.go\n- internal/battle/service_test.go\n\n要求：\n1. 每次发布对局事件生成单调递增版本：优先 Redis `INCR battle:events:ver:<battleID>`；Redis nil/失败时用进程内原子计数兜底。\n2. broker 分发时保留版本号（例如 `chan int64` 或带 version 的结构），本地回退总线与共享 Redis PubSub 都要拿到同一发布版本；Redis 消息体传版本号。\n3. SSE 输出改为：\n   `id: <version>\\nevent: update\\ndata: {\"version\":<version>}\\n\\n`\n   保留原有事件语义；订阅建立时可先发送当前版本基线（若实现简单），但不阻塞。\n4. 并发安全：多个发布者版本单调；锁外投递；不破坏 042 的共享订阅/引用计数行为。\n5. 扩展测试：本地连续发布版本递增；两个 broker 经 Redis 看到同一版本序列；取消订阅/共享清理仍正常；Redis 不可用时本地计数递增。\n6. 运行 `gofmt -w internal/battle`、`go build ./...`、`go test ./internal/battle -count=1`，以及 `TEST_REDIS_URL=redis://127.0.0.1:6379/0 go test -race ./internal/battle -run 'TestRedisEventBroker|TestEventBroker|TestShared|TestEventVersion' -count=1`。\n\n禁止：不要改 docs/README/ROADMAP/AGENTS/版本号/其他模块；不要 git commit/push；不要运行全量 `go test ./...`。完成后报告版本生成、SSE 格式、测试结果、风险。"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "The subagent is working in the background (sessionID: ses_e550e46afffeg4imSjjrTlhzS0). You will be notified automatically when it finishes.\nDO NOT sleep, poll for progress, ask the subagent for status, or duplicate this subagent's work; avoid working with the same files or topics it is using.\nWork on non-overlapping tasks, or briefly tell the user what you launched and end your response.\nTo send it follow-ups or change its instructions while it runs, call subagent again with this sessionID."
+              }
+            ],
+            "metadata": {
+              "sessionID": "ses_e550e46afffeg4imSjjrTlhzS0",
+              "status": "running",
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793869325763,
+            "ran": 1793869330756,
+            "completed": 1793869330829
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_3bfb389e5e36482fabcf3e19",
+          "name": "subagent",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "agent": "general",
+              "description": "实现 TV 日志落盘与导出",
+              "background": true,
+              "prompt": "你在 /Users/mengfeng/我的文档/源码/OpenQuizGo 工作。先读 AGENTS.md、docs/design/049-TV日志落盘与诊断导出设计.md、docs/plans/049-TV日志落盘与诊断导出实施计划.md，按设计实现 049。\n\n只允许改/新增这些文件（严格）：\n- tv/app/src/main/java/com/openquizgo/guard/ 下的 Kotlin 源码（可新增 LogStore.kt）\n- tv/app/src/main/AndroidManifest.xml\n- tv/app/src/main/res/xml/file_paths.xml（新建）\n- tv/app/src/test/ 下的测试（可新增 LogStoreTest.kt）\n- tv/app/build.gradle.kts（仅当必须）\n\n要求：\n1. 新增线程安全 `LogStore`：写入应用私有 `files/logs/guard.log`，单文件上限 1MB，超出轮转为 `guard.log.1`（只保留一份），写入失败不影响主流程；不得记录令牌/设备密钥。\n2. 提供统一日志入口（i/w/e），关键路径埋点：应用启动、激活/绑定、授权刷新、心跳失败、答题提交失败、异常。\n3. 诊断页增加「导出日志」按钮：用 FileProvider 暴露 logs 目录，`ACTION_SEND` 分享文本日志，授予读权限，文件名 `openquizgo-tv-log-YYYYMMDD-HHmm.txt`；manifest 注册 provider，file_paths 只暴露 logs。\n4. 单元测试覆盖日志写入与超过 1MB 轮转（用临时目录）。\n5. 运行 `./gradlew :app:testDebugUnitTest`、`./gradlew :app:compileDebugKotlin`、`./gradlew :app:assembleRelease -PapiBaseUrl=https://tv.openquizgo.example/`。\n\n禁止：不要改 docs/README/ROADMAP/AGENTS/版本号/其他模块（tv 之外的代码）；不要 git commit/push；不要修改 dist/。若实现导出必须改 manifest/资源，严格只加上上述文件。完成后报告修改、测试/构建结果、隐私与风险。"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "The subagent is working in the background (sessionID: ses_e550e46aeffeoDJrufAYaGI46z). You will be notified automatically when it finishes.\nDO NOT sleep, poll for progress, ask the subagent for status, or duplicate this subagent's work; avoid working with the same files or topics it is using.\nWork on non-overlapping tasks, or briefly tell the user what you launched and end your response.\nTo send it follow-ups or change its instructions while it runs, call subagent again with this sessionID."
+              }
+            ],
+            "metadata": {
+              "sessionID": "ses_e550e46aeffeoDJrufAYaGI46z",
+              "status": "running",
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793869328253,
+            "ran": 1793869330763,
+            "completed": 1793869330832
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "acd22e226e453606de626d4b2419f7b45762042f",
+        "end": "acd22e226e453606de626d4b2419f7b45762042f",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 3952,
+        "output": 1661,
+        "reasoning": 298,
+        "cache": {
+          "read": 147456,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf1b9f9001FnYRZ82aBAsU7v",
+      "time": {
+        "created": 1793869330940,
+        "streamed": 1793869337553,
+        "completed": 1793869337583
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now status to user: v0.40.0 released, next batch launched. Timer not restarted yet (we'll restart after integration). Mention.\n\nNeed ensure v0.40.0 commit includes all. Yes.\n\nLet me report.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869334259,
+            "completed": 1793869337547
+          }
+        },
+        {
+          "type": "text",
+          "text": "**v0.40.0 已发布**（commit `e8c5191`，GitHub/Gitee 与标签已同步）。\n\n## 本轮完成\n\n| 编号 | 内容 | 验证 |\n| --- | --- | --- |\n| 044 | 选项最多 3 张图片，兼容旧单图 | Go 单测、管理端构建、TV 编译/单测/Release |\n| 045 | 管理令牌 HttpOnly Cookie + CSRF 头 + Logout + CSP | Go 单测、E2E 7/7、接口实测 |\n| 046 | 新授权签发前撤销同设备旧 active | watch 6 项测试、并发额度不变量 |\n\n关键实测：\n\n```text\nSet-Cookie: openquizgo_admin=...; Path=/v1; Max-Age=28800; HttpOnly; SameSite=Strict\n仅 Cookie 访问 /admin/me            → 200\nCookie 写请求缺 X-Admin-Request     → 403\nlogout 后 /admin/me                 → 401\n2 张选项图片创建/回显               → 201/200\n4 张选项图片                        → 422\n```\n\n产物：`dist/OpenQuizGo-TV-0.3.2.apk`（SHA256 `72d15517…51f5a0`，dist 未入库）。\n\nROADMAP 当前 **96 项 `[x]` / 43 项 `[ ]`**，新增 044–046 验收报告与交付清单，并更新了部署文档的 Cookie/CSP 安全头说明。\n\n## 已启动下一批并行开发\n\n| 编号 | 任务 | 范围 |\n| --- | --- | --- |\n| 047 | 覆盖率按专题聚合与 CSV 导出 | Go question + 管理端覆盖率页 |\n| 048 | 对战事件版本号（SSE `id` / `data.version`） | battle broker + SSE |\n| 049 | TV 日志落盘与诊断导出 | TV LogStore + FileProvider |\n\n完成后统一集成、跑全量测试、回填文档并发布 `v0.41.0`，随后重启 10 分钟无人值守定时器。"
+        }
+      ],
+      "snapshot": {
+        "start": "acd22e226e453606de626d4b2419f7b45762042f",
+        "end": "acd22e226e453606de626d4b2419f7b45762042f",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 2570,
+        "output": 481,
+        "reasoning": 49,
+        "cache": {
+          "read": 151168,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf1d3f50018eHYUYIJoTLIMA",
+      "time": {
+        "created": 1793869337589
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1aaf1b98d001TWBmjOowvPS4ox",
+      "metadata": {
+        "source": "subagent",
+        "childID": "ses_e550e46afffeg4imSjjrTlhzS0",
+        "agent": "General",
+        "state": "completed"
+      },
+      "time": {
+        "created": 1793869448303
+      },
+      "text": "<subagent sessionID=\"ses_e550e46afffeg4imSjjrTlhzS0\" state=\"completed\" description=\"实现对战事件版本号\">\n已按设计 048 完成实现，仅改动以下 3 个文件：\n\n- `internal/battle/events.go`\n- `internal/battle/service.go`\n- `internal/battle/service_test.go`\n\n## 1. 版本生成\n\n- 新增版本键：`battle:events:ver:<battleID>`。\n- `publish` 时优先执行 Redis `INCR`，返回全局单调递增版本。\n- Redis 未配置或 `INCR` 失败时，回退到进程内 `atomic.Int64` 计数。\n- 每个对局维护一个原子计数器；从 Redis 观察到更大版本时会用 CAS 抬高本地计数，避免恢复后本地兜底出现版本倒退。\n- 同一实例内并发发布由 Redis `INCR` / 原子 CAS 保证版本唯一递增。\n\n## 2. 事件分发\n\n- 订阅通道由 `chan struct{}` 改为 `chan int64`，版本随事件一起分发。\n- 本地回退总线与共享 Redis PubSub 都携带同一发布版本。\n- Redis 消息体为版本号字符串（如 `\"12\"`）。\n- `forward` 从 PubSub 消息解析版本并保留，兼容旧格式 `\"1\"`。\n- 保持 042 的共享订阅与引用计数逻辑不变，仍是在锁内快照、锁外投递。\n\n## 3. SSE 输出\n\n统一格式：\n\n```text\nid: <version>\nevent: update\ndata: {\"version\":<version>}\n\n```\n\n- 订阅建立后先发送当前版本基线（Redis `GET`，带 200ms 超时，避免 Redis 故障时阻塞事件流）。\n- 后续每个事件使用 `id:` + `data.version` 输出。\n- 心跳仍为 `: ping`，原有事件语义保留。\n\n## 4. 测试结果\n\n新增/扩展测试：\n\n- `TestEventVersionLocal`：本地连续发布版本递增，订阅者收到同一版本。\n- `TestEventVersionRedis`：两个发布 broker、两个订阅 broker 经 Redis 看到同一版本序列，并校验基线版本。\n- `TestEventVersionRedisFallback`：Redis 不可达时本地计数仍递增。\n- `TestWriteBattleEventFormat`：校验 SSE 输出格式。\n- 原有共享订阅、取消订阅、引用计数清理测试继续通过。\n\n执行结果：\n\n```text\ngofmt -w internal/battle                             通过\ngo build ./...                                       通过\ngo test ./internal/battle -count=1                   ok\nTEST_REDIS_URL=... go test -race ... -count=1        ok\n```\n\nRedis 测试实际执行（非 skip），`TestRedisEventBroker`、`TestEventVersionRedis`、`TestEventVersionRedisFallback`、`TestSharedRedisEventBroker` 均 PASS。\n\n## 5. 风险\n\n- Redis 故障期间各实例独立使用本地计数，跨实例版本可能重复或跳号；符合设计允许的降级语义。\n- 本地对局计数器保存在进程内 map 中，未做回收；对局数量大时会有轻微内存增长，后续可结合对局生命周期清理。\n- 订阅通道容量仍为 1，高频发布时会合并事件并跳过中间版本；SSE 客户端按版本去重即可。\n- 基线读取最多等待 200ms，Redis 故障时首包可能延迟，但不阻塞后续事件处理。\n\n未修改 `docs/README.md`、`docs/ROADMAP.md`、`AGENTS.md` 或其他模块，未执行 git commit/push，也未运行全量 `go test ./...`。\n</subagent>",
+      "description": "实现对战事件版本号",
+      "type": "synthetic"
+    },
+    {
+      "id": "msg_1aaf384830011NYZsROFQsnrcl",
+      "time": {
+        "created": 1793869448329,
+        "streamed": 1793869450757,
+        "completed": 1793869450833
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "048 done. Wait 047/049. Meanwhile review 048 code for issues.\n\nPotential issue: `chan int64` capacity 1 with version. Test helpers. SSE write function maybe in service.go. Let's inspect.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869449954,
+            "completed": 1793869450713
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_0e58b885713640b3ab6ed27f",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git diff internal/battle/events.go internal/battle/service.go | sed -n '1,260p'",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "diff --git a/internal/battle/events.go b/internal/battle/events.go\nindex c641dda..957acc5 100644\n--- a/internal/battle/events.go\n+++ b/internal/battle/events.go\n@@ -2,7 +2,10 @@ package battle\n \n import (\n \t\"context\"\n+\t\"strconv\"\n \t\"sync\"\n+\t\"sync/atomic\"\n+\t\"time\"\n \n \t\"github.com/redis/go-redis/v9\"\n )\n@@ -10,23 +13,27 @@ import (\n type eventBroker struct {\n \trdb    *redis.Client\n \tmu     sync.Mutex\n-\tsubs   map[string]map[chan struct{}]struct{} // 进程内回退总线\n-\tshared map[string]*sharedSubscription        // 同一实例内共享的 Redis 订阅\n+\tsubs   map[string]map[chan int64]struct{} // 进程内回退总线\n+\tshared map[string]*sharedSubscription     // 同一实例内共享的 Redis 订阅\n+\t// localVers 保存每个对局的进程内版本计数：Redis 不可用时兜底，\n+\t// 同时记录从 Redis 观察到的最新版本以避免回退后版本倒退。\n+\tlocalVers map[string]*atomic.Int64\n }\n \n // sharedSubscription 表示同一实例内对某个对局共享的一个 Redis PubSub。\n // refs 与 subs 由 eventBroker.mu 保护。\n type sharedSubscription struct {\n \tpubsub *redis.PubSub\n-\tsubs   map[chan struct{}]struct{}\n+\tsubs   map[chan int64]struct{}\n \trefs   int\n }\n \n func newEventBroker(rdb *redis.Client) *eventBroker {\n \treturn &eventBroker{\n-\t\trdb:    rdb,\n-\t\tsubs:   make(map[string]map[chan struct{}]struct{}),\n-\t\tshared: make(map[string]*sharedSubscription),\n+\t\trdb:       rdb,\n+\t\tsubs:      make(map[string]map[chan int64]struct{}),\n+\t\tshared:    make(map[string]*sharedSubscription),\n+\t\tlocalVers: make(map[string]*atomic.Int64),\n \t}\n }\n \n@@ -34,8 +41,12 @@ func battleChannel(battleID string) string {\n \treturn \"battle:events:\" + battleID\n }\n \n-func (b *eventBroker) subscribe(ctx context.Context, battleID string) (<-chan struct{}, func()) {\n-\tch := make(chan struct{}, 1)\n+func battleVersionKey(battleID string) string {\n+\treturn \"battle:events:ver:\" + battleID\n+}\n+\n+func (b *eventBroker) subscribe(ctx context.Context, battleID string) (<-chan int64, func()) {\n+\tch := make(chan int64, 1)\n \tif b.rdb != nil && b.subscribeShared(ctx, battleID, ch) {\n \t\treturn ch, func() { b.unsubscribeShared(battleID, ch) }\n \t}\n@@ -44,7 +55,7 @@ func (b *eventBroker) subscribe(ctx context.Context, battleID string) (<-chan st\n \n // subscribeShared 尝试把订阅者挂到共享的 Redis PubSub 上，必要时创建它。\n // 返回 false 表示 Redis 订阅失败，调用方应回退到进程内总线。\n-func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch chan struct{}) bool {\n+func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch chan int64) bool {\n \tb.mu.Lock()\n \tif shared := b.shared[battleID]; shared != nil {\n \t\tshared.subs[ch] = struct{}{}\n@@ -72,7 +83,7 @@ func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch c\n \t}\n \tb.shared[battleID] = &sharedSubscription{\n \t\tpubsub: pubsub,\n-\t\tsubs:   map[chan struct{}]struct{}{ch: {}},\n+\t\tsubs:   map[chan int64]struct{}{ch: {}},\n \t\trefs:   1,\n \t}\n \tb.mu.Unlock()\n@@ -81,14 +92,19 @@ func (b *eventBroker) subscribeShared(ctx context.Context, battleID string, ch c\n \treturn true\n }\n \n-// forward 把共享 PubSub 收到的事件广播给本地所有订阅者。\n+// forward 把共享 PubSub 收到的事件广播给本地所有订阅者，并保留消息中的版本号。\n func (b *eventBroker) forward(battleID string, pubsub *redis.PubSub) {\n-\tfor range pubsub.Channel() {\n-\t\tb.notify(battleID, true, false)\n+\tfor msg := range pubsub.Channel() {\n+\t\tversion, err := strconv.ParseInt(msg.Payload, 10, 64)\n+\t\tif err != nil {\n+\t\t\tcontinue\n+\t\t}\n+\t\tb.observeVersion(battleID, version)\n+\t\tb.notify(battleID, version, true, false)\n \t}\n }\n \n-func (b *eventBroker) unsubscribeShared(battleID string, ch chan struct{}) {\n+func (b *eventBroker) unsubscribeShared(battleID string, ch chan int64) {\n \tb.mu.Lock()\n \tshared := b.shared[battleID]\n \tif shared == nil {\n@@ -112,10 +128,10 @@ func (b *eventBroker) unsubscribeShared(battleID string, ch chan struct{}) {\n \t_ = shared.pubsub.Close()\n }\n \n-func (b *eventBroker) subscribeLocal(battleID string, ch chan struct{}) (<-chan struct{}, func()) {\n+func (b *eventBroker) subscribeLocal(battleID string, ch chan int64) (<-chan int64, func()) {\n \tb.mu.Lock()\n \tif b.subs[battleID] == nil {\n-\t\tb.subs[battleID] = make(map[chan struct{}]struct{})\n+\t\tb.subs[battleID] = make(map[chan int64]struct{})\n \t}\n \tb.subs[battleID][ch] = struct{}{}\n \tb.mu.Unlock()\n@@ -131,24 +147,88 @@ func (b *eventBroker) subscribeLocal(battleID string, ch chan struct{}) (<-chan\n \t}\n }\n \n-func (b *eventBroker) publish(ctx context.Context, battleID string) {\n+// counter 返回对局的进程内版本计数；map 由 b.mu 保护，原子计数本身无锁。\n+func (b *eventBroker) counter(battleID string) *atomic.Int64 {\n+\tb.mu.Lock()\n+\tcounter := b.localVers[battleID]\n+\tif counter == nil {\n+\t\tcounter = &atomic.Int64{}\n+\t\tb.localVers[battleID] = counter\n+\t}\n+\tb.mu.Unlock()\n+\treturn counter\n+}\n+\n+// observeVersion 记录从 Redis 观察到的最新版本，保证后续本地兜底不会倒退。\n+func (b *eventBroker) observeVersion(battleID string, version int64) {\n+\tcounter := b.counter(battleID)\n+\tfor {\n+\t\tcurrent := counter.Load()\n+\t\tif version <= current {\n+\t\t\treturn\n+\t\t}\n+\t\tif counter.CompareAndSwap(current, version) {\n+\t\t\treturn\n+\t\t}\n+\t}\n+}\n+\n+// nextVersion 优先使用 Redis INCR 保证跨实例单调递增；\n+// Redis 未配置或失败时回退到进程内原子计数。\n+func (b *eventBroker) nextVersion(ctx context.Context, battleID string) int64 {\n+\tcounter := b.counter(battleID)\n+\tif b.rdb != nil {\n+\t\tif version, err := b.rdb.Incr(ctx, battleVersionKey(battleID)).Result(); err == nil {\n+\t\t\tb.observeVersion(battleID, version)\n+\t\t\treturn version\n+\t\t}\n+\t}\n+\tfor {\n+\t\tcurrent := counter.Load()\n+\t\tnext := current + 1\n+\t\tif counter.CompareAndSwap(current, next) {\n+\t\t\treturn next\n+\t\t}\n+\t}\n+}\n+\n+// currentVersion 返回对局当前已知版本基线，不产生新的版本号。\n+func (b *eventBroker) currentVersion(ctx context.Context, battleID string) int64 {\n+\tcounter := b.counter(battleID)\n \tif b.rdb != nil {\n-\t\tif err := b.rdb.Publish(ctx, battleChannel(battleID), \"1\").Err(); err == nil {\n+\t\t// 基线只是可选的初始提示，不能阻塞事件流建立。\n+\t\treadCtx, cancel := context.WithTimeout(ctx, 200*time.Millisecond)\n+\t\tversion, err := b.rdb.Get(readCtx, battleVersionKey(battleID)).Int64()\n+\t\tcancel()\n+\t\tif err == nil {\n+\t\t\tb.observeVersion(battleID, version)\n+\t\t\treturn version\n+\t\t}\n+\t}\n+\treturn counter.Load()\n+}\n+\n+func (b *eventBroker) publish(ctx context.Context, battleID string) int64 {\n+\tversion := b.nextVersion(ctx, battleID)\n+\tif b.rdb != nil {\n+\t\tif err := b.rdb.Publish(ctx, battleChannel(battleID), strconv.FormatInt(version, 10)).Err(); err == nil {\n \t\t\t// 共享订阅者会由 Redis 推送；仍需通知因订阅失败而落在进程内总线的订阅者。\n-\t\t\tb.notify(battleID, false, true)\n-\t\t\treturn\n+\t\t\tb.notify(battleID, version, false, true)\n+\t\t\treturn version\n \t\t}\n \t}\n-\tb.notify(battleID, true, true)\n+\t// Redis 不可用时，共享订阅者与本地订阅者都由本进程直接通知。\n+\tb.notify(battleID, version, true, true)\n+\treturn version\n }\n \n // notify 在锁内对订阅者做快照，锁外投递，避免慢订阅者阻塞订阅/取消操作。\n-func (b *eventBroker) notify(battleID string, includeShared, includeLocal bool) {\n+func (b *eventBroker) notify(battleID string, version int64, includeShared, includeLocal bool) {\n \tb.mu.Lock()\n-\tvar targets []chan struct{}\n+\tvar targets []chan int64\n \tif includeShared {\n \t\tif shared := b.shared[battleID]; shared != nil {\n-\t\t\ttargets = make([]chan struct{}, 0, len(shared.subs))\n+\t\t\ttargets = make([]chan int64, 0, len(shared.subs))\n \t\t\tfor ch := range shared.subs {\n \t\t\t\ttargets = append(targets, ch)\n \t\t\t}\n@@ -163,7 +243,7 @@ func (b *eventBroker) notify(battleID string, includeShared, includeLocal bool)\n \n \tfor _, ch := range targets {\n \t\tselect {\n-\t\tcase ch <- struct{}{}:\n+\t\tcase ch <- version:\n \t\tdefault:\n \t\t}\n \t}\ndiff --git a/internal/battle/service.go b/internal/battle/service.go\nindex 9e91f22..9bd2d03 100644\n--- a/internal/battle/service.go\n+++ b/internal/battle/service.go\n@@ -4,6 +4,7 @@ import (\n \t\"context\"\n \t\"encoding/json\"\n \t\"errors\"\n+\t\"fmt\"\n \t\"math/rand\"\n \t\"net/http\"\n \t\"sort\"\n@@ -250,17 +251,16 @@ func (s *Service) handleEvents(w http.ResponseWriter, r *http.Request) {\n \n \tch, unsubscribe := s.events.subscribe(r.Context(), battleID)\n \tdefer unsubscribe()\n-\t_, _ = w.Write([]byte(\"event: update\\ndata: {}\\n\\n\"))\n-\tflusher.Flush()\n+\t// 先建立订阅再下发当前版本基线，避免两者之间漏事件。\n+\twriteBattleEvent(w, flusher, s.events.currentVersion(r.Context(), battleID))\n \tticker := time.NewTicker(20 * time.Second)\n \tdefer ticker.Stop()\n \tfor {\n \t\tselect {\n \t\tcase <-r.Context().Done():\n \t\t\treturn\n-\t\tcase <-ch:\n-\t\t\t_, _ = w.Write([]byte(\"event: update\\ndata: {}\\n\\n\"))\n-\t\t\tflusher.Flush()\n+\t\tcase version := <-ch:\n+\t\t\twriteBattleEvent(w, flusher, version)\n \t\tcase <-ticker.C:\n \t\t\t_, _ = w.Write([]byte(\": ping\\n\\n\"))\n \t\t\tflusher.Flush()\n@@ -268,6 +268,12 @@ func (s *Service) handleEvents(w http.ResponseWriter, r *http.Request) {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869450155,
+            "ran": 1793869450755,
+            "completed": 1793869450803
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "b1482165c662cbaaf09ccab3261cfedc8cac11dc",
+        "end": "31348ed65857653d1ee64a065a5c0a5897d9f94e",
+        "files": [
+          "tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1618,
+        "output": 94,
+        "reasoning": 46,
+        "cache": {
+          "read": 153472,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf38e5d001fws4qrf51JMDNG",
+      "time": {
+        "created": 1793869450847,
+        "streamed": 1793869455917,
+        "completed": 1793869455946
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Potential bug: publish does `nextVersion` which calls Redis INCR then `Publish`. If publish succeeds, local shared subscribers don't get direct notify; they get via Redis forward, which will `observeVersion` and notify. Good.\n\nBut if publish fails after INCR, it notifies both shared and local with version. Fine.\n\n`currentVersion` uses GET; if key not found returns 0. Sends id:0 baseline. Fine.\n\nOne issue: `subscribe` for Redis shared creates pubsub then currentVersion GET. Events between subscription and baseline could be delivered before baseline? The baseline write happens after subscribe; forward goroutine may deliver event first, writing e.g. version 5, then baseline writes currentVersion maybe 5. Fine; if baseline greater, client sees decreasing? Example event 5 delivered, then baseline GET returns 6 (because publish incremented but not yet forwarded), writes 6, then forwarded 6. No decrease. If baseline returns 4 after event 5? GET before INCR? Sequence: subscribe, event 5 published/forwarded, then GET returns 5. Fine. Could baseline be lower than already-delivered? Only if Redis key missing (0), then event. Not significant.\n\nSSE test `writeBattleEvent`. Good.\n\nMemory growth localVers not cleaned; noted.\n\n`fmt` import in service.go used for `fmt.Sprintf` in writeBattleEvent. Fine.\n\nNow wait 047/049. Maybe end turn. But let me check status of timer? not running. Fine.\n\nI'll wait for notifications.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869452509,
+            "completed": 1793869455915
+          }
+        },
+        {
+          "type": "text",
+          "text": "048 对战事件版本号已完成并通过本地/Redis/race 测试，正在等待 047（专题覆盖）与 049（TV 日志）完成后统一集成 `v0.41.0`。"
+        }
+      ],
+      "snapshot": {
+        "start": "31348ed65857653d1ee64a065a5c0a5897d9f94e",
+        "end": "49292acbf09f7417ba58bd3eb70b2afdbc485315",
+        "files": [
+          "tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt"
+        ]
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 3256,
+        "output": 46,
+        "reasoning": 325,
+        "cache": {
+          "read": 154880,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf3a24c001Ji4pEgplJIVaTa",
+      "time": {
+        "created": 1793869455948
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1aaf1b9880015DHep1PsbH0IXZ",
+      "metadata": {
+        "source": "subagent",
+        "childID": "ses_e550e46b1ffev9r6GIF2pOjmAk",
+        "agent": "General",
+        "state": "completed"
+      },
+      "time": {
+        "created": 1793869528002
+      },
+      "text": "<subagent sessionID=\"ses_e550e46b1ffev9r6GIF2pOjmAk\" state=\"completed\" description=\"实现覆盖率按专题导出\">\n已完成 047 实现，仅修改/新增指定文件，未提交。\n\n## 接口\n\n### 1. `GET /v1/admin/coverage/topics?threshold=50`\n- 权限：`question.read`\n- 返回：\n```json\n{\n  \"cells\": [\n    {\"topic_id\": \"...\", \"topic_name\": \"寒假数学\", \"status\": \"online\", \"count\": 12}\n  ],\n  \"total\": 120,\n  \"warnings\": [\"专题「寒假数学」上线题量 12，低于阈值 50\"]\n}\n```\n- `threshold` 缺失默认 50；非法值（非整数或不在 1–10000）返回 422。\n- `warnings` 按专题汇总 `online` 题量，低于阈值时生成，文案包含专题名，已排序。\n\n### 2. `GET /v1/admin/coverage/export`\n- 默认 / `dimension=matrix` / 其他值：保持原 CSV 不变：\n  `subject,stage,type,status,difficulty,count`\n- `dimension=topic`（大小写不敏感）：输出：\n  `topic_id,topic_name,status,count`\n- 权限仍为 `question.read`。\n\n## SQL 语义\n\n新增 repository `TopicCoverage`：\n\n```sql\nselect coalesce(tp.id::text, ''), coalesce(tp.name, '未分专题'), q.status, count(*)::int\nfrom question q\nleft join topic_question tq on tq.question_id = q.id\nleft join topic_pack tp on tp.id = tq.topic_id\ngroup by tp.id, tp.name, q.status\norder by (tp.id is null), tp.name, q.status\n```\n\n- 以实际多对多关系表 `topic_question` 为准（设计文档写的是 `question_topic`，但迁移中实际表名是 `topic_question`）。\n- 同一题属于多个专题时，会在多个专题下各计 1 次。\n- 没有任何 `topic_question` 关联的题汇总为 `topic_id=\"\"`、`topic_name=\"未分专题\"`。\n- `total` 单独执行 `select count(*) from question`，为去重后的题目总量，不是 cells 计数之和。\n- 告警仅统计真实专题（排除未分专题），按 `topic_id` 汇总 `online` 题量。\n\n## 管理端\n\n`CoveragePage.tsx`：\n- 并行加载矩阵覆盖与专题覆盖。\n- 增加「专题覆盖（去重题量 N）」表格：专题、状态、题量。\n- 增加「导出专题 CSV」按钮，沿用当前 threshold。\n- 增加专题维度告警 Alert。\n\n`types.ts` / `api.ts`：\n- 新增 `TopicCoverageCell`、`TopicCoverageResult`。\n- 新增 `coverageTopics`、`coverageTopicsExport`。\n\n## 测试结果\n\n新增 `internal/question/coverage_test.go`：\n- `TestTopicCoverageWarnings`：纯单元测试阈值告警、专题名文案、未分专题不告警、高于阈值不告警。\n- `TestTopicCoverageAggregation`：可选集成测试，验证多专题每题分别计数、未分专题兜底、`total` 去重、低题量专题告警。\n\n已执行：\n\n```bash\ngofmt -w internal/question\nTEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\" go test ./internal/question\n# ok github.com/roma007/OpenQuizGo/internal/question\n\ncd admin-web && npm run build\n# tsc -b && vite build 通过\n```\n\n## 风险与说明\n\n1. **表名不一致**：设计与任务描述使用 `question_topic`，实际 schema 是 `topic_question`；实现按真实表聚合。若后续强制改名为 `question_topic`，需同步 SQL。\n2. **未分专题不产生告警**：任务要求「按专题」告警，未分专题仅作为统计兜底行；当前不会出现「专题「未分专题」」告警。\n3. **零上线题量的专题不会告警**：告警由实际存在的 `online` 聚合行生成；仅有草稿或完全没有题目的专题不会出现在 cells 中，因此不会告警。若需要覆盖「0 题专题」，需改为从 `topic_pack` 左连接聚合。\n4. **未使用 `question.topic_id` 单值字段**：按需求以多对多关系表为准，旧单值字段不参与专题覆盖统计。\n5. 未修改 `api/openapi.yaml`、README、ROADMAP、设计与计划文档，符合本次文件限制。管理端构建仅有 Vite 既有的大 chunk 警告。\n</subagent>",
+      "description": "实现覆盖率按专题导出",
+      "type": "synthetic"
+    },
+    {
+      "id": "msg_1aaf4bbec0013QIwIXlllyfh6Q",
+      "time": {
+        "created": 1793869528064,
+        "streamed": 1793869536859,
+        "completed": 1793869537116
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "047 done. Potential concerns:\n- Zero-online topics not warned; design says warnings per topic below threshold. Could improve by left joining topic_pack, but not required? The roadmap item \"覆盖率按 topic 导出 / 趋势图\". Main goal export. Acceptable.\n- Table name correct.\n- Total count all questions.\n\nWait 049. Once done integrate. Let me maybe inspect 047 diff for errors (e.g. `left join` grouping: `group by tp.id, tp.name, q.status`; with no relation, tp.id null; count correct; but multiple topic_question rows? one per topic; good).\n- `order by (tp.id is null)` puts real topics first.\n\nAdmin page uses two tables. Fine.\n\nNow wait for 049. I can update acceptance 047/048 docs now, mark plans done. Do it.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869530258,
+            "completed": 1793869536852
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_017a3dbd080e438a97345301",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/acceptance/phase47.md <<'EOF'\n# 047 覆盖率按专题导出验收报告\n\n| 项目 | 内容 |\n| --- | --- |\n| 版本 | v0.41.0（管理端 0.41.0） |\n| 日期 | 2026-11-05 |\n| 范围 | 047：专题维度覆盖率聚合与 CSV 导出 |\n| 设计/计划 | [设计](../design/047-覆盖率按专题导出设计.md) / [计划](../plans/047-覆盖率按专题导出实施计划.md) |\n\n## 1. 结论\n\n**通过。** 新增专题覆盖聚合接口与 CSV 导出；同一题属于多个专题时分别计数，未加入专题的题目单独汇总；管理端覆盖率页新增专题表格与导出按钮。默认矩阵导出保持不变。\n\n## 2. 交付\n\n- `GET /v1/admin/coverage/topics?threshold=50`（`question.read`）；\n- 返回 `cells`（topic_id/topic_name/status/count）、去重 `total`、`warnings`；\n- `GET /v1/admin/coverage/export?dimension=topic` → `topic_id,topic_name,status,count`；\n- 默认或非 `topic` 维度仍导出原矩阵 CSV；\n- 管理端「专题覆盖」表格 + 「导出专题 CSV」按钮 + 专题告警。\n\n## 3. 验证\n\n```text\ngofmt -w internal/question                                  passed\nTEST_DATABASE_URL=... go test ./internal/question           passed\ncd admin-web && npm run build                               passed\n```\n\n测试覆盖：多专题分别计数、未分专题兜底、去重 total、低于阈值告警、高于阈值不告警。\n\n## 4. 限制\n\n- 未实现覆盖率趋势快照/趋势图；\n- 完全没有题目或仅草稿的专题不会进入 cells，因此不会产生 0 题告警；\n- 未使用 `question.topic_id` 单值字段，仅以 `topic_question` 多对多关系为准。\n\n## 5. 后续\n\n- 覆盖率趋势快照；\n- 0 题专题告警；\n- 按专题筛选题目。\nEOF\ncat > docs/acceptance/phase48.md <<'EOF'\n# 048 对战事件版本号验收报告\n\n| 项目 | 内容 |\n| --- | --- |\n| 版本 | v0.41.0 |\n| 日期 | 2026-11-05 |\n| 范围 | 048：SSE 事件版本号与去重基线 |\n| 设计/计划 | [设计](../design/048-对战事件版本号设计.md) / [计划](../plans/048-对战事件版本号实施计划.md) |\n\n## 1. 结论\n\n**通过。** 每个对局事件版本由 Redis `INCR` 生成（无 Redis 时本地原子计数兜底），SSE 通过 `id:` 与 `data.version` 暴露；共享订阅和跨实例版本序列保持一致。\n\n## 2. 交付\n\n- 版本键 `battle:events:ver:<battleID>`；\n- `publish` 返回并分发版本，通道改为 `chan int64`；\n- Redis 消息体为版本字符串，共享 PubSub 解析后广播；\n- SSE 输出 `id: <version>` + `event: update` + `data: {\"version\":<version>}`；\n- 订阅建立后下发当前版本基线。\n\n## 3. 验证\n\n```text\ngofmt -w internal/battle                                      passed\ngo build ./...                                                passed\ngo test ./internal/battle -count=1                            passed\nTEST_REDIS_URL=... go test -race ./internal/battle -run ...   passed\n```\n\n测试覆盖：本地连续发布递增、两个 broker 经 Redis 版本一致、Redis 失败本地兜底、SSE 格式、共享订阅清理。\n\n## 4. 限制\n\n- Redis 故障期间各实例本地计数可能重复或跳号；\n- 本地版本计数 map 未随对局结束回收；\n- 通道容量 1，高频事件会合并并跳过中间版本。\n\n## 5. 后续\n\n- SSE Last-Event-ID 补发；\n- 事件持久化；\n- 版本计数生命周期清理。\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\nfor n,phase in (('047-覆盖率按专题导出实施计划','47'),('048-对战事件版本号实施计划','48')):\n    p=Path('docs/plans')/(n+'.md'); s=p.read_text()\n    s=s.replace('| 状态 | approved |','| 状态 | done |').replace('| todo |','| done |')\n    s=s.replace('| 2026-11-05 | 设计与计划创建 | approved |','| 2026-11-05 | 设计与计划创建 | approved |\\n| 2026-11-05 | 全部任务完成 | 构建/测试通过 |')\n    s=s.replace('- 待验收','- **通过**，详见 [验收报告](../acceptance/phase%s.md)。' % phase)\n    p.write_text(s)\nfor n in ('047-覆盖率按专题导出设计','048-对战事件版本号设计'):\n    p=Path('docs/design')/(n+'.md'); s=p.read_text().replace('| 状态 | approved |','| 状态 | done |'); p.write_text(s)\nprint('047/048 docs done')\nPY",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "047/048 docs done\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869531710,
+            "ran": 1793869536856,
+            "completed": 1793869536985
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "a148f6b6d2bc49ed1071ee401732cbc34ad4745c",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": [
+          "docs/acceptance/phase47.md",
+          "docs/acceptance/phase48.md",
+          "docs/design/047-覆盖率按专题导出设计.md",
+          "docs/design/048-对战事件版本号设计.md",
+          "docs/plans/047-覆盖率按专题导出实施计划.md",
+          "docs/plans/048-对战事件版本号实施计划.md",
+          "tv/.kotlin/sessions/kotlin-compiler-15606397519104691208.salive"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1645,
+        "output": 1273,
+        "reasoning": 178,
+        "cache": {
+          "read": 157952,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf4df8f001PE60D4AoQDAGW6",
+      "time": {
+        "created": 1793869537173,
+        "streamed": 1793869539443,
+        "completed": 1793869539473
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Wait for 049. End turn.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869539030,
+            "completed": 1793869539437
+          }
+        },
+        {
+          "type": "text",
+          "text": "047、048 已完成并通过测试，验收文档已回填。正在等待 049（TV 日志落盘与导出）完成后统一集成发布 `v0.41.0`。"
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 1705,
+        "output": 42,
+        "reasoning": 8,
+        "cache": {
+          "read": 159360,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf4e894001fa2dw8NrCq4ZA1",
+      "time": {
+        "created": 1793869539476
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1aaf1b990001kAkWfkyQs62LkQ",
+      "metadata": {
+        "source": "subagent",
+        "childID": "ses_e550e46aeffeoDJrufAYaGI46z",
+        "agent": "General",
+        "state": "completed"
+      },
+      "time": {
+        "created": 1793869615233
+      },
+      "text": "<subagent sessionID=\"ses_e550e46aeffeoDJrufAYaGI46z\" state=\"completed\" description=\"实现 TV 日志落盘与导出\">\n已按 049 设计与计划完成实现，未执行 commit/push，未修改 `docs/`、`dist/`、版本号及其他模块。\n\n## 修改内容\n\n### 新增\n- `tv/app/src/main/java/com/openquizgo/guard/platform/LogStore.kt`\n  - 线程安全写入 `files/logs/guard.log`\n  - 单文件上限 1MB，超出轮转 `guard.log.1`，仅保留一份\n  - 所有 IO 异常内部吞掉，不影响主流程\n  - 不依赖 Android API，便于 JVM 单测\n- `tv/app/src/main/java/com/openquizgo/guard/platform/LogExporter.kt`\n  - 合并 `guard.log.1` + `guard.log` 导出\n  - 文件名：`openquizgo-tv-log-YYYYMMDD-HHmm.txt`\n  - FileProvider + `ACTION_SEND`，附带 `FLAG_GRANT_READ_URI_PERMISSION`\n- `tv/app/src/main/res/xml/file_paths.xml`\n  - 仅暴露 `files/logs/`\n- `tv/app/src/test/java/com/openquizgo/guard/platform/LogStoreTest.kt`\n  - 写入、超过 1MB 轮转、并发写入、写入失败不抛异常\n\n### 修改\n- `GuardApplication.kt`：初始化 `GuardLog`，埋点应用启动\n- `GuardLog.kt`：统一 `i/w/e(tag, message)` 入口，同时写 logcat、诊断页内存列表、滚动日志文件\n- `GuardViewModel.kt`：激活码申请、绑定成功、绑定重置、令牌刷新/失效埋点\n- `GuardEngine.kt`：授权采纳/刷新、心跳成功/失败埋点\n- `QuizActivity.kt`：答题会话、答案提交失败、结算失败埋点\n- `GuardService.kt` / `BootReceiver.kt` / `GuardAccessibilityService.kt`：启动、拉起失败等异常埋点\n- `MainActivity.kt`：诊断页新增「导出日志」按钮\n- `AndroidManifest.xml`：注册 `androidx.core.content.FileProvider`\n- `build.gradle.kts`：无需修改，`core-ktx` 已包含 FileProvider\n\n## 验证结果\n\n| 命令 | 结果 |\n| --- | --- |\n| `./gradlew :app:testDebugUnitTest` | BUILD SUCCESSFUL，7 个测试全部通过（新增 4 个，原有 3 个） |\n| `./gradlew :app:compileDebugKotlin` | BUILD SUCCESSFUL |\n| `./gradlew :app:assembleRelease -PapiBaseUrl=https://tv.openquizgo.example/` | BUILD SUCCESSFUL |\n\nRelease BuildConfig 已确认使用 `https://tv.openquizgo.example/`，产物为 `tv/app/build/outputs/apk/release/app-release.apk`。\n\n## 隐私与风险\n\n- 新增日志不记录设备令牌、设备密钥、激活码内容或完整家庭信息。\n- 日志仅保存在应用私有目录 `files/logs/`，由家长在诊断页主动导出分享。\n- FileProvider 仅暴露 `logs/` 子目录，不暴露其他私有文件。\n- 风险：日志写入为同步小 IO，且每次打开/关闭文件，极端频繁日志下可能有少量主线程开销；已按设计限制 1MB 轮转。\n- 风险：部分电视系统可能没有可处理 `ACTION_SEND` 的应用，分享会失败；失败已捕获并写入日志，不会崩溃。\n</subagent>",
+      "description": "实现 TV 日志落盘与导出",
+      "type": "synthetic"
+    },
+    {
+      "id": "msg_1aaf6108c001e7Bq9MRSIIj3a4",
+      "time": {
+        "created": 1793869615247,
+        "streamed": 1793869620217,
+        "completed": 1793869620291
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "All 047-049 done. Integrate:\n1. Review 049 files quickly (manifest, FileProvider authority, compile passed).\n2. Run full Go tests with DB/Redis, admin build+e2e, TV test/assemble (already), Flutter (unchanged).\n3. Rebuild API and test 047 endpoints live, 048 SSE live maybe. 049 compile only/hardware absent.\n4. Bump versions: admin 0.41.0, TV 0.3.3 (log feature), assemble release dist. Actually 049 is TV feature, so TV version bump to 0.3.3 versionCode 6. 048 no client version. 047 admin version 0.41.0.\n5. Acceptance 049, update 047/048 versions (already v0.41.0), docs/README rows, root README, ROADMAP checkboxes (047 topic export, 048 event version, 049 TV logs), change records.\n6. OpenAPI add coverage/topics and dimension param; SSE OpenAPI? maybe update.\n7. Archive, commit, tag v0.41.0, push.\n8. Restart timer.\n\nLet's verify state and run full tests. First inspect 049 manifest and LogStore for authority correctness.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869617219,
+            "completed": 1793869620209
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_c0424d603abd40129f620b79",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git status --short | head -40 && grep -n \"FileProvider\" -A 8 tv/app/src/main/AndroidManifest.xml && cat tv/app/src/main/res/xml/file_paths.xml && grep -n \"authority\\|getUriForFile\\|ACTION_SEND\" -A 6 tv/app/src/main/java/com/openquizgo/guard/platform/LogExporter.kt",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": " M admin-web/src/api.ts\n M admin-web/src/pages/CoveragePage.tsx\n M admin-web/src/types.ts\n M internal/battle/events.go\n M internal/battle/service.go\n M internal/battle/service_test.go\n M internal/question/handlers.go\n M internal/question/models.go\n M internal/question/repository.go\n M internal/question/service.go\n M tv/app/src/main/AndroidManifest.xml\n M tv/app/src/main/java/com/openquizgo/guard/GuardApplication.kt\n M tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/BootReceiver.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/GuardAccessibilityService.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/GuardLog.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/GuardService.kt\n M tv/app/src/main/java/com/openquizgo/guard/ui/GuardViewModel.kt\n M tv/app/src/main/java/com/openquizgo/guard/ui/MainActivity.kt\n M tv/app/src/main/java/com/openquizgo/guard/ui/QuizActivity.kt\n?? docs/acceptance/phase47.md\n?? docs/acceptance/phase48.md\n?? \"docs/design/047-\\350\\246\\206\\347\\233\\226\\347\\216\\207\\346\\214\\211\\344\\270\\223\\351\\242\\230\\345\\257\\274\\345\\207\\272\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/design/048-\\345\\257\\271\\346\\210\\230\\344\\272\\213\\344\\273\\266\\347\\211\\210\\346\\234\\254\\345\\217\\267\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/design/049-TV\\346\\227\\245\\345\\277\\227\\350\\220\\275\\347\\233\\230\\344\\270\\216\\350\\257\\212\\346\\226\\255\\345\\257\\274\\345\\207\\272\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/plans/047-\\350\\246\\206\\347\\233\\226\\347\\216\\207\\346\\214\\211\\344\\270\\223\\351\\242\\230\\345\\257\\274\\345\\207\\272\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? \"docs/plans/048-\\345\\257\\271\\346\\210\\230\\344\\272\\213\\344\\273\\266\\347\\211\\210\\346\\234\\254\\345\\217\\267\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? \"docs/plans/049-TV\\346\\227\\245\\345\\277\\227\\350\\220\\275\\347\\233\\230\\344\\270\\216\\350\\257\\212\\346\\226\\255\\345\\257\\274\\345\\207\\272\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? internal/question/coverage_test.go\n?? tv/app/src/main/java/com/openquizgo/guard/platform/LogExporter.kt\n?? tv/app/src/main/java/com/openquizgo/guard/platform/LogStore.kt\n?? tv/app/src/main/res/xml/file_paths.xml\n?? tv/app/src/test/java/com/openquizgo/guard/platform/\n54:            android:name=\"androidx.core.content.FileProvider\"\n55-            android:authorities=\"${applicationId}.fileprovider\"\n56-            android:exported=\"false\"\n57-            android:grantUriPermissions=\"true\">\n58-            <meta-data\n59-                android:name=\"android.support.FILE_PROVIDER_PATHS\"\n60-                android:resource=\"@xml/file_paths\" />\n61-        </provider>\n62-\n<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<paths xmlns:android=\"http://schemas.android.com/apk/res/android\">\n    <!-- 只暴露应用私有日志目录，避免诊断导出扩大到其他文件。 -->\n    <files-path\n        name=\"guard_logs\"\n        path=\"logs/\" />\n</paths>\n18: * 再通过 FileProvider + ACTION_SEND 交给用户主动分享。\n19- */\n20-object LogExporter {\n21-    private const val PROVIDER_SUFFIX = \".fileprovider\"\n22-    private const val EXPORT_DIR = \"export\"\n23-\n24-    fun share(context: Context) {\n--\n41:        val uri = FileProvider.getUriForFile(\n42-            context,\n43-            context.packageName + PROVIDER_SUFFIX,\n44-            exportFile,\n45-        )\n46:        val send = Intent(Intent.ACTION_SEND).apply {\n47-            type = \"text/plain\"\n48-            putExtra(Intent.EXTRA_STREAM, uri)\n49-            putExtra(Intent.EXTRA_SUBJECT, \"OpenQuizGo TV 日志\")\n50-            putExtra(Intent.EXTRA_TEXT, \"OpenQuizGo TV 诊断日志（$stamp）\")\n51-            clipData = ClipData.newRawUri(\"OpenQuizGo TV 日志\", uri)\n52-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869619596,
+            "ran": 1793869620215,
+            "completed": 1793869620276
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1050,
+        "output": 152,
+        "reasoning": 270,
+        "cache": {
+          "read": 160896,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf6244c001u11wxYVSVj8IV2",
+      "time": {
+        "created": 1793869620303,
+        "streamed": 1793869624784,
+        "completed": 1793869646273
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Good. Note 040/044 options types in admin are already committed; only current changes.\n\nRun full Go tests + admin build/e2e. TV already tested by agent but after version bump we'll rerun. Flutter unchanged but run? We ran earlier at v0.39. No Flutter changes since 046? No. Skip or run quick? Fine to run later maybe.\n\nFull Go test.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869622619,
+            "completed": 1793869624777
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_17d1e957973348c4b658d889",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && gofmt -l internal && go build ./... && TEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\" TEST_REDIS_URL=\"redis://127.0.0.1:6379/0\" go test -p 1 ./... -count=1 2>&1 | tail -28",
+              "timeout": 1800000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "?   \tgithub.com/roma007/OpenQuizGo/cmd/admin\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/cmd/api\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/cmd/loadtest\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/cmd/migrate\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/cmd/worker\t[no test files]\nok  \tgithub.com/roma007/OpenQuizGo/internal/admin\t0.520s\nok  \tgithub.com/roma007/OpenQuizGo/internal/battle\t0.859s\nok  \tgithub.com/roma007/OpenQuizGo/internal/config\t0.397s\nok  \tgithub.com/roma007/OpenQuizGo/internal/daily\t0.435s\nok  \tgithub.com/roma007/OpenQuizGo/internal/dashboard\t0.573s\nok  \tgithub.com/roma007/OpenQuizGo/internal/familyadmin\t0.566s\nok  \tgithub.com/roma007/OpenQuizGo/internal/httpapi\t0.557s\nok  \tgithub.com/roma007/OpenQuizGo/internal/identity\t0.968s\nok  \tgithub.com/roma007/OpenQuizGo/internal/media\t0.450s\nok  \tgithub.com/roma007/OpenQuizGo/internal/membership\t0.622s\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/cache\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/cryptox\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/database\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/logx\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/metrics\t[no test files]\n?   \tgithub.com/roma007/OpenQuizGo/internal/platform/tracing\t[no test files]\nok  \tgithub.com/roma007/OpenQuizGo/internal/question\t0.716s\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t0.950s\nok  \tgithub.com/roma007/OpenQuizGo/internal/report\t0.587s\nok  \tgithub.com/roma007/OpenQuizGo/internal/rule\t0.942s\nok  \tgithub.com/roma007/OpenQuizGo/internal/topic\t0.545s\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t0.906s\n?   \tgithub.com/roma007/OpenQuizGo/migrations\t[no test files]\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869623824,
+            "ran": 1793869624782,
+            "completed": 1793869646258
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1806,
+        "output": 148,
+        "reasoning": 84,
+        "cache": {
+          "read": 161792,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf689cb0018PVfLGyWzsvvXq",
+      "time": {
+        "created": 1793869646285,
+        "streamed": 1793869648339,
+        "completed": 1793869657100
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now admin build + e2e.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869648221,
+            "completed": 1793869648334
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_c084ea6e42624d788ba8b31b",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/admin-web && npm run build 2>&1 | tail -2 && npm run test:e2e 2>&1 | tail -10",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n✓ built in 509ms\n\n  ✓  1 [setup] › e2e/auth.setup.spec.ts:7:1 › 管理员登录并保存会话 (1.3s)\n  ✓  2 [chromium] › e2e/smoke.spec.ts:9:1 › 运营概览展示关键指标 (734ms)\n  ✓  3 [chromium] › e2e/smoke.spec.ts:19:1 › 题目管理展示列表与筛选 (744ms)\n  ✓  4 [chromium] › e2e/smoke.spec.ts:29:1 › 专题题包展示入口与列表 (719ms)\n  ✓  5 [chromium] › e2e/smoke.spec.ts:37:1 › 会员套餐展示入口与列表 (783ms)\n  ✓  6 [chromium] › e2e/smoke.spec.ts:45:1 › 家庭设备展示搜索与列表 (708ms)\n  ✓  7 [chromium] › e2e/smoke.spec.ts:55:1 › 审计日志展示筛选与列表 (735ms)\n\n  7 passed (6.9s)\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869648225,
+            "ran": 1793869648337,
+            "completed": 1793869657084
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 981,
+        "output": 99,
+        "reasoning": 8,
+        "cache": {
+          "read": 163456,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf6b427001Cgz60bO5dJNZ4X",
+      "time": {
+        "created": 1793869657130,
+        "streamed": 1793869660826,
+        "completed": 1793869662795
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now rebuild API and test live 047 endpoints, 048 SSE. Rebuild, restart.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869660306,
+            "completed": 1793869660817
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_6d0873e7cc104df4bbc2e79f",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && go build -o bin/api ./cmd/api && PID=$(lsof -nP -iTCP:18080 -sTCP:LISTEN -t | head -1); [ -n \"$PID\" ] && kill $PID; sleep 1; echo rebuilt",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "rebuilt\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869660374,
+            "ran": 1793869660823,
+            "completed": 1793869662761
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 601,
+        "output": 125,
+        "reasoning": 19,
+        "cache": {
+          "read": 164224,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaef0dbb003WJySfQ3p6JyOrC",
+      "metadata": {
+        "source": "shell",
+        "shellID": "sh_1aaef0db9001M4kixxXYR1UTwL",
+        "jobID": "sh_1aaef0db9001M4kixxXYR1UTwL",
+        "state": "completed",
+        "truncated": false,
+        "exit": 0
+      },
+      "time": {
+        "created": 1793869662799
+      },
+      "text": "<shell id=\"sh_1aaef0db9001M4kixxXYR1UTwL\" state=\"completed\" command=\"cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api\">\ntime=2026-11-05T16:59:16.447+08:00 level=INFO msg=\"http server starting\" addr=:18080 env=dev version=dev\ntime=2026-11-05T16:59:23.000+08:00 level=INFO msg=\"http request\" request_id=b335da99351ecd8992c882d8 method=POST path=/v1/admin/auth/login status=200 bytes=928 duration_ms=70 remote_ip=127.0.0.1:51222\ntime=2026-11-05T16:59:23.001+08:00 level=INFO msg=\"http request\" request_id=af58f05fc5b6be29090d6f12 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51223\ntime=2026-11-05T16:59:23.002+08:00 level=INFO msg=\"http request\" request_id=2e9b6d797bca61c4d08a73dd method=POST path=/v1/admin/questions status=403 bytes=62 duration_ms=0 remote_ip=127.0.0.1:51224\ntime=2026-11-05T16:59:23.006+08:00 level=INFO msg=\"http request\" request_id=81b9f08225b16e82a4cc3134 method=POST path=/v1/admin/questions status=422 bytes=114 duration_ms=3 remote_ip=127.0.0.1:51225\ntime=2026-11-05T16:59:23.013+08:00 level=INFO msg=\"http request\" request_id=eae81f7800c6c64f827cf52d method=POST path=/v1/admin/questions status=201 bytes=489 duration_ms=6 remote_ip=127.0.0.1:51226\ntime=2026-11-05T16:59:23.015+08:00 level=INFO msg=\"http request\" request_id=1e5d27e7bc33e11c6d4aee0d method=GET path=/v1/admin/questions/9c23fd60-a9a9-42a7-a3b7-43f94a396659 status=200 bytes=489 duration_ms=1 remote_ip=127.0.0.1:51227\ntime=2026-11-05T16:59:23.023+08:00 level=INFO msg=\"http request\" request_id=fbe87ca108614a7ed69719c7 method=DELETE path=/v1/admin/questions/9c23fd60-a9a9-42a7-a3b7-43f94a396659 status=200 bytes=16 duration_ms=6 remote_ip=127.0.0.1:51228\ntime=2026-11-05T16:59:23.023+08:00 level=INFO msg=\"http request\" request_id=e29c712413c0426af5b2097c method=POST path=/v1/admin/auth/logout status=200 bytes=16 duration_ms=0 remote_ip=127.0.0.1:51229\ntime=2026-11-05T16:59:23.023+08:00 level=INFO msg=\"http request\" request_id=1b5b54216de7ca1e1fffce04 method=GET path=/v1/admin/me status=401 bytes=76 duration_ms=0 remote_ip=127.0.0.1:51230\ntime=2026-11-05T16:59:23.863+08:00 level=INFO msg=\"http request\" request_id=8459220c8379eedd0ad349b5 method=GET path=/healthz status=200 bytes=16 duration_ms=0 remote_ip=127.0.0.1:51231\ntime=2026-11-05T16:59:26.772+08:00 level=INFO msg=\"http request\" request_id=820532b0d842b54f22517b40 method=POST path=/v1/admin/auth/login status=200 bytes=928 duration_ms=78 remote_ip=127.0.0.1:51232\ntime=2026-11-05T16:59:32.547+08:00 level=INFO msg=\"http request\" request_id=9fe073246b44906e8cbe0ba7 method=GET path=/v1/admin/me status=401 bytes=76 duration_ms=0 remote_ip=127.0.0.1:51240\ntime=2026-11-05T16:59:32.549+08:00 level=INFO msg=\"http request\" request_id=26b73497439446c78f2c95b2 method=GET path=/v1/admin/me status=401 bytes=76 duration_ms=0 remote_ip=127.0.0.1:51241\ntime=2026-11-05T16:59:32.948+08:00 level=INFO msg=\"http request\" request_id=898e8e433740fcd2ced1e46d method=POST path=/v1/admin/auth/login status=200 bytes=928 duration_ms=68 remote_ip=127.0.0.1:51242\ntime=2026-11-05T16:59:33.167+08:00 level=INFO msg=\"http request\" request_id=902ef7fa7bffe1155a327a17 method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=8 remote_ip=127.0.0.1:51243\ntime=2026-11-05T16:59:33.175+08:00 level=INFO msg=\"http request\" request_id=5f1461bc6ed39727f5f122ed method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=5 remote_ip=127.0.0.1:51244\ntime=2026-11-05T16:59:34.124+08:00 level=INFO msg=\"http request\" request_id=47c53265c5383fcf85d88827 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51252\ntime=2026-11-05T16:59:34.127+08:00 level=INFO msg=\"http request\" request_id=b89a0b593960967f307c60f9 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51253\ntime=2026-11-05T16:59:34.297+08:00 level=INFO msg=\"http request\" request_id=9fdfbce954f1e9135367d259 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51257\ntime=2026-11-05T16:59:34.298+08:00 level=INFO msg=\"http request\" request_id=c88bdbe62a45747a43245e99 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51258\ntime=2026-11-05T16:59:34.395+08:00 level=INFO msg=\"http request\" request_id=9f234610f9a511e8ab3c7277 method=GET path=/v1/admin/dashboard status=200 bytes=1415 duration_ms=19 remote_ip=127.0.0.1:51259\ntime=2026-11-05T16:59:34.397+08:00 level=INFO msg=\"http request\" request_id=bbd9eac2387752ed0b702495 method=GET path=/v1/admin/dashboard status=200 bytes=1415 duration_ms=0 remote_ip=127.0.0.1:51260\ntime=2026-11-05T16:59:34.869+08:00 level=INFO msg=\"http request\" request_id=174b41d645d58824beb70edb method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51268\ntime=2026-11-05T16:59:34.871+08:00 level=INFO msg=\"http request\" request_id=f2dd42b76a612eefe12e5f21 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51269\ntime=2026-11-05T16:59:35.023+08:00 level=INFO msg=\"http request\" request_id=c43670e4fd7b2196b2aa6d3d method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51271\ntime=2026-11-05T16:59:35.025+08:00 level=INFO msg=\"http request\" request_id=0a6ab821a44f899655dd46c7 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51272\ntime=2026-11-05T16:59:35.148+08:00 level=INFO msg=\"http request\" request_id=bf784f912e57b9a46f293d5a method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=5 remote_ip=127.0.0.1:51273\ntime=2026-11-05T16:59:35.155+08:00 level=INFO msg=\"http request\" request_id=605fed3ec41f6add3d6739b0 method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=5 remote_ip=127.0.0.1:51274\ntime=2026-11-05T16:59:35.643+08:00 level=INFO msg=\"http request\" request_id=f9c97f02b460f163995c07e7 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51282\ntime=2026-11-05T16:59:35.645+08:00 level=INFO msg=\"http request\" request_id=756cc36a7f37488080238233 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51283\ntime=2026-11-05T16:59:35.801+08:00 level=INFO msg=\"http request\" request_id=5077f74d26173fbd67fe2d8e method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51287\ntime=2026-11-05T16:59:35.802+08:00 level=INFO msg=\"http request\" request_id=e5bc738d3f1795188f0cc270 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51288\ntime=2026-11-05T16:59:35.897+08:00 level=INFO msg=\"http request\" request_id=fa45609cdededa4859319c11 method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=1 remote_ip=127.0.0.1:51289\ntime=2026-11-05T16:59:35.899+08:00 level=INFO msg=\"http request\" request_id=19464d71798f26ba5dfbb4d4 method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=0 remote_ip=127.0.0.1:51290\ntime=2026-11-05T16:59:36.356+08:00 level=INFO msg=\"http request\" request_id=27a793eea87e33276d8b2499 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51298\ntime=2026-11-05T16:59:36.357+08:00 level=INFO msg=\"http request\" request_id=77be63ff24c3aea71ff27989 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51299\ntime=2026-11-05T16:59:36.515+08:00 level=INFO msg=\"http request\" request_id=ff7f9771501a8a6708c7270f method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51301\ntime=2026-11-05T16:59:36.517+08:00 level=INFO msg=\"http request\" request_id=8338f2a2a9ce96a404dcae13 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51302\ntime=2026-11-05T16:59:36.618+08:00 level=INFO msg=\"http request\" request_id=bbaff6384e5f0e687568ca53 method=GET path=/v1/admin/membership/plans status=200 bytes=862 duration_ms=1 remote_ip=127.0.0.1:51303\ntime=2026-11-05T16:59:36.619+08:00 level=INFO msg=\"http request\" request_id=dfae95fb8d5582e37153d1c4 method=GET path=/v1/admin/membership/plans status=200 bytes=862 duration_ms=0 remote_ip=127.0.0.1:51304\ntime=2026-11-05T16:59:37.122+08:00 level=INFO msg=\"http request\" request_id=89a9d2b2bc82cc40b2d50081 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51312\ntime=2026-11-05T16:59:37.123+08:00 level=INFO msg=\"http request\" request_id=61899cda82d9e078e2faabfb method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51313\ntime=2026-11-05T16:59:37.280+08:00 level=INFO msg=\"http request\" request_id=de93dbfdc989709760db5838 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51315\ntime=2026-11-05T16:59:37.282+08:00 level=INFO msg=\"http request\" request_id=2bf49cea8138dcbce94c1a48 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51316\ntime=2026-11-05T16:59:37.391+08:00 level=INFO msg=\"http request\" request_id=29d33217b40cddc0cc120c12 method=GET path=/v1/admin/families status=200 bytes=3561 duration_ms=3 remote_ip=127.0.0.1:51317\ntime=2026-11-05T16:59:37.393+08:00 level=INFO msg=\"http request\" request_id=8f08e0656c639c27782b2653 method=GET path=/v1/admin/families status=200 bytes=3561 duration_ms=1 remote_ip=127.0.0.1:51318\ntime=2026-11-05T16:59:37.871+08:00 level=INFO msg=\"http request\" request_id=7391ef1c3214dd2c3819608e method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51326\ntime=2026-11-05T16:59:37.872+08:00 level=INFO msg=\"http request\" request_id=3811484df48f55a7d60fc85e method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51327\ntime=2026-11-05T16:59:38.025+08:00 level=INFO msg=\"http request\" request_id=de640783419fe6ad2fd44304 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51329\ntime=2026-11-05T16:59:38.026+08:00 level=INFO msg=\"http request\" request_id=ca0ba4bbe0cd7d4af32d99bd method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:51330\ntime=2026-11-05T16:59:38.152+08:00 level=INFO msg=\"http request\" request_id=ab54e55aa23bf31469d218a3 method=GET path=/v1/admin/audit status=200 bytes=15226 duration_ms=1 remote_ip=127.0.0.1:51331\ntime=2026-11-05T16:59:38.154+08:00 level=INFO msg=\"http request\" request_id=306aa1751e8f3de00a73238b method=GET path=/v1/admin/audit status=200 bytes=15226 duration_ms=0 remote_ip=127.0.0.1:51332\ntime=2026-11-05T17:07:31.476+08:00 level=INFO msg=\"http request\" request_id=a23d28f3bc94e18a351cc970 method=GET path=/v1/admin/me status=401 bytes=76 duration_ms=3 remote_ip=127.0.0.1:52053\ntime=2026-11-05T17:07:31.478+08:00 level=INFO msg=\"http request\" request_id=521ceeb1371770dcbf922cda method=GET path=/v1/admin/me status=401 bytes=76 duration_ms=0 remote_ip=127.0.0.1:52054\ntime=2026-11-05T17:07:31.833+08:00 level=INFO msg=\"http request\" request_id=9552f921db398d81458d8277 method=POST path=/v1/admin/auth/login status=200 bytes=928 duration_ms=76 remote_ip=127.0.0.1:52055\ntime=2026-11-05T17:07:32.043+08:00 level=INFO msg=\"http request\" request_id=33b6e3fe0f31563311971b36 method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=7 remote_ip=127.0.0.1:52056\ntime=2026-11-05T17:07:32.050+08:00 level=INFO msg=\"http request\" request_id=a0fd3f561db24d63ae289335 method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=4 remote_ip=127.0.0.1:52057\ntime=2026-11-05T17:07:32.907+08:00 level=INFO msg=\"http request\" request_id=6ae7bb1512f5ab8b26163001 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52066\ntime=2026-11-05T17:07:32.908+08:00 level=INFO msg=\"http request\" request_id=9720e8917d51ec5c7f9c6686 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52067\ntime=2026-11-05T17:07:33.064+08:00 level=INFO msg=\"http request\" request_id=0b92e029963ef4ee51b5b3ba method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52071\ntime=2026-11-05T17:07:33.065+08:00 level=INFO msg=\"http request\" request_id=8c7da1def086e00335c50ef6 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52072\ntime=2026-11-05T17:07:33.143+08:00 level=INFO msg=\"http request\" request_id=af35f6a1138dc96c2dc6e04f method=GET path=/v1/admin/dashboard status=200 bytes=1414 duration_ms=3 remote_ip=127.0.0.1:52073\ntime=2026-11-05T17:07:33.145+08:00 level=INFO msg=\"http request\" request_id=9b61ac086a193cf177b57c79 method=GET path=/v1/admin/dashboard status=200 bytes=1414 duration_ms=0 remote_ip=127.0.0.1:52074\ntime=2026-11-05T17:07:33.631+08:00 level=INFO msg=\"http request\" request_id=4dcd0d8ea112bd8aa4e5830f method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52083\ntime=2026-11-05T17:07:33.632+08:00 level=INFO msg=\"http request\" request_id=2d9a56100224f09f2bc36ca2 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52084\ntime=2026-11-05T17:07:33.780+08:00 level=INFO msg=\"http request\" request_id=49a98eb55c77e8b6d6fbd5bd method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52088\ntime=2026-11-05T17:07:33.782+08:00 level=INFO msg=\"http request\" request_id=8accd2b11fbab09f3ff8e7ed method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52089\ntime=2026-11-05T17:07:33.902+08:00 level=INFO msg=\"http request\" request_id=a0ff629791088896e821240c method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=5 remote_ip=127.0.0.1:52090\ntime=2026-11-05T17:07:33.908+08:00 level=INFO msg=\"http request\" request_id=801fcb03a429fa297362f0e9 method=GET path=/v1/admin/questions status=200 bytes=7807 duration_ms=5 remote_ip=127.0.0.1:52091\ntime=2026-11-05T17:07:34.382+08:00 level=INFO msg=\"http request\" request_id=515ce6e032008187c0fdedc0 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52099\ntime=2026-11-05T17:07:34.384+08:00 level=INFO msg=\"http request\" request_id=d5d68a93b0a9297dbf6932c8 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52100\ntime=2026-11-05T17:07:34.532+08:00 level=INFO msg=\"http request\" request_id=e22f44d08efb26dbc12f1fff method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52102\ntime=2026-11-05T17:07:34.533+08:00 level=INFO msg=\"http request\" request_id=fd24b54fb41a02bbb3c55e86 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52103\ntime=2026-11-05T17:07:34.627+08:00 level=INFO msg=\"http request\" request_id=a1308aad040b460e265193ed method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=0 remote_ip=127.0.0.1:52104\ntime=2026-11-05T17:07:34.629+08:00 level=INFO msg=\"http request\" request_id=79c28d1ea0cc501e4b38fe42 method=GET path=/v1/admin/topics status=200 bytes=13 duration_ms=0 remote_ip=127.0.0.1:52105\ntime=2026-11-05T17:07:35.104+08:00 level=INFO msg=\"http request\" request_id=77687aba41413976c33d7d07 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52113\ntime=2026-11-05T17:07:35.106+08:00 level=INFO msg=\"http request\" request_id=9841dcb40f286da714da5c6b method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52114\ntime=2026-11-05T17:07:35.267+08:00 level=INFO msg=\"http request\" request_id=b333e0f1d51fb751f03edf8f method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52117\ntime=2026-11-05T17:07:35.268+08:00 level=INFO msg=\"http request\" request_id=c3b2d43e936451c7ae6ca420 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52118\ntime=2026-11-05T17:07:35.360+08:00 level=INFO msg=\"http request\" request_id=0fd089df1387acb18233bdaa method=GET path=/v1/admin/membership/plans status=200 bytes=862 duration_ms=0 remote_ip=127.0.0.1:52119\ntime=2026-11-05T17:07:35.361+08:00 level=INFO msg=\"http request\" request_id=d7de970356a55ca482b5d5af method=GET path=/v1/admin/membership/plans status=200 bytes=862 duration_ms=0 remote_ip=127.0.0.1:52120\ntime=2026-11-05T17:07:35.895+08:00 level=INFO msg=\"http request\" request_id=1f0c2d008c48b3709842a38f method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52128\ntime=2026-11-05T17:07:35.896+08:00 level=INFO msg=\"http request\" request_id=8240005d88008a33c2b9c61c method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52129\ntime=2026-11-05T17:07:36.047+08:00 level=INFO msg=\"http request\" request_id=f752cec83dfee7b54ea6e982 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52131\ntime=2026-11-05T17:07:36.048+08:00 level=INFO msg=\"http request\" request_id=e3a6d2af5392c15446ac64b3 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52132\ntime=2026-11-05T17:07:36.153+08:00 level=INFO msg=\"http request\" request_id=f8efbf93a21979bdcc47d687 method=GET path=/v1/admin/families status=200 bytes=3561 duration_ms=1 remote_ip=127.0.0.1:52133\ntime=2026-11-05T17:07:36.156+08:00 level=INFO msg=\"http request\" request_id=f87c92847e0abb93d98071a3 method=GET path=/v1/admin/families status=200 bytes=3561 duration_ms=1 remote_ip=127.0.0.1:52134\ntime=2026-11-05T17:07:36.606+08:00 level=INFO msg=\"http request\" request_id=3282eda6fc43e86f2d7f3e0b method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52142\ntime=2026-11-05T17:07:36.608+08:00 level=INFO msg=\"http request\" request_id=0c8d8e174100e16692ad5aa0 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52143\ntime=2026-11-05T17:07:36.784+08:00 level=INFO msg=\"http request\" request_id=984521ae8aab6d49f618c5ff method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52145\ntime=2026-11-05T17:07:36.785+08:00 level=INFO msg=\"http request\" request_id=357afaa01bfdcbeda45255c4 method=GET path=/v1/admin/me status=200 bytes=333 duration_ms=0 remote_ip=127.0.0.1:52146\ntime=2026-11-05T17:07:36.905+08:00 level=INFO msg=\"http request\" request_id=e15e95ef2f4ba7978c127ba6 method=GET path=/v1/admin/audit status=200 bytes=15226 duration_ms=0 remote_ip=127.0.0.1:52147\ntime=2026-11-05T17:07:36.907+08:00 level=INFO msg=\"http request\" request_id=7c414955638d75778dc132ca method=GET path=/v1/admin/audit status=200 bytes=15226 duration_ms=0 remote_ip=127.0.0.1:52148\ntime=2026-11-05T17:07:41.739+08:00 level=INFO msg=\"shutting down\"\ntime=2026-11-05T17:07:41.740+08:00 level=INFO msg=bye\n\n</shell>",
+      "description": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api",
+      "type": "synthetic"
+    },
+    {
+      "id": "msg_1aaf6ca5b0010U4wR5u4VGmJYQ",
+      "time": {
+        "created": 1793869662814,
+        "streamed": 1793869665890,
+        "completed": 1793869665923
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now restart new API.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869664818,
+            "completed": 1793869665884
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_12cb4104881d4335884c1688",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "background": true,
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Command moved to the background (shell ID: sh_1aaf6d6670014aP0FRtQvSrY7T).\nOutput is streaming to: /Users/mengfeng/.local/share/opencode/shell/785918a96bb643b073682956c406cb83da15bee7/sh_1aaf6d6670014aP0FRtQvSrY7T.out"
+              },
+              {
+                "type": "text",
+                "text": "You will be notified automatically when the command finishes. The notification will include the command's output. Unless the user explicitly asks otherwise, DO NOT poll for completion, even if you need the final result to continue. Repeatedly sleeping and reading or searching the output file is polling, not useful work. You may read the current output if it lets you do useful work now, but do not repeatedly check it while waiting for the command to finish. Keep working on anything that does not depend on the result. If you have nothing else to do, end your response; you will be resumed automatically when the command finishes."
+              }
+            ],
+            "metadata": {
+              "status": "running",
+              "truncated": false,
+              "shellID": "sh_1aaf6d6670014aP0FRtQvSrY7T"
+            }
+          },
+          "time": {
+            "created": 1793869664822,
+            "ran": 1793869665888,
+            "completed": 1793869665898
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 7962,
+        "output": 97,
+        "reasoning": 5,
+        "cache": {
+          "read": 164608,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf6d6900010sAF5seEA6Up7f",
+      "time": {
+        "created": 1793869665941,
+        "streamed": 1793869670245,
+        "completed": 1793869672626
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Test 047 endpoints live:\n- GET /coverage/topics?threshold=50\n- export dimension=topic.\nAlso test 048 SSE requires battle; complex to create battle (parent token). Could skip live, tests cover. Maybe inspect test output sufficient.\n\nLet's call coverage topics/export with cookie.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869667483,
+            "completed": 1793869670236
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_052ccccf6de04a5a9c6ecabe",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sleep 2; python3 - <<'PY'\nimport json, urllib.request, urllib.error, http.cookiejar\nBASE=\"http://127.0.0.1:18080/v1\"\njar=http.cookiejar.CookieJar(); opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))\ndef call(method,path,body=None):\n    data=json.dumps(body).encode() if body is not None else None\n    req=urllib.request.Request(BASE+path,data=data,method=method)\n    req.add_header(\"Content-Type\",\"application/json\"); req.add_header(\"X-Admin-Request\",\"1\")\n    try:\n        with opener.open(req) as r: return r.status, r.headers, r.read()\n    except urllib.error.HTTPError as e: return e.code, e.headers, e.read()\ncall(\"POST\",\"/admin/auth/login\",{\"username\":\"admin\",\"password\":\"admin12345\"})\ncode,h,body=call(\"GET\",\"/admin/coverage/topics?threshold=50\")\nprint(\"topics\",code,json.loads(body))\ncode,h,body=call(\"GET\",\"/admin/coverage/export?threshold=50&dimension=topic\")\nprint(\"export\",code,h.get(\"Content-Type\"),body.decode().splitlines()[:4])\ncode,h,body=call(\"GET\",\"/admin/coverage/export?threshold=50\")\nprint(\"matrix header\",body.decode().splitlines()[0])\nPY",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "topics 200 {'cells': [{'topic_id': '', 'topic_name': '未分专题', 'status': 'draft', 'count': 1}, {'topic_id': '', 'topic_name': '未分专题', 'status': 'offline', 'count': 3}, {'topic_id': '', 'topic_name': '未分专题', 'status': 'online', 'count': 2003}], 'total': 2007, 'warnings': []}\nexport 200 text/csv; charset=utf-8 ['topic_id,topic_name,status,count', ',未分专题,draft,1', ',未分专题,offline,3', ',未分专题,online,2003']\nmatrix header subject,stage,type,status,difficulty,count\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869668167,
+            "ran": 1793869670242,
+            "completed": 1793869672613
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 479,
+        "output": 397,
+        "reasoning": 64,
+        "cache": {
+          "read": 172416,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf6f0be001LlS52ud24E6CdE",
+      "time": {
+        "created": 1793869672640,
+        "streamed": 1793869675698,
+        "completed": 1793869721271
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Works.\n\nNow TV version bump 0.3.3, versionCode 6, run test + assemble, copy dist. Note 049 already assemble passed at 0.3.2. Bump then assemble.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869674794,
+            "completed": 1793869675689
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_9faefed466c3418b8bbd28a3",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo/tv && python3 - <<'PY'\nfrom pathlib import Path\np=Path('app/build.gradle.kts'); s=p.read_text()\ns=s.replace('versionCode = 5','versionCode = 6').replace('versionName = \"0.3.2\"','versionName = \"0.3.3\"')\np.write_text(s)\nPY\n./gradlew :app:testDebugUnitTest 2>&1 | tail -3 && ./gradlew :app:assembleRelease -PapiBaseUrl=https://tv.openquizgo.example/ 2>&1 | tail -3 && cd .. && cp tv/app/build/outputs/apk/release/app-release.apk dist/OpenQuizGo-TV-0.3.3.apk && shasum -a 256 dist/OpenQuizGo-TV-0.3.3.apk | tee dist/OpenQuizGo-TV-0.3.3.apk.sha256",
+              "timeout": 1800000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "BUILD SUCCESSFUL in 13s\n26 actionable tasks: 12 executed, 14 up-to-date\nConsider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html\nBUILD SUCCESSFUL in 31s\n50 actionable tasks: 18 executed, 32 up-to-date\nConsider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html\ne804f29d255697cdcca7442d8c702f3224f9e3a082c890b942dc7d5816b64ffe  dist/OpenQuizGo-TV-0.3.3.apk\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869674897,
+            "ran": 1793869675695,
+            "completed": 1793869721201
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "42de55681b5851aaccf42ea34be6cacf833233ec",
+        "end": "c28622d3fdcbfb04774c8eeda004dd414e386894",
+        "files": [
+          "tv/app/build.gradle.kts"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 864,
+        "output": 272,
+        "reasoning": 45,
+        "cache": {
+          "read": 172672,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf7aee3001sFlCJQMIY5zGil",
+      "time": {
+        "created": 1793869721319,
+        "streamed": 1793869724555,
+        "completed": 1793869724604
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now 049 acceptance, ROADMAP, docs README, root README, admin version 0.41.0 + lock, 047/048 acceptance versions already 0.41.0. Update 047 acceptance TV? no.\n\nOpenAPI:\n- Add `/v1/admin/coverage/topics`\n- Add dimension parameter to export.\n- SSE events endpoint? Find path.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869723496,
+            "completed": 1793869724549
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_da5663e2617e445995f72a41",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"coverage/export\\|coverage:\" api/openapi.yaml && grep -n \"battles/{battleID}/events\" -A 15 api/openapi.yaml",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "1072:  /v1/admin/coverage:\n1098:  /v1/admin/coverage/export:\n566:  /v1/family/children/{childID}/battles/{battleID}/events:\n567-    parameters:\n568-      - $ref: \"#/components/parameters/ChildID\"\n569-      - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }\n570-    get:\n571-      tags: [battle]\n572-      summary: 对战事件流（SSE）\n573-      description: \"初始与状态变更时发送 event: update；每 20 秒发送心跳。\"\n574-      security: [{ ParentAuth: [] }]\n575-      responses:\n576-        \"200\":\n577-          description: text/event-stream\n578-          content:\n579-            text/event-stream:\n580-              schema: { type: string }\n581-\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869724541,
+            "ran": 1793869724553,
+            "completed": 1793869724585
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "c28622d3fdcbfb04774c8eeda004dd414e386894",
+        "end": "c28622d3fdcbfb04774c8eeda004dd414e386894",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 720,
+        "output": 110,
+        "reasoning": 81,
+        "cache": {
+          "read": 173312,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf7bbc9001TwNdl2EdofEmSE",
+      "time": {
+        "created": 1793869724626,
+        "streamed": 1793869726613,
+        "completed": 1793869726654
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_ed28a6cecfd04066855e9120",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '1070,1115p' api/openapi.yaml",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "      responses:\n        \"200\": { description: OK }\n  /v1/admin/coverage:\n    get:\n      tags: [admin]\n      summary: 题库覆盖率聚合\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: 按学科/学段/题型/状态/难度聚合\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  cells:\n                    type: array\n                    items:\n                      type: object\n                      properties:\n                        subject: { type: string }\n                        stage: { type: string }\n                        type: { type: string }\n                        status: { type: string }\n                        difficulty: { type: integer }\n                        count: { type: integer }\n                  total: { type: integer }\n\n  /v1/admin/coverage/export:\n    get:\n      tags: [admin]\n      summary: 导出覆盖率 CSV\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: CSV 文件\n          content:\n            text/csv:\n              schema: { type: string }\n\n  /v1/admin/calibration/preview:\n    get:\n      tags: [admin]\n      summary: 难度校准预览\n      security: [{ bearerAuth: [] }]\n      parameters:\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869726333,
+            "ran": 1793869726610,
+            "completed": 1793869726631
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "c28622d3fdcbfb04774c8eeda004dd414e386894",
+        "end": "c28622d3fdcbfb04774c8eeda004dd414e386894",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 621,
+        "output": 86,
+        "reasoning": 0,
+        "cache": {
+          "read": 173824,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf7c3cd0019ncEvAEHQ7SZiC",
+      "time": {
+        "created": 1793869726673,
+        "streamed": 1793869730605,
+        "completed": 1793869730693
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Add topics path and dimension param. Also update SSE description with id/version.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869729126,
+            "completed": 1793869730598
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_41a772470dfa42e0bb5d994b",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/api/openapi.yaml",
+              "oldString": "  /v1/admin/coverage/export:\n    get:\n      tags: [admin]\n      summary: 导出覆盖率 CSV\n      security: [{ bearerAuth: [] }]\n      responses:\n        \"200\":\n          description: CSV 文件\n          content:\n            text/csv:\n              schema: { type: string }",
+              "newString": "  /v1/admin/coverage/topics:\n    get:\n      tags: [admin]\n      summary: 专题维度覆盖率聚合\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: threshold, in: query, schema: { type: integer, default: 50 } }\n      responses:\n        \"200\":\n          description: 按专题/状态聚合，未分专题单独汇总\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  cells:\n                    type: array\n                    items:\n                      type: object\n                      properties:\n                        topic_id: { type: string }\n                        topic_name: { type: string }\n                        status: { type: string }\n                        count: { type: integer }\n                  total: { type: integer }\n                  warnings:\n                    type: array\n                    items: { type: string }\n\n  /v1/admin/coverage/export:\n    get:\n      tags: [admin]\n      summary: 导出覆盖率 CSV\n      security: [{ bearerAuth: [] }]\n      parameters:\n        - { name: threshold, in: query, schema: { type: integer, default: 50 } }\n        - { name: dimension, in: query, schema: { type: string, enum: [matrix, topic], default: matrix } }\n      responses:\n        \"200\":\n          description: CSV 文件（dimension=topic 时为 topic_id,topic_name,status,count）\n          content:\n            text/csv:\n              schema: { type: string }"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited api/openapi.yaml (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "api/openapi.yaml",
+                  "patch": "Index: api/openapi.yaml\n===================================================================\n--- api/openapi.yaml\n+++ api/openapi.yaml\n@@ -1094,16 +1094,48 @@\n                         difficulty: { type: integer }\n                         count: { type: integer }\n                   total: { type: integer }\n \n+  /v1/admin/coverage/topics:\n+    get:\n+      tags: [admin]\n+      summary: 专题维度覆盖率聚合\n+      security: [{ bearerAuth: [] }]\n+      parameters:\n+        - { name: threshold, in: query, schema: { type: integer, default: 50 } }\n+      responses:\n+        \"200\":\n+          description: 按专题/状态聚合，未分专题单独汇总\n+          content:\n+            application/json:\n+              schema:\n+                type: object\n+                properties:\n+                  cells:\n+                    type: array\n+                    items:\n+                      type: object\n+                      properties:\n+                        topic_id: { type: string }\n+                        topic_name: { type: string }\n+                        status: { type: string }\n+                        count: { type: integer }\n+                  total: { type: integer }\n+                  warnings:\n+                    type: array\n+                    items: { type: string }\n+\n   /v1/admin/coverage/export:\n     get:\n       tags: [admin]\n       summary: 导出覆盖率 CSV\n       security: [{ bearerAuth: [] }]\n+      parameters:\n+        - { name: threshold, in: query, schema: { type: integer, default: 50 } }\n+        - { name: dimension, in: query, schema: { type: string, enum: [matrix, topic], default: matrix } }\n       responses:\n         \"200\":\n-          description: CSV 文件\n+          description: CSV 文件（dimension=topic 时为 topic_id,topic_name,status,count）\n           content:\n             text/csv:\n               schema: { type: string }\n \n",
+                  "status": "modified",
+                  "additions": 33,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793869729439,
+            "ran": 1793869730603,
+            "completed": 1793869730632
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "c28622d3fdcbfb04774c8eeda004dd414e386894",
+        "end": "5918c29f8679f6dfe0114af12f75ea6d4416b358",
+        "files": [
+          "api/openapi.yaml"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 608,
+        "output": 481,
+        "reasoning": 16,
+        "cache": {
+          "read": 174208,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf7d396001HoYWnNHPKUmYpC",
+      "time": {
+        "created": 1793869730714,
+        "streamed": 1793869733220,
+        "completed": 1793869733299
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_9346e8a7d9cc4c77a61110af",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/api/openapi.yaml",
+              "oldString": "      description: \"初始与状态变更时发送 event: update；每 20 秒发送心跳。\"",
+              "newString": "      description: \"初始与状态变更时发送带 id 与 data.version 的 event: update；每 20 秒发送心跳。\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited api/openapi.yaml (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "api/openapi.yaml",
+                  "patch": "Index: api/openapi.yaml\n===================================================================\n--- api/openapi.yaml\n+++ api/openapi.yaml\n@@ -569,9 +569,9 @@\n       - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }\n     get:\n       tags: [battle]\n       summary: 对战事件流（SSE）\n-      description: \"初始与状态变更时发送 event: update；每 20 秒发送心跳。\"\n+      description: \"初始与状态变更时发送带 id 与 data.version 的 event: update；每 20 秒发送心跳。\"\n       security: [{ ParentAuth: [] }]\n       responses:\n         \"200\":\n           description: text/event-stream\n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 1
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793869732502,
+            "ran": 1793869733218,
+            "completed": 1793869733233
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "5918c29f8679f6dfe0114af12f75ea6d4416b358",
+        "end": "f9c034f37d0478ab3f91d28131073bdbec2c4d22",
+        "files": [
+          "api/openapi.yaml"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 740,
+        "output": 139,
+        "reasoning": 0,
+        "cache": {
+          "read": 174592,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf7ddbd001p2cL6ci34hggNx",
+      "time": {
+        "created": 1793869733313,
+        "streamed": 1793869739441,
+        "completed": 1793869739583
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now 049 acceptance and docs updates.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869734960,
+            "completed": 1793869739434
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_2bd6cbf6becb4e448c74edca",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/acceptance/phase49.md <<'EOF'\n# 049 TV 日志落盘与诊断导出验收报告\n\n| 项目 | 内容 |\n| --- | --- |\n| 版本 | v0.41.0（TV 0.3.3） |\n| 日期 | 2026-11-05 |\n| 范围 | 049：TV 日志落盘、轮转与诊断导出 |\n| 设计/计划 | [设计](../design/049-TV日志落盘与诊断导出设计.md) / [计划](../plans/049-TV日志落盘与诊断导出实施计划.md) |\n\n## 1. 结论\n\n**通过（构建 + 单元测试级）。** TV 端关键事件写入私有日志文件，1MB 轮转；诊断页可通过 FileProvider 导出并分享日志。无 TV 实机，未做真机分享验证。\n\n## 2. 交付\n\n- `LogStore`：写入 `files/logs/guard.log`，1MB 轮转 `guard.log.1`，异常吞掉不影响主流程；\n- `GuardLog`：统一 i/w/e 入口，同时写 logcat、诊断内存列表与文件；\n- 埋点：启动、激活/绑定、令牌刷新/失效、授权采纳/刷新、心跳失败、答题/结算失败、服务拉起异常；\n- `LogExporter`：合并轮转文件，导出 `openquizgo-tv-log-YYYYMMDD-HHmm.txt`；\n- FileProvider 仅暴露 `files/logs/`，`ACTION_SEND` + 读权限；\n- 诊断页「导出日志」按钮；\n- TV 版本 0.3.3（versionCode 6）。\n\n## 3. 验证\n\n```text\n./gradlew :app:testDebugUnitTest        BUILD SUCCESSFUL（7 项，新增 4 项）\n./gradlew :app:compileDebugKotlin       BUILD SUCCESSFUL\n./gradlew :app:assembleRelease          BUILD SUCCESSFUL\n```\n\n单元测试覆盖：写入、超过 1MB 轮转、并发写入、写入失败不抛异常。\n\n## 4. 限制\n\n- 同步小 IO，极端高频日志可能有轻微主线程开销；\n- 部分电视系统无处理 `ACTION_SEND` 的应用，分享会失败但不崩溃；\n- 未做 TV 实机导出验证；\n- 未实现远程上传。\n\n## 5. 后续\n\n- 远程诊断上传；\n- 崩溃日志捕获；\n- 日志级别配置。\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('docs/plans/049-TV日志落盘与诊断导出实施计划.md'); s=p.read_text()\ns=s.replace('| 状态 | approved |','| 状态 | done |').replace('| todo |','| done |')\ns=s.replace('| 2026-11-05 | 设计与计划创建 | approved |','| 2026-11-05 | 设计与计划创建 | approved |\\n| 2026-11-05 | 全部任务完成 | 单测/编译/Release 构建通过 |')\ns=s.replace('- 待验收','- **通过（构建 + 单元测试级）**，详见 [验收报告](../acceptance/phase49.md)。')\np.write_text(s)\np=Path('docs/design/049-TV日志落盘与诊断导出设计.md'); s=p.read_text().replace('| 状态 | approved |','| 状态 | done |'); p.write_text(s)\n# docs/README\np=Path('docs/README.md'); s=p.read_text()\nanchor='| 046 | 新授权关闭旧 active | [设计](design/046-新授权关闭旧授权设计.md) | [计划](plans/046-新授权关闭旧授权实施计划.md) | done（v0.40.0） |'\ns=s.replace(anchor, anchor+'\\n| 047 | 覆盖率按专题导出 | [设计](design/047-覆盖率按专题导出设计.md) | [计划](plans/047-覆盖率按专题导出实施计划.md) | done（v0.41.0） |\\n| 048 | 对战事件版本号 | [设计](design/048-对战事件版本号设计.md) | [计划](plans/048-对战事件版本号实施计划.md) | done（v0.41.0） |\\n| 049 | TV 日志落盘与诊断导出 | [设计](design/049-TV日志落盘与诊断导出设计.md) | [计划](plans/049-TV日志落盘与诊断导出实施计划.md) | done（v0.41.0，TV 0.3.3） |')\np.write_text(s)\n# root README\np=Path('README.md'); s=p.read_text()\nanchor='- ✅ 046 新授权关闭旧 active（v0.40.0）'\ns=s.replace(anchor, anchor+'\\n- ✅ 047 覆盖率按专题导出（v0.41.0）\\n- ✅ 048 对战事件版本号（v0.41.0）\\n- ✅ 049 TV 日志落盘与诊断导出（v0.41.0，TV 0.3.3）')\np.write_text(s)\n# admin version\nfor name in ('admin-web/package.json','admin-web/package-lock.json'):\n    p=Path(name); s=p.read_text().replace('\"version\": \"0.40.0\"','\"version\": \"0.41.0\"'); p.write_text(s)\nprint('049 docs + versions updated')\nPY",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "049 docs + versions updated\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869735015,
+            "ran": 1793869739439,
+            "completed": 1793869739524
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "f9c034f37d0478ab3f91d28131073bdbec2c4d22",
+        "end": "664cf257afbadd6cf4e8982d5f67270045833db3",
+        "files": [
+          "README.md",
+          "admin-web/package-lock.json",
+          "admin-web/package.json",
+          "docs/README.md",
+          "docs/acceptance/phase49.md",
+          "docs/design/049-TV日志落盘与诊断导出设计.md",
+          "docs/plans/049-TV日志落盘与诊断导出实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 386,
+        "output": 1298,
+        "reasoning": 8,
+        "cache": {
+          "read": 175104,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf7f64f001zH9bmoDiLge0Le",
+      "time": {
+        "created": 1793869739602,
+        "streamed": 1793869742248,
+        "completed": 1793869742291
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "ROADMAP updates:\n- Task list: add 047/048/049 under 041–049.\n- Section 3.1: `[ ] 覆盖率按 topic 导出 / 趋势图` → split `[x] 覆盖率按专题导出` + `[ ] 覆盖率趋势图`; `[ ] 事件版本号` → [x]; `[ ] TV 日志落盘与远程诊断` under phase 2? There is \"TV 日志落盘与远程诊断\" [ ] in phase 2. We did local logs + export, remote diagnosis not. Split: `[x] TV 日志落盘与诊断导出（v0.41.0）` + `[ ] TV 远程诊断上传`. Check exact lines.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869740968,
+            "completed": 1793869742241
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_49d1fb13fca0436781aedec4",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"TV 日志\\|覆盖率按\\|事件版本\" docs/ROADMAP.md",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "39:- [ ] TV 日志落盘与远程诊断\n53:- [ ] 覆盖率按 topic 导出 / 趋势图\n167:- [ ] 覆盖率按 topic 导出 / 趋势图\n174:- [ ] 事件版本号\n212:| 2026-11-05 | 042 | 共享 Redis 订阅完成，保留事件版本号待办 |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869741655,
+            "ran": 1793869742246,
+            "completed": 1793869742269
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "664cf257afbadd6cf4e8982d5f67270045833db3",
+        "end": "664cf257afbadd6cf4e8982d5f67270045833db3",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1581,
+        "output": 91,
+        "reasoning": 161,
+        "cache": {
+          "read": 175232,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf800e1001Omu0Cl6yXVLtHB",
+      "time": {
+        "created": 1793869742308,
+        "streamed": 1793869746364,
+        "completed": 1793869746474
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_36a41ee1087546a89b168f84",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('docs/ROADMAP.md'); s=p.read_text()\ns=s.replace('- [ ] TV 日志落盘与远程诊断','- [x] TV 日志落盘与诊断导出（v0.41.0）\\n- [ ] TV 远程诊断上传')\ns=s.replace('- [ ] 覆盖率按 topic 导出 / 趋势图','- [x] 覆盖率按专题导出（v0.41.0）\\n- [ ] 覆盖率趋势图')\ns=s.replace('- [ ] 事件版本号','- [x] 事件版本号（v0.41.0）')\ns=s.replace('''- [x] 046 新授权关闭旧 active（v0.40.0）''','''- [x] 046 新授权关闭旧 active（v0.40.0）\n- [x] 047 覆盖率按专题导出（v0.41.0）\n- [x] 048 对战事件版本号（v0.41.0）\n- [x] 049 TV 日志落盘与诊断导出（v0.41.0，TV 0.3.3）''')\ns=s.replace('''| 2026-11-05 | 046 | 新授权签发时撤销同设备旧 active 授权 |''','''| 2026-11-05 | 046 | 新授权签发时撤销同设备旧 active 授权 |\n| 2026-11-05 | 047 | 覆盖率按专题聚合与 CSV 导出 |\n| 2026-11-05 | 048 | 对战 SSE 增加单调版本号 |\n| 2026-11-05 | 049 | TV 日志落盘、1MB 轮转与诊断导出 |''')\ns=s.replace('> 最后更新：2026-11-05（041–046 已完成）','> 最后更新：2026-11-05（041–049 已完成）')\np.write_text(s)\nprint('roadmap updated')\nPY\ngrep -c '^- \\[x\\]' docs/ROADMAP.md; grep -c '^- \\[ \\]' docs/ROADMAP.md",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "roadmap updated\n103\n42\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869744281,
+            "ran": 1793869746361,
+            "completed": 1793869746427
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "664cf257afbadd6cf4e8982d5f67270045833db3",
+        "end": "576ee479a984bf3b2e4b83ebdeb4b02cc5eeed73",
+        "files": [
+          "docs/ROADMAP.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 515,
+        "output": 553,
+        "reasoning": 0,
+        "cache": {
+          "read": 176640,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf81134001ZtFA1NtjQirU42",
+      "time": {
+        "created": 1793869746486,
+        "streamed": 1793869749617,
+        "completed": 1793869751059
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now validate YAML, admin build after version bump, maybe full e2e not needed again (only version change), but run build. Then archive/commit/tag v0.41.0/push, restart timer.\n\nAlso note docs/README maybe version top? no.\n\nCheck OpenAPI YAML.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869748683,
+            "completed": 1793869749609
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_3b0f5d20d96e46069d0ed340",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 -c \"import yaml; yaml.safe_load(open('api/openapi.yaml')); print('yaml ok')\" && (cd admin-web && npm run build 2>&1 | tail -2) && git status --short | head -40",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "yaml ok\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n✓ built in 537ms\n M README.md\n M admin-web/package-lock.json\n M admin-web/package.json\n M admin-web/src/api.ts\n M admin-web/src/pages/CoveragePage.tsx\n M admin-web/src/types.ts\n M api/openapi.yaml\n M docs/README.md\n M docs/ROADMAP.md\n M internal/battle/events.go\n M internal/battle/service.go\n M internal/battle/service_test.go\n M internal/question/handlers.go\n M internal/question/models.go\n M internal/question/repository.go\n M internal/question/service.go\n M tv/app/build.gradle.kts\n M tv/app/src/main/AndroidManifest.xml\n M tv/app/src/main/java/com/openquizgo/guard/GuardApplication.kt\n M tv/app/src/main/java/com/openquizgo/guard/domain/GuardEngine.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/BootReceiver.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/GuardAccessibilityService.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/GuardLog.kt\n M tv/app/src/main/java/com/openquizgo/guard/platform/GuardService.kt\n M tv/app/src/main/java/com/openquizgo/guard/ui/GuardViewModel.kt\n M tv/app/src/main/java/com/openquizgo/guard/ui/MainActivity.kt\n M tv/app/src/main/java/com/openquizgo/guard/ui/QuizActivity.kt\n?? docs/acceptance/phase47.md\n?? docs/acceptance/phase48.md\n?? docs/acceptance/phase49.md\n?? \"docs/design/047-\\350\\246\\206\\347\\233\\226\\347\\216\\207\\346\\214\\211\\344\\270\\223\\351\\242\\230\\345\\257\\274\\345\\207\\272\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/design/048-\\345\\257\\271\\346\\210\\230\\344\\272\\213\\344\\273\\266\\347\\211\\210\\346\\234\\254\\345\\217\\267\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/design/049-TV\\346\\227\\245\\345\\277\\227\\350\\220\\275\\347\\233\\230\\344\\270\\216\\350\\257\\212\\346\\226\\255\\345\\257\\274\\345\\207\\272\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/plans/047-\\350\\246\\206\\347\\233\\226\\347\\216\\207\\346\\214\\211\\344\\270\\223\\351\\242\\230\\345\\257\\274\\345\\207\\272\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? \"docs/plans/048-\\345\\257\\271\\346\\210\\230\\344\\272\\213\\344\\273\\266\\347\\211\\210\\346\\234\\254\\345\\217\\267\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? \"docs/plans/049-TV\\346\\227\\245\\345\\277\\227\\350\\220\\275\\347\\233\\230\\344\\270\\216\\350\\257\\212\\346\\226\\255\\345\\257\\274\\345\\207\\272\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? internal/question/coverage_test.go\n?? tv/app/src/main/java/com/openquizgo/guard/platform/LogExporter.kt\n?? tv/app/src/main/java/com/openquizgo/guard/platform/LogStore.kt\n?? tv/app/src/main/res/xml/file_paths.xml\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869749005,
+            "ran": 1793869749615,
+            "completed": 1793869751046
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "576ee479a984bf3b2e4b83ebdeb4b02cc5eeed73",
+        "end": "576ee479a984bf3b2e4b83ebdeb4b02cc5eeed73",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 831,
+        "output": 128,
+        "reasoning": 63,
+        "cache": {
+          "read": 176896,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1aaf823230016hXL8q1odkSdAm",
+      "time": {
+        "created": 1793869751078,
+        "streamed": 1793869754499,
+        "completed": 1793869754574
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Missing untracked test dir? `tv/app/src/test/...` not shown maybe truncated at 40. Check.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793869753601,
+            "completed": 1793869754491
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_caa1bfc6a8d44cc5b32c592e",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && git status --short | tail -5 && grep -n '\"version\"' admin-web/package.json admin-web/package-lock.json | head -3",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "?? internal/question/coverage_test.go\n?? tv/app/src/main/java/com/openquizgo/guard/platform/LogExporter.kt\n?? tv/app/src/main/java/com/openquizgo/guard/platform/LogStore.kt\n?? tv/app/src/main/res/xml/file_paths.xml\n?? tv/app/src/test/java/com/openquizgo/guard/platform/\nadmin-web/package.json:4:  \"version\": \"0.41.0\",\nadmin-web/package-lock.json:3:  \"version\": \"0.41.0\",\nadmin-web/package-lock.json:9:      \"version\": \"0.41.0\",\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793869754107,
+            "ran": 1793869754498,
+            "completed": 1793869754560
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "576ee479a984bf3b2e4b83ebdeb4b02cc5eeed73",
+        "end": "576ee479a984bf3b2e4b83ebdeb4b02cc5eeed73",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1277,
+        "output": 102,
+        "reasoning": 25,
+        "cache": {
+          "read": 177536,
           "write": 0
         }
       }
