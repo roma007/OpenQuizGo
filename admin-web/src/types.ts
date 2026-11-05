@@ -226,6 +226,36 @@ export interface MembershipSnapshot {
   expires_at: string
 }
 
+export interface GrowthPoint {
+  date: string
+  new_accounts: number
+  active_accounts: number
+  active_children: number
+  paid_orders: number
+}
+
+export interface GrowthFunnel {
+  registered: number
+  with_child: number
+  with_device: number
+  watched: number
+  ordered: number
+}
+
+export interface RetentionRow {
+  cohort_date: string
+  new_accounts: number
+  d1: number
+  d7: number
+}
+
+export interface GrowthReport {
+  days: number
+  daily: GrowthPoint[]
+  funnel: GrowthFunnel
+  retention: RetentionRow[]
+}
+
 export interface ReconciliationDay {
   date: string
   paid_count: number

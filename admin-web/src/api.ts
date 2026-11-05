@@ -25,6 +25,7 @@ import type {
   MembershipInvoice,
   MembershipInvoiceList,
   ReconciliationReport,
+  GrowthReport,
   DashboardOverview,
 } from './types'
 
@@ -213,6 +214,7 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   dashboard: (days = 7) => request<DashboardOverview>(`/admin/dashboard?days=${days}`),
+  growth: (days = 30) => request<GrowthReport>(`/admin/analytics/growth?days=${days}`),
   families: (params: Record<string, string | number | undefined>) => {
     const query = new URLSearchParams()
     Object.entries(params).forEach(([key, value]) => {

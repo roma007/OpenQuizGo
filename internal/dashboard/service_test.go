@@ -164,6 +164,38 @@ func TestOverview(t *testing.T) {
 	if err != nil || len(quarter.Trend) != 90 {
 		t.Fatalf("90-day trend = %d, err=%v", len(quarter.Trend), err)
 	}
+
+	// 增长/留存：登录、设备与观看数据。
+	mustExec(`insert into parent_session (account_id, token_hash, expires_at)
+		values ($1, 'dashboard-session', now() + interval '1 hour')`, accountID)
+	mustExec(`insert into device_bind (device_id, child_id, platform, status)
+		values ('dashboard-tv', $1, 'tv', 'active')`, childID)
+	mustExec(`insert into watch_log (child_id, device_id, start_at, end_at, watched_seconds)
+		values ($1, 'dashboard-tv', now(), now(), 60)`, childID)
+
+	growth, err := svc.Growth(ctx, 7)
+	if err != nil {
+		t.Fatalf("growth: %v", err)
+	}
+	if len(growth.Daily) != 7 {
+		t.Fatalf("growth daily = %d, want 7", len(growth.Daily))
+	}
+	todayGrowth := growth.Daily[len(growth.Daily)-1]
+	if todayGrowth.NewAccounts != 1 || todayGrowth.ActiveAccounts != 1 ||
+		todayGrowth.ActiveChildren != 1 || todayGrowth.PaidOrders != 1 {
+		t.Fatalf("unexpected today growth: %+v", todayGrowth)
+	}
+	if growth.Funnel.Registered != 1 || growth.Funnel.WithChild != 1 ||
+		growth.Funnel.WithDevice != 1 || growth.Funnel.Watched != 1 ||
+		growth.Funnel.Ordered != 1 {
+		t.Fatalf("unexpected funnel: %+v", growth.Funnel)
+	}
+	if len(growth.Retention) != 1 || growth.Retention[0].NewAccounts != 1 {
+		t.Fatalf("unexpected retention: %+v", growth.Retention)
+	}
+	if _, err := svc.Growth(ctx, 91); err == nil {
+		t.Fatal("expected days range error")
+	}
 }
 
 func prepareDB(t *testing.T, url string) {

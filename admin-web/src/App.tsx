@@ -5,6 +5,7 @@ import {
   CreditCardOutlined,
   CrownOutlined,
   DashboardOutlined,
+  LineChartOutlined,
   DatabaseOutlined,
   ExperimentOutlined,
   GiftOutlined,
@@ -36,6 +37,7 @@ import MembershipOrdersPage from './pages/MembershipOrdersPage'
 import MembershipCouponsPage from './pages/MembershipCouponsPage'
 import MembershipInvoicesPage from './pages/MembershipInvoicesPage'
 import MembershipReconciliationPage from './pages/MembershipReconciliationPage'
+import GrowthPage from './pages/GrowthPage'
 import MembershipPlansPage from './pages/MembershipPlansPage'
 import QuestionEdit from './pages/QuestionEdit'
 import Questions from './pages/Questions'
@@ -108,6 +110,12 @@ export default function App() {
                 key: '/dashboard',
                 icon: <DashboardOutlined />,
                 label: '运营概览',
+                disabled: !can('dashboard.read'),
+              },
+              {
+                key: '/growth',
+                icon: <LineChartOutlined />,
+                label: '增长分析',
                 disabled: !can('dashboard.read'),
               },
               { key: '/questions', icon: <DatabaseOutlined />, label: '题目管理' },
@@ -203,6 +211,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/questions" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/growth" element={<GrowthPage />} />
               <Route path="/questions" element={<Questions />} />
               <Route path="/questions/new" element={<QuestionEdit />} />
               <Route path="/questions/:id" element={<QuestionEdit />} />

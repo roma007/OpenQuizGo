@@ -1900,6 +1900,21 @@ paths:
             image/gif: { schema: { type: string, format: binary } }
         "404": { description: 文件不存在 }
 
+  /v1/admin/analytics/growth:
+    get:
+      tags: [admin]
+      summary: 增长/漏斗/留存分析
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: days, in: query, schema: { type: integer, default: 30, maximum: 90 } }
+      responses:
+        "200":
+          description: 增长报表
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GrowthReport" }
+        "422": { description: days 超出范围 }
+
   /v1/admin/dashboard:
     get:
       tags: [dashboard]
@@ -1965,6 +1980,37 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    GrowthReport:
+      type: object
+      properties:
+        days: { type: integer }
+        daily:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string }
+              new_accounts: { type: integer }
+              active_accounts: { type: integer }
+              active_children: { type: integer }
+              paid_orders: { type: integer }
+        funnel:
+          type: object
+          properties:
+            registered: { type: integer }
+            with_child: { type: integer }
+            with_device: { type: integer }
+            watched: { type: integer }
+            ordered: { type: integer }
+        retention:
+          type: array
+          items:
+            type: object
+            properties:
+              cohort_date: { type: string }
+              new_accounts: { type: integer }
+              d1: { type: integer }
+              d7: { type: integer }
     ReconciliationDay:
       type: object
       properties:

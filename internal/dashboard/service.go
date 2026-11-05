@@ -3,6 +3,7 @@ package dashboard
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"sync"
@@ -68,6 +69,40 @@ type Overview struct {
 	GeneratedAt         time.Time        `json:"generated_at"`
 }
 
+// GrowthPoint 是单日增长指标。
+type GrowthPoint struct {
+	Date           string `json:"date"`
+	NewAccounts    int    `json:"new_accounts"`
+	ActiveAccounts int    `json:"active_accounts"`
+	ActiveChildren int    `json:"active_children"`
+	PaidOrders     int    `json:"paid_orders"`
+}
+
+// GrowthFunnel 是转化漏斗。
+type GrowthFunnel struct {
+	Registered int `json:"registered"`
+	WithChild  int `json:"with_child"`
+	WithDevice int `json:"with_device"`
+	Watched    int `json:"watched"`
+	Ordered    int `json:"ordered"`
+}
+
+// RetentionRow 是注册 cohort 留存。
+type RetentionRow struct {
+	CohortDate  string `json:"cohort_date"`
+	NewAccounts int    `json:"new_accounts"`
+	D1          int    `json:"d1"`
+	D7          int    `json:"d7"`
+}
+
+// GrowthReport 是增长/留存报表。
+type GrowthReport struct {
+	Days      int            `json:"days"`
+	Daily     []GrowthPoint  `json:"daily"`
+	Funnel    GrowthFunnel   `json:"funnel"`
+	Retention []RetentionRow `json:"retention"`
+}
+
 type cacheEntry struct {
 	overview Overview
 	cachedAt time.Time
@@ -93,6 +128,7 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 	r.Group(func(r chi.Router) {
 		r.Use(guard.Auth)
 		r.With(guard.Require("dashboard.read")).Get("/admin/dashboard", s.handleOverview)
+		r.With(guard.Require("dashboard.read")).Get("/admin/analytics/growth", s.handleGrowth)
 	})
 }
 
@@ -118,6 +154,110 @@ func (s *Service) handleOverview(w http.ResponseWriter, r *http.Request) {
 }
 
 // Overview 返回默认 7 天趋势。
+func (s *Service) handleGrowth(w http.ResponseWriter, r *http.Request) {
+	days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+	report, err := s.Growth(r.Context(), days)
+	if err != nil {
+		code := "INTERNAL"
+		status := http.StatusInternalServerError
+		if err == errInvalidDays {
+			code = "VALIDATION_ERROR"
+			status = http.StatusUnprocessableEntity
+		}
+		writeJSON(w, status, map[string]string{"code": code, "message": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, report)
+}
+
+var errInvalidDays = errors.New("days 需在 1–90")
+
+// Growth 返回增长、漏斗与留存数据。
+func (s *Service) Growth(ctx context.Context, days int) (GrowthReport, error) {
+	if days <= 0 {
+		days = 30
+	}
+	if days > 90 {
+		return GrowthReport{}, errInvalidDays
+	}
+	end := time.Now()
+	start := end.AddDate(0, 0, -(days - 1))
+	cohortStart := end.AddDate(0, 0, -13)
+	report := GrowthReport{Days: days, Daily: make([]GrowthPoint, 0), Retention: make([]RetentionRow, 0)}
+
+	rows, err := s.pool.Query(ctx, `
+		select to_char(d, 'YYYY-MM-DD'),
+		       (select count(*)::int from parent_account pa where pa.created_at::date = d),
+		       (select count(distinct ps.account_id)::int from parent_session ps where ps.created_at::date = d),
+		       (select count(distinct wl.child_id)::int from watch_log wl where wl.start_at::date = d),
+		       (select count(*)::int from membership_order mo where mo.paid_at::date = d)
+		from generate_series($1::date, $2::date, interval '1 day') d
+		order by d`, start.Format("2006-01-02"), end.Format("2006-01-02"))
+	if err != nil {
+		return GrowthReport{}, err
+	}
+	for rows.Next() {
+		var point GrowthPoint
+		if err := rows.Scan(&point.Date, &point.NewAccounts, &point.ActiveAccounts,
+			&point.ActiveChildren, &point.PaidOrders); err != nil {
+			rows.Close()
+			return GrowthReport{}, err
+		}
+		report.Daily = append(report.Daily, point)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return GrowthReport{}, err
+	}
+
+	if err := s.pool.QueryRow(ctx, `
+		select
+		  (select count(*)::int from parent_account),
+		  (select count(distinct fm.account_id)::int
+		   from family_member fm join child_profile cp on cp.family_id = fm.family_id),
+		  (select count(distinct fm.account_id)::int
+		   from family_member fm
+		   join child_profile cp on cp.family_id = fm.family_id
+		   join device_bind db on db.child_id = cp.id and db.status = 'active'),
+		  (select count(distinct fm.account_id)::int
+		   from family_member fm
+		   join child_profile cp on cp.family_id = fm.family_id
+		   join watch_log wl on wl.child_id = cp.id),
+		  (select count(distinct account_id)::int from membership_order
+		   where status in ('paid', 'refunded'))`).
+		Scan(&report.Funnel.Registered, &report.Funnel.WithChild,
+			&report.Funnel.WithDevice, &report.Funnel.Watched, &report.Funnel.Ordered); err != nil {
+		return GrowthReport{}, err
+	}
+
+	cohorts, err := s.pool.Query(ctx, `
+		with cohorts as (
+		  select id, created_at::date d from parent_account
+		  where created_at::date >= $1::date
+		)
+		select to_char(c.d, 'YYYY-MM-DD'), count(*)::int,
+		       count(*) filter (where exists (
+		           select 1 from parent_session ps
+		           where ps.account_id = c.id and ps.created_at::date = c.d + 1))::int,
+		       count(*) filter (where exists (
+		           select 1 from parent_session ps
+		           where ps.account_id = c.id and ps.created_at::date = c.d + 7))::int
+		from cohorts c group by c.d order by c.d`,
+		cohortStart.Format("2006-01-02"))
+	if err != nil {
+		return GrowthReport{}, err
+	}
+	defer cohorts.Close()
+	for cohorts.Next() {
+		var row RetentionRow
+		if err := cohorts.Scan(&row.CohortDate, &row.NewAccounts, &row.D1, &row.D7); err != nil {
+			return GrowthReport{}, err
+		}
+		report.Retention = append(report.Retention, row)
+	}
+	return report, cohorts.Err()
+}
+
 func (s *Service) Overview(ctx context.Context) (Overview, error) {
 	return s.OverviewRange(ctx, 7)
 }
