@@ -74,6 +74,7 @@ type Order struct {
 	RefundReason        string          `json:"refund_reason,omitempty"`
 	RefundedBy          string          `json:"refunded_by,omitempty"`
 	ExternalTradeNo     string          `json:"external_trade_no,omitempty"`
+	ExternalRefundNo    string          `json:"external_refund_no,omitempty"`
 	RefundBefore        json.RawMessage `json:"refund_before,omitempty"`
 	RefundAfter         json.RawMessage `json:"refund_after,omitempty"`
 }
@@ -194,10 +195,17 @@ type PayResult struct {
 type Service struct {
 	pool           *pgxpool.Pool
 	callbackSecret string
+	refundSecret   string
 }
 
 func New(pool *pgxpool.Pool, callbackSecret string) *Service {
 	return &Service{pool: pool, callbackSecret: callbackSecret}
+}
+
+// WithRefundSecret 设置退款回调密钥；为空时回退支付回调密钥。
+func (s *Service) WithRefundSecret(secret string) *Service {
+	s.refundSecret = secret
+	return s
 }
 
 func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
@@ -222,6 +230,7 @@ func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
 // PublicRoutes 注册支付渠道回调（无需家长令牌，使用 HMAC 校验）。
 func (s *Service) PublicRoutes(r chi.Router) {
 	r.Post("/payments/callback", s.handleCallback)
+	r.Post("/payments/refund-callback", s.handleRefundCallback)
 }
 
 func (s *Service) ParentRoutes(r chi.Router) {
@@ -459,6 +468,25 @@ func (s *Service) handleCallback(w http.ResponseWriter, r *http.Request) {
 		"status":   "ok",
 		"order_no": order.OrderNo,
 		"paid":     order.Status == "paid",
+	})
+}
+
+func (s *Service) handleRefundCallback(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		writeError(w, apiError{413, "PAYLOAD_TOO_LARGE", "回调体过大"})
+		return
+	}
+	order, err := s.RefundCallback(r.Context(), body, r.Header.Get("X-Payment-Signature"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":    "ok",
+		"order_no":  order.OrderNo,
+		"refunded":  order.Status == "refunded",
+		"refund_no": order.ExternalRefundNo,
 	})
 }
 
@@ -717,7 +745,8 @@ func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error)
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
 		       coalesce(refund_before::text, ''),
-		       coalesce(refund_after::text, '')
+		       coalesce(refund_after::text, ''),
+		       coalesce(external_refund_no, '')
 		from membership_order where account_id = $1
 		order by created_at desc limit 20`, accountID)
 	if err != nil {
@@ -755,7 +784,8 @@ func (s *Service) AdminOrders(ctx context.Context, status string, limit, offset 
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
 		       coalesce(refund_before::text, ''),
-		       coalesce(refund_after::text, '')
+		       coalesce(refund_after::text, ''),
+		       coalesce(external_refund_no, '')
 		from membership_order
 		where ($1 = '' or status = $1)
 		order by created_at desc limit $2 offset $3`, status, limit, offset)
@@ -1215,7 +1245,8 @@ func (s *Service) CreateOrderWithCoupon(ctx context.Context, accountID, planID, 
 		          coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		          coalesce(external_trade_no, ''),
 		          coalesce(refund_before::text, ''),
-		          coalesce(refund_after::text, '')`,
+		          coalesce(refund_after::text, ''),
+		          coalesce(external_refund_no, '')`,
 		orderNo(), accountID, plan.ID, plan.Name, amount,
 		plan.PriceCents, discount, appliedCode, plan.DurationDays))
 	if err != nil {
@@ -1243,7 +1274,8 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
 		       coalesce(refund_before::text, ''),
-		       coalesce(refund_after::text, '')
+		       coalesce(refund_after::text, ''),
+		       coalesce(external_refund_no, '')
 		from membership_order
 		where id = $1 and account_id = $2 for update`, orderID, accountID))
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -1352,7 +1384,8 @@ func (s *Service) Callback(ctx context.Context, body []byte, signature string) (
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
 		       coalesce(refund_before::text, ''),
-		       coalesce(refund_after::text, '')
+		       coalesce(refund_after::text, ''),
+		       coalesce(external_refund_no, '')
 		from membership_order where order_no = $1 for update`, req.OrderNo))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
@@ -1374,6 +1407,70 @@ func (s *Service) Callback(ctx context.Context, body []byte, signature string) (
 	return item, nil
 }
 
+// RefundCallback 处理支付渠道退款回调，HMAC 校验且幂等。
+func (s *Service) RefundCallback(ctx context.Context, body []byte, signature string) (Order, error) {
+	secret := s.refundSecret
+	if secret == "" {
+		secret = s.callbackSecret
+	}
+	if secret == "" {
+		return Order{}, apiError{503, "REFUND_DISABLED", "退款回调未启用"}
+	}
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(body)
+	expected := hex.EncodeToString(mac.Sum(nil))
+	if !hmac.Equal([]byte(expected), []byte(strings.ToLower(strings.TrimSpace(signature)))) {
+		return Order{}, apiError{401, "SIGNATURE_INVALID", "回调签名无效"}
+	}
+	var req struct {
+		OrderNo  string `json:"order_no"`
+		RefundNo string `json:"refund_no"`
+		Status   string `json:"status"`
+		Reason   string `json:"reason"`
+	}
+	if err := json.Unmarshal(body, &req); err != nil {
+		return Order{}, apiError{422, "VALIDATION_ERROR", "回调体不合法"}
+	}
+	if req.OrderNo == "" || req.RefundNo == "" || req.Status != "refunded" {
+		return Order{}, apiError{422, "VALIDATION_ERROR", "缺少订单号/退款单号或状态不支持"}
+	}
+	var orderID, status, existingRefund string
+	err := s.pool.QueryRow(ctx, `
+		select id, status, coalesce(external_refund_no, '')
+		from membership_order where order_no = $1`, req.OrderNo).
+		Scan(&orderID, &status, &existingRefund)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
+	}
+	if err != nil {
+		return Order{}, err
+	}
+	reason := strings.TrimSpace(req.Reason)
+	if reason == "" {
+		reason = "渠道退款"
+	}
+	if len([]rune(reason)) > 200 {
+		reason = string([]rune(reason)[:200])
+	}
+	item, err := s.RefundOrder(ctx, orderID, reason, "")
+	if err != nil {
+		return Order{}, err
+	}
+	if existingRefund == "" || existingRefund == req.RefundNo {
+		if _, err := s.pool.Exec(ctx, `
+			update membership_order set external_refund_no = $2
+			where id = $1 and (external_refund_no = '' or external_refund_no = $2)`,
+			orderID, req.RefundNo); err != nil {
+			if isUniqueViolation(err) {
+				return Order{}, apiError{409, "REFUND_NO_CONFLICT", "退款单号已被使用"}
+			}
+			return Order{}, err
+		}
+	}
+	item.ExternalRefundNo = req.RefundNo
+	return item, nil
+}
+
 // RefundOrder 模拟退款，按订单时长回退会员到期时间。
 func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID string) (Order, error) {
 	reason = strings.TrimSpace(reason)
@@ -1392,7 +1489,8 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
 		       coalesce(refund_before::text, ''),
-		       coalesce(refund_after::text, '')
+		       coalesce(refund_after::text, ''),
+		       coalesce(external_refund_no, '')
 		from membership_order where id = $1 for update`, orderID))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
@@ -1605,7 +1703,7 @@ func scanOrder(row scanner) (Order, error) {
 		&item.DiscountCents, &item.CouponCode, &item.DurationDays, &item.Status,
 		&item.Channel, &item.CreatedAt, &item.PaidAt, &item.RefundedAt,
 		&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo,
-		&refundBefore, &refundAfter)
+		&refundBefore, &refundAfter, &item.ExternalRefundNo)
 	if err != nil {
 		return item, err
 	}

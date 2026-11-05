@@ -100,7 +100,7 @@ func main() {
 	dailyService := daily.New(pool, logger)
 	battleService := battle.New(pool, rdb)
 	topicService := topic.New(pool)
-	membershipService := membership.New(pool, cfg.PaymentCallbackSecret)
+	membershipService := membership.New(pool, cfg.PaymentCallbackSecret).WithRefundSecret(cfg.RefundCallbackSecret)
 	dashboardService := dashboard.New(pool)
 	mediaService := media.New(cfg.UploadDir, cfg.UploadMaxMB)
 	familyService := familyadmin.New(pool)

@@ -32,6 +32,7 @@ type Config struct {
 	SMSMockCode     string
 
 	PaymentCallbackSecret string
+	RefundCallbackSecret  string
 
 	UploadDir   string
 	UploadMaxMB int
@@ -62,6 +63,7 @@ func Load() (Config, error) {
 		SMSMockCode:     getenv("SMS_MOCK_CODE", "123456"),
 
 		PaymentCallbackSecret: os.Getenv("PAYMENT_CALLBACK_SECRET"),
+		RefundCallbackSecret:  os.Getenv("REFUND_CALLBACK_SECRET"),
 
 		UploadDir:   getenv("UPLOAD_DIR", "./data/uploads"),
 		UploadMaxMB: getInt("UPLOAD_MAX_MB", 5),
@@ -73,6 +75,9 @@ func Load() (Config, error) {
 		}
 		if cfg.PaymentCallbackSecret == "" {
 			cfg.PaymentCallbackSecret = "dev-payment-callback-secret"
+		}
+		if cfg.RefundCallbackSecret == "" {
+			cfg.RefundCallbackSecret = cfg.PaymentCallbackSecret
 		}
 		if cfg.EncryptionKey == "" {
 			cfg.EncryptionKey = "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="

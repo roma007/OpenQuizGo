@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -625,6 +626,96 @@ func TestReconciliationReport(t *testing.T) {
 	}
 	if _, err := svc.Reconciliation(ctx, "2026-11-10", "2026-11-01"); !isCode(err, "VALIDATION_ERROR") {
 		t.Fatalf("invalid range = %v", err)
+	}
+}
+
+func TestRefundCallback(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'refund-cb-test')
+		returning id`).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	svc := New(pool, "pay-secret").WithRefundSecret("refund-secret")
+	plan, err := svc.CreatePlan(ctx, PlanInput{
+		Code: "refund-cb-plan", Name: "退款回调套餐", DurationDays: 30, PriceCents: 1000,
+		Status: "online", EntitlementCodes: []string{"topic_pack"},
+	})
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	order, err := svc.CreateOrder(ctx, accountID, plan.ID)
+	if err != nil {
+		t.Fatalf("order: %v", err)
+	}
+	if _, err := svc.PayOrder(ctx, accountID, order.ID); err != nil {
+		t.Fatalf("pay: %v", err)
+	}
+	var expiryBefore time.Time
+	if err := pool.QueryRow(ctx,
+		`select expires_at from account_membership where account_id = $1`, accountID).Scan(&expiryBefore); err != nil {
+		t.Fatalf("expiry before: %v", err)
+	}
+
+	body := []byte(fmt.Sprintf(
+		`{"order_no":%q,"refund_no":"R-1","status":"refunded","reason":"用户申请"}`,
+		order.OrderNo))
+	mac := hmac.New(sha256.New, []byte("refund-secret"))
+	mac.Write(body)
+	sig := hex.EncodeToString(mac.Sum(nil))
+
+	refunded, err := svc.RefundCallback(ctx, body, sig)
+	if err != nil {
+		t.Fatalf("refund callback: %v", err)
+	}
+	if refunded.Status != "refunded" || refunded.ExternalRefundNo != "R-1" {
+		t.Fatalf("unexpected refunded order: %+v", refunded)
+	}
+	var expiryAfter time.Time
+	if err := pool.QueryRow(ctx,
+		`select expires_at from account_membership where account_id = $1`, accountID).Scan(&expiryAfter); err != nil {
+		t.Fatalf("expiry after: %v", err)
+	}
+	if !expiryAfter.Before(expiryBefore) {
+		t.Fatalf("expiry not reduced: %v -> %v", expiryBefore, expiryAfter)
+	}
+
+	// 重复回调幂等，不再次回退。
+	again, err := svc.RefundCallback(ctx, body, sig)
+	if err != nil {
+		t.Fatalf("second refund callback: %v", err)
+	}
+	if again.Status != "refunded" {
+		t.Fatalf("second status = %s", again.Status)
+	}
+	var expiryAgain time.Time
+	if err := pool.QueryRow(ctx,
+		`select expires_at from account_membership where account_id = $1`, accountID).Scan(&expiryAgain); err != nil {
+		t.Fatalf("expiry again: %v", err)
+	}
+	if !expiryAgain.Equal(expiryAfter) {
+		t.Fatalf("double refund: %v -> %v", expiryAfter, expiryAgain)
+	}
+
+	if _, err := svc.RefundCallback(ctx, body, "bad"); !isCode(err, "SIGNATURE_INVALID") {
+		t.Fatalf("bad signature = %v", err)
+	}
+	disabled := New(pool, "")
+	if _, err := disabled.RefundCallback(ctx, body, sig); !isCode(err, "REFUND_DISABLED") {
+		t.Fatalf("disabled = %v", err)
 	}
 }
 

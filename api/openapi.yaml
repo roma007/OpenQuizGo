@@ -798,6 +798,37 @@ paths:
         "422": { $ref: "#/components/responses/ValidationError" }
         "503": { description: 支付回调未启用 }
 
+  /v1/payments/refund-callback:
+    post:
+      tags: [payment]
+      summary: 支付渠道退款回调
+      description: "使用 X-Payment-Signature（HMAC-SHA256(原始请求体, REFUND_CALLBACK_SECRET)）校验；重复回调幂等。"
+      security: []
+      parameters:
+        - name: X-Payment-Signature
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_no, refund_no, status]
+              properties:
+                order_no: { type: string }
+                refund_no: { type: string }
+                status: { type: string, enum: [refunded] }
+                reason: { type: string }
+      responses:
+        "200": { description: 已退款（幂等） }
+        "401": { description: 回调签名无效 }
+        "404": { description: 订单不存在 }
+        "409": { description: 退款单号冲突 }
+        "422": { description: 参数不合法 }
+        "503": { description: 退款回调未启用 }
+
   /v1/device/activate/code:
     post:
       tags: [device]

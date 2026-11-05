@@ -34,6 +34,7 @@
 | `OFFLINE_LEASE_KEY` | 生产必填 | dev 默认 | 离线租约 Ed25519 种子（base64 32 字节） |
 | `SMS_MODE` | 否 | `mock` | 生产禁止 `mock`，需接入真实短信通道后设为 `disabled` 或扩展实现 |
 | `PAYMENT_CALLBACK_SECRET` | 是 | dev 默认 | 支付回调 HMAC 密钥；生产必须显式配置，留空则禁用回调 |
+| `REFUND_CALLBACK_SECRET` | 否 | 回退支付密钥 | 退款回调 HMAC 密钥；与支付密钥都为空则禁用退款回调 |
 | `UPLOAD_DIR` | 否 | `./data/uploads` | 题目图片本地存储目录 |
 | `UPLOAD_MAX_MB` | 否 | `5` | 单张题目图片大小上限（MB） |
 | `SMS_MOCK_CODE` | 否 | `123456` | 仅 dev |
