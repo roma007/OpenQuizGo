@@ -58,15 +58,21 @@ stop_loop() {
 
 run_followup() {
   local run_no="$1"
-  log "第 $run_no 次自动推进开始（session=$SESSION）"
+  log "第 ${run_no} 次自动推进开始（session=${SESSION}）"
   local timeout_cmd=()
   if command -v gtimeout >/dev/null 2>&1; then
     timeout_cmd=(gtimeout 1800)
   elif command -v timeout >/dev/null 2>&1; then
     timeout_cmd=(timeout 1800)
   fi
-  if ! (cd "$ROOT" && "${timeout_cmd[@]}" opencode run --auto --session "$SESSION" "$PROMPT") >>"$LOG_FILE" 2>&1; then
-    log "第 $run_no 次自动推进失败或超时，继续下一轮"
+  local status=0
+  if [ "${#timeout_cmd[@]}" -gt 0 ]; then
+    (cd "$ROOT" && "${timeout_cmd[@]}" opencode run --auto --session "$SESSION" "$PROMPT") >>"$LOG_FILE" 2>&1 || status=$?
+  else
+    (cd "$ROOT" && opencode run --auto --session "$SESSION" "$PROMPT") >>"$LOG_FILE" 2>&1 || status=$?
+  fi
+  if [ "$status" -ne 0 ]; then
+    log "第 $run_no 次自动推进失败或超时（exit=${status}），继续下一轮"
   else
     log "第 $run_no 次自动推进完成"
   fi
@@ -84,7 +90,7 @@ loop() {
       break
     fi
     if [ "$MAX_RUNS" != "0" ] && [ "$run_no" -ge "$MAX_RUNS" ]; then
-      log "已达到最大执行次数 $MAX_RUNS，退出"
+      log "已达到最大执行次数 ${MAX_RUNS}，退出"
       break
     fi
     sleep "$INTERVAL"
