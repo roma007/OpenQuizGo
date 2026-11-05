@@ -165,6 +165,15 @@ export interface MembershipOrder {
   refunded_at?: string
   refund_reason?: string
   refunded_by?: string
+  external_trade_no?: string
+  refund_before?: MembershipSnapshot
+  refund_after?: MembershipSnapshot
+}
+
+export interface MembershipSnapshot {
+  status: string
+  plan_name: string
+  expires_at: string
 }
 
 export interface MembershipOrderList {

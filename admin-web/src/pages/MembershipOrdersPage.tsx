@@ -1,6 +1,7 @@
 import {
   Button,
   Card,
+  Descriptions,
   Input,
   Modal,
   Select,
@@ -43,6 +44,7 @@ export default function MembershipOrdersPage() {
   const [refunding, setRefunding] = useState<string | null>(null)
   const [refundTarget, setRefundTarget] = useState<MembershipOrder | null>(null)
   const [reason, setReason] = useState('')
+  const [detail, setDetail] = useState<MembershipOrder | null>(null)
   const pageSize = 20
 
   const load = async (nextPage = page, nextStatus = status) => {
@@ -138,28 +140,32 @@ export default function MembershipOrdersPage() {
     },
     {
       title: '操作',
-      width: 100,
-      render: (_, order) =>
-        order.status === 'paid' ? (
-          <Button
-            type="link"
-            danger
-            loading={refunding === order.id}
-            disabled={!can('membership.write')}
-            onClick={() => {
-              setRefundTarget(order)
-              setReason('')
-            }}
-          >
-            退款
+      width: 140,
+      render: (_, order) => (
+        <Space size={0}>
+          <Button type="link" onClick={() => setDetail(order)}>
+            详情
           </Button>
-        ) : order.status === 'refunded' ? (
-          <Typography.Text type="secondary">
-            {order.refunded_at ? new Date(order.refunded_at).toLocaleDateString() : '已退款'}
-          </Typography.Text>
-        ) : (
-          '—'
-        ),
+          {order.status === 'paid' ? (
+            <Button
+              type="link"
+              danger
+              loading={refunding === order.id}
+              disabled={!can('membership.write')}
+              onClick={() => {
+                setRefundTarget(order)
+                setReason('')
+              }}
+            >
+              退款
+            </Button>
+          ) : order.status === 'refunded' ? (
+            <Typography.Text type="secondary">
+              {order.refunded_at ? new Date(order.refunded_at).toLocaleDateString() : '已退款'}
+            </Typography.Text>
+          ) : null}
+        </Space>
+      ),
     },
   ]
 
@@ -228,6 +234,61 @@ export default function MembershipOrdersPage() {
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />
+          </Space>
+        )}
+      </Modal>
+
+      <Modal
+        open={Boolean(detail)}
+        title={detail ? `订单详情 ${detail.order_no}` : '订单详情'}
+        onCancel={() => setDetail(null)}
+        footer={<Button onClick={() => setDetail(null)}>关闭</Button>}
+        width={760}
+        destroyOnHidden
+      >
+        {detail && (
+          <Space orientation="vertical" size={16} style={{ width: '100%' }}>
+            <Descriptions column={{ xs: 1, md: 2 }} size="small" bordered>
+              <Descriptions.Item label="订单号">
+                <Typography.Text copyable>{detail.order_no}</Typography.Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="状态">
+                <Tag color={statusColor[detail.status]}>{statusLabel[detail.status] || detail.status}</Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="套餐">{detail.plan_name}</Descriptions.Item>
+              <Descriptions.Item label="金额">{yuan(detail.amount_cents)}</Descriptions.Item>
+              <Descriptions.Item label="时长">{detail.duration_days} 天</Descriptions.Item>
+              <Descriptions.Item label="渠道">
+                {detail.channel === 'callback' ? '渠道回调' : detail.channel === 'mock' ? '模拟支付' : detail.channel}
+              </Descriptions.Item>
+              <Descriptions.Item label="外部交易号">{detail.external_trade_no || '—'}</Descriptions.Item>
+              <Descriptions.Item label="账号">{detail.account_id || '—'}</Descriptions.Item>
+              <Descriptions.Item label="创建时间">{new Date(detail.created_at).toLocaleString()}</Descriptions.Item>
+              <Descriptions.Item label="支付时间">
+                {detail.paid_at ? new Date(detail.paid_at).toLocaleString() : '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="退款时间">
+                {detail.refunded_at ? new Date(detail.refunded_at).toLocaleString() : '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="退款操作人">{detail.refunded_by || '—'}</Descriptions.Item>
+              <Descriptions.Item label="退款原因" span={2}>
+                {detail.refund_reason || '—'}
+              </Descriptions.Item>
+            </Descriptions>
+            <Card size="small" title="退款前后会员快照">
+              <Descriptions column={{ xs: 1, md: 2 }} size="small" bordered>
+                <Descriptions.Item label="退款前">
+                  {detail.refund_before
+                    ? `${detail.refund_before.status} · ${detail.refund_before.plan_name} · ${new Date(detail.refund_before.expires_at).toLocaleString()}`
+                    : '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="退款后">
+                  {detail.refund_after
+                    ? `${detail.refund_after.status} · ${detail.refund_after.plan_name} · ${new Date(detail.refund_after.expires_at).toLocaleString()}`
+                    : '—'}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
           </Space>
         )}
       </Modal>
