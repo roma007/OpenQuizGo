@@ -1,5 +1,6 @@
 package com.openquizgo.guard.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -234,6 +235,12 @@ private fun BoundScreen(
         Spacer(Modifier.height(10.dp))
         Button(onClick = onDiagnostics) {
             Text("诊断信息", fontSize = 18.sp)
+        }
+        Spacer(Modifier.height(10.dp))
+        Button(onClick = {
+            context.startActivity(Intent(context, BattleActivity::class.java))
+        }) {
+            Text("加入亲子对战", fontSize = 18.sp)
         }
         Spacer(Modifier.height(10.dp))
         Button(onClick = onReset) {

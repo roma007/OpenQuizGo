@@ -6,6 +6,7 @@ import com.openquizgo.guard.data.local.GuardPreferences
 import com.openquizgo.guard.data.foreground.ForegroundDetector
 import com.openquizgo.guard.data.remote.ApiFactory
 import com.openquizgo.guard.data.remote.GuardApi
+import com.openquizgo.guard.data.battle.BattleRepository
 import com.openquizgo.guard.data.quiz.QuizRepository
 import com.openquizgo.guard.data.watch.WatchRepository
 import com.openquizgo.guard.domain.GuardEngine
@@ -20,6 +21,7 @@ class AppContainer(context: Context) {
     val api: GuardApi = ApiFactory.create(BuildConfig.API_BASE_URL)
     val quizRepository: QuizRepository = QuizRepository(api, preferences)
     val watchRepository: WatchRepository = WatchRepository(api, preferences)
+    val battleRepository: BattleRepository = BattleRepository(api, preferences)
     val diagnosticsReporter: DiagnosticsReporter =
         DiagnosticsReporter(context, preferences, watchRepository, scope)
     val foregroundDetector: ForegroundDetector = ForegroundDetector(context, scope)

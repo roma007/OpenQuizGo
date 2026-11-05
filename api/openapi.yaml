@@ -1015,6 +1015,62 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         "200": { description: OK }
+  /v1/device/battles/join:
+    post:
+      tags: [battle]
+      summary: TV 端用房间码加入亲子对战（孩子侧）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+      responses:
+        "200": { description: 对局状态 }
+        "404": { description: 房间不存在 }
+        "409": { description: 房间已过期 }
+  /v1/device/battles/{battleID}:
+    parameters:
+      - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [battle]
+      summary: TV 端查询对局状态
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: 对局状态 }
+        "404": { description: 对局不存在 }
+  /v1/device/battles/{battleID}/answers:
+    parameters:
+      - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [battle]
+      summary: TV 端提交孩子答案
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_id: { type: string, format: uuid }
+                      answer:
+                        type: array
+                        items: { type: string }
+      responses:
+        "200": { description: 更新后的对局 }
+        "409": { description: 非孩子回合 }
+
   /v1/device/unlock:
     post:
       tags: [device]

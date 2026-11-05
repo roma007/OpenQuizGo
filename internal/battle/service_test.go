@@ -310,6 +310,60 @@ func TestRoomBattleWorkflow(t *testing.T) {
 	}
 }
 
+func TestDeviceRoomJoin(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	accountID, childID := seedFamily(t, pool)
+	questionIDs := seedQuestions(t, pool, 5)
+	svc := New(pool, nil)
+	room, err := svc.Create(ctx, accountID, childID, 5, "room")
+	if err != nil {
+		t.Fatalf("create room: %v", err)
+	}
+	if _, err := svc.JoinAsChild(ctx, childID, "ZZZZZZ"); err == nil || !isCode(err, "BATTLE_NOT_FOUND") {
+		t.Fatalf("bad code = %v, want BATTLE_NOT_FOUND", err)
+	}
+	joined, err := svc.JoinAsChild(ctx, childID, room.JoinCode)
+	if err != nil {
+		t.Fatalf("device join: %v", err)
+	}
+	if joined.Status != "child_turn" || joined.ID != room.ID {
+		t.Fatalf("unexpected joined: %+v", joined)
+	}
+	answers := make([]Submission, 0, len(questionIDs))
+	for _, id := range questionIDs {
+		answers = append(answers, Submission{QuestionID: id, Answer: json.RawMessage(`["a"]`)})
+	}
+	state, err := svc.Submit(ctx, childID, room.ID, "child", answers)
+	if err != nil || state.Status != "parent_turn" || state.ChildScore != 5 {
+		t.Fatalf("device child submit = %+v err=%v", state, err)
+	}
+
+	expired, err := svc.Create(ctx, accountID, childID, 5, "room")
+	if err != nil {
+		t.Fatalf("create expired room: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		update family_battle set join_code_expires_at = now() - interval '1 minute'
+		where id = $1`, expired.ID); err != nil {
+		t.Fatalf("expire: %v", err)
+	}
+	if _, err := svc.JoinAsChild(ctx, childID, expired.JoinCode); err == nil || !isCode(err, "ROOM_EXPIRED") {
+		t.Fatalf("expired join = %v, want ROOM_EXPIRED", err)
+	}
+}
+
 func TestFamilyRanking(t *testing.T) {
 	dbURL := os.Getenv("TEST_DATABASE_URL")
 	if dbURL == "" {

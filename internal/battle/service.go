@@ -36,6 +36,12 @@ func New(pool *pgxpool.Pool, rdb *redis.Client) *Service {
 	return &Service{pool: pool, events: newEventBroker(rdb)}
 }
 
+func (s *Service) DeviceRoutes(r chi.Router) {
+	r.Post("/device/battles/join", s.handleDeviceJoin)
+	r.Get("/device/battles/{battleID}", s.handleDeviceGet)
+	r.Post("/device/battles/{battleID}/answers", s.handleDeviceSubmit)
+}
+
 func (s *Service) Routes(r chi.Router) {
 	r.Get("/family/battles/ranking", s.handleRanking)
 	r.Get("/family/children/{childID}/battles", s.handleHistory)
@@ -272,6 +278,63 @@ func (s *Service) handleEvents(w http.ResponseWriter, r *http.Request) {
 func writeBattleEvent(w http.ResponseWriter, flusher http.Flusher, version int64) {
 	_, _ = fmt.Fprintf(w, "id: %d\nevent: update\ndata: {\"version\":%d}\n\n", version, version)
 	flusher.Flush()
+}
+
+func (s *Service) handleDeviceJoin(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeError(w, apiError{401, "AUTH_REQUIRED", "设备未绑定"})
+		return
+	}
+	var req struct {
+		Code string `json:"code"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	state, err := s.JoinAsChild(r.Context(), principal.ChildID, req.Code)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, state)
+}
+
+func (s *Service) handleDeviceGet(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeError(w, apiError{401, "AUTH_REQUIRED", "设备未绑定"})
+		return
+	}
+	state, err := s.Get(r.Context(), principal.ChildID, chi.URLParam(r, "battleID"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, state)
+}
+
+func (s *Service) handleDeviceSubmit(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeError(w, apiError{401, "AUTH_REQUIRED", "设备未绑定"})
+		return
+	}
+	var req struct {
+		Answers []Submission `json:"answers"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	state, err := s.Submit(r.Context(), principal.ChildID,
+		chi.URLParam(r, "battleID"), "child", req.Answers)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, state)
 }
 
 func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -549,10 +612,14 @@ func (s *Service) Create(ctx context.Context, accountID, childID string, count i
 
 // Join 通过房间码加入房间；重复加入幂等。
 func (s *Service) Join(ctx context.Context, accountID, childID, code string) (State, error) {
-	familyID, err := s.ownsChild(ctx, accountID, childID)
-	if err != nil {
+	if _, err := s.ownsChild(ctx, accountID, childID); err != nil {
 		return State{}, err
 	}
+	return s.JoinAsChild(ctx, childID, code)
+}
+
+// JoinAsChild 通过设备绑定的孩子加入房间，不校验家长账号。
+func (s *Service) JoinAsChild(ctx context.Context, childID, code string) (State, error) {
 	code = strings.ToUpper(strings.TrimSpace(code))
 	if len(code) != 6 {
 		return State{}, apiError{422, "VALIDATION_ERROR", "房间码为 6 位"}
@@ -567,8 +634,8 @@ func (s *Service) Join(ctx context.Context, accountID, childID, code string) (St
 	var expiresAt *time.Time
 	err = tx.QueryRow(ctx, `
 		select id, status, join_code_expires_at from family_battle
-		where join_code = $1 and child_id = $2 and family_id = $3 for update`,
-		code, childID, familyID).Scan(&battleID, &status, &expiresAt)
+		where join_code = $1 and child_id = $2 for update`,
+		code, childID).Scan(&battleID, &status, &expiresAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return State{}, apiError{404, "BATTLE_NOT_FOUND", "房间不存在或已失效"}
 	}

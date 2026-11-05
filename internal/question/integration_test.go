@@ -334,7 +334,7 @@ func prepareDB(t *testing.T, url string) {
 	if err := goose.Up(db, "."); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
-	if _, err := db.Exec(`truncate table question, topic_pack, audit_log, admin_user cascade`); err != nil {
+	if _, err := db.Exec(`truncate table coverage_snapshot, question, topic_pack, audit_log, admin_user cascade`); err != nil {
 		t.Fatalf("truncate: %v", err)
 	}
 }

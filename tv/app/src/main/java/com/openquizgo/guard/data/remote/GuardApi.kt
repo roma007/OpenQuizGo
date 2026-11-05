@@ -97,12 +97,68 @@ interface GuardApi {
         @Body request: DiagnosticUploadRequest,
     ): Response<Unit>
 
+    @POST("v1/device/battles/join")
+    suspend fun joinBattle(
+        @Header("Authorization") authorization: String,
+        @Body request: BattleJoinRequest,
+    ): Response<BattleState>
+
+    @GET("v1/device/battles/{battleID}")
+    suspend fun battleState(
+        @Header("Authorization") authorization: String,
+        @Path("battleID") battleId: String,
+    ): Response<BattleState>
+
+    @POST("v1/device/battles/{battleID}/answers")
+    suspend fun submitBattleAnswers(
+        @Header("Authorization") authorization: String,
+        @Path("battleID") battleId: String,
+        @Body request: BattleSubmitRequest,
+    ): Response<BattleState>
+
     @POST("v1/device/unlock")
     suspend fun deviceUnlock(
         @Header("Authorization") authorization: String,
         @Body request: DeviceUnlockRequest,
     ): Response<WatchGrant>
 }
+
+data class BattleJoinRequest(
+    @SerializedName("code") val code: String,
+)
+
+data class BattleSubmitRequest(
+    @SerializedName("answers") val answers: List<BattleAnswer>,
+)
+
+data class BattleAnswer(
+    @SerializedName("question_id") val questionId: String,
+    @SerializedName("answer") val answer: List<String>,
+)
+
+data class BattleQuestion(
+    @SerializedName("id") val id: String,
+    @SerializedName("stem") val stem: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("options") val options: List<QuizOption>? = null,
+)
+
+data class BattleResult(
+    @SerializedName("winner") val winner: String?,
+    @SerializedName("child_score") val childScore: Int?,
+    @SerializedName("parent_score") val parentScore: Int?,
+)
+
+data class BattleState(
+    @SerializedName("id") val id: String,
+    @SerializedName("status") val status: String,
+    @SerializedName("question_count") val questionCount: Int,
+    @SerializedName("questions") val questions: List<BattleQuestion>? = null,
+    @SerializedName("child_score") val childScore: Int = 0,
+    @SerializedName("parent_score") val parentScore: Int = 0,
+    @SerializedName("mode") val mode: String? = null,
+    @SerializedName("result") val result: BattleResult? = null,
+)
 
 data class DeviceUnlockRequest(
     @SerializedName("pin") val pin: String,

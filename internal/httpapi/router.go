@@ -159,6 +159,10 @@ func New(d Deps) http.Handler {
 				r.Use(d.Identity.ParentAuth)
 				d.Battle.Routes(r)
 			})
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.DeviceAuth)
+				d.Battle.DeviceRoutes(r)
+			})
 		}
 		if d.Membership != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {
