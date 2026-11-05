@@ -145,7 +145,15 @@ func randomCode() string {
 }
 
 func (s *Service) handleRanking(w http.ResponseWriter, r *http.Request) {
-	items, err := s.Ranking(r.Context(), identity.AccountIDFrom(r.Context()))
+	period := r.URL.Query().Get("period")
+	if period == "" {
+		period = "all"
+	}
+	if period != "all" && period != "week" && period != "month" {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "period 仅支持 all/week/month"})
+		return
+	}
+	items, err := s.Ranking(r.Context(), identity.AccountIDFrom(r.Context()), period)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -249,7 +257,10 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 }
 
 // Ranking 返回家庭内孩子的对战排名。
-func (s *Service) Ranking(ctx context.Context, accountID string) ([]RankingEntry, error) {
+func (s *Service) Ranking(ctx context.Context, accountID, period string) ([]RankingEntry, error) {
+	if period == "" {
+		period = "all"
+	}
 	if accountID == "" {
 		return nil, apiError{401, "AUTH_REQUIRED", "家长未登录"}
 	}
@@ -303,7 +314,11 @@ func (s *Service) Ranking(ctx context.Context, accountID string) ([]RankingEntry
 		from family_battle b
 		join child_profile cp on cp.id = b.child_id
 		where cp.family_id = $1 and b.status = 'finished'
-		order by b.child_id, b.finished_at`, *familyID)
+		  and ($2 = 'all' or b.finished_at >= case $2
+		       when 'week' then date_trunc('week', now())
+		       when 'month' then date_trunc('month', now())
+		       else now() end)
+		order by b.child_id, b.finished_at`, *familyID, period)
 	if err != nil {
 		return nil, err
 	}

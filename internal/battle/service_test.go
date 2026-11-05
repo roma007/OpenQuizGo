@@ -350,9 +350,11 @@ func TestFamilyRanking(t *testing.T) {
 	// B：胜、平（最新）→ 4 分，当前连胜 0，最佳 1。
 	insert(childB, 3, 1, 25)
 	insert(childB, 2, 2, 5)
+	// 40 天前的旧对局只应出现在总榜。
+	insert(childA, 2, 0, 40*24*60)
 
 	svc := New(pool)
-	items, err := svc.Ranking(ctx, accountID)
+	items, err := svc.Ranking(ctx, accountID, "all")
 	if err != nil {
 		t.Fatalf("ranking: %v", err)
 	}
@@ -360,14 +362,30 @@ func TestFamilyRanking(t *testing.T) {
 		t.Fatalf("ranking len = %d, want 2", len(items))
 	}
 	first := items[0]
-	if first.ChildID != childA || first.Battles != 3 || first.Wins != 2 ||
-		first.Draws != 0 || first.Losses != 1 || first.Points != 6 ||
-		first.CurrentStreak != 0 || first.BestStreak != 2 {
+	if first.ChildID != childA || first.Battles != 4 || first.Wins != 3 ||
+		first.Draws != 0 || first.Losses != 1 || first.Points != 9 ||
+		first.CurrentStreak != 0 || first.BestStreak != 3 {
 		t.Fatalf("unexpected first: %+v", first)
 	}
 	second := items[1]
 	if second.ChildID != childB || second.Battles != 2 || second.Wins != 1 ||
 		second.Draws != 1 || second.Points != 4 || second.BestStreak != 1 {
 		t.Fatalf("unexpected second: %+v", second)
+	}
+
+	week, err := svc.Ranking(ctx, accountID, "week")
+	if err != nil {
+		t.Fatalf("week ranking: %v", err)
+	}
+	if len(week) != 2 || week[0].ChildID != childA || week[0].Battles != 3 ||
+		week[0].Points != 6 {
+		t.Fatalf("unexpected week ranking: %+v", week)
+	}
+	month, err := svc.Ranking(ctx, accountID, "month")
+	if err != nil {
+		t.Fatalf("month ranking: %v", err)
+	}
+	if month[0].Battles != 3 || month[0].Points != 6 {
+		t.Fatalf("unexpected month ranking: %+v", month)
 	}
 }

@@ -262,8 +262,10 @@ class BattleRepository {
         : const [];
   }
 
-  Future<List<BattleRankingEntry>> ranking() async {
-    final json = await _api.getJson('/v1/family/battles/ranking');
+  Future<List<BattleRankingEntry>> ranking({String period = 'all'}) async {
+    final json = await _api.getJson(
+      '/v1/family/battles/ranking?period=$period',
+    );
     final raw = json['items'];
     return raw is List
         ? raw

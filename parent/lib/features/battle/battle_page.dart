@@ -37,6 +37,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   List<BattleSummary> _history = const [];
   List<BattleRankingEntry> _ranking = const [];
   bool _historyLoading = false;
+  String _rankingPeriod = 'all';
 
   @override
   void initState() {
@@ -49,7 +50,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
     try {
       final results = await Future.wait([
         ref.read(battleRepositoryProvider).history(widget.child.id, limit: 10),
-        ref.read(battleRepositoryProvider).ranking(),
+        ref.read(battleRepositoryProvider).ranking(period: _rankingPeriod),
       ]);
       if (mounted) {
         setState(() {
@@ -453,11 +454,29 @@ class _BattlePageState extends ConsumerState<BattlePage> {
           ),
         ),
         const SizedBox(height: 24),
-        Text(
-          '家庭排行榜',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        Row(
+          children: [
+            Text(
+              '家庭排行榜',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const Spacer(),
+            SegmentedButton<String>(
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              segments: const [
+                ButtonSegment(value: 'all', label: Text('总榜')),
+                ButtonSegment(value: 'week', label: Text('本周')),
+                ButtonSegment(value: 'month', label: Text('本月')),
+              ],
+              selected: {_rankingPeriod},
+              onSelectionChanged: (selection) {
+                setState(() => _rankingPeriod = selection.first);
+                _loadHistory();
+              },
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         if (_ranking.isEmpty && !_historyLoading)

@@ -73,6 +73,7 @@ class _FakeBattleRepository implements BattleRepository {
   int childSubmits = 0;
   int parentSubmits = 0;
   int getCalls = 0;
+  String lastRankingPeriod = 'all';
   BattleState current = _state();
 
   @override
@@ -115,19 +116,22 @@ class _FakeBattleRepository implements BattleRepository {
   }
 
   @override
-  Future<List<BattleRankingEntry>> ranking() async => [
-    BattleRankingEntry(
-      childId: 'c1',
-      childName: '小明',
-      battles: 3,
-      wins: 2,
-      draws: 1,
-      losses: 0,
-      points: 7,
-      currentStreak: 2,
-      bestStreak: 2,
-    ),
-  ];
+  Future<List<BattleRankingEntry>> ranking({String period = 'all'}) async {
+    lastRankingPeriod = period;
+    return [
+      BattleRankingEntry(
+        childId: 'c1',
+        childName: '小明',
+        battles: 3,
+        wins: 2,
+        draws: 1,
+        losses: 0,
+        points: 7,
+        currentStreak: 2,
+        bestStreak: 2,
+      ),
+    ];
+  }
 
   @override
   Future<List<BattleSummary>> history(String childId, {int limit = 20}) async =>
@@ -260,11 +264,10 @@ void main() {
   });
 
   testWidgets('入口展示对战记录', (tester) async {
+    final repository = _FakeBattleRepository();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          battleRepositoryProvider.overrideWithValue(_FakeBattleRepository()),
-        ],
+        overrides: [battleRepositoryProvider.overrideWithValue(repository)],
         child: MaterialApp(
           home: BattlePage(
             child: Child(id: 'c1', nickname: '小明', stage: 'low'),
@@ -277,6 +280,9 @@ void main() {
     expect(find.text('小明'), findsOneWidget);
     expect(find.text('7 分'), findsOneWidget);
     expect(find.text('2 连胜'), findsOneWidget);
+    await tester.tap(find.text('本周'));
+    await tester.pumpAndSettle();
+    expect(repository.lastRankingPeriod, 'week');
     await tester.scrollUntilVisible(find.text('孩子 5 : 5 家长'), 300);
     expect(find.text('对战记录'), findsOneWidget);
     expect(find.text('孩子 5 : 5 家长'), findsOneWidget);

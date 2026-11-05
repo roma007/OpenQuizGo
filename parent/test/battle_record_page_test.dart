@@ -66,7 +66,8 @@ class _FakeBattleRepository implements BattleRepository {
       const [];
 
   @override
-  Future<List<BattleRankingEntry>> ranking() async => const [];
+  Future<List<BattleRankingEntry>> ranking({String period = 'all'}) async =>
+      const [];
 
   @override
   Future<BattleState> submit(
