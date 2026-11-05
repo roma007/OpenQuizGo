@@ -122,12 +122,17 @@ data class QuizOption(
     @SerializedName("text") val text: String,
 )
 
+data class StemMedia(
+    @SerializedName("url") val url: String?,
+)
+
 data class SessionQuestion(
     @SerializedName("item_id") val itemId: String?,
     @SerializedName("question_id") val questionId: String?,
     @SerializedName("position") val position: Int,
     @SerializedName("type") val type: String,
     @SerializedName("stem") val stem: String,
+    @SerializedName("stem_media") val stemMedia: StemMedia?,
     @SerializedName("options") val options: List<QuizOption>?,
     @SerializedName("token") val token: String,
     @SerializedName("answered") val answered: Boolean = false,

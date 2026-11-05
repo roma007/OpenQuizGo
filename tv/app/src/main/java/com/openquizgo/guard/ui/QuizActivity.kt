@@ -1,24 +1,32 @@
 package com.openquizgo.guard.ui
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +35,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import androidx.tv.material3.darkColorScheme
+import com.openquizgo.guard.BuildConfig
 import com.openquizgo.guard.GuardApplication
 import com.openquizgo.guard.data.quiz.QuizApiException
 import com.openquizgo.guard.data.quiz.QuizOutcome
@@ -42,6 +51,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.URL
 
 /**
  * 半透明全屏答题界面（P2-T6）。
@@ -245,6 +256,33 @@ class QuizActivity : ComponentActivity() {
 }
 
 @Composable
+private fun RemoteImage(url: String) {
+    var bitmap by remember(url) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    var failed by remember(url) { mutableStateOf(false) }
+    LaunchedEffect(url) {
+        val loaded = withContext(Dispatchers.IO) {
+            runCatching {
+                URL(url).openStream().use { BitmapFactory.decodeStream(it)?.asImageBitmap() }
+            }.getOrNull()
+        }
+        if (loaded == null) failed = true else bitmap = loaded
+    }
+    val image = bitmap
+    if (image != null) {
+        Image(
+            bitmap = image,
+            contentDescription = "题干图片",
+            modifier = Modifier.fillMaxWidth().heightIn(max = 240.dp),
+            contentScale = ContentScale.Fit,
+        )
+    } else if (failed) {
+        Text("图片加载失败", fontSize = 20.sp, color = Color(0xFFFFC107))
+    } else {
+        Text("图片加载中…", fontSize = 20.sp, color = Color(0xFFB0B0B0))
+    }
+}
+
+@Composable
 private fun QuestionScreen(
     question: SessionQuestion,
     index: Int,
@@ -274,6 +312,15 @@ private fun QuestionScreen(
             fontWeight = FontWeight.Bold,
             color = Color.White,
         )
+        question.stemMedia?.url?.takeIf { it.isNotBlank() }?.let { path ->
+            val url = if (path.startsWith("http")) {
+                path
+            } else {
+                BuildConfig.API_BASE_URL.trimEnd('/') + path
+            }
+            Spacer(Modifier.height(16.dp))
+            RemoteImage(url)
+        }
         Spacer(Modifier.height(32.dp))
 
         if (result == null) {
