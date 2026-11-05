@@ -13,6 +13,7 @@ import '../data/daily_repository.dart';
 import '../data/battle_repository.dart';
 import '../data/membership_repository.dart';
 import '../data/alert_repository.dart';
+import 'storage/app_lock_store.dart';
 import 'storage/pending_rule_store.dart';
 import 'storage/pending_unlock_store.dart';
 import 'storage/token_store.dart';
@@ -27,6 +28,12 @@ final cacheStoreProvider = Provider<CacheStore>((ref) => CacheStore());
 final pendingRuleStoreProvider = Provider<PendingRuleStore>(
   (ref) => PendingRuleStore(),
 );
+
+final appLockStoreProvider = Provider<AppLockStore>((ref) => AppLockStore());
+
+final appLockEnabledProvider = FutureProvider<bool>((ref) {
+  return ref.watch(appLockStoreProvider).isEnabled();
+});
 
 final pendingUnlockStoreProvider = Provider<PendingUnlockStore>(
   (ref) => PendingUnlockStore(),

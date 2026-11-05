@@ -6,6 +6,7 @@ import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/membership_repository.dart';
 import '../membership/membership_page.dart';
+import 'app_lock_page.dart';
 import 'members_page.dart';
 import 'pin_page.dart';
 
@@ -41,6 +42,18 @@ class SettingsPage extends ConsumerWidget {
                   ).showSnackBar(const SnackBar(content: Text('家长 PIN 已更新')));
                 }
               },
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.child_care_outlined),
+              title: const Text('儿童锁'),
+              subtitle: const Text('保护本机家长端 App，防止孩子修改规则'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const AppLockPage())),
             ),
           ),
           const SizedBox(height: 12),
