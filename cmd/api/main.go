@@ -15,6 +15,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/config"
 	"github.com/roma007/OpenQuizGo/internal/daily"
 	"github.com/roma007/OpenQuizGo/internal/dashboard"
+	"github.com/roma007/OpenQuizGo/internal/experiment"
 	"github.com/roma007/OpenQuizGo/internal/familyadmin"
 	"github.com/roma007/OpenQuizGo/internal/httpapi"
 	"github.com/roma007/OpenQuizGo/internal/identity"
@@ -102,6 +103,7 @@ func main() {
 	topicService := topic.New(pool)
 	membershipService := membership.New(pool, cfg.PaymentCallbackSecret).WithRefundSecret(cfg.RefundCallbackSecret)
 	dashboardService := dashboard.New(pool)
+	experimentService := experiment.New(pool)
 	mediaService := media.New(cfg.UploadDir, cfg.UploadMaxMB)
 	familyService := familyadmin.New(pool)
 	quizService := quiz.New(pool, rdb, ruleService, watchService, logger)
@@ -122,6 +124,7 @@ func main() {
 		Topic:      topicService,
 		Membership: membershipService,
 		Dashboard:  dashboardService,
+		Experiment: experimentService,
 		Media:      mediaService,
 		Families:   familyService,
 		Version:    cfg.Version,

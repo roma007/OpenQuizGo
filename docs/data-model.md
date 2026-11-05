@@ -47,6 +47,7 @@ erDiagram
 | 授权 | `watch_grant`、`watch_log`、`offline_lease` | 使用授权、应用使用、离线租约 |
 | 报告 | `growth_report`、`coverage_snapshot` | 周/月聚合、覆盖率日快照 |
 | 治理 | `admin_user`、`admin_role`、`admin_permission`、`admin_user_role`、`admin_role_permission`、`audit_log` | RBAC 与审计 |
+| 实验 | `experiment`、`experiment_exposure` | A/B 实验与曝光 |
 
 ## 4. 关键约束
 

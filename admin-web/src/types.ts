@@ -226,6 +226,24 @@ export interface MembershipSnapshot {
   expires_at: string
 }
 
+export interface Experiment {
+  id: string
+  key: string
+  name: string
+  variant_a: string
+  variant_b: string
+  traffic_percent: number
+  status: string
+  exposure_a: number
+  exposure_b: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ExperimentList {
+  items: Experiment[]
+}
+
 export interface GrowthPoint {
   date: string
   new_accounts: number

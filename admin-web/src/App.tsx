@@ -38,6 +38,7 @@ import MembershipCouponsPage from './pages/MembershipCouponsPage'
 import MembershipInvoicesPage from './pages/MembershipInvoicesPage'
 import MembershipReconciliationPage from './pages/MembershipReconciliationPage'
 import GrowthPage from './pages/GrowthPage'
+import ExperimentsPage from './pages/ExperimentsPage'
 import MembershipPlansPage from './pages/MembershipPlansPage'
 import QuestionEdit from './pages/QuestionEdit'
 import Questions from './pages/Questions'
@@ -117,6 +118,12 @@ export default function App() {
                 icon: <LineChartOutlined />,
                 label: '增长分析',
                 disabled: !can('dashboard.read'),
+              },
+              {
+                key: '/experiments',
+                icon: <ExperimentOutlined />,
+                label: 'A/B 实验',
+                disabled: !can('experiment.read'),
               },
               { key: '/questions', icon: <DatabaseOutlined />, label: '题目管理' },
               {
@@ -212,6 +219,7 @@ export default function App() {
               <Route path="/" element={<Navigate to="/questions" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/growth" element={<GrowthPage />} />
+              <Route path="/experiments" element={<ExperimentsPage />} />
               <Route path="/questions" element={<Questions />} />
               <Route path="/questions/new" element={<QuestionEdit />} />
               <Route path="/questions/:id" element={<QuestionEdit />} />

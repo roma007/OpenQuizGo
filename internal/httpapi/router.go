@@ -15,6 +15,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/battle"
 	"github.com/roma007/OpenQuizGo/internal/daily"
 	"github.com/roma007/OpenQuizGo/internal/dashboard"
+	"github.com/roma007/OpenQuizGo/internal/experiment"
 	"github.com/roma007/OpenQuizGo/internal/familyadmin"
 	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/media"
@@ -48,6 +49,7 @@ type Deps struct {
 	Dashboard  *dashboard.Service
 	Media      *media.Service
 	Families   *familyadmin.Service
+	Experiment *experiment.Service
 	Version    string
 	Env        string
 }
@@ -125,6 +127,9 @@ func New(d Deps) http.Handler {
 		if d.Watch != nil && d.Admin != nil {
 			d.Watch.AdminRoutes(r, d.Admin)
 		}
+		if d.Experiment != nil && d.Admin != nil {
+			d.Experiment.AdminRoutes(r, d.Admin)
+		}
 		if d.Quiz != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.DeviceAuth)
@@ -168,6 +173,12 @@ func New(d Deps) http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.ParentAuth)
 				d.Report.ParentRoutes(r)
+			})
+		}
+		if d.Experiment != nil && d.Identity != nil {
+			r.Group(func(r chi.Router) {
+				r.Use(d.Identity.ParentAuth)
+				d.Experiment.ParentRoutes(r)
 			})
 		}
 		if d.Rule != nil && d.Identity != nil {

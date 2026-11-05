@@ -26,6 +26,8 @@ import type {
   MembershipInvoiceList,
   ReconciliationReport,
   GrowthReport,
+  Experiment,
+  ExperimentList,
   DashboardOverview,
 } from './types'
 
@@ -215,6 +217,17 @@ export const api = {
     }),
   dashboard: (days = 7) => request<DashboardOverview>(`/admin/dashboard?days=${days}`),
   growth: (days = 30) => request<GrowthReport>(`/admin/analytics/growth?days=${days}`),
+  experiments: () => request<ExperimentList>('/admin/experiments'),
+  createExperiment: (payload: unknown) =>
+    request<Experiment>('/admin/experiments', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  updateExperiment: (id: string, payload: unknown) =>
+    request<Experiment>(`/admin/experiments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
   families: (params: Record<string, string | number | undefined>) => {
     const query = new URLSearchParams()
     Object.entries(params).forEach(([key, value]) => {
