@@ -159,6 +159,58 @@ func (s *Service) ParentUnlock(ctx context.Context, accountID, deviceID, pin str
 	return grant, nil
 }
 
+// DeviceUnlock 允许电视端使用家庭 owner 的家长 PIN 直接解锁。
+func (s *Service) DeviceUnlock(ctx context.Context, principal identity.DevicePrincipal,
+	pin string, minutes int, ip string) (Grant, error) {
+	if s.identitySvc == nil {
+		return Grant{}, newError(500, "INTERNAL", "身份服务不可用")
+	}
+	accountID, err := s.identitySvc.FamilyOwnerAccount(ctx, principal.ChildID)
+	if err != nil {
+		return Grant{}, mapIdentityError(err)
+	}
+	if err := s.identitySvc.VerifyPIN(ctx, accountID, pin); err != nil {
+		return Grant{}, mapIdentityError(err)
+	}
+	if !s.identitySvc.AllowDeviceUnlock(ctx, principal.DeviceID) {
+		return Grant{}, newError(429, "UNLOCK_LIMIT", "解锁过于频繁，请稍后再试")
+	}
+	if minutes == 0 {
+		minutes = 10
+	}
+	if minutes < 5 || minutes > 60 {
+		return Grant{}, newError(422, "VALIDATION_ERROR", "解锁时长需在 5–60 分钟")
+	}
+	rul, _, err := s.ruleSvc.GetForChild(ctx, principal.ChildID)
+	if err != nil {
+		return Grant{}, mapRuleError(err)
+	}
+
+	now := time.Now()
+	location := time.UTC
+	if rul.Timezone != "" {
+		if loc, lerr := time.LoadLocation(rul.Timezone); lerr == nil {
+			location = loc
+		}
+	}
+	local := now.In(location)
+	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, location)
+	end := start.Add(24 * time.Hour)
+
+	rec, err := s.repo.issueParent(ctx, principal.ChildID, principal.DeviceID, minutes,
+		rul.DailyLimit, start, end, now, randomToken())
+	if err != nil {
+		return Grant{}, err
+	}
+	grant := s.toGrant(rec)
+	if auditErr := s.repo.insertAudit(ctx, accountID, principal.DeviceID, grant.GrantID,
+		grant.Minutes, ip); auditErr != nil {
+		s.logger.Error("audit device unlock", "error", auditErr, "grant_id", grant.GrantID)
+	}
+	metrics.IncGrantIssued()
+	return grant, nil
+}
+
 func mapIdentityError(err error) error {
 	var idErr *identity.Error
 	if errors.As(err, &idErr) {

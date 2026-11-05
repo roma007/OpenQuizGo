@@ -362,6 +362,23 @@ func (r *repository) deviceByToken(ctx context.Context, tokenHash string) (Devic
 	return p, err
 }
 
+// familyOwnerForChild 返回孩子所属家庭的 owner 账号。
+func (r *repository) familyOwnerForChild(ctx context.Context, childID string) (string, error) {
+	var accountID string
+	err := r.pool.QueryRow(ctx, `
+		select f.owner_id
+		from child_profile c
+		join family f on f.id = c.family_id
+		where c.id = $1`, childID).Scan(&accountID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", ErrNotFound
+	}
+	if err != nil {
+		return "", err
+	}
+	return accountID, nil
+}
+
 func (r *repository) unbindDevice(ctx context.Context, accountID, bindID string) (bool, error) {
 	tag, err := r.pool.Exec(ctx, `
 		update device_bind d

@@ -92,7 +92,18 @@ interface GuardApi {
         @Header("Authorization") authorization: String,
         @Body request: DiagnosticUploadRequest,
     ): Response<Unit>
+
+    @POST("v1/device/unlock")
+    suspend fun deviceUnlock(
+        @Header("Authorization") authorization: String,
+        @Body request: DeviceUnlockRequest,
+    ): Response<WatchGrant>
 }
+
+data class DeviceUnlockRequest(
+    @SerializedName("pin") val pin: String,
+    @SerializedName("minutes") val minutes: Int = 10,
+)
 
 data class DiagnosticUploadRequest(
     @SerializedName("content") val content: String,

@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,8 +39,13 @@ import com.openquizgo.guard.domain.GrantInfo
 import com.openquizgo.guard.domain.GuardEngine
 import com.openquizgo.guard.domain.GuardState
 import com.openquizgo.guard.platform.GuardLog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
  * 阻挡界面（P2-T8）。
@@ -53,8 +59,10 @@ class BlockerActivity : ComponentActivity() {
     private lateinit var watchRepository: WatchRepository
 
     private var screen by mutableStateOf(Screen.MAIN)
-    private var parentStatus by mutableStateOf("正在等待家长端放行…")
+    private var parentStatus by mutableStateOf("输入家庭 PIN 直接解锁，或等待家长端放行")
     private var networkError by mutableStateOf(false)
+    private var unlockBusy by mutableStateOf(false)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,12 +121,35 @@ class BlockerActivity : ComponentActivity() {
                             onParentUnlock = {
                                 screen = Screen.PARENT
                                 networkError = false
-                                parentStatus = "正在等待家长端放行…"
+                                parentStatus = "输入家庭 PIN 直接解锁，或等待家长端放行"
                             },
                         )
                         Screen.PARENT -> ParentUnlockScreen(
                             status = parentStatus,
                             networkError = networkError,
+                            busy = unlockBusy,
+                            onUnlock = { pin ->
+                                if (unlockBusy) return@ParentUnlockScreen
+                                unlockBusy = true
+                                parentStatus = "正在解锁…"
+                                scope.launch {
+                                    runCatching { watchRepository.deviceUnlock(pin, 10) }
+                                        .onSuccess { grant ->
+                                            networkError = false
+                                            GuardLog.i(
+                                                "device pin unlock grant=${grant.grantId} " +
+                                                    "minutes=${grant.minutes}",
+                                            )
+                                            engine.adoptGrant(grant.toGrantInfo())
+                                            finish()
+                                        }
+                                        .onFailure { error ->
+                                            networkError = true
+                                            parentStatus = "解锁失败：${error.message ?: "请重试"}"
+                                        }
+                                    unlockBusy = false
+                                }
+                            },
                             onBack = { screen = Screen.MAIN },
                         )
                     }
@@ -140,6 +171,11 @@ class BlockerActivity : ComponentActivity() {
     override fun onPause() {
         isShowing = false
         super.onPause()
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 
     private fun startQuiz() {
@@ -216,37 +252,80 @@ private fun BlockerScreen(
 private fun ParentUnlockScreen(
     status: String,
     networkError: Boolean,
+    busy: Boolean,
+    onUnlock: (String) -> Unit,
     onBack: () -> Unit,
 ) {
+    var pin by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0B0B0B))
-            .padding(72.dp),
+            .padding(48.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "家长解锁",
-            fontSize = 48.sp,
+            fontSize = 42.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(10.dp))
         Text(
-            text = "请打开家长端，选择「设备管理」→「临时解锁」",
-            fontSize = 26.sp,
+            text = "输入家庭 PIN 直接解锁 10 分钟，或在家长端选择「临时解锁」",
+            fontSize = 20.sp,
             color = Color(0xFFD0D0D0),
         )
         Spacer(Modifier.height(12.dp))
         Text(
+            text = if (pin.isEmpty()) "○ ○ ○ ○" else "●".repeat(pin.length),
+            fontSize = 32.sp,
+            color = Color(0xFF7CC7FF),
+        )
+        Spacer(Modifier.height(12.dp))
+        Text(
             text = status,
-            fontSize = 22.sp,
+            fontSize = 18.sp,
             color = if (networkError) Color(0xFFFFC107) else Color(0xFF7CC7FF),
         )
-        Spacer(Modifier.height(44.dp))
-        Button(onClick = onBack, modifier = Modifier.widthIn(min = 220.dp)) {
-            Text("返回", fontSize = 26.sp)
+        Spacer(Modifier.height(16.dp))
+        for (row in listOf(listOf("1", "2", "3"), listOf("4", "5", "6"), listOf("7", "8", "9"))) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                row.forEach { digit ->
+                    Button(
+                        onClick = { if (pin.length < 6) pin += digit },
+                        modifier = Modifier.widthIn(min = 72.dp),
+                    ) { Text(digit, fontSize = 24.sp) }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = { pin = "" }, modifier = Modifier.widthIn(min = 72.dp)) {
+                Text("清除", fontSize = 18.sp)
+            }
+            Button(
+                onClick = { if (pin.length < 6) pin += "0" },
+                modifier = Modifier.widthIn(min = 72.dp),
+            ) { Text("0", fontSize = 24.sp) }
+            Button(
+                onClick = { if (pin.isNotEmpty()) pin = pin.dropLast(1) },
+                modifier = Modifier.widthIn(min = 72.dp),
+            ) { Text("删除", fontSize = 18.sp) }
+        }
+        Spacer(Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(
+                onClick = { onUnlock(pin) },
+                enabled = pin.length in 4..6 && !busy,
+                modifier = Modifier.widthIn(min = 240.dp),
+            ) {
+                Text(if (busy) "解锁中…" else "解锁 10 分钟", fontSize = 22.sp)
+            }
+            Button(onClick = onBack, modifier = Modifier.widthIn(min = 160.dp)) {
+                Text("返回", fontSize = 22.sp)
+            }
         }
     }
 }

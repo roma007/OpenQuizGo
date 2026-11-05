@@ -5,6 +5,7 @@ import com.openquizgo.guard.data.local.GuardPreferences
 import com.openquizgo.guard.data.remote.ApiErrorBody
 import com.openquizgo.guard.data.remote.CapabilityReport
 import com.openquizgo.guard.data.remote.GuardApi
+import com.openquizgo.guard.data.remote.DeviceUnlockRequest
 import com.openquizgo.guard.data.remote.DiagnosticUploadRequest
 import com.openquizgo.guard.data.remote.HeartbeatRequest
 import com.openquizgo.guard.data.remote.HeartbeatResult
@@ -77,6 +78,9 @@ class WatchRepository(
     suspend fun reportTamper(report: TamperReport) {
         bodyOrThrow(api.reportTamper(authorization(), report))
     }
+
+    suspend fun deviceUnlock(pin: String, minutes: Int = 10): WatchGrant =
+        bodyOrThrow(api.deviceUnlock(authorization(), DeviceUnlockRequest(pin, minutes)))
 
     suspend fun uploadDiagnostics(content: String, note: String = "") {
         bodyOrThrow(api.uploadDiagnostics(authorization(), DiagnosticUploadRequest(content, note)))

@@ -539,6 +539,11 @@ func (s *Service) UnbindDevice(ctx context.Context, accountID, bindID string) er
 	return nil
 }
 
+// FamilyOwnerAccount 返回孩子所属家庭的 owner 账号。
+func (s *Service) FamilyOwnerAccount(ctx context.Context, childID string) (string, error) {
+	return s.repo.familyOwnerForChild(ctx, childID)
+}
+
 /* ------------------------------ 家庭成员 ------------------------------ */
 
 // InviteMember 生成家庭邀请码。

@@ -755,6 +755,25 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         "200": { description: OK }
+  /v1/device/unlock:
+    post:
+      tags: [device]
+      summary: TV 端使用家庭 PIN 直接解锁
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pin]
+              properties:
+                pin: { type: string, description: "家庭 owner 的 4–6 位家长 PIN" }
+                minutes: { type: integer, default: 10, minimum: 5, maximum: 60 }
+      responses:
+        "200": { description: 签发家长授权 }
+        "403": { description: PIN 错误或未设置 }
+        "429": { description: PIN 锁定或解锁过于频繁 }
   /v1/device/diagnostics:
     post:
       tags: [device]

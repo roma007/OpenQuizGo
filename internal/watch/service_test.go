@@ -19,6 +19,7 @@ import (
 	"github.com/pressly/goose/v3"
 
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/platform/cryptox"
 	"github.com/roma007/OpenQuizGo/internal/rule"
 	"github.com/roma007/OpenQuizGo/migrations"
 )
@@ -161,6 +162,66 @@ func TestGrantAndHeartbeat(t *testing.T) {
 		Detail: map[string]any{"permission": "accessibility"},
 	}); err != nil {
 		t.Fatalf("tamper: %v", err)
+	}
+}
+
+func TestDeviceUnlockWithFamilyPIN(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareWatchDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedWatchChild(t, pool)
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		select owner_id from family
+		where id = (select family_id from child_profile where id = $1)`, childID).Scan(&accountID); err != nil {
+		t.Fatalf("owner: %v", err)
+	}
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	cipher, err := cryptox.New("MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=", "test-hash")
+	if err != nil {
+		t.Fatal(err)
+	}
+	identitySvc := identity.NewService(pool, nil, cipher, identity.Options{
+		JWTSecret:   "test-secret-0123456789-0123456789",
+		AccessTTL:   time.Minute,
+		RefreshTTL:  time.Hour,
+		SMSMode:     "mock",
+		SMSMockCode: "123456",
+		Environment: "test",
+	}, logger)
+	if err := identitySvc.SetPIN(ctx, accountID, "", "1234"); err != nil {
+		t.Fatalf("set pin: %v", err)
+	}
+	svc, err := New(pool, rule.New(pool, nil, logger), identitySvc,
+		"test-secret-0123456789-0123456789", "", logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	principal := identity.DevicePrincipal{DeviceID: "tv-pin", ChildID: childID}
+
+	if _, err := svc.DeviceUnlock(ctx, principal, "0000", 10, ""); err == nil {
+		t.Fatal("expected invalid pin error")
+	}
+	grant, err := svc.DeviceUnlock(ctx, principal, "1234", 10, "")
+	if err != nil {
+		t.Fatalf("unlock: %v", err)
+	}
+	if grant.Minutes != 10 || grant.GrantID == "" {
+		t.Fatalf("unexpected grant: %+v", grant)
+	}
+	active, err := svc.ActiveGrant(ctx, principal)
+	if err != nil || active.GrantID != grant.GrantID {
+		t.Fatalf("active grant = %+v, err=%v", active, err)
 	}
 }
 
