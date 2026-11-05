@@ -224,6 +224,18 @@ func seedWatchChild(t *testing.T, pool *pgxpool.Pool, hash ...string) string {
 	return childID
 }
 
+func assertGrantStatus(t *testing.T, pool *pgxpool.Pool, grantID, want string) {
+	t.Helper()
+	var status string
+	if err := pool.QueryRow(context.Background(),
+		`select status from watch_grant where id = $1`, grantID).Scan(&status); err != nil {
+		t.Fatalf("grant status: %v", err)
+	}
+	if status != want {
+		t.Fatalf("grant %s status = %s, want %s", grantID, status, want)
+	}
+}
+
 func TestAlertsListAndRead(t *testing.T) {
 	dbURL := os.Getenv("TEST_DATABASE_URL")
 	if dbURL == "" {
@@ -314,14 +326,39 @@ func TestIssueParentGrant(t *testing.T) {
 		t.Fatalf("source = %s, want parent", source)
 	}
 
-	// 每日额度剩余 45 分钟，请求 60 分钟应被截断到 45。
+	// 旧 15 分钟授权被替换并释放预留，请求 60 分钟应得到完整 60 分钟。
 	capped, err := repo.issueParent(ctx, childID, "tv-parent", 60, 60, start, end, now, "parent-jti-2")
 	if err != nil {
 		t.Fatalf("issue capped: %v", err)
 	}
-	if capped.Minutes != 45 {
-		t.Fatalf("capped minutes = %d, want 45", capped.Minutes)
+	if capped.Minutes != 60 {
+		t.Fatalf("capped minutes = %d, want 60", capped.Minutes)
 	}
+	// 同孩子同设备重复签发后，旧授权被撤销，仅保留最新一条 active。
+	assertGrantStatus(t, pool, grant.ID, "revoked")
+	var parentActive int
+	if err := pool.QueryRow(ctx, `
+		select count(*) from watch_grant
+		where child_id = $1 and device_id = $2 and status = 'active'`,
+		childID, "tv-parent").Scan(&parentActive); err != nil {
+		t.Fatalf("count parent active: %v", err)
+	}
+	if parentActive != 1 {
+		t.Fatalf("parent active grants = %d, want 1", parentActive)
+	}
+
+	// 不同设备的授权不受影响（使用另一个孩子避免额度已用尽）。
+	childID3 := seedWatchChild(t, pool, "hash-watch-3")
+	otherA, err := repo.issueParent(ctx, childID3, "tv-parent-a", 10, 60, start, end, now, "parent-jti-4")
+	if err != nil {
+		t.Fatalf("issue other device a: %v", err)
+	}
+	otherB, err := repo.issueParent(ctx, childID3, "tv-parent-b", 20, 60, start, end, now, "parent-jti-5")
+	if err != nil {
+		t.Fatalf("issue other device b: %v", err)
+	}
+	assertGrantStatus(t, pool, otherA.ID, "active")
+	assertGrantStatus(t, pool, otherB.ID, "active")
 
 	// 每日额度 10 分钟时，请求 30 分钟应截断到 10（新孩子）。
 	childID2 := seedWatchChild(t, pool, "hash-watch-2")
@@ -344,6 +381,120 @@ func TestIssueParentGrant(t *testing.T) {
 	if actions != 1 {
 		t.Fatalf("audit rows = %d, want 1", actions)
 	}
+}
+
+func TestIssueReplacesPreviousActiveGrant(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareWatchDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedWatchChild(t, pool)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	svc, err := New(pool, rule.New(pool, nil, logger), nil,
+		"test-secret-0123456789-0123456789", "", logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ruleView := RuleView{UnlockMinutes: 20, DailyLimit: 60, Timezone: "Asia/Shanghai"}
+	principal := identity.DevicePrincipal{DeviceID: "tv-replace", ChildID: childID}
+	session1 := insertSession(t, pool, childID, principal.DeviceID)
+	grant1, err := svc.Issue(ctx, IssueRequest{
+		SessionID: session1,
+		ChildID:   childID,
+		DeviceID:  principal.DeviceID,
+		Rule:      ruleView,
+	})
+	if err != nil {
+		t.Fatalf("issue first: %v", err)
+	}
+
+	// 连续第二次签发后，仅最新授权为 active。
+	session2 := insertSession(t, pool, childID, principal.DeviceID)
+	grant2, err := svc.Issue(ctx, IssueRequest{
+		SessionID: session2,
+		ChildID:   childID,
+		DeviceID:  principal.DeviceID,
+		Rule:      ruleView,
+	})
+	if err != nil {
+		t.Fatalf("issue second: %v", err)
+	}
+	if grant2.GrantID == grant1.GrantID {
+		t.Fatalf("second issue should create a new grant")
+	}
+	assertGrantStatus(t, pool, grant1.GrantID, "revoked")
+	assertGrantStatus(t, pool, grant2.GrantID, "active")
+	var sameDeviceActive int
+	if err := pool.QueryRow(ctx, `
+		select count(*) from watch_grant
+		where child_id = $1 and device_id = $2 and status = 'active'`,
+		childID, principal.DeviceID).Scan(&sameDeviceActive); err != nil {
+		t.Fatalf("count active: %v", err)
+	}
+	if sameDeviceActive != 1 {
+		t.Fatalf("same device active grants = %d, want 1", sameDeviceActive)
+	}
+	active, err := svc.ActiveGrant(ctx, principal)
+	if err != nil {
+		t.Fatalf("active grant: %v", err)
+	}
+	if active.GrantID != grant2.GrantID {
+		t.Fatalf("active grant = %s, want %s", active.GrantID, grant2.GrantID)
+	}
+
+	// 其他设备的 active 授权不受影响。
+	otherPrincipal := identity.DevicePrincipal{DeviceID: "tv-replace-other", ChildID: childID}
+	otherSession := insertSession(t, pool, childID, otherPrincipal.DeviceID)
+	otherGrant, err := svc.Issue(ctx, IssueRequest{
+		SessionID: otherSession,
+		ChildID:   childID,
+		DeviceID:  otherPrincipal.DeviceID,
+		Rule:      ruleView,
+	})
+	if err != nil {
+		t.Fatalf("issue other device: %v", err)
+	}
+
+	// 再次在第一个设备签发，只撤销该设备的旧授权。
+	session3 := insertSession(t, pool, childID, principal.DeviceID)
+	grant3, err := svc.Issue(ctx, IssueRequest{
+		SessionID: session3,
+		ChildID:   childID,
+		DeviceID:  principal.DeviceID,
+		Rule:      ruleView,
+	})
+	if err != nil {
+		t.Fatalf("issue third: %v", err)
+	}
+	assertGrantStatus(t, pool, grant2.GrantID, "revoked")
+	assertGrantStatus(t, pool, grant3.GrantID, "active")
+	assertGrantStatus(t, pool, otherGrant.GrantID, "active")
+
+	// 重放旧 session 返回旧记录，且不得撤销当前 active 授权。
+	replay, err := svc.Issue(ctx, IssueRequest{
+		SessionID: session1,
+		ChildID:   childID,
+		DeviceID:  principal.DeviceID,
+		Rule:      ruleView,
+	})
+	if err != nil {
+		t.Fatalf("replay: %v", err)
+	}
+	if replay.GrantID != grant1.GrantID {
+		t.Fatalf("replay grant = %s, want %s", replay.GrantID, grant1.GrantID)
+	}
+	assertGrantStatus(t, pool, grant3.GrantID, "active")
+	assertGrantStatus(t, pool, otherGrant.GrantID, "active")
 }
 
 func insertSession(t *testing.T, pool *pgxpool.Pool, childID, deviceID string) string {
@@ -407,6 +558,14 @@ func TestConcurrentIssueRespectsDailyLimit(t *testing.T) {
 	}
 	principal := identity.DevicePrincipal{DeviceID: "tv-concurrent", ChildID: childID}
 
+	// 预先消耗 2 分钟，当日仅剩 1 分钟：新授权会替换旧 active，
+	// 因此 100 个并发请求仍只能成功签发 1 条，避免超过每日额度。
+	if _, err := pool.Exec(ctx, `
+		insert into watch_log (child_id, device_id, start_at, end_at, watched_seconds)
+		values ($1, $2, now(), now(), 120)`, childID, principal.DeviceID); err != nil {
+		t.Fatal(err)
+	}
+
 	sessions := make([]string, 100)
 	for i := range sessions {
 		sessions[i] = insertSession(t, pool, childID, principal.DeviceID)
@@ -442,17 +601,32 @@ func TestConcurrentIssueRespectsDailyLimit(t *testing.T) {
 		}
 		t.Fatalf("unexpected error: %v", res.err)
 	}
-	if success != 3 || limited != 97 {
-		t.Fatalf("success=%d limited=%d, want 3/97", success, limited)
+	// 替换语义下，后续请求会撤销上一条 active 并释放其预留，
+	// 因此并发请求可以全部成功，但最终只能保留一条 active。
+	if limited != 0 {
+		t.Fatalf("success=%d limited=%d, want no limit errors", success, limited)
 	}
 
-	var totalMinutes int
-	if err := pool.QueryRow(ctx,
-		`select coalesce(sum(minutes), 0) from watch_grant where child_id = $1`, childID).Scan(&totalMinutes); err != nil {
+	var activeCount, activeMinutes int
+	if err := pool.QueryRow(ctx, `
+		select count(*), coalesce(sum(minutes), 0)
+		from watch_grant
+		where child_id = $1 and device_id = $2 and status = 'active'`,
+		childID, principal.DeviceID).Scan(&activeCount, &activeMinutes); err != nil {
 		t.Fatal(err)
 	}
-	if totalMinutes != 3 {
-		t.Fatalf("total granted minutes = %d, want 3", totalMinutes)
+	if activeCount != 1 {
+		t.Fatalf("active grants = %d, want 1", activeCount)
+	}
+
+	var usedSeconds int
+	if err := pool.QueryRow(ctx, `
+		select coalesce(sum(watched_seconds), 0)::int from watch_log
+		where child_id = $1`, childID).Scan(&usedSeconds); err != nil {
+		t.Fatal(err)
+	}
+	if usedSeconds+activeMinutes*60 > 3*60 {
+		t.Fatalf("used %ds + active %dmin exceeds daily limit 3min", usedSeconds, activeMinutes)
 	}
 }
 

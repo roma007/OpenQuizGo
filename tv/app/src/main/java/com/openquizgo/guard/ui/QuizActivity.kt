@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
@@ -260,7 +261,12 @@ private fun resolveMediaUrl(path: String): String {
 }
 
 @Composable
-private fun RemoteImage(url: String, maxHeight: androidx.compose.ui.unit.Dp = 240.dp) {
+private fun RemoteImage(
+    url: String,
+    maxHeight: Dp = 240.dp,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    contentDescription: String = "图片",
+) {
     var bitmap by remember(url) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     var failed by remember(url) { mutableStateOf(false) }
     LaunchedEffect(url) {
@@ -275,8 +281,8 @@ private fun RemoteImage(url: String, maxHeight: androidx.compose.ui.unit.Dp = 24
     if (image != null) {
         Image(
             bitmap = image,
-            contentDescription = "题干图片",
-            modifier = Modifier.fillMaxWidth().heightIn(max = maxHeight),
+            contentDescription = contentDescription,
+            modifier = modifier.heightIn(max = maxHeight),
             contentScale = ContentScale.Fit,
         )
     } else if (failed) {
@@ -318,7 +324,7 @@ private fun QuestionScreen(
         )
         question.stemMedia?.url?.takeIf { it.isNotBlank() }?.let { path ->
             Spacer(Modifier.height(16.dp))
-            RemoteImage(resolveMediaUrl(path))
+            RemoteImage(resolveMediaUrl(path), contentDescription = "题干图片")
         }
         Spacer(Modifier.height(32.dp))
 
@@ -328,13 +334,31 @@ private fun QuestionScreen(
                 Text("暂不支持该题型", fontSize = 24.sp, color = Color(0xFFFFC107))
             } else {
                 options.forEach { option ->
+                    val images = option.images.orEmpty()
+                        .filter { it.isNotBlank() }
+                        .ifEmpty { listOfNotNull(option.image?.takeIf { it.isNotBlank() }) }
+                        .take(3)
                     Button(
                         onClick = { onSelect(option.id) },
                         enabled = !submitting,
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            option.image?.takeIf { it.isNotBlank() }?.let { path ->
-                                RemoteImage(resolveMediaUrl(path), maxHeight = 100.dp)
+                            if (images.isNotEmpty()) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    images.forEach { path ->
+                                        RemoteImage(
+                                            url = resolveMediaUrl(path),
+                                            maxHeight = 90.dp,
+                                            modifier = Modifier
+                                                .heightIn(max = 90.dp)
+                                                .widthIn(max = 200.dp),
+                                            contentDescription = "选项图片",
+                                        )
+                                    }
+                                }
                                 Spacer(Modifier.height(6.dp))
                             }
                             Text(text = "${option.id}. ${option.text}", fontSize = 26.sp)

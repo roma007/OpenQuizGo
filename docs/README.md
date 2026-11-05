@@ -79,5 +79,8 @@ node scripts/archive-conversation.mjs --all
 | 041 | 校准历史与回滚 | [设计](design/041-校准历史与回滚设计.md) | [计划](plans/041-校准历史与回滚实施计划.md) | done（v0.39.0） |
 | 042 | 共享 Redis 订阅 | [设计](design/042-共享Redis订阅设计.md) | [计划](plans/042-共享Redis订阅实施计划.md) | done（v0.39.0） |
 | 043 | 管理端 Playwright E2E | [设计](design/043-管理端Playwright-E2E设计.md) | [计划](plans/043-管理端Playwright-E2E实施计划.md) | done（v0.39.0，7/7 通过） |
+| 044 | 选项多图 | [设计](design/044-选项多图设计.md) | [计划](plans/044-选项多图实施计划.md) | done（v0.40.0，TV 0.3.2） |
+| 045 | 管理令牌 Cookie 与 CSP | [设计](design/045-管理令牌Cookie与CSP设计.md) | [计划](plans/045-管理令牌Cookie与CSP实施计划.md) | done（v0.40.0，E2E 7/7） |
+| 046 | 新授权关闭旧 active | [设计](design/046-新授权关闭旧授权设计.md) | [计划](plans/046-新授权关闭旧授权实施计划.md) | done（v0.40.0） |
 
 > 新增设计/计划后，请同步更新此表。

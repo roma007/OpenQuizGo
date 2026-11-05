@@ -16,6 +16,7 @@ export interface OptionItem {
   id: string
   text: string
   image?: string
+  images?: string[]
 }
 
 export interface Question {

@@ -64,6 +64,9 @@
 - ✅ 041 校准历史与回滚（v0.39.0）
 - ✅ 042 共享 Redis 订阅（v0.39.0）
 - ✅ 043 管理端 Playwright E2E（v0.39.0，7/7 通过）
+- ✅ 044 选项多图（v0.40.0，TV 0.3.2）
+- ✅ 045 管理令牌 HttpOnly Cookie 与 CSP（v0.40.0）
+- ✅ 046 新授权关闭旧 active（v0.40.0）
 - ✅ OpenAPI 契约同步 009–022（v0.23.0，文档）
 
 **第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。

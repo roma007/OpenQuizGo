@@ -19,12 +19,13 @@ import type {
   DashboardOverview,
 } from './types'
 
-const TOKEN_KEY = 'openquizgo.admin.token'
+const ADMIN_REQUEST_HEADER = 'X-Admin-Request'
 
+// tokenStore 仅为兼容旧引用保留；045 起令牌只保存在 HttpOnly Cookie 中。
 export const tokenStore = {
-  get: () => localStorage.getItem(TOKEN_KEY),
-  set: (token: string) => localStorage.setItem(TOKEN_KEY, token),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
+  get: () => null,
+  set: (_token: string) => {},
+  clear: () => {},
 }
 
 export class ApiError extends Error {
@@ -43,19 +44,19 @@ export class ApiError extends Error {
 async function request<T>(
   path: string,
   options: RequestInit = {},
-  withAuth = true,
 ): Promise<T> {
   const headers: Record<string, string> = {
+    [ADMIN_REQUEST_HEADER]: '1',
     ...(options.headers as Record<string, string> | undefined),
   }
   if (options.body && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json'
   }
-  if (withAuth) {
-    const token = tokenStore.get()
-    if (token) headers.Authorization = `Bearer ${token}`
-  }
-  const response = await fetch(`/v1${path}`, { ...options, headers })
+  const response = await fetch(`/v1${path}`, {
+    ...options,
+    headers,
+    credentials: 'include',
+  })
   const text = await response.text()
   let body: any = null
   if (text) {
@@ -78,14 +79,12 @@ async function request<T>(
 
 export const api = {
   async login(username: string, password: string) {
-    const result = await request<LoginResult>(
-      '/admin/auth/login',
-      { method: 'POST', body: JSON.stringify({ username, password }) },
-      false,
-    )
-    tokenStore.set(result.token)
-    return result
+    return request<LoginResult>('/admin/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    })
   },
+  logout: () => request<{ status: string }>('/admin/auth/logout', { method: 'POST' }),
   me: () => request<AdminPrincipal>('/admin/me'),
   questions: (params: Record<string, string | number | undefined>) => {
     const query = new URLSearchParams()
@@ -123,11 +122,11 @@ export const api = {
   uploadMedia: async (file: File) => {
     const form = new FormData()
     form.append('file', file)
-    const token = tokenStore.get()
     const response = await fetch('/v1/admin/media', {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      headers: { [ADMIN_REQUEST_HEADER]: '1' },
       body: form,
+      credentials: 'include',
     })
     const body = await response.json().catch(() => null)
     if (!response.ok) {
@@ -149,17 +148,17 @@ export const api = {
     Object.entries(params).forEach(([key, value]) => {
       if (value) query.set(key, value)
     })
-    const token = tokenStore.get()
     const response = await fetch(`/v1/admin/audit/export?${query.toString()}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      headers: { [ADMIN_REQUEST_HEADER]: '1' },
+      credentials: 'include',
     })
     if (!response.ok) throw new ApiError('导出失败', response.status)
     return response.blob()
   },
   coverageExport: async (threshold = 50) => {
-    const token = tokenStore.get()
     const response = await fetch(`/v1/admin/coverage/export?threshold=${threshold}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      headers: { [ADMIN_REQUEST_HEADER]: '1' },
+      credentials: 'include',
     })
     if (!response.ok) throw new ApiError('导出失败', response.status)
     return response.blob()

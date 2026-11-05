@@ -46,6 +46,16 @@ func newRepository(pool *pgxpool.Pool) *repository {
 	return &repository{pool: pool}
 }
 
+// revokeActiveGrants 撤销同一孩子同一设备的旧 active 授权，保证最多一条 active。
+// 必须在该设备的新授权插入前、且在 session_id 重放检查之后调用。
+func revokeActiveGrants(ctx context.Context, tx pgx.Tx, childID, deviceID string) error {
+	_, err := tx.Exec(ctx, `
+		update watch_grant set status = 'revoked'
+		where child_id = $1 and device_id = $2 and status = 'active'`,
+		childID, deviceID)
+	return err
+}
+
 // issue 在事务内串行化同一孩子的授权签发，避免并发超发。
 func (r *repository) issue(ctx context.Context, req IssueRequest, start, end time.Time,
 	jti string, now time.Time) (grantRecord, bool, error) {
@@ -69,6 +79,12 @@ func (r *repository) issue(ctx context.Context, req IssueRequest, start, end tim
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return grantRecord{}, false, err
+	}
+
+	// 重放检查已通过，先撤销同一孩子同一设备的旧 active 授权，
+	// 释放其预留额度，再按替换后的额度计算新授权。
+	if err := revokeActiveGrants(ctx, tx, req.ChildID, req.DeviceID); err != nil {
+		return grantRecord{}, false, fmt.Errorf("revoke active grants: %w", err)
 	}
 
 	available, err := availableSeconds(ctx, tx, req.ChildID, req.Rule.DailyLimit, start, end, now)
@@ -138,6 +154,11 @@ func (r *repository) issueParent(ctx context.Context, childID, deviceID string,
 
 	if _, err := tx.Exec(ctx, `select pg_advisory_xact_lock(hashtext($1))`, childID); err != nil {
 		return grantRecord{}, fmt.Errorf("lock child: %w", err)
+	}
+
+	// 家长解锁同样先替换该设备上的旧 active 授权，再按释放后的额度计算。
+	if err := revokeActiveGrants(ctx, tx, childID, deviceID); err != nil {
+		return grantRecord{}, fmt.Errorf("revoke active grants: %w", err)
 	}
 
 	available, err := availableSeconds(ctx, tx, childID, dailyLimit, start, end, now)

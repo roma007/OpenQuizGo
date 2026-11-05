@@ -912,8 +912,16 @@ paths:
                 username: { type: string }
                 password: { type: string }
       responses:
-        "200": { description: OK }
+        "200":
+          description: OK（同时设置 HttpOnly Cookie `openquizgo_admin`）
         "401": { description: 凭据错误 }
+  /v1/admin/auth/logout:
+    post:
+      tags: [admin]
+      summary: 管理员退出（清除 Cookie，幂等）
+      security: []
+      responses:
+        "200": { description: OK }
   /v1/admin/me:
     get:
       tags: [admin]
@@ -1477,6 +1485,11 @@ components:
       type: http
       scheme: bearer
       bearerFormat: admin JWT
+    adminCookieAuth:
+      type: apiKey
+      in: cookie
+      name: openquizgo_admin
+      description: "管理端登录后由服务端设置的 HttpOnly Cookie；写请求需带 X-Admin-Request: 1"
   parameters:
     ChildID:
       name: childID

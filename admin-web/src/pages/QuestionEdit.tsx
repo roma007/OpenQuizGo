@@ -60,6 +60,16 @@ const statusLabel: Record<string, string> = {
   online: '已上线',
   offline: '已下线',
 }
+const MAX_OPTION_IMAGES = 3
+
+// 旧数据可能只有 image，加载时并入 images 以统一展示。
+function normalizeOption(option: OptionItem): OptionItem {
+  const images = (option.images ?? []).filter((url) => url.trim())
+  if (images.length === 0 && option.image?.trim()) {
+    images.push(option.image)
+  }
+  return { ...option, images, image: images[0] }
+}
 
 interface QuestionForm {
   subject: string
@@ -132,7 +142,7 @@ export default function QuestionEdit() {
           setStemMediaUrl(result.stem_media.url || '')
         }
         if (Array.isArray(result.options)) {
-          setOptions(result.options as OptionItem[])
+          setOptions((result.options as OptionItem[]).map(normalizeOption))
         }
         if (Array.isArray(result.answer)) {
           setAnswerIds(result.answer as string[])
@@ -158,7 +168,10 @@ export default function QuestionEdit() {
       const result = await api.uploadMedia(file)
       setOptions((prev) => {
         const next = [...prev]
-        next[index] = { ...next[index], image: result.url }
+        const current = next[index]
+        if (!current) return prev
+        const images = [...(current.images ?? []), result.url].slice(0, MAX_OPTION_IMAGES)
+        next[index] = { ...current, images, image: images[0] }
         return next
       })
       message.success('选项图片已上传')
@@ -168,6 +181,37 @@ export default function QuestionEdit() {
       setUploadingOption(null)
     }
   }
+
+  const removeOptionImage = (index: number, imageIndex: number) => {
+    setOptions((prev) => {
+      const next = [...prev]
+      const current = next[index]
+      if (!current) return prev
+      const images = (current.images ?? []).filter((_, i) => i !== imageIndex)
+      next[index] = { ...current, images, image: images[0] }
+      return next
+    })
+  }
+
+  // 统一写 images，并把首图写入 image 以兼容旧 TV 版本。
+  const buildChoiceOptions = () =>
+    options
+      .filter(
+        (item) =>
+          item.id.trim() &&
+          (item.text.trim() || (item.images ?? []).length > 0 || Boolean(item.image)),
+      )
+      .map((item) => {
+        const images = (item.images ?? [])
+          .filter((url) => url.trim())
+          .slice(0, MAX_OPTION_IMAGES)
+        return {
+          id: item.id.trim(),
+          text: item.text,
+          images,
+          image: images[0] ?? item.image,
+        }
+      })
 
   const buildPayload = (values: QuestionForm) => {
     const choice = ['choice', 'image'].includes(values.type)
@@ -181,9 +225,7 @@ export default function QuestionEdit() {
       stem: values.stem,
       stem_media: stemMediaUrl ? { url: stemMediaUrl } : null,
       options: choice
-        ? options.filter(
-            (item) => item.id.trim() && (item.text.trim() || item.image),
-          )
+        ? buildChoiceOptions()
         : optionsJson.trim()
           ? JSON.parse(optionsJson)
           : null,
@@ -366,66 +408,92 @@ export default function QuestionEdit() {
         <Divider titlePlacement="start">选项与答案</Divider>
         {isChoice() ? (
           <Space direction="vertical" style={{ width: '100%' }}>
-            {options.map((option, index) => (
-              <Space key={index}>
-                <Input
-                  style={{ width: 80 }}
-                  value={option.id}
-                  placeholder="id"
-                  onChange={(event) => {
-                    const next = [...options]
-                    next[index] = { ...next[index], id: event.target.value }
-                    setOptions(next)
-                  }}
-                />
-                <Input
-                  style={{ width: 360 }}
-                  value={option.text}
-                  placeholder="选项内容（可留空，仅图片）"
-                  onChange={(event) => {
-                    const next = [...options]
-                    next[index] = { ...next[index], text: event.target.value }
-                    setOptions(next)
-                  }}
-                />
-                {option.image && (
-                  <img
-                    src={option.image}
-                    alt={`选项 ${option.id}`}
-                    style={{ width: 72, height: 54, objectFit: 'contain' }}
-                  />
-                )}
-                <Upload
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  showUploadList={false}
-                  beforeUpload={(file) => {
-                    void uploadOptionImage(index, file as File)
-                    return false
+            {options.map((option, index) => {
+              const images = option.images ?? []
+              return (
+                <Space
+                  key={index}
+                  direction="vertical"
+                  size={8}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    border: '1px solid #f0f0f0',
+                    borderRadius: 8,
                   }}
                 >
-                  <Button
-                    icon={<UploadOutlined />}
-                    loading={uploadingOption === index}
-                  >
-                    图片
-                  </Button>
-                </Upload>
-                {option.image && (
-                  <Button
-                    onClick={() => {
-                      const next = [...options]
-                      next[index] = { ...next[index], image: undefined }
-                      setOptions(next)
-                    }}
-                  >
-                    移除图
-                  </Button>
-                )}
-                <Button danger onClick={() => setOptions(options.filter((_, i) => i !== index))}>
-                  删除
-                </Button>
-              </Space>
-            ))}
+                  <Space wrap>
+                    <Input
+                      style={{ width: 80 }}
+                      value={option.id}
+                      placeholder="id"
+                      onChange={(event) => {
+                        const next = [...options]
+                        next[index] = { ...next[index], id: event.target.value }
+                        setOptions(next)
+                      }}
+                    />
+                    <Input
+                      style={{ width: 360 }}
+                      value={option.text}
+                      placeholder="选项内容（可留空，仅图片）"
+                      onChange={(event) => {
+                        const next = [...options]
+                        next[index] = { ...next[index], text: event.target.value }
+                        setOptions(next)
+                      }}
+                    />
+                    <Upload
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      showUploadList={false}
+                      beforeUpload={(file) => {
+                        void uploadOptionImage(index, file as File)
+                        return false
+                      }}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        loading={uploadingOption === index}
+                        disabled={images.length >= MAX_OPTION_IMAGES}
+                      >
+                        图片 {images.length}/{MAX_OPTION_IMAGES}
+                      </Button>
+                    </Upload>
+                    <Button
+                      danger
+                      onClick={() => setOptions(options.filter((_, i) => i !== index))}
+                    >
+                      删除
+                    </Button>
+                  </Space>
+                  {images.length > 0 && (
+                    <Space wrap size={8}>
+                      {images.map((url, imageIndex) => (
+                        <Space
+                          key={`${url}-${imageIndex}`}
+                          direction="vertical"
+                          size={4}
+                          style={{ alignItems: 'center' }}
+                        >
+                          <img
+                            src={url}
+                            alt={`选项 ${option.id} 图 ${imageIndex + 1}`}
+                            style={{ width: 96, height: 72, objectFit: 'contain' }}
+                          />
+                          <Button
+                            size="small"
+                            danger
+                            onClick={() => removeOptionImage(index, imageIndex)}
+                          >
+                            移除
+                          </Button>
+                        </Space>
+                      ))}
+                    </Space>
+                  )}
+                </Space>
+              )
+            })}
             <Space>
               <Button
                 onClick={() =>

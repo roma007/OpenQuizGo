@@ -22,7 +22,7 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom'
-import { api, tokenStore } from './api'
+import { api } from './api'
 import { AuthContext } from './auth'
 import type { AdminPrincipal } from './types'
 import AuditPage from './pages/AuditPage'
@@ -43,20 +43,17 @@ const { Header, Sider, Content } = Layout
 
 export default function App() {
   const [principal, setPrincipal] = useState<AdminPrincipal | null>(null)
-  const [loading, setLoading] = useState(Boolean(tokenStore.get()))
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
-    if (!tokenStore.get()) {
-      setLoading(false)
-      return
-    }
     void (async () => {
       try {
         setPrincipal(await api.me())
       } catch {
-        tokenStore.clear()
+        // 令牌可能已过期或不存在（401），视为未登录。
+        setPrincipal(null)
       } finally {
         setLoading(false)
       }
@@ -184,8 +181,15 @@ export default function App() {
               <Button
                 icon={<LogoutOutlined />}
                 onClick={() => {
-                  tokenStore.clear()
-                  setPrincipal(null)
+                  void (async () => {
+                    try {
+                      await api.logout()
+                    } catch {
+                      // 网络失败也按退出处理，Cookie 可由服务端过期或后续登录覆盖。
+                    } finally {
+                      setPrincipal(null)
+                    }
+                  })()
                 }}
               >
                 退出

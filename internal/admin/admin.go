@@ -194,22 +194,80 @@ func (s *Service) parse(raw string) (Principal, error) {
 	}, nil
 }
 
-// Auth 校验管理员令牌。
+const (
+	// adminCookieName 是管理端令牌 Cookie 名。
+	adminCookieName = "openquizgo_admin"
+	// adminRequestHeader 用于标记来自管理端前端自身的写请求，配合 SameSite 防 CSRF。
+	adminRequestHeader = "X-Admin-Request"
+)
+
+// Auth 校验管理员令牌，优先 Bearer，其次 HttpOnly Cookie。
 func (s *Service) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := bearerToken(r)
-		if token == "" {
+		if token != "" {
+			principal, err := s.parse(token)
+			if err != nil {
+				writeError(w, http.StatusUnauthorized, "AUTH_INVALID_TOKEN", "管理员令牌无效或已过期")
+				return
+			}
+			// 显示名与最新权限在登录时已固化到令牌中，令牌有效期 8 小时。
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), principalKey, principal)))
+			return
+		}
+
+		cookie, err := r.Cookie(adminCookieName)
+		if err != nil || cookie.Value == "" {
 			writeError(w, http.StatusUnauthorized, "AUTH_INVALID_TOKEN", "管理员令牌无效或已过期")
 			return
 		}
-		principal, err := s.parse(token)
+		principal, err := s.parse(cookie.Value)
 		if err != nil {
 			writeError(w, http.StatusUnauthorized, "AUTH_INVALID_TOKEN", "管理员令牌无效或已过期")
 			return
 		}
-		// 显示名与最新权限在登录时已固化到令牌中，令牌有效期 8 小时。
+		// Cookie 鉴权的写请求必须带自定义头，Bearer 客户端不受此限制。
+		if !isSafeMethod(r.Method) && r.Header.Get(adminRequestHeader) != "1" {
+			writeError(w, http.StatusForbidden, "CSRF_REQUIRED", "缺少必要的请求头")
+			return
+		}
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), principalKey, principal)))
 	})
+}
+
+func isSafeMethod(method string) bool {
+	switch method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+		return true
+	default:
+		return false
+	}
+}
+
+// isSecureRequest 判断请求是否经由 HTTPS（含反向代理）。
+func isSecureRequest(r *http.Request) bool {
+	return r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
+}
+
+// adminCookie 构造管理端令牌 Cookie；maxAge 为秒，负数表示立即失效。
+func adminCookie(r *http.Request, value string, maxAge int) *http.Cookie {
+	return &http.Cookie{
+		Name:     adminCookieName,
+		Value:    value,
+		Path:     "/v1",
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   isSecureRequest(r),
+		SameSite: http.SameSiteStrictMode,
+	}
+}
+
+func (s *Service) setAdminCookie(w http.ResponseWriter, r *http.Request, token string) {
+	http.SetCookie(w, adminCookie(r, token, int(s.ttl.Seconds())))
+}
+
+func (s *Service) clearAdminCookie(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, adminCookie(r, "", -1))
 }
 
 // Require 要求指定权限。
@@ -239,6 +297,7 @@ func From(ctx context.Context) (Principal, bool) {
 // Routes 注册管理端认证路由。
 func (s *Service) Routes(r chi.Router) {
 	r.Post("/admin/auth/login", s.handleLogin)
+	r.Post("/admin/auth/logout", s.handleLogout)
 
 	r.Group(func(r chi.Router) {
 		r.Use(s.Auth)
@@ -266,11 +325,18 @@ func (s *Service) handleLogin(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "INTERNAL", "服务端错误")
 		return
 	}
+	s.setAdminCookie(w, r, token)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"token":      token,
 		"expires_in": int64(s.ttl.Seconds()),
 		"admin":      principal,
 	})
+}
+
+// handleLogout 清除管理端 Cookie，幂等且不要求已登录。
+func (s *Service) handleLogout(w http.ResponseWriter, r *http.Request) {
+	s.clearAdminCookie(w, r)
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 func (s *Service) handleMe(w http.ResponseWriter, r *http.Request) {

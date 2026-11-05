@@ -229,4 +229,12 @@ npm run build                                  # 产物 dist/
 
 - 管理员账号：`go run ./cmd/admin create -username admin -password '********' -role super_admin -name 管理员`
 - 生产建议与 API 同源托管：`/admin/` 指向 `admin-web/dist`，`/v1/` 反向代理到 Go 服务；
-- 同源部署可避免 CORS；令牌存 localStorage，需配置 CSP。
+- 同源部署可避免 CORS；管理端令牌由服务端写入 HttpOnly Cookie（`Path=/v1`，`SameSite=Strict`），前端不再使用 localStorage；
+- Cookie 的 `Secure` 依赖反向代理传递 `X-Forwarded-Proto: https`（上面的 Nginx 示例已配置）；
+- 管理端写请求需带 `X-Admin-Request: 1`（前端已内置）；生产建议在 Nginx 追加安全头：
+
+```nginx
+add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'" always;
+add_header X-Content-Type-Options nosniff always;
+add_header Referrer-Policy strict-origin-when-cross-origin always;
+```
