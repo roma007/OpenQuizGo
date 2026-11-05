@@ -35,6 +35,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   Timer? _poll;
   Timer? _countdown;
   List<BattleSummary> _history = const [];
+  List<BattleRankingEntry> _ranking = const [];
   bool _historyLoading = false;
 
   @override
@@ -46,10 +47,16 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   Future<void> _loadHistory() async {
     setState(() => _historyLoading = true);
     try {
-      final items = await ref
-          .read(battleRepositoryProvider)
-          .history(widget.child.id, limit: 10);
-      if (mounted) setState(() => _history = items);
+      final results = await Future.wait([
+        ref.read(battleRepositoryProvider).history(widget.child.id, limit: 10),
+        ref.read(battleRepositoryProvider).ranking(),
+      ]);
+      if (mounted) {
+        setState(() {
+          _history = results[0] as List<BattleSummary>;
+          _ranking = results[1] as List<BattleRankingEntry>;
+        });
+      }
     } on ApiException {
       // 记录加载失败不阻塞发起对战。
     } finally {
@@ -446,6 +453,24 @@ class _BattlePageState extends ConsumerState<BattlePage> {
           ),
         ),
         const SizedBox(height: 24),
+        Text(
+          '家庭排行榜',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        if (_ranking.isEmpty && !_historyLoading)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text('完成一局后生成排行榜'),
+            ),
+          )
+        else
+          for (var i = 0; i < _ranking.length; i++)
+            _rankingCard(context, _ranking[i], i + 1),
+        const SizedBox(height: 24),
         Row(
           children: [
             Text(
@@ -475,6 +500,61 @@ class _BattlePageState extends ConsumerState<BattlePage> {
         else
           for (final item in _history) _historyCard(context, item),
       ],
+    );
+  }
+
+  Widget _rankingCard(
+    BuildContext context,
+    BattleRankingEntry entry,
+    int rank,
+  ) {
+    final current = entry.childId == widget.child.id;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      color: current ? const Color(0xFFE7F8EF) : null,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: current
+              ? const Color(0xFF1B8A6B)
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          foregroundColor: current ? Colors.white : null,
+          child: Text('$rank'),
+        ),
+        title: Row(
+          children: [
+            Text(
+              entry.childName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            if (current) ...[
+              const SizedBox(width: 8),
+              const Chip(
+                label: Text('当前孩子', style: TextStyle(fontSize: 11)),
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ],
+        ),
+        subtitle: Text(
+          '${entry.wins} 胜 / ${entry.draws} 平 / ${entry.losses} 负'
+          ' · 最佳连胜 ${entry.bestStreak}',
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${entry.points} 分',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            if (entry.currentStreak > 0)
+              Text(
+                '${entry.currentStreak} 连胜',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF1B8A6B)),
+              ),
+          ],
+        ),
+      ),
     );
   }
 

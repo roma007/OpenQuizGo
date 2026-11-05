@@ -115,6 +115,21 @@ class _FakeBattleRepository implements BattleRepository {
   }
 
   @override
+  Future<List<BattleRankingEntry>> ranking() async => [
+    BattleRankingEntry(
+      childId: 'c1',
+      childName: '小明',
+      battles: 3,
+      wins: 2,
+      draws: 1,
+      losses: 0,
+      points: 7,
+      currentStreak: 2,
+      bestStreak: 2,
+    ),
+  ];
+
+  @override
   Future<List<BattleSummary>> history(String childId, {int limit = 20}) async =>
       [
         BattleSummary(
@@ -258,6 +273,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.text('家庭排行榜'), findsOneWidget);
+    expect(find.text('小明'), findsOneWidget);
+    expect(find.text('7 分'), findsOneWidget);
+    expect(find.text('2 连胜'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('孩子 5 : 5 家长'), 300);
     expect(find.text('对战记录'), findsOneWidget);
     expect(find.text('孩子 5 : 5 家长'), findsOneWidget);
     expect(find.text('平局'), findsOneWidget);
@@ -314,6 +334,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('孩子 5 : 5 家长'), 300);
     await tester.tap(find.text('孩子 5 : 5 家长'));
     await tester.pumpAndSettle();
     expect(find.textContaining('对战详情'), findsOneWidget);

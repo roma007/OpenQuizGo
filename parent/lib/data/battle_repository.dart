@@ -187,6 +187,43 @@ class BattleSummary {
   );
 }
 
+class BattleRankingEntry {
+  BattleRankingEntry({
+    required this.childId,
+    required this.childName,
+    required this.battles,
+    required this.wins,
+    required this.draws,
+    required this.losses,
+    required this.points,
+    required this.currentStreak,
+    required this.bestStreak,
+  });
+
+  final String childId;
+  final String childName;
+  final int battles;
+  final int wins;
+  final int draws;
+  final int losses;
+  final int points;
+  final int currentStreak;
+  final int bestStreak;
+
+  factory BattleRankingEntry.fromJson(Map<String, dynamic> json) =>
+      BattleRankingEntry(
+        childId: json['child_id'] as String? ?? '',
+        childName: json['child_name'] as String? ?? '',
+        battles: (json['battles'] as num?)?.toInt() ?? 0,
+        wins: (json['wins'] as num?)?.toInt() ?? 0,
+        draws: (json['draws'] as num?)?.toInt() ?? 0,
+        losses: (json['losses'] as num?)?.toInt() ?? 0,
+        points: (json['points'] as num?)?.toInt() ?? 0,
+        currentStreak: (json['current_streak'] as num?)?.toInt() ?? 0,
+        bestStreak: (json['best_streak'] as num?)?.toInt() ?? 0,
+      );
+}
+
 class BattleRepository {
   BattleRepository(this._api);
 
@@ -221,6 +258,17 @@ class BattleRepository {
         ? raw
               .whereType<Map<String, dynamic>>()
               .map(BattleSummary.fromJson)
+              .toList(growable: false)
+        : const [];
+  }
+
+  Future<List<BattleRankingEntry>> ranking() async {
+    final json = await _api.getJson('/v1/family/battles/ranking');
+    final raw = json['items'];
+    return raw is List
+        ? raw
+              .whereType<Map<String, dynamic>>()
+              .map(BattleRankingEntry.fromJson)
               .toList(growable: false)
         : const [];
   }

@@ -469,6 +469,23 @@ paths:
         "404": { description: 孩子不存在 }
         "422": { $ref: "#/components/responses/ValidationError" }
 
+  /v1/family/battles/ranking:
+    get:
+      tags: [battle]
+      summary: 家庭对战排行榜
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: 家庭内孩子排名
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/BattleRankingEntry" }
+
   /v1/family/children/{childID}/battles:
     parameters:
       - $ref: "#/components/parameters/ChildID"
@@ -1727,6 +1744,18 @@ components:
         parent_score: { type: integer }
         created_at: { type: string, format: date-time }
         finished_at: { type: string, format: date-time }
+    BattleRankingEntry:
+      type: object
+      properties:
+        child_id: { type: string, format: uuid }
+        child_name: { type: string }
+        battles: { type: integer }
+        wins: { type: integer }
+        draws: { type: integer }
+        losses: { type: integer }
+        points: { type: integer }
+        current_streak: { type: integer }
+        best_streak: { type: integer }
     BattleCreateRequest:
       type: object
       properties:

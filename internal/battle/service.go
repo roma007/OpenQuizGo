@@ -32,6 +32,7 @@ type Service struct {
 func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
 
 func (s *Service) Routes(r chi.Router) {
+	r.Get("/family/battles/ranking", s.handleRanking)
 	r.Get("/family/children/{childID}/battles", s.handleHistory)
 	r.Post("/family/children/{childID}/battles", s.handleCreate)
 	r.Post("/family/children/{childID}/battles/join", s.handleJoin)
@@ -87,6 +88,18 @@ type Summary struct {
 	FinishedAt    *time.Time `json:"finished_at,omitempty"`
 }
 
+type RankingEntry struct {
+	ChildID       string `json:"child_id"`
+	ChildName     string `json:"child_name"`
+	Battles       int    `json:"battles"`
+	Wins          int    `json:"wins"`
+	Draws         int    `json:"draws"`
+	Losses        int    `json:"losses"`
+	Points        int    `json:"points"`
+	CurrentStreak int    `json:"current_streak"`
+	BestStreak    int    `json:"best_streak"`
+}
+
 type Submission struct {
 	QuestionID string          `json:"question_id"`
 	Answer     json.RawMessage `json:"answer"`
@@ -129,6 +142,15 @@ func randomCode() string {
 		code[i] = codeAlphabet[rand.Intn(len(codeAlphabet))]
 	}
 	return string(code)
+}
+
+func (s *Service) handleRanking(w http.ResponseWriter, r *http.Request) {
+	items, err := s.Ranking(r.Context(), identity.AccountIDFrom(r.Context()))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
 func (s *Service) handleHistory(w http.ResponseWriter, r *http.Request) {
@@ -224,6 +246,120 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, state)
+}
+
+// Ranking 返回家庭内孩子的对战排名。
+func (s *Service) Ranking(ctx context.Context, accountID string) ([]RankingEntry, error) {
+	if accountID == "" {
+		return nil, apiError{401, "AUTH_REQUIRED", "家长未登录"}
+	}
+	var familyID *string
+	err := s.pool.QueryRow(ctx, `
+		select coalesce(
+		    (select active_family_id from parent_account where id = $1),
+		    (select family_id from family_member where account_id = $1 limit 1))`,
+		accountID).Scan(&familyID)
+	if err != nil {
+		return nil, err
+	}
+	if familyID == nil {
+		return []RankingEntry{}, nil
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		select id, nickname from child_profile
+		where family_id = $1 order by created_at`, *familyID)
+	if err != nil {
+		return nil, err
+	}
+	type childInfo struct {
+		name string
+	}
+	children := map[string]*childInfo{}
+	order := make([]string, 0)
+	for rows.Next() {
+		var id, name string
+		if err := rows.Scan(&id, &name); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		children[id] = &childInfo{name: name}
+		order = append(order, id)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	type aggregate struct {
+		battles, wins, draws, losses, points, run, best, current int
+	}
+	stats := map[string]*aggregate{}
+	for id := range children {
+		stats[id] = &aggregate{}
+	}
+	rows, err = s.pool.Query(ctx, `
+		select b.child_id, b.child_score, b.parent_score
+		from family_battle b
+		join child_profile cp on cp.id = b.child_id
+		where cp.family_id = $1 and b.status = 'finished'
+		order by b.child_id, b.finished_at`, *familyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var childID string
+		var childScore, parentScore int
+		if err := rows.Scan(&childID, &childScore, &parentScore); err != nil {
+			return nil, err
+		}
+		agg := stats[childID]
+		if agg == nil {
+			continue
+		}
+		agg.battles++
+		switch {
+		case childScore > parentScore:
+			agg.wins++
+			agg.run++
+			if agg.run > agg.best {
+				agg.best = agg.run
+			}
+		case childScore == parentScore:
+			agg.draws++
+			agg.run = 0
+		default:
+			agg.losses++
+			agg.run = 0
+		}
+		agg.current = agg.run
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	items := make([]RankingEntry, 0, len(order))
+	for _, id := range order {
+		info := children[id]
+		agg := stats[id]
+		items = append(items, RankingEntry{
+			ChildID: id, ChildName: info.name,
+			Battles: agg.battles, Wins: agg.wins, Draws: agg.draws, Losses: agg.losses,
+			Points:        agg.wins*3 + agg.draws,
+			CurrentStreak: agg.current, BestStreak: agg.best,
+		})
+	}
+	sort.SliceStable(items, func(i, j int) bool {
+		if items[i].Points != items[j].Points {
+			return items[i].Points > items[j].Points
+		}
+		if items[i].Wins != items[j].Wins {
+			return items[i].Wins > items[j].Wins
+		}
+		return items[i].ChildName < items[j].ChildName
+	})
+	return items, nil
 }
 
 // History 返回孩子最近的对战摘要。

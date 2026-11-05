@@ -305,3 +305,69 @@ func TestRoomBattleWorkflow(t *testing.T) {
 		t.Fatalf("expired room status = %q, want waiting", expiredState.Status)
 	}
 }
+
+func TestFamilyRanking(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	accountID, childA := seedFamily(t, pool)
+	var familyID, childB string
+	if err := pool.QueryRow(ctx, `select family_id from child_profile where id = $1`, childA).
+		Scan(&familyID); err != nil {
+		t.Fatalf("family: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `
+		insert into child_profile (family_id, nickname, stage_code)
+		values ($1, '第二名', 'low') returning id`, familyID).Scan(&childB); err != nil {
+		t.Fatalf("child B: %v", err)
+	}
+
+	insert := func(childID string, childScore, parentScore int, minutesAgo int) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, `
+			insert into family_battle (
+				family_id, child_id, status, question_ids, child_score, parent_score, finished_at)
+			values ($1, $2, 'finished', '[]'::jsonb, $3, $4,
+			        now() - ($5::int * interval '1 minute'))`,
+			familyID, childID, childScore, parentScore, minutesAgo); err != nil {
+			t.Fatalf("insert battle: %v", err)
+		}
+	}
+	// A：胜、胜、负（最新）→ 6 分，当前连胜 0，最佳 2。
+	insert(childA, 3, 1, 30)
+	insert(childA, 2, 0, 20)
+	insert(childA, 1, 2, 10)
+	// B：胜、平（最新）→ 4 分，当前连胜 0，最佳 1。
+	insert(childB, 3, 1, 25)
+	insert(childB, 2, 2, 5)
+
+	svc := New(pool)
+	items, err := svc.Ranking(ctx, accountID)
+	if err != nil {
+		t.Fatalf("ranking: %v", err)
+	}
+	if len(items) != 2 {
+		t.Fatalf("ranking len = %d, want 2", len(items))
+	}
+	first := items[0]
+	if first.ChildID != childA || first.Battles != 3 || first.Wins != 2 ||
+		first.Draws != 0 || first.Losses != 1 || first.Points != 6 ||
+		first.CurrentStreak != 0 || first.BestStreak != 2 {
+		t.Fatalf("unexpected first: %+v", first)
+	}
+	second := items[1]
+	if second.ChildID != childB || second.Battles != 2 || second.Wins != 1 ||
+		second.Draws != 1 || second.Points != 4 || second.BestStreak != 1 {
+		t.Fatalf("unexpected second: %+v", second)
+	}
+}

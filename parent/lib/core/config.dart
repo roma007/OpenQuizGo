@@ -5,5 +5,5 @@ class AppConfig {
     defaultValue: 'http://127.0.0.1:8080/',
   );
 
-  static const appVersion = '0.24.0';
+  static const appVersion = '0.25.0';
 }
