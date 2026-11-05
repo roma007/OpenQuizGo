@@ -11,6 +11,7 @@ import {
   LogoutOutlined,
   PieChartOutlined,
   PlayCircleOutlined,
+  TeamOutlined,
 } from '@ant-design/icons'
 import { Button, Layout, Menu, Spin, Typography } from 'antd'
 import { useEffect, useState } from 'react'
@@ -28,6 +29,7 @@ import AuditPage from './pages/AuditPage'
 import CalibrationPage from './pages/CalibrationPage'
 import CoveragePage from './pages/CoveragePage'
 import DashboardPage from './pages/DashboardPage'
+import FamiliesPage from './pages/FamiliesPage'
 import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
 import MembershipOrdersPage from './pages/MembershipOrdersPage'
@@ -121,6 +123,12 @@ export default function App() {
                 label: '专题题包',
               },
               {
+                key: '/families',
+                icon: <TeamOutlined />,
+                label: '家庭设备',
+                disabled: !can('family.read'),
+              },
+              {
                 key: '/membership',
                 icon: <CrownOutlined />,
                 label: '会员套餐',
@@ -193,6 +201,7 @@ export default function App() {
               <Route path="/questions/:id" element={<QuestionEdit />} />
               <Route path="/topics" element={<TopicsPage />} />
               <Route path="/quiz-preview" element={<QuizPreviewPage />} />
+              <Route path="/families" element={<FamiliesPage />} />
               <Route path="/membership" element={<MembershipPlansPage />} />
               <Route path="/membership/orders" element={<MembershipOrdersPage />} />
               <Route path="/import" element={<ImportPage />} />

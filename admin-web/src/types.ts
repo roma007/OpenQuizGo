@@ -219,3 +219,58 @@ export interface DashboardOverview {
   trend: DashboardTrendPoint[]
   generated_at: string
 }
+
+export interface FamilySummary {
+  family_id: string
+  owner_id: string
+  member_status: string
+  members_count: number
+  children_count: number
+  devices_count: number
+  membership_status?: string
+  plan_name?: string
+  expires_at?: string
+  created_at: string
+}
+
+export interface FamilyMember {
+  account_id: string
+  role: string
+  joined_at: string
+}
+
+export interface FamilyChild {
+  id: string
+  nickname: string
+  stage: string
+  grade_tag?: string
+  created_at: string
+}
+
+export interface FamilyDevice {
+  device_id: string
+  platform: string
+  status: string
+  child_id: string
+  child_name: string
+  bound_at: string
+  token_expires_at?: string
+}
+
+export interface FamilyDetail {
+  family_id: string
+  owner_id: string
+  member_status: string
+  membership_status?: string
+  plan_name?: string
+  expires_at?: string
+  created_at: string
+  members: FamilyMember[]
+  children: FamilyChild[]
+  devices: FamilyDevice[]
+}
+
+export interface FamilyList {
+  items: FamilySummary[]
+  total: number
+}

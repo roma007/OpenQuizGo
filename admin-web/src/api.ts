@@ -11,6 +11,8 @@ import type {
   QuizPreviewResult,
   MembershipPlan,
   MembershipPlanList,
+  FamilyList,
+  FamilyDetail,
   MembershipOrder,
   MembershipOrderList,
   DashboardOverview,
@@ -171,6 +173,14 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   dashboard: (days = 7) => request<DashboardOverview>(`/admin/dashboard?days=${days}`),
+  families: (params: Record<string, string | number | undefined>) => {
+    const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') query.set(key, String(value))
+    })
+    return request<FamilyList>(`/admin/families?${query.toString()}`)
+  },
+  family: (id: string) => request<FamilyDetail>(`/admin/families/${id}`),
   membershipPlans: () => request<MembershipPlanList>('/admin/membership/plans'),
   createMembershipPlan: (payload: unknown) =>
     request<MembershipPlan>('/admin/membership/plans', {
