@@ -5,6 +5,7 @@
 > 项目规约见 [`AGENTS.md`](AGENTS.md)：所有对话留档、所有开发先设计后实施。
 > 设计基线：[`docs/design/001-项目总体设计方案.md`](docs/design/001-项目总体设计方案.md)
 > 实施计划：[`docs/plans/001-项目总体实施计划.md`](docs/plans/001-项目总体实施计划.md)
+> 总路线图与勾选：[`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ## 当前进度
 

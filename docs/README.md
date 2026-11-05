@@ -9,6 +9,7 @@
 
 | 目录 | 用途 | 入口 |
 | --- | --- | --- |
+| `docs/ROADMAP.md` | **总路线图与进度勾选（唯一勾选入口）** | [ROADMAP.md](ROADMAP.md) |
 | `docs/idea.txt` | 产品需求草案（第 4–8 节，待补 1–3 节） | [idea.txt](idea.txt) |
 | `api/openapi.yaml` | OpenAPI 3.0.3 接口契约 | [openapi.yaml](../api/openapi.yaml) |
 | `docs/data-model.md` | 数据模型与迁移说明 | [data-model.md](data-model.md) |
@@ -29,6 +30,8 @@ node scripts/archive-conversation.mjs --all
 ```
 
 ## 项目状态
+
+> 进度勾选以 [`ROADMAP.md`](ROADMAP.md) 为准；本表保留明细与链接。
 
 | 编号 | 主题 | 设计 | 计划 | 状态 |
 | --- | --- | --- | --- | --- |
