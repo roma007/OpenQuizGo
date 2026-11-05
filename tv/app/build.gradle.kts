@@ -13,12 +13,16 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 10
-        versionName = "0.3.7"
+        versionCode = 11
+        versionName = "0.3.8"
         val apiBaseUrl = providers.gradleProperty("apiBaseUrl")
             .orElse("http://192.168.1.27:8080/")
             .get()
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+        val expectedSignature = providers.gradleProperty("expectedSignature")
+            .orElse("")
+            .get()
+        buildConfigField("String", "EXPECTED_SIGNATURE", "\"$expectedSignature\"")
     }
 
     // 生产签名：在仓库根目录放置 keystore.properties（已 gitignore），否则回退 debug 签名仅供内部验收。

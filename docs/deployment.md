@@ -180,7 +180,8 @@ pg_restore --clean --if-exists --dbname="$DATABASE_URL" /backup/openquizgo-YYYY-
 ```bash
 cd tv
 ./gradlew :app:assembleDebug -PapiBaseUrl=http://<测试地址>:18080/   # 本地联调
-./gradlew :app:assembleRelease -PapiBaseUrl=https://<生产域名>/     # 正式包
+./gradlew :app:assembleRelease -PapiBaseUrl=https://<生产域名>/ \
+  -PexpectedSignature=<APK 签名证书 SHA-256>                    # 正式包（建议配置签名 pin）
 ```
 
 - 正式包必须使用 HTTPS（release 不允许明文 HTTP）；

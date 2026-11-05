@@ -27,6 +27,7 @@ class AppContainer(context: Context) {
         preferences,
         foregroundDetector,
         watchRepository,
+        diagnosticsReporter,
         scope,
     )
 }

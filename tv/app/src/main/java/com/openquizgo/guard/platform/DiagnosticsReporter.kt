@@ -1,6 +1,7 @@
 package com.openquizgo.guard.platform
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import com.openquizgo.guard.BuildConfig
 import com.openquizgo.guard.data.local.GuardPreferences
@@ -12,6 +13,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
+import java.time.Duration
+import java.time.Instant
+import kotlin.math.abs
 
 /**
  * 能力与异常上报（P2-T9）。
@@ -32,8 +37,11 @@ class DiagnosticsReporter(
     private var lastUsage: Boolean? = null
     private var lastNotifications: Boolean? = null
     private var lastReportAt = 0L
+    private var lastClockSkewReportAt = 0L
+    private var signatureChecked = false
 
     init {
+        scope.launch { checkSignature() }
         scope.launch {
             while (isActive) {
                 checkPermissions()
@@ -66,6 +74,60 @@ class DiagnosticsReporter(
         watchRepository.uploadDiagnostics(content, "manual upload from TV")
         GuardLog.i("diagnostics uploaded bytes=${content.toByteArray().size}")
     }.onFailure { GuardLog.w("diagnostics upload failed: ${it.message}") }
+
+    /** 比较心跳服务端时间，偏差 >5 分钟且距上次上报超过 1 小时时上报。 */
+    suspend fun reportClockSkew(serverTime: String?) {
+        val nowMillis = System.currentTimeMillis()
+        val delta = clockSkewMillis(serverTime, nowMillis) ?: return
+        if (abs(delta) <= CLOCK_SKEW_MS) return
+        if (nowMillis - lastClockSkewReportAt < CLOCK_SKEW_REPORT_INTERVAL_MS) return
+        lastClockSkewReportAt = nowMillis
+        reportTamper(
+            "clock_skew",
+            mapOf(
+                "delta_seconds" to (delta / 1000).toString(),
+                "server_time" to (serverTime ?: ""),
+            ),
+        )
+    }
+
+    /** 校验 APK 签名 pin；未配置 expectedSignature 时跳过。 */
+    private suspend fun checkSignature() {
+        if (signatureChecked) return
+        signatureChecked = true
+        val expected = BuildConfig.EXPECTED_SIGNATURE.trim().lowercase()
+        if (expected.isEmpty()) return
+        val actual = currentSignatureHashes()
+        if (actual.isEmpty() || expected !in actual) {
+            reportTamper(
+                "package_tampered",
+                mapOf(
+                    "expected" to expected,
+                    "actual" to actual.joinToString(","),
+                ),
+            )
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun currentSignatureHashes(): List<String> {
+        return runCatching {
+            val pm = appContext.packageManager
+            val packageName = appContext.packageName
+            val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                pm.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                    .signingInfo?.apkContentsSigners.orEmpty()
+            } else {
+                pm.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
+                    .signatures.orEmpty()
+            }
+            signatures.map { signature ->
+                MessageDigest.getInstance("SHA-256")
+                    .digest(signature.toByteArray())
+                    .joinToString("") { "%02x".format(it) }
+            }
+        }.getOrDefault(emptyList())
+    }
 
     suspend fun reportTamper(type: String, detail: Map<String, String?>) {
         runCatching {
@@ -120,7 +182,16 @@ class DiagnosticsReporter(
 
     companion object {
         private const val MAX_UPLOAD_BYTES = 256 * 1024
+        private const val CLOCK_SKEW_MS = 5 * 60 * 1000L
+        private const val CLOCK_SKEW_REPORT_INTERVAL_MS = 60 * 60 * 1000L
         private const val PERMISSION_CHECK_MS = 3_000L
         private const val REPORT_INTERVAL_MS = 10 * 60 * 1000L
+
+        internal fun clockSkewMillis(serverTime: String?, nowMillis: Long): Long? {
+            if (serverTime.isNullOrBlank()) return null
+            return runCatching {
+                Duration.between(Instant.parse(serverTime), Instant.ofEpochMilli(nowMillis)).toMillis()
+            }.getOrNull()
+        }
     }
 }

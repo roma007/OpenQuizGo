@@ -7,6 +7,7 @@ import com.openquizgo.guard.data.watch.PendingOffline
 import com.openquizgo.guard.data.watch.StoredGrant
 import com.openquizgo.guard.data.watch.StoredLease
 import com.openquizgo.guard.data.watch.WatchRepository
+import com.openquizgo.guard.platform.DiagnosticsReporter
 import com.openquizgo.guard.platform.GuardLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -38,6 +39,7 @@ class GuardEngine(
     private val preferences: GuardPreferences,
     private val foregroundDetector: ForegroundDetector,
     private val watchRepository: WatchRepository,
+    private val diagnostics: DiagnosticsReporter,
     private val scope: CoroutineScope,
 ) {
     private val _state = MutableStateFlow(GuardState.UNBOUND)
