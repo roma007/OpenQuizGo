@@ -11,6 +11,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/config"
 	"github.com/roma007/OpenQuizGo/internal/platform/database"
 	"github.com/roma007/OpenQuizGo/internal/platform/logx"
+	"github.com/roma007/OpenQuizGo/internal/question"
 	"github.com/roma007/OpenQuizGo/internal/report"
 )
 
@@ -36,6 +37,7 @@ func main() {
 	defer pool.Close()
 
 	svc := report.New(pool, logger)
+	questionSvc := question.New(pool, logger)
 	run := func() {
 		start := time.Now()
 		count, err := svc.GenerateAll(ctx)
@@ -44,6 +46,11 @@ func main() {
 			return
 		}
 		logger.Info("reports generated", "count", count, "duration_ms", time.Since(start).Milliseconds())
+		if snap, err := questionSvc.CaptureCoverageSnapshot(ctx); err != nil {
+			logger.Error("capture coverage snapshot", "error", err)
+		} else {
+			logger.Info("coverage snapshot captured", "date", snap.CapturedOn, "total", snap.Total)
+		}
 	}
 
 	run()

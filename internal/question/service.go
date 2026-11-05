@@ -256,6 +256,22 @@ func (s *Service) RollbackLatestCalibration(ctx context.Context, questionIDs []s
 	return s.repo.rollbackCalibration(ctx, clean, principal.ID, ip)
 }
 
+// CaptureCoverageSnapshot 采集/刷新今日覆盖率快照。
+func (s *Service) CaptureCoverageSnapshot(ctx context.Context) (CoverageSnapshot, error) {
+	return s.repo.captureCoverageSnapshot(ctx)
+}
+
+// CoverageTrend 返回最近 days 天的覆盖率快照，days 默认 30、最大 365。
+func (s *Service) CoverageTrend(ctx context.Context, days int) ([]CoverageSnapshot, error) {
+	if days <= 0 {
+		days = 30
+	}
+	if days > 365 {
+		days = 365
+	}
+	return s.repo.coverageTrend(ctx, days)
+}
+
 // Coverage 返回题库覆盖率聚合。
 func (s *Service) Coverage(ctx context.Context, threshold int) (CoverageResult, error) {
 	if threshold < 1 || threshold > 10000 {

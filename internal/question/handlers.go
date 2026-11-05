@@ -40,6 +40,8 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("question.read")).Get("/admin/coverage", s.handleCoverage)
 		r.With(guard.Require("question.read")).Get("/admin/coverage/topics", s.handleTopicCoverage)
 		r.With(guard.Require("question.read")).Get("/admin/coverage/export", s.handleCoverageExport)
+		r.With(guard.Require("question.read")).Get("/admin/coverage/trend", s.handleCoverageTrend)
+		r.With(guard.Require("question.write")).Post("/admin/coverage/snapshot", s.handleCoverageSnapshot)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/preview", s.handleCalibrationPreview)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/history", s.handleCalibrationHistory)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/trend", s.handleCalibrationTrend)
@@ -74,6 +76,25 @@ func (s *Service) handleTopicCoverage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Service) handleCoverageTrend(w http.ResponseWriter, r *http.Request) {
+	days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+	points, err := s.CoverageTrend(r.Context(), days)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, points)
+}
+
+func (s *Service) handleCoverageSnapshot(w http.ResponseWriter, r *http.Request) {
+	snap, err := s.CaptureCoverageSnapshot(r.Context())
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, snap)
 }
 
 func (s *Service) handleCoverageExport(w http.ResponseWriter, r *http.Request) {

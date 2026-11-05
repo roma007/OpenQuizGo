@@ -44,7 +44,7 @@ erDiagram
 | 规则 | `watch_rule` | 每孩子一条，带版本 |
 | 答题 | `quiz_session`、`quiz_session_item`、`answer_log` | 会话（规则快照/得分）、题目快照、答题记录 |
 | 授权 | `watch_grant`、`watch_log`、`offline_lease` | 使用授权、应用使用、离线租约 |
-| 报告 | `growth_report` | 周/月聚合 |
+| 报告 | `growth_report`、`coverage_snapshot` | 周/月聚合、覆盖率日快照 |
 | 治理 | `admin_user`、`admin_role`、`admin_permission`、`admin_user_role`、`admin_role_permission`、`audit_log` | RBAC 与审计 |
 
 ## 4. 关键约束

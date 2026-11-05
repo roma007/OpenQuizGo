@@ -3,6 +3,7 @@ import type {
   AuditEntry,
   CoverageResult,
   TopicCoverageResult,
+  CoverageSnapshot,
   LoginResult,
   Question,
   QuestionList,
@@ -146,6 +147,10 @@ export const api = {
   },
   coverage: (threshold = 50) =>
     request<CoverageResult>(`/admin/coverage?threshold=${threshold}`),
+  coverageTrend: (days = 30) =>
+    request<CoverageSnapshot[]>(`/admin/coverage/trend?days=${days}`),
+  coverageSnapshot: () =>
+    request<CoverageSnapshot>('/admin/coverage/snapshot', { method: 'POST' }),
   coverageTopics: (threshold = 50) =>
     request<TopicCoverageResult>(`/admin/coverage/topics?threshold=${threshold}`),
   coverageTopicsExport: async (threshold = 50) => {

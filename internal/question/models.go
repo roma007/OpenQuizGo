@@ -58,6 +58,16 @@ type CoverageCell struct {
 	Count      int    `json:"count"`
 }
 
+// CoverageSnapshot 是某一天的题库覆盖快照。
+type CoverageSnapshot struct {
+	CapturedOn string `json:"captured_on"`
+	Total      int    `json:"total"`
+	Online     int    `json:"online"`
+	Draft      int    `json:"draft"`
+	InReview   int    `json:"in_review"`
+	Offline    int    `json:"offline"`
+}
+
 // CoverageResult 是覆盖率看板数据。
 type CoverageResult struct {
 	Cells    []CoverageCell `json:"cells"`

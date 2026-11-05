@@ -1,7 +1,7 @@
 import { Alert, Button, Card, Col, InputNumber, Row, Space, Statistic, Table, Typography, message } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { api, ApiError } from '../api'
-import type { CoverageCell, TopicCoverageCell } from '../types'
+import type { CoverageCell, CoverageSnapshot, TopicCoverageCell } from '../types'
 
 const subjectLabel: Record<string, string> = {
   math: '数学', chinese: '语文', english: '英语', science: '科学',
@@ -24,13 +24,16 @@ export default function CoveragePage() {
   const [topicWarnings, setTopicWarnings] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [threshold, setThreshold] = useState(50)
+  const [trend, setTrend] = useState<CoverageSnapshot[]>([])
+  const [snapshotting, setSnapshotting] = useState(false)
 
   const load = async (next = threshold) => {
     setLoading(true)
     try {
-      const [result, topics] = await Promise.all([
+      const [result, topics, snapshots] = await Promise.all([
         api.coverage(next),
         api.coverageTopics(next),
+        api.coverageTrend(30),
       ])
       setCells(result.cells || [])
       setTotal(result.total || 0)
@@ -38,6 +41,7 @@ export default function CoveragePage() {
       setTopicCells(topics.cells || [])
       setTopicTotal(topics.total || 0)
       setTopicWarnings(topics.warnings || [])
+      setTrend(snapshots || [])
     } catch (error) {
       message.error(error instanceof ApiError ? error.message : '加载失败')
     } finally {
@@ -81,6 +85,23 @@ export default function CoveragePage() {
           </span>
         </Space>
         <Space>
+          <Button
+            loading={snapshotting}
+            onClick={async () => {
+              setSnapshotting(true)
+              try {
+                const snapshot = await api.coverageSnapshot()
+                message.success(`已记录 ${snapshot.captured_on} 快照`)
+                await load(threshold)
+              } catch (error) {
+                message.error(error instanceof ApiError ? error.message : '快照失败')
+              } finally {
+                setSnapshotting(false)
+              }
+            }}
+          >
+            记录今日快照
+          </Button>
           <Button
             onClick={async () => {
               try {
@@ -155,6 +176,37 @@ export default function CoveragePage() {
         <Col span={4}><Statistic title="已下线" value={byStatus.offline || 0} /></Col>
         <Col span={4}><Statistic title="聚合单元" value={cells.length} /></Col>
       </Row>
+      <Typography.Title level={5} style={{ marginTop: 8 }}>
+        覆盖率趋势（近 30 天）
+      </Typography.Title>
+      {trend.length === 0 ? (
+        <span style={{ color: '#999', display: 'inline-block', marginBottom: 16 }}>
+          暂无快照，可点击「记录今日快照」开始积累
+        </span>
+      ) : (
+        <Space direction="vertical" size={6} style={{ width: '100%', marginBottom: 16 }}>
+          {trend.map((point) => {
+            const max = Math.max(...trend.map((item) => item.total), 1)
+            return (
+              <Space key={point.captured_on} style={{ width: '100%' }}>
+                <span style={{ width: 96, display: 'inline-block' }}>{point.captured_on}</span>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: `${Math.max(4, (point.total / max) * 320)}px`,
+                    height: 10,
+                    borderRadius: 4,
+                    background: '#52c41a',
+                  }}
+                />
+                <span>
+                  总量 {point.total} / 上线 {point.online}
+                </span>
+              </Space>
+            )
+          })}
+        </Space>
+      )}
       <Table
         rowKey={(row) => `${row.subject}-${row.stage}-${row.type}-${row.status}-${row.difficulty}`}
         size="small"

@@ -63,6 +63,15 @@ export interface CoverageResult {
   warnings: string[]
 }
 
+export interface CoverageSnapshot {
+  captured_on: string
+  total: number
+  online: number
+  draft: number
+  in_review: number
+  offline: number
+}
+
 export interface TopicCoverageCell {
   topic_id: string
   topic_name: string

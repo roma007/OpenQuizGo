@@ -315,6 +315,56 @@ func (r *repository) rollbackCalibration(ctx context.Context, questionIDs []stri
 	return result, nil
 }
 
+// captureCoverageSnapshot 采集/刷新今日覆盖率快照。
+func (r *repository) captureCoverageSnapshot(ctx context.Context) (CoverageSnapshot, error) {
+	var snap CoverageSnapshot
+	err := r.pool.QueryRow(ctx, `
+		insert into coverage_snapshot (captured_on, total, online, draft, in_review, offline)
+		select current_date,
+		       count(*)::int,
+		       count(*) filter (where status = 'online')::int,
+		       count(*) filter (where status = 'draft')::int,
+		       count(*) filter (where status = 'in_review')::int,
+		       count(*) filter (where status = 'offline')::int
+		from question
+		on conflict (captured_on) do update set
+			total = excluded.total,
+			online = excluded.online,
+			draft = excluded.draft,
+			in_review = excluded.in_review,
+			offline = excluded.offline
+		returning to_char(captured_on, 'YYYY-MM-DD'), total, online, draft, in_review, offline`).
+		Scan(&snap.CapturedOn, &snap.Total, &snap.Online, &snap.Draft, &snap.InReview, &snap.Offline)
+	if err != nil {
+		return CoverageSnapshot{}, fmt.Errorf("capture coverage snapshot: %w", err)
+	}
+	return snap, nil
+}
+
+// coverageTrend 返回最近 days 天的覆盖率快照（日期升序）。
+func (r *repository) coverageTrend(ctx context.Context, days int) ([]CoverageSnapshot, error) {
+	rows, err := r.pool.Query(ctx, `
+		select to_char(captured_on, 'YYYY-MM-DD'), total, online, draft, in_review, offline
+		from coverage_snapshot
+		where captured_on >= current_date - $1::int
+		order by captured_on`, days)
+	if err != nil {
+		return nil, fmt.Errorf("coverage trend: %w", err)
+	}
+	defer rows.Close()
+
+	points := make([]CoverageSnapshot, 0)
+	for rows.Next() {
+		var snap CoverageSnapshot
+		if err := rows.Scan(&snap.CapturedOn, &snap.Total, &snap.Online, &snap.Draft,
+			&snap.InReview, &snap.Offline); err != nil {
+			return nil, fmt.Errorf("scan coverage trend: %w", err)
+		}
+		points = append(points, snap)
+	}
+	return points, rows.Err()
+}
+
 // Coverage 聚合题库分布。
 func (r *repository) Coverage(ctx context.Context) ([]CoverageCell, int, error) {
 	rows, err := r.pool.Query(ctx, `

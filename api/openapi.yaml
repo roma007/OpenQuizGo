@@ -1124,6 +1124,49 @@ paths:
                     type: array
                     items: { type: string }
 
+  /v1/admin/coverage/trend:
+    get:
+      tags: [admin]
+      summary: 覆盖率趋势（按天快照）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: days, in: query, schema: { type: integer, default: 30, maximum: 365 } }
+      responses:
+        "200":
+          description: 日期升序的覆盖率快照
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    captured_on: { type: string, example: "2026-11-05" }
+                    total: { type: integer }
+                    online: { type: integer }
+                    draft: { type: integer }
+                    in_review: { type: integer }
+                    offline: { type: integer }
+  /v1/admin/coverage/snapshot:
+    post:
+      tags: [admin]
+      summary: 采集/刷新今日覆盖率快照
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 今日快照
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  captured_on: { type: string }
+                  total: { type: integer }
+                  online: { type: integer }
+                  draft: { type: integer }
+                  in_review: { type: integer }
+                  offline: { type: integer }
+
   /v1/admin/coverage/export:
     get:
       tags: [admin]

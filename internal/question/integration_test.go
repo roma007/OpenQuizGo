@@ -182,6 +182,26 @@ func TestQuestionWorkflow(t *testing.T) {
 	c.expect(http.MethodGet, "/admin/coverage?threshold=0",
 		nil, adminToken, http.StatusUnprocessableEntity, nil)
 
+	// 覆盖率快照：同日重复采集 UPSERT，趋势返回该日数据。
+	var snap question.CoverageSnapshot
+	c.expect(http.MethodPost, "/admin/coverage/snapshot", nil, adminToken, http.StatusOK, &snap)
+	if snap.Total == 0 || snap.Online == 0 || snap.CapturedOn == "" {
+		t.Fatalf("unexpected coverage snapshot: %+v", snap)
+	}
+	var snapAgain question.CoverageSnapshot
+	c.expect(http.MethodPost, "/admin/coverage/snapshot", nil, adminToken, http.StatusOK, &snapAgain)
+	if snapAgain.CapturedOn != snap.CapturedOn || snapAgain.Total != snap.Total {
+		t.Fatalf("snapshot upsert changed: first=%+v second=%+v", snap, snapAgain)
+	}
+	var coverageTrend []question.CoverageSnapshot
+	c.expect(http.MethodGet, "/admin/coverage/trend?days=7",
+		nil, adminToken, http.StatusOK, &coverageTrend)
+	if len(coverageTrend) != 1 || coverageTrend[0].Total != snap.Total {
+		t.Fatalf("unexpected coverage trend: %+v", coverageTrend)
+	}
+	c.expect(http.MethodPost, "/admin/coverage/snapshot", nil, editorToken,
+		http.StatusOK, nil)
+
 	var filtered []question.AuditEntry
 	c.expect(http.MethodGet,
 		"/admin/audit?target_type=question&action=question.create&limit=20",
