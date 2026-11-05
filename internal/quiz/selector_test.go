@@ -485,4 +485,38 @@ func TestPaidTopicRequiresEntitlement(t *testing.T) {
 	} else if result.TopicID != "" {
 		t.Fatalf("paid topic used after expiry: %q", result.TopicID)
 	}
+
+	// 家庭共享关闭时，仅 owner 的会员权益生效。
+	var memberID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'quiz-share-member')
+		returning id`).Scan(&memberID); err != nil {
+		t.Fatalf("member account: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		insert into family_member (family_id, account_id, role) values ($1, $2, 'member')`,
+		familyID, memberID); err != nil {
+		t.Fatalf("member: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		update account_membership set account_id = $1, expires_at = now() + interval '30 days'
+		where account_id = $2`, memberID, ownerID); err != nil {
+		t.Fatalf("move membership: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `update family set membership_shared = false where id = $1`, familyID); err != nil {
+		t.Fatalf("disable sharing: %v", err)
+	}
+	if result, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 24}); err != nil {
+		t.Fatalf("select sharing off: %v", err)
+	} else if result.TopicID != "" {
+		t.Fatalf("non-owner membership used with sharing off: %q", result.TopicID)
+	}
+	if _, err := pool.Exec(ctx, `update family set membership_shared = true where id = $1`, familyID); err != nil {
+		t.Fatalf("enable sharing: %v", err)
+	}
+	if result, err := svc.Select(ctx, SelectRequest{ChildID: childID, Rule: rule, Seed: 25}); err != nil {
+		t.Fatalf("select sharing on: %v", err)
+	} else if result.TopicID != packID {
+		t.Fatalf("shared membership not used: %q", result.TopicID)
+	}
 }

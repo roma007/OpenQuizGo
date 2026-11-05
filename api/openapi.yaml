@@ -614,6 +614,38 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/MembershipCenter" }
+  /v1/family/membership/sharing:
+    get:
+      tags: [membership]
+      summary: 家庭会员共享设置
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: 是否共享及当前账号是否可编辑
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shared: { type: boolean }
+                  can_edit: { type: boolean }
+    put:
+      tags: [membership]
+      summary: 修改家庭会员共享（仅家庭 owner）
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shared]
+              properties:
+                shared: { type: boolean }
+      responses:
+        "200": { description: 更新后的共享设置 }
+        "403": { description: 非家庭 owner }
+
   /v1/family/membership/orders:
     get:
       tags: [membership]

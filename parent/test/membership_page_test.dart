@@ -36,6 +36,14 @@ class _FakeMembershipRepository implements MembershipRepository {
       MembershipCenter(membership: paid ? _active() : null, plans: [_plan()]);
 
   @override
+  Future<MembershipSharing> sharing() async =>
+      const MembershipSharing(shared: false, canEdit: false);
+
+  @override
+  Future<MembershipSharing> setSharing(bool shared) async =>
+      MembershipSharing(shared: shared, canEdit: true);
+
+  @override
   Future<List<MembershipOrder>> orders() async => const [];
 
   @override

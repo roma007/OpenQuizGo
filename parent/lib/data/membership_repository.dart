@@ -47,9 +47,23 @@ class MembershipPlan {
   }
 }
 
+class MembershipSharing {
+  const MembershipSharing({required this.shared, required this.canEdit});
+
+  final bool shared;
+  final bool canEdit;
+
+  factory MembershipSharing.fromJson(Map<String, dynamic> json) =>
+      MembershipSharing(
+        shared: json['shared'] as bool? ?? false,
+        canEdit: json['can_edit'] as bool? ?? false,
+      );
+}
+
 class MembershipInfo {
   MembershipInfo({
     required this.active,
+    this.shared = false,
     required this.status,
     required this.planName,
     required this.expiresAt,
@@ -58,6 +72,7 @@ class MembershipInfo {
   });
 
   final bool active;
+  final bool shared;
   final String status;
   final String planName;
   final DateTime? expiresAt;
@@ -66,6 +81,7 @@ class MembershipInfo {
 
   factory MembershipInfo.fromJson(Map<String, dynamic> json) => MembershipInfo(
     active: json['active'] as bool? ?? false,
+    shared: json['shared'] as bool? ?? false,
     status: json['status'] as String? ?? 'none',
     planName: json['plan_name'] as String? ?? '',
     expiresAt: json['expires_at'] is String
@@ -81,18 +97,27 @@ class MembershipInfo {
 }
 
 class MembershipCenter {
-  MembershipCenter({required this.membership, required this.plans});
+  MembershipCenter({
+    required this.membership,
+    required this.plans,
+    this.sharing = const MembershipSharing(shared: false, canEdit: false),
+  });
 
   final MembershipInfo? membership;
   final List<MembershipPlan> plans;
+  final MembershipSharing sharing;
 
   factory MembershipCenter.fromJson(Map<String, dynamic> json) {
     final rawMembership = json['membership'];
     final rawPlans = json['plans'];
+    final rawSharing = json['sharing'];
     return MembershipCenter(
       membership: rawMembership is Map<String, dynamic>
           ? MembershipInfo.fromJson(rawMembership)
           : null,
+      sharing: rawSharing is Map<String, dynamic>
+          ? MembershipSharing.fromJson(rawSharing)
+          : const MembershipSharing(shared: false, canEdit: false),
       plans: rawPlans is List
           ? rawPlans
                 .whereType<Map<String, dynamic>>()
@@ -180,6 +205,18 @@ class MembershipRepository {
               .map(MembershipOrder.fromJson)
               .toList(growable: false)
         : const [];
+  }
+
+  Future<MembershipSharing> sharing() async {
+    final json = await _api.getJson('/v1/family/membership/sharing');
+    return MembershipSharing.fromJson(json);
+  }
+
+  Future<MembershipSharing> setSharing(bool shared) async {
+    final json = await _api.putJson('/v1/family/membership/sharing', {
+      'shared': shared,
+    });
+    return MembershipSharing.fromJson(json);
   }
 
   Future<MembershipOrder> createOrder(String planId) async {

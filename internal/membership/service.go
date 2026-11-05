@@ -82,6 +82,7 @@ type RefundSnapshot struct {
 
 type Membership struct {
 	Active        bool       `json:"active"`
+	Shared        bool       `json:"shared"`
 	Status        string     `json:"status"`
 	PlanName      string     `json:"plan_name,omitempty"`
 	StartsAt      *time.Time `json:"starts_at,omitempty"`
@@ -90,8 +91,15 @@ type Membership struct {
 	Entitlements  []string   `json:"entitlements"`
 }
 
+// Sharing 是家庭会员共享设置。
+type Sharing struct {
+	Shared  bool `json:"shared"`
+	CanEdit bool `json:"can_edit"`
+}
+
 type Center struct {
 	Membership *Membership `json:"membership,omitempty"`
+	Sharing    Sharing     `json:"sharing"`
 	Plans      []Plan      `json:"plans"`
 }
 
@@ -128,9 +136,36 @@ func (s *Service) PublicRoutes(r chi.Router) {
 
 func (s *Service) ParentRoutes(r chi.Router) {
 	r.Get("/family/membership", s.handleCenter)
+	r.Get("/family/membership/sharing", s.handleSharing)
+	r.Put("/family/membership/sharing", s.handleSetSharing)
 	r.Get("/family/membership/orders", s.handleOrders)
 	r.Post("/family/membership/orders", s.handleCreateOrder)
 	r.Post("/family/membership/orders/{orderID}/pay", s.handlePayOrder)
+}
+
+func (s *Service) handleSharing(w http.ResponseWriter, r *http.Request) {
+	setting, err := s.Sharing(r.Context(), identity.AccountIDFrom(r.Context()))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, setting)
+}
+
+func (s *Service) handleSetSharing(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Shared bool `json:"shared"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不是合法 JSON"})
+		return
+	}
+	setting, err := s.SetSharing(r.Context(), identity.AccountIDFrom(r.Context()), req.Shared)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, setting)
 }
 
 func (s *Service) handleAdminList(w http.ResponseWriter, r *http.Request) {
@@ -380,6 +415,49 @@ func (s *Service) DeletePlan(ctx context.Context, id string) error {
 	return nil
 }
 
+// Sharing 返回家庭会员共享设置与当前账号是否可编辑。
+func (s *Service) Sharing(ctx context.Context, accountID string) (Sharing, error) {
+	var ownerID string
+	var shared bool
+	err := s.pool.QueryRow(ctx, `
+		select f.owner_id, f.membership_shared
+		from parent_account pa
+		join family f on f.id = pa.active_family_id
+		where pa.id = $1`, accountID).Scan(&ownerID, &shared)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Sharing{Shared: false, CanEdit: false}, nil
+	}
+	if err != nil {
+		return Sharing{}, err
+	}
+	return Sharing{Shared: shared, CanEdit: ownerID == accountID}, nil
+}
+
+// SetSharing 由家庭 owner 修改会员共享策略。
+func (s *Service) SetSharing(ctx context.Context, accountID string, shared bool) (Sharing, error) {
+	var ownerID string
+	err := s.pool.QueryRow(ctx, `
+		select f.owner_id
+		from parent_account pa
+		join family f on f.id = pa.active_family_id
+		where pa.id = $1`, accountID).Scan(&ownerID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Sharing{}, apiError{403, "FORBIDDEN", "当前账号未加入家庭"}
+	}
+	if err != nil {
+		return Sharing{}, err
+	}
+	if ownerID != accountID {
+		return Sharing{}, apiError{403, "FORBIDDEN", "仅家庭创建者可修改共享策略"}
+	}
+	if _, err := s.pool.Exec(ctx, `
+		update family set membership_shared = $2, updated_at = now() where owner_id = $1`,
+		accountID, shared); err != nil {
+		return Sharing{}, err
+	}
+	return Sharing{Shared: shared, CanEdit: true}, nil
+}
+
 func (s *Service) Center(ctx context.Context, accountID string) (Center, error) {
 	if accountID == "" {
 		return Center{}, apiError{401, "AUTH_REQUIRED", "家长未登录"}
@@ -392,7 +470,11 @@ func (s *Service) Center(ctx context.Context, accountID string) (Center, error) 
 	if err != nil {
 		return Center{}, err
 	}
-	return Center{Membership: member, Plans: plans}, nil
+	sharing, err := s.Sharing(ctx, accountID)
+	if err != nil {
+		return Center{}, err
+	}
+	return Center{Membership: member, Sharing: sharing, Plans: plans}, nil
 }
 
 func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error) {
@@ -753,6 +835,25 @@ func encodeRefundSnapshot(snapshot *RefundSnapshot) (json.RawMessage, error) {
 }
 
 func (s *Service) current(ctx context.Context, accountID string) (*Membership, error) {
+	member, err := s.ownMembership(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+	if member != nil && member.Active {
+		return member, nil
+	}
+	shared, err := s.sharedMembership(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+	if shared != nil {
+		return shared, nil
+	}
+	return member, nil
+}
+
+// ownMembership 返回账号自己的会员记录（可能已过期）。
+func (s *Service) ownMembership(ctx context.Context, accountID string) (*Membership, error) {
 	var member Membership
 	var expiresAt time.Time
 	var startsAt time.Time
@@ -770,6 +871,41 @@ func (s *Service) current(ctx context.Context, accountID string) (*Membership, e
 	if err != nil {
 		return nil, err
 	}
+	s.fillMembership(&member, startsAt, expiresAt, codes)
+	return &member, nil
+}
+
+// sharedMembership 返回家庭 owner 共享的有效会员（未开启共享或自己就是 owner 时为空）。
+func (s *Service) sharedMembership(ctx context.Context, accountID string) (*Membership, error) {
+	var member Membership
+	var expiresAt time.Time
+	var startsAt time.Time
+	var codes string
+	err := s.pool.QueryRow(ctx, `
+		select coalesce(am.plan_name, ''), am.status, am.starts_at, am.expires_at,
+		       coalesce(mp.entitlement_codes::text, '[]')
+		from parent_account pa
+		join family f on f.id = pa.active_family_id
+		join account_membership am on am.account_id = f.owner_id
+		left join membership_plan mp on mp.id = am.plan_id
+		where pa.id = $1
+		  and f.membership_shared
+		  and f.owner_id <> $1
+		  and am.status = 'active'
+		  and am.expires_at > now()`, accountID).
+		Scan(&member.PlanName, &member.Status, &startsAt, &expiresAt, &codes)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	s.fillMembership(&member, startsAt, expiresAt, codes)
+	member.Shared = true
+	return &member, nil
+}
+
+func (s *Service) fillMembership(member *Membership, startsAt, expiresAt time.Time, codes string) {
 	now := time.Now()
 	member.StartsAt = &startsAt
 	member.ExpiresAt = &expiresAt
@@ -787,7 +923,6 @@ func (s *Service) current(ctx context.Context, accountID string) (*Membership, e
 		member.Status = "expired"
 		member.DaysRemaining = 0
 	}
-	return &member, nil
 }
 
 func (s *Service) getPlan(ctx context.Context, id string) (Plan, error) {

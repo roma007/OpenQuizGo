@@ -321,6 +321,94 @@ func decodeRefundSnapshot(t *testing.T, raw json.RawMessage) refundSnapshot {
 	return snapshot
 }
 
+func TestFamilyMembershipSharing(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var ownerID, memberID, familyID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('c', 'share-owner')
+		returning id`).Scan(&ownerID); err != nil {
+		t.Fatalf("owner: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('c', 'share-member')
+		returning id`).Scan(&memberID); err != nil {
+		t.Fatalf("member: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `
+		insert into family (owner_id) values ($1) returning id`, ownerID).Scan(&familyID); err != nil {
+		t.Fatalf("family: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		insert into family_member (family_id, account_id, role)
+		values ($1, $2, 'member')`, familyID, memberID); err != nil {
+		t.Fatalf("member row: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`update parent_account set active_family_id = $2 where id = any($1::uuid[])`,
+		[]string{ownerID, memberID}, familyID); err != nil {
+		t.Fatalf("active family: %v", err)
+	}
+
+	var planID string
+	if err := pool.QueryRow(ctx, `
+		insert into membership_plan (code, name, duration_days, price_cents, features, entitlement_codes, status, sort)
+		values ('share-plan', '共享卡', 30, 0, '[]'::jsonb, '["topic_pack"]'::jsonb, 'online', 1)
+		returning id`).Scan(&planID); err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		insert into account_membership (account_id, plan_id, plan_name, status, starts_at, expires_at)
+		values ($1, $2, '共享卡', 'active', now(), now() + interval '30 days')`,
+		ownerID, planID); err != nil {
+		t.Fatalf("membership: %v", err)
+	}
+
+	svc := New(pool, "")
+	center, err := svc.Center(ctx, memberID)
+	if err != nil {
+		t.Fatalf("center member: %v", err)
+	}
+	if center.Membership == nil || !center.Membership.Active || !center.Membership.Shared {
+		t.Fatalf("expected shared membership: %+v", center.Membership)
+	}
+	setting, err := svc.Sharing(ctx, memberID)
+	if err != nil || !setting.Shared || setting.CanEdit {
+		t.Fatalf("unexpected member sharing: %+v err=%v", setting, err)
+	}
+	if _, err := svc.SetSharing(ctx, memberID, false); !isCode(err, "FORBIDDEN") {
+		t.Fatalf("member set sharing = %v, want FORBIDDEN", err)
+	}
+	if _, err := svc.SetSharing(ctx, ownerID, false); err != nil {
+		t.Fatalf("owner disable: %v", err)
+	}
+	center, err = svc.Center(ctx, memberID)
+	if err != nil {
+		t.Fatalf("center after disable: %v", err)
+	}
+	if center.Membership != nil && center.Membership.Active {
+		t.Fatalf("shared membership should be hidden: %+v", center.Membership)
+	}
+	if _, err := svc.SetSharing(ctx, ownerID, true); err != nil {
+		t.Fatalf("owner enable: %v", err)
+	}
+	center, err = svc.Center(ctx, memberID)
+	if err != nil || center.Membership == nil || !center.Membership.Shared {
+		t.Fatalf("shared membership not restored: %+v err=%v", center.Membership, err)
+	}
+}
+
 func prepareDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)

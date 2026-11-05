@@ -90,10 +90,12 @@ func (r *repository) activeTopicPack(ctx context.Context, stage string, subjects
 		  and q.stage_code = any($3)
 		  and (not tp.is_paid or ($4::uuid is not null and exists (
 		      select 1 from child_profile cp
+		      join family f on f.id = cp.family_id
 		      join family_member fm on fm.family_id = cp.family_id
 		      join account_membership am on am.account_id = fm.account_id
 		      join membership_plan mp on mp.id = am.plan_id
 		      where cp.id = $4::uuid
+		        and (f.membership_shared or fm.account_id = f.owner_id)
 		        and am.status = 'active' and am.expires_at > now()
 		        and mp.entitlement_codes ? 'topic_pack')))
 		group by tp.id, tp.name, tp.updated_at

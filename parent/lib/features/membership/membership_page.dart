@@ -23,6 +23,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
   MembershipCenter? _center;
   List<MembershipOrder> _orders = const [];
   bool _loading = true;
+  bool _sharingSaving = false;
   String? _payingPlanId;
 
   @override
@@ -112,6 +113,8 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
                   padding: const EdgeInsets.all(16),
                   children: [
                     _statusCard(context),
+                    const SizedBox(height: 12),
+                    _sharingCard(context),
                     const SizedBox(height: 20),
                     Text(
                       '会员套餐',
@@ -154,6 +157,39 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
     );
   }
 
+  Future<void> _toggleSharing(bool value) async {
+    setState(() => _sharingSaving = true);
+    try {
+      await ref.read(membershipRepositoryProvider).setSharing(value);
+      await _load();
+      _toast(value ? '已开启家庭会员共享' : '已关闭家庭会员共享');
+    } on ApiException catch (error) {
+      _toast(error.message);
+    } finally {
+      if (mounted) setState(() => _sharingSaving = false);
+    }
+  }
+
+  Widget _sharingCard(BuildContext context) {
+    final sharing = _center?.sharing;
+    if (sharing == null || (!sharing.canEdit && !sharing.shared)) {
+      return const SizedBox.shrink();
+    }
+    return Card(
+      child: SwitchListTile(
+        secondary: const Icon(Icons.family_restroom),
+        title: const Text('家庭会员共享'),
+        subtitle: Text(
+          sharing.canEdit
+              ? '家庭成员可共享你的会员权益（付费专题等）'
+              : '共享由家庭创建者控制',
+        ),
+        value: sharing.shared,
+        onChanged: sharing.canEdit && !_sharingSaving ? _toggleSharing : null,
+      ),
+    );
+  }
+
   Widget _statusCard(BuildContext context) {
     final membership = _center?.membership;
     final active = membership?.active == true;
@@ -173,6 +209,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
     final subtitle = active
         ? '${membership!.planName} · 有效期至 ${formatDate(membership.expiresAt)}'
               '（${expiring ? '仅剩' : '剩余'} ${membership.daysRemaining} 天）'
+              '${membership.shared ? ' · 家庭共享' : ''}'
         : membership?.status == 'expired'
         ? '${membership!.planName} · 到期时间 ${formatDate(membership.expiresAt)}'
         : '选择下方套餐，使用模拟支付立即开通。';
