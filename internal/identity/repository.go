@@ -396,6 +396,15 @@ func (r *repository) unbindDevice(ctx context.Context, accountID, bindID string)
 	return tag.RowsAffected() > 0, nil
 }
 
+// touchDeviceLastSeen 节流刷新设备最近活跃时间（5 分钟内不重复写）。
+func (r *repository) touchDeviceLastSeen(ctx context.Context, deviceID string) error {
+	_, err := r.pool.Exec(ctx, `
+		update device_bind set last_seen_at = now()
+		where device_id = $1 and status = 'active'
+		  and last_seen_at < now() - interval '5 minutes'`, deviceID)
+	return err
+}
+
 // unbindDeviceSelf 由设备自身调用，按 device_id 解除 active 绑定。
 func (r *repository) unbindDeviceSelf(ctx context.Context, deviceID string) (bool, error) {
 	tag, err := r.pool.Exec(ctx, `

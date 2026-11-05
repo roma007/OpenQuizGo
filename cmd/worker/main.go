@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/roma007/OpenQuizGo/internal/config"
+	"github.com/roma007/OpenQuizGo/internal/identity"
 	"github.com/roma007/OpenQuizGo/internal/platform/database"
 	"github.com/roma007/OpenQuizGo/internal/platform/logx"
 	"github.com/roma007/OpenQuizGo/internal/question"
@@ -50,6 +51,14 @@ func main() {
 			logger.Error("capture coverage snapshot", "error", err)
 		} else {
 			logger.Info("coverage snapshot captured", "date", snap.CapturedOn, "total", snap.Total)
+		}
+		if cfg.DeviceStaleDays > 0 {
+			count, err := identity.UnbindStaleDevices(ctx, pool, cfg.DeviceStaleDays)
+			if err != nil {
+				logger.Error("unbind stale devices", "error", err)
+			} else if count > 0 {
+				logger.Info("stale devices unbound", "count", count, "days", cfg.DeviceStaleDays)
+			}
 		}
 	}
 

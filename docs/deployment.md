@@ -38,6 +38,7 @@
 | `UPLOAD_MAX_MB` | 否 | `5` | 单张题目图片大小上限（MB） |
 | `SMS_MOCK_CODE` | 否 | `123456` | 仅 dev |
 | `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |
+| `DEVICE_STALE_DAYS` | 否 | `30` | 设备多少天无活动后自动解绑；`0` 关闭 |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | 否 | 空 | OTLP/HTTP 追踪端点，留空关闭 |
 
 > 生产启动会校验非 dev 环境的密钥与 `SMS_MODE`，缺失或仍为 mock 将拒绝启动。

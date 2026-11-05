@@ -19,6 +19,7 @@ type Config struct {
 	ShutdownTimeout time.Duration
 	DBMaxConns      int32
 	ReportInterval  time.Duration
+	DeviceStaleDays int
 
 	JWTSecret       string
 	AccessTokenTTL  time.Duration
@@ -48,6 +49,7 @@ func Load() (Config, error) {
 		ShutdownTimeout: getDuration("SHUTDOWN_TIMEOUT", 10*time.Second),
 		DBMaxConns:      int32(getInt("DB_MAX_CONNS", 10)),
 		ReportInterval:  getDuration("REPORT_INTERVAL", time.Hour),
+		DeviceStaleDays: getInt("DEVICE_STALE_DAYS", 30),
 
 		JWTSecret:       os.Getenv("JWT_SECRET"),
 		AccessTokenTTL:  getDuration("ACCESS_TOKEN_TTL", 15*time.Minute),
@@ -94,6 +96,9 @@ func Load() (Config, error) {
 	}
 	if cfg.ReportInterval <= 0 {
 		return Config{}, fmt.Errorf("REPORT_INTERVAL must be positive, got %s", cfg.ReportInterval)
+	}
+	if cfg.DeviceStaleDays < 0 {
+		return Config{}, fmt.Errorf("DEVICE_STALE_DAYS must be >= 0, got %d", cfg.DeviceStaleDays)
 	}
 	if cfg.Env != "dev" {
 		if len(cfg.JWTSecret) < 32 {

@@ -61,6 +61,7 @@ func (s *Service) DeviceAuth(next http.Handler) http.Handler {
 			writeError(w, r, newError("AUTH_DEVICE_UNBOUND", http.StatusForbidden, "设备未绑定或令牌已失效"))
 			return
 		}
+		s.TouchDevice(r.Context(), principal.DeviceID)
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), deviceKey, principal)))
 	})
 }

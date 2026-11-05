@@ -137,6 +137,30 @@ func TestIdentityFlow(t *testing.T) {
 	c.expect(http.MethodDelete, "/device/me", nil, token2.Token, http.StatusOK, nil)
 	c.expect(http.MethodGet, "/device/me", nil, token2.Token, http.StatusForbidden, nil)
 
+	// 长期离线设备自动解绑。
+	deviceID3 := fmt.Sprintf("tv-stale-%d", time.Now().UnixNano())
+	var code3 identity.ActivationCode
+	c.expect(http.MethodPost, "/device/activate/code",
+		map[string]string{"device_id": deviceID3, "platform": "tv"}, "", http.StatusOK, &code3)
+	c.expect(http.MethodPost, "/family/devices/activate",
+		map[string]string{"code": code3.Code, "child_id": child.ID}, login.AccessToken, http.StatusOK, nil)
+	var token3 identity.DeviceToken
+	c.expect(http.MethodPost, "/device/token",
+		map[string]string{"code": code3.Code, "device_id": deviceID3}, "", http.StatusOK, &token3)
+	if _, err := pool.Exec(ctx,
+		`update device_bind set last_seen_at = now() - interval '40 days'
+		 where device_id = $1 and status = 'active'`, deviceID3); err != nil {
+		t.Fatalf("age device: %v", err)
+	}
+	unbound, err := identity.UnbindStaleDevices(ctx, pool, 30)
+	if err != nil {
+		t.Fatalf("unbind stale: %v", err)
+	}
+	if unbound < 1 {
+		t.Fatalf("unbound stale = %d, want >= 1", unbound)
+	}
+	c.expect(http.MethodGet, "/device/me", nil, token3.Token, http.StatusForbidden, nil)
+
 	var devices []identity.Device
 	c.expect(http.MethodGet, "/family/devices", nil, login.AccessToken, http.StatusOK, &devices)
 	if len(devices) != 1 || devices[0].DeviceID != deviceID {

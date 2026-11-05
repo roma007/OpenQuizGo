@@ -527,6 +527,27 @@ func (s *Service) loadActivation(ctx context.Context, code string) (activationRe
 	return record, nil
 }
 
+// TouchDevice 刷新设备最近活跃时间；失败不影响请求。
+func (s *Service) TouchDevice(ctx context.Context, deviceID string) {
+	_ = s.repo.touchDeviceLastSeen(ctx, deviceID)
+}
+
+// UnbindStaleDevices 解绑超过 days 天无活动的 active 设备，返回解绑数量。
+func UnbindStaleDevices(ctx context.Context, pool *pgxpool.Pool, days int) (int64, error) {
+	if days <= 0 {
+		return 0, nil
+	}
+	tag, err := pool.Exec(ctx, `
+		update device_bind
+		set status = 'unbound', unbound_at = now(), token_hash = '', token_expires_at = null
+		where status = 'active'
+		  and last_seen_at < now() - ($1 * interval '1 day')`, days)
+	if err != nil {
+		return 0, err
+	}
+	return tag.RowsAffected(), nil
+}
+
 // UnbindSelf 由设备令牌主动解绑当前设备；重复调用幂等。
 func (s *Service) UnbindSelf(ctx context.Context, deviceID string) error {
 	_, err := s.repo.unbindDeviceSelf(ctx, deviceID)

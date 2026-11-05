@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 18850101,
-      "output": 1230181,
-      "reasoning": 688935,
+      "input": 18865093,
+      "output": 1236433,
+      "reasoning": 691187,
       "cache": {
-        "read": 1281864832,
+        "read": 1287729024,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1793613853206,
-      "updated": 1793884984289,
-      "busy": 1793884720482,
-      "idle": 1793884124053,
-      "viewed": 1793884124053
+      "updated": 1793885505636,
+      "busy": 1793885374083,
+      "idle": 1793885017866,
+      "viewed": 1793885017866
     },
     "title": "项目铁律：留档与开发计划",
     "permissions": [
@@ -243019,6 +243019,1101 @@
         "reasoning": 53,
         "cache": {
           "read": 410624,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe088fa001TZsNh2TUbdSk6y",
+      "time": {
+        "created": 1793884981507,
+        "streamed": 1793884987321,
+        "completed": 1793885010789
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Commit/tag/push v0.51.0.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793884984290,
+            "completed": 1793884987316
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_fa9bfaeedb8647f2b1e00e2c",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && node scripts/archive-conversation.mjs 2>&1 | tail -1 && git add -A && git commit -q -m \"feat(059): 家庭会员共享策略\n\n- family.membership_shared 迁移与共享设置接口\n- 非 owner 会员中心回退展示共享会员\n- 付费专题权益遵守共享开关\n- 家长端会员中心共享开关\n- 家长端 0.33.0；验收/ROADMAP/OpenAPI/数据模型更新\" && git tag -a v0.51.0 -m \"OpenQuizGo v0.51.0（家庭会员共享）\" && git push github main 2>&1 | tail -2 && git push gitee main:master 2>&1 | tail -2 && git push github v0.51.0 2>&1 | tail -1 && git push gitee v0.51.0 2>&1 | tail -1 && scripts/auto-continue.sh status",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "索引已更新：/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/conversations/INDEX.md\nTo github.com:roma007/OpenQuizGo.git\n   362d7f5..959c3d8  main -> main\nTo gitee.com:roma007007/open-quiz-go.git\n   362d7f5..959c3d8  main -> master\n * [new tag]         v0.51.0 -> v0.51.0\n * [new tag]         v0.51.0 -> v0.51.0\n[2026-11-05 21:23:30] 未运行\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793884985028,
+            "ran": 1793884987320,
+            "completed": 1793885010580
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "f3988b03ac4241d31fecae56f00e5b87a1a4eae6",
+        "end": "f7fb9840fb85b96576b10473713b0af3420f6d65",
+        "files": [
+          "docs/conversations/2026-11-02-001-项目铁律-留档与开发计划.md",
+          "docs/conversations/INDEX.md",
+          "docs/conversations/raw/ses_e64488e2cffeDYNmw42RxNLybD.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 719,
+        "output": 287,
+        "reasoning": 12,
+        "cache": {
+          "read": 412928,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe0fb8a001lX6225TejDPQaP",
+      "time": {
+        "created": 1793885010830,
+        "streamed": 1793885017831,
+        "completed": 1793885017862
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Report v0.51.0. Mention tests, migration 24, sharing semantics, parent version. Auto loop stopped. Remaining.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885014682,
+            "completed": 1793885017827
+          }
+        },
+        {
+          "type": "text",
+          "text": "**v0.51.0 已发布**（commit `959c3d8`，GitHub/Gitee 与标签已同步），本轮完成 059 家庭会员共享策略。\n\n## 059 交付\n\n| 部分 | 内容 |\n| --- | --- |\n| 迁移 | `00024_family_membership_sharing.sql`，已应用到开发库（版本 24） |\n| 接口 | `GET/PUT /v1/family/membership/sharing`，仅家庭 owner 可修改 |\n| 会员中心 | 非 owner 在共享开启时回退展示 owner 会员，标记 `shared` |\n| 权益 | 付费专题查询遵守共享开关；关闭后仅 owner 会员生效 |\n| 家长端 | 会员中心「家庭会员共享」开关 |\n| 版本 | 家长端 0.33.0+25 |\n\n## 验证\n\n```text\ngo test -p 1 ./...（测试库/Redis）      全部通过\nflutter test                            51/51 通过\ngo run ./cmd/migrate up                 OK 00024\n未登录 GET /family/membership/sharing   401\n```\n\n测试覆盖开启共享后非 owner 看到会员、非 owner 不可修改、关闭后隐藏、重新开启恢复，以及共享关闭时非 owner 会员不提供付费专题权益。\n\nROADMAP 当前 **125 项 `[x]` / 32 项 `[ ]`**。\n\n## 状态\n\n- API 已在 `:18080` 运行\n- 自动循环：**未运行**\n- 新增：`docs/design/059-…`、`docs/plans/059-…`、`docs/acceptance/phase59.md`\n- 版本：家长端 `0.33.0`、TV `0.3.7`、管理端 `0.44.0`\n\n剩余可本地继续项：TV 端加入房间、篡改类型补齐、恢复出厂自动解绑、推荐/A/B/留存等。"
+        }
+      ],
+      "snapshot": {
+        "start": "f7fb9840fb85b96576b10473713b0af3420f6d65",
+        "end": "f7fb9840fb85b96576b10473713b0af3420f6d65",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 662,
+        "output": 440,
+        "reasoning": 28,
+        "cache": {
+          "read": 413440,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe1170a001URX3oxHPl2FEKM",
+      "time": {
+        "created": 1793885017866
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1abe6863c0012YjUU2wv79frfc",
+      "metadata": {
+        "displayText": "继续",
+        "comments": [],
+        "attachments": [],
+        "agent": "build",
+        "model": {
+          "modelID": "deepseek-v4.1-flash",
+          "providerID": "opencode-go"
+        }
+      },
+      "time": {
+        "created": 1793885374152
+      },
+      "text": "继续",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_1abe686de001lNgfcyQXsm4FZU",
+      "time": {
+        "created": 1793885374179,
+        "streamed": 1793885382121,
+        "completed": 1793885382179
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Continue. Remaining big local: TV 端加入房间, 篡改类型补齐, 恢复出厂自动解绑, 推荐/A/B/留存, coupon/invoice/etc.\n\nPick **060 篡改类型补齐**? We can implement clock_skew fully and maybe package_tampered with signature pinning. Let's evaluate package tampered feasibility more:\n- Compute APK signing certificate SHA-256 at build time via Gradle task and inject BuildConfig.EXPECTED_SIGNATURE.\n  - In build.gradle, after signing config, can use `signingConfig` storeFile; computing cert requires keytool, complex. Alternative: at runtime, get current signing cert SHA-256 and compare to a hardcoded value for release. But release fallback uses debug key, whose hash differs per machine. Could generate BuildConfig field from debug keystore? Android Gradle plugin doesn't expose readily.\n  - Could store expected signature in BuildConfig via gradle task using Java KeyStore API on signing config storeFile/password. Doable but time.\n- uninstall_attempt: can't intercept own uninstall; could report when `ACTION_PACKAGE_REMOVED` for own package? Not delivered. Device Owner can block. Not feasible.\nSo \"篡改类型补齐\" cannot be fully done. We can split to \"时钟漂移检测\" and leave package/uninstall blocked. But item remains partially.\n\n**恢复出厂自动解绑**: Could implement stale-device auto-unbind worker: after N days without heartbeat/capability, unbind. This addresses orphaned bindings from factory reset. Config `DEVICE_STALE_DAYS` default 30. Worker periodically unbinds active devices with last_seen older than N days. Need last_seen tracking: device_bind has last_seen_at? Check schema.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885377645,
+            "completed": 1793885382113
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_c998750c762341b9ac617d26",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"create table device_bind\" -A 22 migrations/00001_init.sql && grep -rn \"last_seen\\|last_used\" migrations internal/identity | head -20",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "218:create table device_bind (\n219-    id               uuid        primary key default gen_random_uuid(),\n220-    device_id        text        not null,\n221-    child_id         uuid        not null references child_profile (id) on delete cascade,\n222-    platform         text        not null,\n223-    status           text        not null default 'active',\n224-    token_hash       text        not null default '',\n225-    token_expires_at timestamptz,\n226-    bound_at         timestamptz not null default now(),\n227-    unbound_at       timestamptz,\n228-    constraint device_bind_platform_chk check (platform in ('tv', 'phone', 'pad', 'miniapp')),\n229-    constraint device_bind_status_chk check (status in ('active', 'unbound')),\n230-    constraint device_bind_unbound_chk check (\n231-        (status = 'active' and unbound_at is null)\n232-        or (status = 'unbound' and unbound_at is not null)\n233-    )\n234-);\n235-\n236-create unique index device_bind_active_device_idx on device_bind (device_id) where status = 'active';\n237-create index device_bind_child_idx on device_bind (child_id) where status = 'active';\n238-\n239--- ============================================================\n240--- 规则配置\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885381071,
+            "ran": 1793885382119,
+            "completed": 1793885382160
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "f7fb9840fb85b96576b10473713b0af3420f6d65",
+        "end": "f7fb9840fb85b96576b10473713b0af3420f6d65",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 622,
+        "output": 112,
+        "reasoning": 381,
+        "cache": {
+          "read": 413952,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe6a658001XFOhQ7k1p48qsm",
+      "time": {
+        "created": 1793885382237,
+        "streamed": 1793885401751,
+        "completed": 1793885401858
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "No last_seen. Add `last_seen_at` updated by device auth (every request) would be heavy. Update on heartbeat/capability/diagnostics. Migration add column default bound_at? `add column last_seen_at timestamptz not null default now()`. DeviceAuth middleware could update last_seen async on each request (throttle?) Simple: update on DeviceAuth each request? DB write per API request could be heavy but acceptable small. Better update on heartbeat/capability; heartbeat every ~? 30s. Factory reset orphan has no heartbeat. Stale check 30 days. Add `touchDevice` in identity repo called by DeviceAuth? Could be every request. We can add throttle in DB: `update ... where last_seen_at < now() - interval '5 minutes'`; but still query each request. Maybe call only in watch `Heartbeat`/`Capability` and `ActiveGrant`? Simpler update on DeviceAuth with conditional update per request; small app.\n\nThen worker: `UnbindStaleDevices(ctx, olderThan)` in identity service; worker calls daily (ReportInterval hourly). It will unbind devices with last_seen_at < now()-30d, token cleared. Existing watch service continues to see 401 after next request. Admin/family list no longer active. Add config `DEVICE_STALE_DAYS` default 30, 0 disables.\n\nThis is a complete \"恢复出厂/卸载后的自动解绑\" approximation: stale devices auto release after 30 days. Document not immediate. Could also call it \"长期离线设备自动解绑\". Mark roadmap item `[x] 恢复出厂/卸载后的自动解绑（30 天无活动）`? It's not immediate but solves orphan residue. Hmm.\n\nAlternatively **TV 端加入房间** is high-value but big. Maybe do \"推荐/A/B/留存\" too big.\n\n**优惠券** local backend: coupons for membership orders. Add coupon table/admin/parent apply. That's a feature with UI. But roadmap item grouped with refund callback/invoice/auto-renew; can split \"优惠券\". Could do but substantial.\n\n**发票** local: invoice request records; no external. **对账** local reports. These are product features.\n\n**推荐/留存分析** could be server analytics on existing data: admin dashboard retention cohort, recommendation strategy. Big but maybe simple retention chart. But product semantics.\n\nI think **060 恢复出厂/长期离线自动解绑** issmall and directly closes a listed item. Let's do it with clear naming:\n- migration `00025_device_last_seen.sql`: add last_seen_at default now for active/existing.\n- identity repo: `touchDevice(deviceID)` update where active and (last_seen_at < now()-5min) maybe. Called in DeviceAuth after successful parse, best-effort async? Handler can do synchronous update? DeviceAuth is middleware; add `go func` with context? Avoid goroutine DB writes leaking. Synchronous conditional update per request; use `context.WithTimeout(context.Background(),2s)`? Request context fine. Cost small.\n  Actually update every request could be 1 write per request (heartbeat every 30s, etc.). Conditional WHERE last_seen_at < now()-5min means most updates no-op but still round trip. Acceptable.\n- service `UnbindStaleDevices(ctx, days int) (int, error)` repo update active + last_seen < now()-days.\n- config `DeviceStaleDays int` default 30; validate >=0.\n- worker call on each run (`if cfg.DeviceStaleDays > 0`), log count.\n- API? No new endpoint. Admin list naturally reflects.\n- Docs env var.\n- Tests: identity integration or service test: create active device with last_seen 40 days ago, call UnbindStaleDevices(30), assert unbound and token invalid; recent device stays. Add to identity integration or a unit test with DB; use TestIdentityFlow setup would be long. Add new test function with setup; or extend existing TestIdentityFlow before unbind (set second device old, unbind stale, assert). But service method may be tested directly.\nSimpler add test in identity integration test after second device self-unbind? That token already unbound. Create third device, set last_seen old, call svc.UnbindStaleDevices(ctx,30), assert >0 and token 403. Need svc variable available in test (yes).\n- Worker config changes.\n- Version no TV change; admin no. Release v0.52.0 server only. Parent? no.\n\nThis is decent. Let's do 060.\n\nDocs design/plan.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885384520,
+            "completed": 1793885401743
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_e53a7e2b8c884c4883de802c",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/design/060-长期离线设备自动解绑设计.md <<'EOF'\n# 060 长期离线设备自动解绑设计\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 060 |\n| 版本 | v1 |\n| 状态 | approved |\n| 作者 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应计划 | [060-长期离线设备自动解绑实施计划](../plans/060-长期离线设备自动解绑实施计划.md) |\n| 前置 | 058 设备端自助解绑 |\n\n## 1. 背景\n\n恢复出厂或卸载后设备无法主动解绑，服务端 `device_bind` 会残留 active 记录。通过记录设备最近活跃时间，定期解绑长期无活动设备。\n\n## 2. 数据\n\n`device_bind.last_seen_at timestamptz not null default now()`。\n\n- 设备鉴权成功时刷新；\n- 条件更新：距上次记录超过 5 分钟才写，降低写放大；\n- 现有 active 绑定初始化为迁移时间。\n\n## 3. 自动解绑\n\n- 配置 `DEVICE_STALE_DAYS` 默认 30，0 表示关闭；\n- worker 每个报告周期执行一次；\n- 解绑 `status='active' and last_seen_at < now() - N days` 的设备；\n- 清空 token，置 unbound。\n\n## 4. 风险\n\n| 风险 | 对策 |\n| --- | --- |\n| 长期关机误解绑 | 默认 30 天，可配置/关闭 |\n| 写放大 | 5 分钟节流 |\n| 误伤 | 只处理 active，令牌立即失效可重新绑定 |\n\n## 5. 限制\n\n- 不是恢复出厂即时感知，而是最长 N 天后清理；\n- 不做设备指纹；\n- 解绑不撤销已签发授权。\n\n## 6. 后续\n\n- 管理端清理预览/手动触发；\n- 按设备类型配置；\n- 恢复出厂即时解绑方案。\n\n## 7. 变更记录\n\n| 日期 | 变更 | 原因 |\n| --- | --- | --- |\n| 2026-11-05 | 初稿并批准 | 清理残留绑定 |\nEOF\ncat > docs/plans/060-长期离线设备自动解绑实施计划.md <<'EOF'\n# 060-长期离线设备自动解绑实施计划\n\n| 项目 | 内容 |\n| --- | --- |\n| 编号 | 060 |\n| 状态 | approved |\n| 负责人 | AI |\n| 创建日期 | 2026-11-05 |\n| 对应设计 | [060-长期离线设备自动解绑设计](../design/060-长期离线设备自动解绑设计.md) |\n\n## 1. 任务\n\n| 序号 | 任务 | 产出 | 验收 | 状态 |\n| --- | --- | --- | --- | --- |\n| S1 | 迁移/字段 | last_seen_at | goose up | todo |\n| S2 | 活跃刷新 | DeviceAuth 节流更新 | 测试 | todo |\n| S3 | 自动解绑 | 服务 + worker | 测试 | todo |\n| S4 | 配置/文档 | DEVICE_STALE_DAYS | 启动校验 | todo |\n| T5 | 验收 | 测试/构建 | 记录 | todo |\n\n## 2. 验证\n\n- 设备请求后 last_seen_at 更新；\n- 超过阈值设备被解绑、令牌 403；\n- 近期设备不受影响；\n- 0 关闭自动解绑；\n- Go 测试、worker 编译通过。\n\n## 3. 回滚\n\n- 配置设 0，停止自动解绑；字段保留。\n\n## 4. 执行记录\n\n| 日期 | 内容 | 结果 |\n| --- | --- | --- |\n| 2026-11-05 | 设计与计划创建 | approved |\n\n## 5. 验收结论\n\n- 待验收\nEOF\ncat > migrations/00025_device_last_seen.sql <<'EOF'\n-- +goose Up\n\nalter table device_bind\n    add column last_seen_at timestamptz not null default now();\n\ncreate index device_bind_seen_idx\n    on device_bind (last_seen_at)\n    where status = 'active';\n\n-- +goose Down\n\ndrop index if exists device_bind_seen_idx;\nalter table device_bind drop column if exists last_seen_at;\nEOF\necho docs+migration created",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "docs+migration created\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885394541,
+            "ran": 1793885401749,
+            "completed": 1793885401785
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "f7fb9840fb85b96576b10473713b0af3420f6d65",
+        "end": "ee92e11a948f3f22f3465de9a306fed61961b162",
+        "files": [
+          "docs/design/060-长期离线设备自动解绑设计.md",
+          "docs/plans/060-长期离线设备自动解绑实施计划.md",
+          "migrations/00025_device_last_seen.sql"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1041,
+        "output": 1060,
+        "reasoning": 993,
+        "cache": {
+          "read": 414336,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe6f335001E1AdoIReFtuSNT",
+      "time": {
+        "created": 1793885401913,
+        "streamed": 1793885406566,
+        "completed": 1793885406609
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Config field. Inspect Config struct/load/validate.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885406129,
+            "completed": 1793885406562
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_976f5d5dedd04253bf03c474",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && sed -n '10,110p' internal/config/config.go",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "\n// Config 是服务运行所需的全部配置，来源为环境变量。\ntype Config struct {\n\tEnv             string\n\tVersion         string\n\tHTTPAddr        string\n\tDatabaseURL     string\n\tRedisURL        string\n\tLogLevel        string\n\tShutdownTimeout time.Duration\n\tDBMaxConns      int32\n\tReportInterval  time.Duration\n\n\tJWTSecret       string\n\tAccessTokenTTL  time.Duration\n\tRefreshTokenTTL time.Duration\n\tEncryptionKey   string\n\tPhoneHashKey    string\n\tOfflineLeaseKey string\n\tOTELEndpoint    string\n\tSMSMode         string\n\tSMSMockCode     string\n\n\tPaymentCallbackSecret string\n\n\tUploadDir   string\n\tUploadMaxMB int\n}\n\n// Load 读取环境变量并做最小校验。\nfunc Load() (Config, error) {\n\tcfg := Config{\n\t\tEnv:             getenv(\"APP_ENV\", \"dev\"),\n\t\tVersion:         getenv(\"APP_VERSION\", \"dev\"),\n\t\tHTTPAddr:        getenv(\"HTTP_ADDR\", \":8080\"),\n\t\tDatabaseURL:     os.Getenv(\"DATABASE_URL\"),\n\t\tRedisURL:        getenv(\"REDIS_URL\", \"redis://localhost:6379/0\"),\n\t\tLogLevel:        getenv(\"LOG_LEVEL\", \"info\"),\n\t\tShutdownTimeout: getDuration(\"SHUTDOWN_TIMEOUT\", 10*time.Second),\n\t\tDBMaxConns:      int32(getInt(\"DB_MAX_CONNS\", 10)),\n\t\tReportInterval:  getDuration(\"REPORT_INTERVAL\", time.Hour),\n\n\t\tJWTSecret:       os.Getenv(\"JWT_SECRET\"),\n\t\tAccessTokenTTL:  getDuration(\"ACCESS_TOKEN_TTL\", 15*time.Minute),\n\t\tRefreshTokenTTL: getDuration(\"REFRESH_TOKEN_TTL\", 720*time.Hour),\n\t\tEncryptionKey:   os.Getenv(\"DATA_ENCRYPTION_KEY\"),\n\t\tPhoneHashKey:    os.Getenv(\"PHONE_HASH_KEY\"),\n\t\tOfflineLeaseKey: os.Getenv(\"OFFLINE_LEASE_KEY\"),\n\t\tOTELEndpoint:    os.Getenv(\"OTEL_EXPORTER_OTLP_ENDPOINT\"),\n\t\tSMSMode:         getenv(\"SMS_MODE\", \"mock\"),\n\t\tSMSMockCode:     getenv(\"SMS_MOCK_CODE\", \"123456\"),\n\n\t\tPaymentCallbackSecret: os.Getenv(\"PAYMENT_CALLBACK_SECRET\"),\n\n\t\tUploadDir:   getenv(\"UPLOAD_DIR\", \"./data/uploads\"),\n\t\tUploadMaxMB: getInt(\"UPLOAD_MAX_MB\", 5),\n\t}\n\n\tif cfg.Env == \"dev\" {\n\t\tif cfg.JWTSecret == \"\" {\n\t\t\tcfg.JWTSecret = \"dev-insecure-jwt-secret-change-me-please\"\n\t\t}\n\t\tif cfg.PaymentCallbackSecret == \"\" {\n\t\t\tcfg.PaymentCallbackSecret = \"dev-payment-callback-secret\"\n\t\t}\n\t\tif cfg.EncryptionKey == \"\" {\n\t\t\tcfg.EncryptionKey = \"MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=\"\n\t\t}\n\t\tif cfg.PhoneHashKey == \"\" {\n\t\t\tcfg.PhoneHashKey = \"dev-phone-hash-key-change-me\"\n\t\t}\n\t\tif cfg.OfflineLeaseKey == \"\" {\n\t\t\tcfg.OfflineLeaseKey = \"YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXphYmNkZWY=\"\n\t\t}\n\t}\n\n\tif cfg.DatabaseURL == \"\" {\n\t\treturn Config{}, errors.New(\"DATABASE_URL is required\")\n\t}\n\tif cfg.DBMaxConns <= 0 {\n\t\treturn Config{}, fmt.Errorf(\"DB_MAX_CONNS must be positive, got %d\", cfg.DBMaxConns)\n\t}\n\tif cfg.ShutdownTimeout <= 0 {\n\t\treturn Config{}, fmt.Errorf(\"SHUTDOWN_TIMEOUT must be positive, got %s\", cfg.ShutdownTimeout)\n\t}\n\tif cfg.ReportInterval <= 0 {\n\t\treturn Config{}, fmt.Errorf(\"REPORT_INTERVAL must be positive, got %s\", cfg.ReportInterval)\n\t}\n\tif cfg.Env != \"dev\" {\n\t\tif len(cfg.JWTSecret) < 32 {\n\t\t\treturn Config{}, errors.New(\"JWT_SECRET must be at least 32 characters outside dev\")\n\t\t}\n\t\tif cfg.EncryptionKey == \"\" || cfg.PhoneHashKey == \"\" || cfg.OfflineLeaseKey == \"\" {\n\t\t\treturn Config{}, errors.New(\"DATA_ENCRYPTION_KEY, PHONE_HASH_KEY and OFFLINE_LEASE_KEY are required outside dev\")\n\t\t}\n\t\tif cfg.SMSMode == \"mock\" {\n\t\t\treturn Config{}, errors.New(\"SMS_MODE=mock is not allowed outside dev\")\n\t\t}\n\t}\n\tif cfg.AccessTokenTTL <= 0 || cfg.RefreshTokenTTL <= 0 {\n\t\treturn Config{}, errors.New(\"token TTLs must be positive\")\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885406252,
+            "ran": 1793885406565,
+            "completed": 1793885406584
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "ee92e11a948f3f22f3465de9a306fed61961b162",
+        "end": "ee92e11a948f3f22f3465de9a306fed61961b162",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2213,
+        "output": 84,
+        "reasoning": 12,
+        "cache": {
+          "read": 415232,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe705a8001wztYjI2VmNRlgv",
+      "time": {
+        "created": 1793885406637,
+        "streamed": 1793885420396,
+        "completed": 1793885423851
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Add `DeviceStaleDays int` getInt(\"DEVICE_STALE_DAYS\",30); validate >=0. Worker uses.\n\nIdentity repo:\n- touchDeviceLastSeen.\n- unbindStaleDevices.\nService:\n- TouchDevice, UnbindStaleDevices.\nDeviceAuth call touch. It has deviceID from principal. Do synchronous `_ = s.repo.touchDeviceLastSeen(ctx, principal.DeviceID)`? Should not fail auth. Use r.Context().\n- Conditional update where active and last_seen < now()-5min.\n\nWorker import identity? Currently has question/report. Need identity service requires cipher etc; too heavy. Instead put UnbindStaleDevices in a small function using pool directly in worker? Better add to identity service, but constructing identity service in worker needs cipher; possible config. However worker doesn't have cipher init. Simpler add `UnbindStaleDevices(ctx,pool,days)` in identity package as standalone repo function? `identity.UnbindStaleDevices(ctx, pool, days)` exported function using SQL. Or add method on Service but construct minimal? Let's add exported function:\n```\nfunc UnbindStaleDevices(ctx context.Context, pool *pgxpool.Pool, days int) (int64,error)\n```\nin identity/service.go or new cleanup.go. Worker calls identity.UnbindStaleDevices(ctx,pool,cfg.DeviceStaleDays). This is clean.\n\nRepo/service touch method for DeviceAuth.\n\nTests: integration as described. Need config test? maybe not.\n\nImplement.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885409609,
+            "completed": 1793885420392
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_401d325c53184751934836ef",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/config/config.go'); s=p.read_text()\ns=s.replace('''\tReportInterval  time.Duration\n''','''\tReportInterval  time.Duration\n\tDeviceStaleDays int\n''')\ns=s.replace('''\t\tReportInterval:  getDuration(\"REPORT_INTERVAL\", time.Hour),\n''','''\t\tReportInterval:  getDuration(\"REPORT_INTERVAL\", time.Hour),\n\t\tDeviceStaleDays: getInt(\"DEVICE_STALE_DAYS\", 30),\n''')\ns=s.replace('''\tif cfg.ReportInterval <= 0 {\n\t\treturn Config{}, fmt.Errorf(\"REPORT_INTERVAL must be positive, got %s\", cfg.ReportInterval)\n\t}''','''\tif cfg.ReportInterval <= 0 {\n\t\treturn Config{}, fmt.Errorf(\"REPORT_INTERVAL must be positive, got %s\", cfg.ReportInterval)\n\t}\n\tif cfg.DeviceStaleDays < 0 {\n\t\treturn Config{}, fmt.Errorf(\"DEVICE_STALE_DAYS must be >= 0, got %d\", cfg.DeviceStaleDays)\n\t}''')\np.write_text(s)\n\np=Path('internal/identity/repository.go'); s=p.read_text()\nanchor='''// unbindDeviceSelf 由设备自身调用，按 device_id 解除 active 绑定。'''\naddition='''// touchDeviceLastSeen 节流刷新设备最近活跃时间（5 分钟内不重复写）。\nfunc (r *repository) touchDeviceLastSeen(ctx context.Context, deviceID string) error {\n\t_, err := r.pool.Exec(ctx, `\n\t\tupdate device_bind set last_seen_at = now()\n\t\twhere device_id = $1 and status = 'active'\n\t\t  and last_seen_at < now() - interval '5 minutes'`, deviceID)\n\treturn err\n}\n\n// unbindDeviceSelf 由设备自身调用，按 device_id 解除 active 绑定。'''\nif anchor not in s: raise SystemExit('repo anchor missing')\ns=s.replace(anchor,addition)\np.write_text(s)\n\np=Path('internal/identity/service.go'); s=p.read_text()\ns=s.replace('''// UnbindSelf 由设备令牌主动解绑当前设备；重复调用幂等。''','''// TouchDevice 刷新设备最近活跃时间；失败不影响请求。\nfunc (s *Service) TouchDevice(ctx context.Context, deviceID string) {\n\t_ = s.repo.touchDeviceLastSeen(ctx, deviceID)\n}\n\n// UnbindStaleDevices 解绑超过 days 天无活动的 active 设备，返回解绑数量。\nfunc UnbindStaleDevices(ctx context.Context, pool *pgxpool.Pool, days int) (int64, error) {\n\tif days <= 0 {\n\t\treturn 0, nil\n\t}\n\ttag, err := pool.Exec(ctx, `\n\t\tupdate device_bind\n\t\tset status = 'unbound', unbound_at = now(), token_hash = '', token_expires_at = null\n\t\twhere status = 'active'\n\t\t  and last_seen_at < now() - ($1 * interval '1 day')`, days)\n\tif err != nil {\n\t\treturn 0, err\n\t}\n\treturn tag.RowsAffected(), nil\n}\n\n// UnbindSelf 由设备令牌主动解绑当前设备；重复调用幂等。''')\np.write_text(s)\n\np=Path('internal/identity/handlers.go'); s=p.read_text()\ns=s.replace('''\t\tprincipal, err := s.repo.deviceByToken(r.Context(), hashToken(token))\n\t\tif err != nil {\n\t\t\twriteError(w, r, newError(\"AUTH_DEVICE_UNBOUND\", http.StatusForbidden, \"设备未绑定或令牌已失效\"))\n\t\t\treturn\n\t\t}\n\t\tnext.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), deviceKey, principal)))''','''\t\tprincipal, err := s.repo.deviceByToken(r.Context(), hashToken(token))\n\t\tif err != nil {\n\t\t\twriteError(w, r, newError(\"AUTH_DEVICE_UNBOUND\", http.StatusForbidden, \"设备未绑定或令牌已失效\"))\n\t\t\treturn\n\t\t}\n\t\ts.TouchDevice(r.Context(), principal.DeviceID)\n\t\tnext.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), deviceKey, principal)))''')\np.write_text(s)\n\np=Path('cmd/worker/main.go'); s=p.read_text()\ns=s.replace('''\t\"github.com/roma007/OpenQuizGo/internal/config\"''','''\t\"github.com/roma007/OpenQuizGo/internal/config\"\n\t\"github.com/roma007/OpenQuizGo/internal/identity\"''')\ns=s.replace('''\t\tif snap, err := questionSvc.CaptureCoverageSnapshot(ctx); err != nil {\n\t\t\tlogger.Error(\"capture coverage snapshot\", \"error\", err)\n\t\t} else {\n\t\t\tlogger.Info(\"coverage snapshot captured\", \"date\", snap.CapturedOn, \"total\", snap.Total)\n\t\t}''','''\t\tif snap, err := questionSvc.CaptureCoverageSnapshot(ctx); err != nil {\n\t\t\tlogger.Error(\"capture coverage snapshot\", \"error\", err)\n\t\t} else {\n\t\t\tlogger.Info(\"coverage snapshot captured\", \"date\", snap.CapturedOn, \"total\", snap.Total)\n\t\t}\n\t\tif cfg.DeviceStaleDays > 0 {\n\t\t\tcount, err := identity.UnbindStaleDevices(ctx, pool, cfg.DeviceStaleDays)\n\t\t\tif err != nil {\n\t\t\t\tlogger.Error(\"unbind stale devices\", \"error\", err)\n\t\t\t} else if count > 0 {\n\t\t\t\tlogger.Info(\"stale devices unbound\", \"count\", count, \"days\", cfg.DeviceStaleDays)\n\t\t\t}\n\t\t}''')\np.write_text(s)\nprint('config/identity/worker updated')\nPY\ngofmt -w internal/config internal/identity cmd/worker && go build ./... 2>&1 | head",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "config/identity/worker updated\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885412091,
+            "ran": 1793885420395,
+            "completed": 1793885423783
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "ee92e11a948f3f22f3465de9a306fed61961b162",
+        "end": "63957e95493e20f79049344a333e6fc36c63c961",
+        "files": [
+          "cmd/worker/main.go",
+          "internal/config/config.go",
+          "internal/identity/handlers.go",
+          "internal/identity/repository.go",
+          "internal/identity/service.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1396,
+        "output": 1387,
+        "reasoning": 326,
+        "cache": {
+          "read": 417280,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe74927001ajzKbQ2g602yyn",
+      "time": {
+        "created": 1793885423918,
+        "streamed": 1793885431309,
+        "completed": 1793885434177
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Test. Add to identity integration after second self-unbind:\n- Create third device, set last_seen_at now()-40 days, call identity.UnbindStaleDevices(ctx,pool,30) count>=1, then token3 GET 403. But calling unbind stale will also unbind first device if its last_seen_at old? First device was used just now via GET /device/me; DeviceAuth TouchDevice conditional update: last_seen_at default now from migration or bound_at; it won't update because last_seen < now-5min false. Still recent. Good.\n- But TestIdentityFlow later admin unbind first device expects devices list 1 active; third unbound, second unbound, first active. Fine.\n- `identity.UnbindStaleDevices` is exported.\nNeed token3 creation. Add after second self-unbind before devices list. Set last_seen of device3 old. Then call count and assert token 403.\n\nPotential: first device's last_seen_at is migration time now (when test built), recent. Fine.\n\nImplement.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885425882,
+            "completed": 1793885431302
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_a985fcc98bb1425bab72392a",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('internal/identity/integration_test.go'); s=p.read_text()\nanchor='''\tvar devices []identity.Device\n\tc.expect(http.MethodGet, \"/family/devices\", nil, login.AccessToken, http.StatusOK, &devices)'''\naddition='''\t// 长期离线设备自动解绑。\n\tdeviceID3 := fmt.Sprintf(\"tv-stale-%d\", time.Now().UnixNano())\n\tvar code3 identity.ActivationCode\n\tc.expect(http.MethodPost, \"/device/activate/code\",\n\t\tmap[string]string{\"device_id\": deviceID3, \"platform\": \"tv\"}, \"\", http.StatusOK, &code3)\n\tc.expect(http.MethodPost, \"/family/devices/activate\",\n\t\tmap[string]string{\"code\": code3.Code, \"child_id\": child.ID}, login.AccessToken, http.StatusOK, nil)\n\tvar token3 identity.DeviceToken\n\tc.expect(http.MethodPost, \"/device/token\",\n\t\tmap[string]string{\"code\": code3.Code, \"device_id\": deviceID3}, \"\", http.StatusOK, &token3)\n\tif _, err := pool.Exec(ctx,\n\t\t`update device_bind set last_seen_at = now() - interval '40 days'\n\t\t where device_id = $1 and status = 'active'`, deviceID3); err != nil {\n\t\tt.Fatalf(\"age device: %v\", err)\n\t}\n\tunbound, err := identity.UnbindStaleDevices(ctx, pool, 30)\n\tif err != nil {\n\t\tt.Fatalf(\"unbind stale: %v\", err)\n\t}\n\tif unbound < 1 {\n\t\tt.Fatalf(\"unbound stale = %d, want >= 1\", unbound)\n\t}\n\tc.expect(http.MethodGet, \"/device/me\", nil, token3.Token, http.StatusForbidden, nil)\n\n\tvar devices []identity.Device\n\tc.expect(http.MethodGet, \"/family/devices\", nil, login.AccessToken, http.StatusOK, &devices)'''\nif anchor not in s: raise SystemExit('identity test anchor missing')\ns=s.replace(anchor,addition)\np.write_text(s)\nprint('test added')\nPY\ngofmt -w internal/identity && TEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\" TEST_REDIS_URL=\"redis://127.0.0.1:6379/0\" go test ./internal/identity -count=1 2>&1 | tail -5",
+              "timeout": 600000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "test added\nok  \tgithub.com/roma007/OpenQuizGo/internal/identity\t1.691s\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885428432,
+            "ran": 1793885431306,
+            "completed": 1793885434116
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "63957e95493e20f79049344a333e6fc36c63c961",
+        "end": "33277e8cf84d1c83cbac68d1cd1fd318e48a9081",
+        "files": [
+          "internal/identity/integration_test.go"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1975,
+        "output": 627,
+        "reasoning": 224,
+        "cache": {
+          "read": 418432,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe77171001qZu9Bih63EjZ5g",
+      "time": {
+        "created": 1793885434230,
+        "streamed": 1793885439402,
+        "completed": 1793885462276
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Run full Go tests, migration dev, config test maybe. Then docs/version/release v0.52.0 (no client versions). Update deployment docs env var. Data model? device_bind field mention maybe.\n\nRun full tests + migration.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885436865,
+            "completed": 1793885439399
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_de95bb65ac444002b3a7c281",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && gofmt -l internal cmd && go build ./... && TEST_DATABASE_URL=\"postgres://localhost:5432/openquizgo_test?sslmode=disable\" TEST_REDIS_URL=\"redis://127.0.0.1:6379/0\" go test -p 1 ./... -count=1 2>&1 | tail -8 && set -a && source .env && set +a && go run ./cmd/migrate up 2>&1 | tail -2",
+              "timeout": 1800000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "?   \tgithub.com/roma007/OpenQuizGo/internal/platform/tracing\t[no test files]\nok  \tgithub.com/roma007/OpenQuizGo/internal/question\t0.759s\nok  \tgithub.com/roma007/OpenQuizGo/internal/quiz\t1.096s\nok  \tgithub.com/roma007/OpenQuizGo/internal/report\t0.631s\nok  \tgithub.com/roma007/OpenQuizGo/internal/rule\t0.945s\nok  \tgithub.com/roma007/OpenQuizGo/internal/topic\t0.561s\nok  \tgithub.com/roma007/OpenQuizGo/internal/watch\t1.296s\n?   \tgithub.com/roma007/OpenQuizGo/migrations\t[no test files]\n2026/11/05 21:31:02 OK   00025_device_last_seen.sql (18.64ms)\n2026/11/05 21:31:02 goose: successfully migrated database to version: 25\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885438295,
+            "ran": 1793885439401,
+            "completed": 1793885462249
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "33277e8cf84d1c83cbac68d1cd1fd318e48a9081",
+        "end": "33277e8cf84d1c83cbac68d1cd1fd318e48a9081",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1069,
+        "output": 178,
+        "reasoning": 51,
+        "cache": {
+          "read": 420224,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe7df37001h3umAU4KE0DJqd",
+      "time": {
+        "created": 1793885462331,
+        "streamed": 1793885475752,
+        "completed": 1793885475997
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Docs 060 acceptance, deployment env, README, ROADMAP: `[ ] 恢复出厂/卸载后的自动解绑` → [x] 长期离线自动解绑. Delivery 060, release v0.52.0.\n\nWorker needs restart to pick new code; API also needs restart for touch last_seen. Rebuild/restart API. Worker not running currently probably; no need start.\n\nDocs.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885467365,
+            "completed": 1793885475747
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_3cea3a8c29814ead94b53eee",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && cat > docs/acceptance/phase60.md <<'EOF'\n# 060 长期离线设备自动解绑验收报告\n\n| 项目 | 内容 |\n| --- | --- |\n| 版本 | v0.52.0 |\n| 日期 | 2026-11-05 |\n| 范围 | 060：last_seen 跟踪与长期离线设备自动解绑 |\n| 设计/计划 | [设计](../design/060-长期离线设备自动解绑设计.md) / [计划](plans/060-长期离线设备自动解绑实施计划.md) |\n\n## 1. 结论\n\n**通过（服务端测试）。** `device_bind` 增加 `last_seen_at`，设备鉴权成功时节流刷新；worker 按 `DEVICE_STALE_DAYS`（默认 30，0 关闭）自动解绑长期无活动设备，清理恢复出厂/卸载后的残留绑定。\n\n## 2. 交付\n\n- 迁移 `00025_device_last_seen.sql`（已应用到开发库，版本 25）；\n- DeviceAuth 成功后刷新 `last_seen_at`（5 分钟节流）；\n- `identity.UnbindStaleDevices`：解绑超过阈值的 active 设备并清空 token；\n- 配置 `DEVICE_STALE_DAYS`，默认 30，0 关闭；\n- worker 每个报告周期执行一次并记录数量。\n\n## 3. 验证\n\n```text\ngo test -p 1 ./...（测试库/Redis）      全部通过\ngo run ./cmd/migrate up                 OK 00025\ngo build ./...                          通过\n```\n\nidentity 集成测试覆盖：40 天无活动设备被解绑、原令牌立即失效（403）、近期设备保持 active。\n\n## 4. 限制\n\n- 不是恢复出厂即时感知，最长 30 天后清理；\n- 不做设备指纹；\n- 解绑不撤销已签发授权；\n- 未提供管理端手动清理预览。\n\n## 5. 后续\n\n- 管理端清理预览/手动触发；\n- 按设备类型配置阈值；\n- 恢复出厂即时解绑方案。\nEOF\npython3 - <<'PY'\nfrom pathlib import Path\np=Path('docs/plans/060-长期离线设备自动解绑实施计划.md'); s=p.read_text()\ns=s.replace('| 状态 | approved |','| 状态 | done |').replace('| todo |','| done |')\ns=s.replace('| 2026-11-05 | 设计与计划创建 | approved |','| 2026-11-05 | 设计与计划创建 | approved |\\n| 2026-11-05 | S1–T5 完成 | 测试/迁移/构建通过 |')\ns=s.replace('- 待验收','- **通过（服务端测试）**，详见 [验收报告](../acceptance/phase60.md)。')\np.write_text(s)\np=Path('docs/design/060-长期离线设备自动解绑设计.md'); s=p.read_text().replace('| 状态 | approved |','| 状态 | done |'); p.write_text(s)\n# docs README\np=Path('docs/README.md'); s=p.read_text()\nanchor='| 059 | 家庭会员共享策略 | [设计](design/059-家庭会员共享策略设计.md) | [计划](plans/059-家庭会员共享策略实施计划.md) | done（v0.51.0，家长端 0.33.0） |'\nif anchor not in s: raise SystemExit('README anchor missing')\ns=s.replace(anchor, anchor+'\\n| 060 | 长期离线设备自动解绑 | [设计](design/060-长期离线设备自动解绑设计.md) | [计划](plans/060-长期离线设备自动解绑实施计划.md) | done（v0.52.0） |')\np.write_text(s)\n# root README\np=Path('README.md'); s=p.read_text()\nanchor='- ✅ 059 家庭会员共享策略（v0.51.0，家长端 0.33.0）'\ns=s.replace(anchor, anchor+'\\n- ✅ 060 长期离线设备自动解绑（v0.52.0）')\np.write_text(s)\n# deployment env\np=Path('docs/deployment.md'); s=p.read_text()\nif 'DEVICE_STALE_DAYS' not in s:\n    s=s.replace('```bash\\n# 必填\\n', '```bash\\n# 设备长期无活动自动解绑（天，0 关闭；默认 30）\\nDEVICE_STALE_DAYS=30\\n\\n# 必填\\n')\n    p.write_text(s)\n# ROADMAP\np=Path('docs/ROADMAP.md'); s=p.read_text()\ns=s.replace('- [ ] 恢复出厂/卸载后的自动解绑','- [x] 长期离线设备自动解绑（v0.52.0）')\ns=s.replace('''- [x] 059 家庭会员共享策略（v0.51.0）''','''- [x] 059 家庭会员共享策略（v0.51.0）\n- [x] 060 长期离线设备自动解绑（v0.52.0）''')\ns=s.replace('''| 2026-11-05 | 059 | 家庭会员共享开关与权益计算 |''','''| 2026-11-05 | 059 | 家庭会员共享开关与权益计算 |\n| 2026-11-05 | 060 | last_seen 跟踪与长期离线设备自动解绑 |''')\ns=s.replace('> 最后更新：2026-11-05（041–059 已完成）','> 最后更新：2026-11-05（041–060 已完成）')\ns=s.replace('### 041–059','### 041–060')\np.write_text(s)\nprint('060 docs updated')\nPY\ngrep -c '^- \\[x\\]' docs/ROADMAP.md; grep -c '^- \\[ \\]' docs/ROADMAP.md",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "060 docs updated\n127\n31\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885468312,
+            "ran": 1793885475751,
+            "completed": 1793885475858
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "33277e8cf84d1c83cbac68d1cd1fd318e48a9081",
+        "end": "3d0fe86b8231c21dba1b661af2bc27b7b9d447a0",
+        "files": [
+          "README.md",
+          "docs/README.md",
+          "docs/ROADMAP.md",
+          "docs/acceptance/phase60.md",
+          "docs/design/060-长期离线设备自动解绑设计.md",
+          "docs/plans/060-长期离线设备自动解绑实施计划.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 629,
+        "output": 1403,
+        "reasoning": 88,
+        "cache": {
+          "read": 421120,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe814c2001mYnWBDovmprhZg",
+      "time": {
+        "created": 1793885476038,
+        "streamed": 1793885481328,
+        "completed": 1793885481481
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Check acceptance link path typo: `[计划](plans/060...` missing ../. In phase60 design/plan row: `[设计](../design/...) / [计划](plans/...)` should be `../plans/`. Fix. Also deployment insertion anchor may not match; verify.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885479447,
+            "completed": 1793885481323
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_bdf003bdbdae46fbb52c41f8",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && python3 - <<'PY'\nfrom pathlib import Path\np=Path('docs/acceptance/phase60.md'); s=p.read_text().replace('[计划](plans/060-长期离线设备自动解绑实施计划.md)','[计划](../plans/060-长期离线设备自动解绑实施计划.md)'); p.write_text(s)\nPY\ngrep -n \"DEVICE_STALE_DAYS\" docs/deployment.md | head; git status --short | head -20",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": " M README.md\n M cmd/worker/main.go\n M docs/README.md\n M docs/ROADMAP.md\n M internal/config/config.go\n M internal/identity/handlers.go\n M internal/identity/integration_test.go\n M internal/identity/repository.go\n M internal/identity/service.go\n?? docs/acceptance/phase60.md\n?? \"docs/design/060-\\351\\225\\277\\346\\234\\237\\347\\246\\273\\347\\272\\277\\350\\256\\276\\345\\244\\207\\350\\207\\252\\345\\212\\250\\350\\247\\243\\347\\273\\221\\350\\256\\276\\350\\256\\241.md\"\n?? \"docs/plans/060-\\351\\225\\277\\346\\234\\237\\347\\246\\273\\347\\272\\277\\350\\256\\276\\345\\244\\207\\350\\207\\252\\345\\212\\250\\350\\247\\243\\347\\273\\221\\345\\256\\236\\346\\226\\275\\350\\256\\241\\345\\210\\222.md\"\n?? migrations/00025_device_last_seen.sql\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885480472,
+            "ran": 1793885481326,
+            "completed": 1793885481428
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "3d0fe86b8231c21dba1b661af2bc27b7b9d447a0",
+        "end": "c2ea7961037142be52b5f752547128bdc7d4bd22",
+        "files": [
+          "docs/acceptance/phase60.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1755,
+        "output": 176,
+        "reasoning": 64,
+        "cache": {
+          "read": 421504,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe82a290011AkwHP28zLdfms",
+      "time": {
+        "created": 1793885481519,
+        "streamed": 1793885484787,
+        "completed": 1793885484893
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "DEVICE_STALE_DAYS not in deployment; insertion anchor didn't match. Need add properly. Find env section.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885483974,
+            "completed": 1793885484783
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_2b1b0194a2674d1d80a228a3",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && grep -n \"环境变量\\|REPORT_INTERVAL\\|DATABASE_URL\" docs/deployment.md | head -12 && sed -n '20,55p' docs/deployment.md",
+              "timeout": 60000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "17:## 2. 环境变量\n24:| `DATABASE_URL` | **是** | — | PostgreSQL DSN |\n40:| `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |\n49:# 修改 DATABASE_URL / REDIS_URL\n139:pg_dump --format=custom --file=/backup/openquizgo-$(date +%F).dump \"$DATABASE_URL\"\n142:pg_restore --clean --if-exists --dbname=\"$DATABASE_URL\" /backup/openquizgo-YYYY-MM-DD.dump\n| --- | --- | --- | --- |\n| `APP_ENV` | 否 | `dev` | `dev` 输出文本日志；其他输出 JSON |\n| `APP_VERSION` | 否 | `dev` | 透传到 `/v1/meta` |\n| `HTTP_ADDR` | 否 | `:8080` | 监听地址 |\n| `DATABASE_URL` | **是** | — | PostgreSQL DSN |\n| `REDIS_URL` | 否 | `redis://localhost:6379/0` | Redis DSN |\n| `DB_MAX_CONNS` | 否 | `10` | 连接池上限 |\n| `LOG_LEVEL` | 否 | `info` | debug/info/warn/error |\n| `SHUTDOWN_TIMEOUT` | 否 | `10s` | 优雅退出 |\n| `JWT_SECRET` | 生产必填 | dev 默认 | 家长/管理端/授权令牌签名，≥32 字符 |\n| `ACCESS_TOKEN_TTL` | 否 | `15m` | 家长访问令牌 |\n| `REFRESH_TOKEN_TTL` | 否 | `720h` | 刷新令牌 |\n| `DATA_ENCRYPTION_KEY` | 生产必填 | dev 默认 | 手机号 AES-256-GCM 密钥（base64 32 字节） |\n| `PHONE_HASH_KEY` | 生产必填 | dev 默认 | 手机号 HMAC 密钥 |\n| `OFFLINE_LEASE_KEY` | 生产必填 | dev 默认 | 离线租约 Ed25519 种子（base64 32 字节） |\n| `SMS_MODE` | 否 | `mock` | 生产禁止 `mock`，需接入真实短信通道后设为 `disabled` 或扩展实现 |\n| `PAYMENT_CALLBACK_SECRET` | 是 | dev 默认 | 支付回调 HMAC 密钥；生产必须显式配置，留空则禁用回调 |\n| `UPLOAD_DIR` | 否 | `./data/uploads` | 题目图片本地存储目录 |\n| `UPLOAD_MAX_MB` | 否 | `5` | 单张题目图片大小上限（MB） |\n| `SMS_MOCK_CODE` | 否 | `123456` | 仅 dev |\n| `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |\n| `OTEL_EXPORTER_OTLP_ENDPOINT` | 否 | 空 | OTLP/HTTP 追踪端点，留空关闭 |\n\n> 生产启动会校验非 dev 环境的密钥与 `SMS_MODE`，缺失或仍为 mock 将拒绝启动。\n\n## 3. 本地运行\n\n```bash\ncp .env.example .env\n# 修改 DATABASE_URL / REDIS_URL\ncreatedb openquizgo\nmake migrate-up\nmake run\n```\n\n初始化管理员：\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885484253,
+            "ran": 1793885484785,
+            "completed": 1793885484861
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "c2ea7961037142be52b5f752547128bdc7d4bd22",
+        "end": "c2ea7961037142be52b5f752547128bdc7d4bd22",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 732,
+        "output": 110,
+        "reasoning": 25,
+        "cache": {
+          "read": 423040,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe83775001ArAeCKI1hh7hVk",
+      "time": {
+        "created": 1793885484922,
+        "streamed": 1793885489000,
+        "completed": 1793885489084
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Add row after REPORT_INTERVAL.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885487096,
+            "completed": 1793885488995
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_b1d4950c69e34f5bb75d11cb",
+          "name": "edit",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/mengfeng/我的文档/源码/OpenQuizGo/docs/deployment.md",
+              "oldString": "| `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |",
+              "newString": "| `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |\n| `DEVICE_STALE_DAYS` | 否 | `30` | 设备多少天无活动后自动解绑；`0` 关闭 |"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Edited docs/deployment.md (1 replacement)"
+              }
+            ],
+            "metadata": {
+              "files": [
+                {
+                  "file": "docs/deployment.md",
+                  "patch": "Index: docs/deployment.md\n===================================================================\n--- docs/deployment.md\n+++ docs/deployment.md\n@@ -37,8 +37,9 @@\n | `UPLOAD_DIR` | 否 | `./data/uploads` | 题目图片本地存储目录 |\n | `UPLOAD_MAX_MB` | 否 | `5` | 单张题目图片大小上限（MB） |\n | `SMS_MOCK_CODE` | 否 | `123456` | 仅 dev |\n | `REPORT_INTERVAL` | 否 | `1h` | worker 聚合间隔 |\n+| `DEVICE_STALE_DAYS` | 否 | `30` | 设备多少天无活动后自动解绑；`0` 关闭 |\n | `OTEL_EXPORTER_OTLP_ENDPOINT` | 否 | 空 | OTLP/HTTP 追踪端点，留空关闭 |\n \n > 生产启动会校验非 dev 环境的密钥与 `SMS_MODE`，缺失或仍为 mock 将拒绝启动。\n \n",
+                  "status": "modified",
+                  "additions": 1,
+                  "deletions": 0
+                }
+              ],
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1793885487103,
+            "ran": 1793885488999,
+            "completed": 1793885489015
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "c2ea7961037142be52b5f752547128bdc7d4bd22",
+        "end": "64701d52d3c4883e65c59b8a0ca84257a6b96681",
+        "files": [
+          "docs/deployment.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1136,
+        "output": 166,
+        "reasoning": 8,
+        "cache": {
+          "read": 423552,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe847e6001xj3WSrS180ae5H",
+      "time": {
+        "created": 1793885489131,
+        "streamed": 1793885492647,
+        "completed": 1793885497286
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Rebuild/restart API with last_seen touch. Then commit/tag/push v0.52.0. Worker not running but code builds.\n\nRebuild API restart.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885491529,
+            "completed": 1793885492645
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_dbe6c5018d964850908bcf05",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && go build -o bin/api ./cmd/api && PID=$(lsof -nP -iTCP:18080 -sTCP:LISTEN -t | head -1); [ -n \"$PID\" ] && kill $PID; sleep 1; echo built",
+              "timeout": 300000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "built\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1793885491953,
+            "ran": 1793885492647,
+            "completed": 1793885497254
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "64701d52d3c4883e65c59b8a0ca84257a6b96681",
+        "end": "64701d52d3c4883e65c59b8a0ca84257a6b96681",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 433,
+        "output": 125,
+        "reasoning": 37,
+        "cache": {
+          "read": 424448,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1abe032c8003jL1BKZsjjSgB1N",
+      "metadata": {
+        "source": "shell",
+        "shellID": "sh_1abe032c6001TTTUAV7DD4GD0t",
+        "jobID": "sh_1abe032c6001TTTUAV7DD4GD0t",
+        "state": "completed",
+        "truncated": false,
+        "exit": 0
+      },
+      "time": {
+        "created": 1793885497290
+      },
+      "text": "<shell id=\"sh_1abe032c6001TTTUAV7DD4GD0t\" state=\"completed\" command=\"cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api\">\ntime=2026-11-05T21:22:40.121+08:00 level=INFO msg=\"http server starting\" addr=:18080 env=dev version=dev\ntime=2026-11-05T21:23:01.350+08:00 level=INFO msg=\"http request\" request_id=a5ef6d3772dffb1b2af9035e method=GET path=/v1/family/membership/sharing status=401 bytes=107 duration_ms=4 remote_ip=127.0.0.1:60806\ntime=2026-11-05T21:31:36.252+08:00 level=INFO msg=\"shutting down\"\ntime=2026-11-05T21:31:36.258+08:00 level=INFO msg=bye\n\n</shell>",
+      "description": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api",
+      "type": "synthetic"
+    },
+    {
+      "id": "msg_1abe867f70010Sz2gAMZA0sfAq",
+      "time": {
+        "created": 1793885497340,
+        "streamed": 1793885501079,
+        "completed": 1793885501110
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash",
+        "providerID": "opencode-go",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Restart.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1793885500465,
+            "completed": 1793885501074
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_0817e6b8bbcb46ad8e7b2c24",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "background": true,
+              "command": "cd /Users/mengfeng/我的文档/源码/OpenQuizGo && set -a && source .env && set +a && DB_MAX_CONNS=2 HTTP_ADDR=:18080 ./bin/api"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Command moved to the background (shell ID: sh_1abe8769b001N5mQUJOu4TwLej).\nOutput is streaming to: /Users/mengfeng/.local/share/opencode/shell/785918a96bb643b073682956c406cb83da15bee7/sh_1abe8769b001N5mQUJOu4TwLej.out"
+              },
+              {
+                "type": "text",
+                "text": "You will be notified automatically when the command finishes. The notification will include the command's output. Unless the user explicitly asks otherwise, DO NOT poll for completion, even if you need the final result to continue. Repeatedly sleeping and reading or searching the output file is polling, not useful work. You may read the current output if it lets you do useful work now, but do not repeatedly check it while waiting for the command to finish. Keep working on anything that does not depend on the result. If you have nothing else to do, end your response; you will be resumed automatically when the command finishes."
+              }
+            ],
+            "metadata": {
+              "status": "running",
+              "truncated": false,
+              "shellID": "sh_1abe8769b001N5mQUJOu4TwLej"
+            }
+          },
+          "time": {
+            "created": 1793885500681,
+            "ran": 1793885501078,
+            "completed": 1793885501086
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "64701d52d3c4883e65c59b8a0ca84257a6b96681",
+        "end": "64701d52d3c4883e65c59b8a0ca84257a6b96681",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 610,
+        "output": 97,
+        "reasoning": 3,
+        "cache": {
+          "read": 424704,
           "write": 0
         }
       }
