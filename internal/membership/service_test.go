@@ -409,6 +409,86 @@ func TestFamilyMembershipSharing(t *testing.T) {
 	}
 }
 
+func TestCouponWorkflow(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'coupon-test')
+		returning id`).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	svc := New(pool, "")
+	plan, err := svc.CreatePlan(ctx, PlanInput{
+		Code: "coupon-plan", Name: "优惠券套餐", DurationDays: 30, PriceCents: 1000,
+		Status: "online", EntitlementCodes: []string{"topic_pack"},
+	})
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	coupon, err := svc.CreateCoupon(ctx, CouponInput{
+		Code: "save100", Name: "立减 1 元", AmountCents: 100,
+		MinAmountCents: 500, MaxUses: 2, Status: "active",
+	})
+	if err != nil {
+		t.Fatalf("coupon: %v", err)
+	}
+	if coupon.Code != "SAVE100" {
+		t.Fatalf("coupon code = %s", coupon.Code)
+	}
+
+	quote, err := svc.ValidateCoupon(ctx, "save100", plan.ID)
+	if err != nil || quote.DiscountCents != 100 || quote.PayableCents != 900 {
+		t.Fatalf("quote = %+v err=%v", quote, err)
+	}
+
+	order, err := svc.CreateOrderWithCoupon(ctx, accountID, plan.ID, "save100")
+	if err != nil {
+		t.Fatalf("order: %v", err)
+	}
+	if order.AmountCents != 900 || order.OriginalAmountCents != 1000 ||
+		order.DiscountCents != 100 || order.CouponCode != "SAVE100" {
+		t.Fatalf("unexpected order: %+v", order)
+	}
+	var used int
+	if err := pool.QueryRow(ctx,
+		`select used_count from membership_coupon where id = $1`, coupon.ID).Scan(&used); err != nil {
+		t.Fatalf("used: %v", err)
+	}
+	if used != 1 {
+		t.Fatalf("used = %d, want 1", used)
+	}
+
+	if _, err := svc.CreateOrderWithCoupon(ctx, accountID, plan.ID, "bad-code"); err == nil {
+		t.Fatal("expected invalid coupon error")
+	}
+
+	if _, err := svc.PayOrder(ctx, accountID, order.ID); err != nil {
+		t.Fatalf("pay: %v", err)
+	}
+	if _, err := svc.RefundOrder(ctx, order.ID, "测试退款", ""); err != nil {
+		t.Fatalf("refund: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`select used_count from membership_coupon where id = $1`, coupon.ID).Scan(&used); err != nil {
+		t.Fatalf("used after refund: %v", err)
+	}
+	if used != 0 {
+		t.Fatalf("used after refund = %d, want 0", used)
+	}
+}
+
 func prepareDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)

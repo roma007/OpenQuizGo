@@ -53,38 +53,57 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
 
   Future<void> _buy(MembershipPlan plan) async {
     final active = _center?.membership?.active == true;
-    final confirmed = await showDialog<bool>(
+    final coupon = TextEditingController();
+    final confirmed = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('模拟支付'),
-        content: Text(
-          '这是模拟支付，不会产生真实扣款。\n\n'
-          '确认支付 ${formatYuan(plan.priceCents)} ${active ? '续费' : '开通'}'
-          '「${plan.name}」（${plan.durationDays} 天）？',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '这是模拟支付，不会产生真实扣款。\n\n'
+              '确认支付 ${formatYuan(plan.priceCents)} ${active ? '续费' : '开通'}'
+              '「${plan.name}」（${plan.durationDays} 天）？',
+            ),
+            TextField(
+              controller: coupon,
+              decoration: const InputDecoration(
+                labelText: '优惠码（可选）',
+                hintText: '如 SAVE100',
+              ),
+              textCapitalization: TextCapitalization.characters,
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(context).pop(),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(context).pop(coupon.text.trim()),
             child: const Text('确认支付'),
           ),
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
+    final code = confirmed;
+    coupon.dispose();
+    if (code == null || !mounted) return;
     setState(() => _payingPlanId = plan.id);
     try {
       final order = await ref
           .read(membershipRepositoryProvider)
-          .createOrder(plan.id);
+          .createOrder(plan.id, couponCode: code);
       final result = await ref
           .read(membershipRepositoryProvider)
           .payOrder(order.id);
       await _load();
-      _toast('开通成功，有效期至 ${formatDate(result.membership.expiresAt)}');
+      final saved = order.discountCents > 0
+          ? '，已优惠 ${formatYuan(order.discountCents)}'
+          : '';
+      _toast('开通成功$saved，有效期至 ${formatDate(result.membership.expiresAt)}');
     } on ApiException catch (error) {
       _toast(error.message);
     } finally {

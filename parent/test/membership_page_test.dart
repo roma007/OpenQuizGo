@@ -47,7 +47,10 @@ class _FakeMembershipRepository implements MembershipRepository {
   Future<List<MembershipOrder>> orders() async => const [];
 
   @override
-  Future<MembershipOrder> createOrder(String planId) async => MembershipOrder(
+  Future<MembershipOrder> createOrder(
+    String planId, {
+    String couponCode = '',
+  }) async => MembershipOrder(
     id: 'o2',
     orderNo: 'M2',
     planName: '月度会员',

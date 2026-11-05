@@ -204,6 +204,9 @@ export interface MembershipOrder {
   plan_id: string
   plan_name: string
   amount_cents: number
+  original_amount_cents: number
+  discount_cents: number
+  coupon_code?: string
   duration_days: number
   status: string
   channel: string
@@ -221,6 +224,25 @@ export interface MembershipSnapshot {
   status: string
   plan_name: string
   expires_at: string
+}
+
+export interface MembershipCoupon {
+  id: string
+  code: string
+  name: string
+  amount_cents: number
+  min_amount_cents: number
+  starts_at?: string
+  expires_at?: string
+  max_uses: number
+  used_count: number
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MembershipCouponList {
+  items: MembershipCoupon[]
 }
 
 export interface MembershipOrderList {

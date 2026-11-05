@@ -134,6 +134,9 @@ class MembershipOrder {
     required this.orderNo,
     required this.planName,
     required this.amountCents,
+    this.originalAmountCents = 0,
+    this.discountCents = 0,
+    this.couponCode = '',
     required this.durationDays,
     required this.status,
     required this.createdAt,
@@ -145,6 +148,9 @@ class MembershipOrder {
   final String orderNo;
   final String planName;
   final int amountCents;
+  final int originalAmountCents;
+  final int discountCents;
+  final String couponCode;
   final int durationDays;
   final String status;
   final DateTime? createdAt;
@@ -157,6 +163,10 @@ class MembershipOrder {
         orderNo: json['order_no'] as String? ?? '',
         planName: json['plan_name'] as String? ?? '',
         amountCents: (json['amount_cents'] as num?)?.toInt() ?? 0,
+        originalAmountCents:
+            (json['original_amount_cents'] as num?)?.toInt() ?? 0,
+        discountCents: (json['discount_cents'] as num?)?.toInt() ?? 0,
+        couponCode: json['coupon_code'] as String? ?? '',
         durationDays: (json['duration_days'] as num?)?.toInt() ?? 0,
         status: json['status'] as String? ?? 'pending',
         createdAt: json['created_at'] is String
@@ -219,9 +229,13 @@ class MembershipRepository {
     return MembershipSharing.fromJson(json);
   }
 
-  Future<MembershipOrder> createOrder(String planId) async {
+  Future<MembershipOrder> createOrder(
+    String planId, {
+    String couponCode = '',
+  }) async {
     final json = await _api.postJson('/v1/family/membership/orders', {
       'plan_id': planId,
+      if (couponCode.trim().isNotEmpty) 'coupon_code': couponCode.trim(),
     });
     return MembershipOrder.fromJson(json);
   }

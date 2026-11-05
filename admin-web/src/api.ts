@@ -20,6 +20,8 @@ import type {
   FamilyDetail,
   MembershipOrder,
   MembershipOrderList,
+  MembershipCoupon,
+  MembershipCouponList,
   DashboardOverview,
 } from './types'
 
@@ -216,6 +218,17 @@ export const api = {
     return request<FamilyList>(`/admin/families?${query.toString()}`)
   },
   family: (id: string) => request<FamilyDetail>(`/admin/families/${id}`),
+  membershipCoupons: () => request<MembershipCouponList>('/admin/membership/coupons'),
+  createMembershipCoupon: (payload: unknown) =>
+    request<MembershipCoupon>('/admin/membership/coupons', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  updateMembershipCoupon: (id: string, payload: unknown) =>
+    request<MembershipCoupon>(`/admin/membership/coupons/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
   membershipPlans: () => request<MembershipPlanList>('/admin/membership/plans'),
   createMembershipPlan: (payload: unknown) =>
     request<MembershipPlan>('/admin/membership/plans', {

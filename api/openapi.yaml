@@ -675,6 +675,7 @@ paths:
               required: [plan_id]
               properties:
                 plan_id: { type: string, format: uuid }
+                coupon_code: { type: string, description: "可选优惠码" }
       responses:
         "201":
           description: Created
@@ -683,6 +684,34 @@ paths:
               schema: { $ref: "#/components/schemas/MembershipOrder" }
         "404": { description: 套餐不存在 }
         "409": { description: 套餐未上线 }
+  /v1/family/membership/coupons/validate:
+    post:
+      tags: [membership]
+      summary: 优惠券试算
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, plan_id]
+              properties:
+                code: { type: string }
+                plan_id: { type: string, format: uuid }
+      responses:
+        "200":
+          description: 优惠金额与实付
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+                  discount_cents: { type: integer }
+                  payable_cents: { type: integer }
+        "422": { description: 优惠券无效 }
+
   /v1/family/membership/orders/{orderID}/pay:
     parameters:
       - { name: orderID, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1605,6 +1634,57 @@ paths:
                   status: { type: string }
         "404": { description: 套餐不存在 }
         "409": { description: 套餐已有订单引用，请改为下线 }
+  /v1/admin/membership/coupons:
+    get:
+      tags: [admin]
+      summary: 优惠券列表
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 全部优惠券
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MembershipCoupon" }
+    post:
+      tags: [admin]
+      summary: 创建优惠券
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MembershipCouponInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipCoupon" }
+        "409": { description: 优惠码已存在 }
+  /v1/admin/membership/coupons/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [admin]
+      summary: 更新优惠券
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MembershipCouponInput" }
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipCoupon" }
+
   /v1/admin/membership/orders:
     get:
       tags: [membership]
@@ -1768,6 +1848,34 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    MembershipCoupon:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        amount_cents: { type: integer }
+        min_amount_cents: { type: integer }
+        starts_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        max_uses: { type: integer }
+        used_count: { type: integer }
+        status: { type: string, enum: [active, disabled] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    MembershipCouponInput:
+      type: object
+      required: [code, name, amount_cents]
+      properties:
+        code: { type: string }
+        name: { type: string }
+        amount_cents: { type: integer }
+        min_amount_cents: { type: integer }
+        starts_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        max_uses: { type: integer }
+        status: { type: string, enum: [active, disabled] }
+
     Error:
       type: object
       properties:

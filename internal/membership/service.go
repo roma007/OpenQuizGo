@@ -55,23 +55,26 @@ type PlanInput struct {
 }
 
 type Order struct {
-	ID              string          `json:"id"`
-	OrderNo         string          `json:"order_no"`
-	AccountID       string          `json:"account_id,omitempty"`
-	PlanID          string          `json:"plan_id"`
-	PlanName        string          `json:"plan_name"`
-	AmountCents     int             `json:"amount_cents"`
-	DurationDays    int             `json:"duration_days"`
-	Status          string          `json:"status"`
-	Channel         string          `json:"channel"`
-	CreatedAt       time.Time       `json:"created_at"`
-	PaidAt          *time.Time      `json:"paid_at,omitempty"`
-	RefundedAt      *time.Time      `json:"refunded_at,omitempty"`
-	RefundReason    string          `json:"refund_reason,omitempty"`
-	RefundedBy      string          `json:"refunded_by,omitempty"`
-	ExternalTradeNo string          `json:"external_trade_no,omitempty"`
-	RefundBefore    json.RawMessage `json:"refund_before,omitempty"`
-	RefundAfter     json.RawMessage `json:"refund_after,omitempty"`
+	ID                  string          `json:"id"`
+	OrderNo             string          `json:"order_no"`
+	AccountID           string          `json:"account_id,omitempty"`
+	PlanID              string          `json:"plan_id"`
+	PlanName            string          `json:"plan_name"`
+	AmountCents         int             `json:"amount_cents"`
+	OriginalAmountCents int             `json:"original_amount_cents"`
+	DiscountCents       int             `json:"discount_cents"`
+	CouponCode          string          `json:"coupon_code,omitempty"`
+	DurationDays        int             `json:"duration_days"`
+	Status              string          `json:"status"`
+	Channel             string          `json:"channel"`
+	CreatedAt           time.Time       `json:"created_at"`
+	PaidAt              *time.Time      `json:"paid_at,omitempty"`
+	RefundedAt          *time.Time      `json:"refunded_at,omitempty"`
+	RefundReason        string          `json:"refund_reason,omitempty"`
+	RefundedBy          string          `json:"refunded_by,omitempty"`
+	ExternalTradeNo     string          `json:"external_trade_no,omitempty"`
+	RefundBefore        json.RawMessage `json:"refund_before,omitempty"`
+	RefundAfter         json.RawMessage `json:"refund_after,omitempty"`
 }
 
 type RefundSnapshot struct {
@@ -103,6 +106,41 @@ type Center struct {
 	Plans      []Plan      `json:"plans"`
 }
 
+// Coupon 是会员优惠券。
+type Coupon struct {
+	ID             string     `json:"id"`
+	Code           string     `json:"code"`
+	Name           string     `json:"name"`
+	AmountCents    int        `json:"amount_cents"`
+	MinAmountCents int        `json:"min_amount_cents"`
+	StartsAt       *time.Time `json:"starts_at,omitempty"`
+	ExpiresAt      *time.Time `json:"expires_at,omitempty"`
+	MaxUses        int        `json:"max_uses"`
+	UsedCount      int        `json:"used_count"`
+	Status         string     `json:"status"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+}
+
+// CouponInput 是创建/更新优惠券的入参。
+type CouponInput struct {
+	Code           string     `json:"code"`
+	Name           string     `json:"name"`
+	AmountCents    int        `json:"amount_cents"`
+	MinAmountCents int        `json:"min_amount_cents"`
+	StartsAt       *time.Time `json:"starts_at"`
+	ExpiresAt      *time.Time `json:"expires_at"`
+	MaxUses        int        `json:"max_uses"`
+	Status         string     `json:"status"`
+}
+
+// CouponQuote 是优惠券试算结果。
+type CouponQuote struct {
+	Code          string `json:"code"`
+	DiscountCents int    `json:"discount_cents"`
+	PayableCents  int    `json:"payable_cents"`
+}
+
 type PayResult struct {
 	Order      Order      `json:"order"`
 	Membership Membership `json:"membership"`
@@ -126,6 +164,9 @@ func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("membership.write")).Delete("/admin/membership/plans/{id}", s.handleAdminDelete)
 		r.With(guard.Require("membership.read")).Get("/admin/membership/orders", s.handleAdminOrders)
 		r.With(guard.Require("membership.write")).Post("/admin/membership/orders/{id}/refund", s.handleAdminRefund)
+		r.With(guard.Require("membership.read")).Get("/admin/membership/coupons", s.handleAdminCoupons)
+		r.With(guard.Require("membership.write")).Post("/admin/membership/coupons", s.handleAdminCreateCoupon)
+		r.With(guard.Require("membership.write")).Put("/admin/membership/coupons/{id}", s.handleAdminUpdateCoupon)
 	})
 }
 
@@ -140,6 +181,7 @@ func (s *Service) ParentRoutes(r chi.Router) {
 	r.Put("/family/membership/sharing", s.handleSetSharing)
 	r.Get("/family/membership/orders", s.handleOrders)
 	r.Post("/family/membership/orders", s.handleCreateOrder)
+	r.Post("/family/membership/coupons/validate", s.handleValidateCoupon)
 	r.Post("/family/membership/orders/{orderID}/pay", s.handlePayOrder)
 }
 
@@ -166,6 +208,60 @@ func (s *Service) handleSetSharing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, setting)
+}
+
+func (s *Service) handleAdminCoupons(w http.ResponseWriter, r *http.Request) {
+	items, err := s.ListCoupons(r.Context())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (s *Service) handleAdminCreateCoupon(w http.ResponseWriter, r *http.Request) {
+	var in CouponInput
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&in); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	coupon, err := s.CreateCoupon(r.Context(), in)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, coupon)
+}
+
+func (s *Service) handleAdminUpdateCoupon(w http.ResponseWriter, r *http.Request) {
+	var in CouponInput
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&in); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	coupon, err := s.UpdateCoupon(r.Context(), chi.URLParam(r, "id"), in)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, coupon)
+}
+
+func (s *Service) handleValidateCoupon(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Code   string `json:"code"`
+		PlanID string `json:"plan_id"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	quote, err := s.ValidateCoupon(r.Context(), req.Code, req.PlanID)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, quote)
 }
 
 func (s *Service) handleAdminList(w http.ResponseWriter, r *http.Request) {
@@ -305,13 +401,15 @@ func (s *Service) handleOrders(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		PlanID string `json:"plan_id"`
+		PlanID     string `json:"plan_id"`
+		CouponCode string `json:"coupon_code"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
 		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
 		return
 	}
-	order, err := s.CreateOrder(r.Context(), identity.AccountIDFrom(r.Context()), req.PlanID)
+	order, err := s.CreateOrderWithCoupon(
+		r.Context(), identity.AccountIDFrom(r.Context()), req.PlanID, req.CouponCode)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -479,7 +577,7 @@ func (s *Service) Center(ctx context.Context, accountID string) (Center, error) 
 
 func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error) {
 	rows, err := s.pool.Query(ctx, `
-		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, original_amount_cents, discount_cents, coupon_code, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
@@ -517,7 +615,7 @@ func (s *Service) AdminOrders(ctx context.Context, status string, limit, offset 
 		return nil, 0, err
 	}
 	rows, err := s.pool.Query(ctx, `
-		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, original_amount_cents, discount_cents, coupon_code, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
@@ -541,7 +639,176 @@ func (s *Service) AdminOrders(ctx context.Context, status string, limit, offset 
 	return orders, total, rows.Err()
 }
 
+var couponCodePattern = regexp.MustCompile(`^[A-Z0-9]{4,32}$`)
+
+type rowQuerier interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+func normalizeCouponCode(code string) string {
+	return strings.ToUpper(strings.TrimSpace(code))
+}
+
+func validateCouponInput(in CouponInput) error {
+	if !couponCodePattern.MatchString(normalizeCouponCode(in.Code)) {
+		return apiError{422, "VALIDATION_ERROR", "优惠码需为 4–32 位大写字母或数字"}
+	}
+	if strings.TrimSpace(in.Name) == "" || len([]rune(in.Name)) > 100 {
+		return apiError{422, "VALIDATION_ERROR", "名称需为 1–100 字"}
+	}
+	if in.AmountCents <= 0 || in.MinAmountCents < 0 || in.MaxUses < 0 {
+		return apiError{422, "VALIDATION_ERROR", "优惠金额/门槛/次数不合法"}
+	}
+	if in.Status == "" {
+		in.Status = "active"
+	}
+	if in.Status != "active" && in.Status != "disabled" {
+		return apiError{422, "VALIDATION_ERROR", "状态不合法"}
+	}
+	if in.StartsAt != nil && in.ExpiresAt != nil && !in.ExpiresAt.After(*in.StartsAt) {
+		return apiError{422, "VALIDATION_ERROR", "结束时间需晚于开始时间"}
+	}
+	return nil
+}
+
+const couponColumns = `id, code, name, amount_cents, min_amount_cents, starts_at, expires_at,
+	max_uses, used_count, status, created_at, updated_at`
+
+func scanCoupon(row scanner) (Coupon, error) {
+	var item Coupon
+	err := row.Scan(&item.ID, &item.Code, &item.Name, &item.AmountCents,
+		&item.MinAmountCents, &item.StartsAt, &item.ExpiresAt, &item.MaxUses,
+		&item.UsedCount, &item.Status, &item.CreatedAt, &item.UpdatedAt)
+	return item, err
+}
+
+// ListCoupons 返回全部优惠券。
+func (s *Service) ListCoupons(ctx context.Context) ([]Coupon, error) {
+	rows, err := s.pool.Query(ctx, `select `+couponColumns+` from membership_coupon order by created_at desc`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]Coupon, 0)
+	for rows.Next() {
+		item, err := scanCoupon(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+// CreateCoupon 创建优惠券。
+func (s *Service) CreateCoupon(ctx context.Context, in CouponInput) (Coupon, error) {
+	if err := validateCouponInput(in); err != nil {
+		return Coupon{}, err
+	}
+	item, err := scanCoupon(s.pool.QueryRow(ctx, `
+		insert into membership_coupon (
+			code, name, amount_cents, min_amount_cents, starts_at, expires_at, max_uses, status)
+		values ($1, $2, $3, $4, $5, $6, $7, $8)
+		returning `+couponColumns,
+		normalizeCouponCode(in.Code), strings.TrimSpace(in.Name), in.AmountCents,
+		in.MinAmountCents, in.StartsAt, in.ExpiresAt, in.MaxUses, in.Status))
+	if err != nil {
+		if isUniqueViolation(err) {
+			return Coupon{}, apiError{409, "COUPON_EXISTS", "优惠码已存在"}
+		}
+		return Coupon{}, err
+	}
+	return item, nil
+}
+
+// UpdateCoupon 更新优惠券。
+func (s *Service) UpdateCoupon(ctx context.Context, id string, in CouponInput) (Coupon, error) {
+	if err := validateCouponInput(in); err != nil {
+		return Coupon{}, err
+	}
+	item, err := scanCoupon(s.pool.QueryRow(ctx, `
+		update membership_coupon set code = $2, name = $3, amount_cents = $4,
+		       min_amount_cents = $5, starts_at = $6, expires_at = $7,
+		       max_uses = $8, status = $9, updated_at = now()
+		where id = $1
+		returning `+couponColumns,
+		id, normalizeCouponCode(in.Code), strings.TrimSpace(in.Name), in.AmountCents,
+		in.MinAmountCents, in.StartsAt, in.ExpiresAt, in.MaxUses, in.Status))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Coupon{}, apiError{404, "COUPON_NOT_FOUND", "优惠券不存在"}
+	}
+	if err != nil {
+		if isUniqueViolation(err) {
+			return Coupon{}, apiError{409, "COUPON_EXISTS", "优惠码已存在"}
+		}
+		return Coupon{}, err
+	}
+	return item, nil
+}
+
+// couponDiscount 校验优惠券并计算优惠金额；lock=true 时对券行加锁。
+func (s *Service) couponDiscount(ctx context.Context, q rowQuerier, code string,
+	priceCents int, now time.Time, lock bool) (Coupon, int, error) {
+	query := `select ` + couponColumns + ` from membership_coupon where code = $1`
+	if lock {
+		query += ` for update`
+	}
+	item, err := scanCoupon(q.QueryRow(ctx, query, normalizeCouponCode(code)))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Coupon{}, 0, apiError{422, "COUPON_INVALID", "优惠码不存在"}
+	}
+	if err != nil {
+		return Coupon{}, 0, err
+	}
+	if item.Status != "active" {
+		return Coupon{}, 0, apiError{422, "COUPON_INVALID", "优惠码已停用"}
+	}
+	if item.StartsAt != nil && now.Before(*item.StartsAt) {
+		return Coupon{}, 0, apiError{422, "COUPON_INVALID", "优惠码尚未生效"}
+	}
+	if item.ExpiresAt != nil && now.After(*item.ExpiresAt) {
+		return Coupon{}, 0, apiError{422, "COUPON_INVALID", "优惠码已过期"}
+	}
+	if item.MaxUses > 0 && item.UsedCount >= item.MaxUses {
+		return Coupon{}, 0, apiError{422, "COUPON_INVALID", "优惠码使用次数已用完"}
+	}
+	if priceCents < item.MinAmountCents {
+		return Coupon{}, 0, apiError{422, "COUPON_INVALID", "订单金额未达到优惠门槛"}
+	}
+	discount := item.AmountCents
+	if discount > priceCents {
+		discount = priceCents
+	}
+	if discount <= 0 {
+		return Coupon{}, 0, apiError{422, "COUPON_INVALID", "优惠金额不合法"}
+	}
+	return item, discount, nil
+}
+
+// ValidateCoupon 试算优惠券，不占用次数。
+func (s *Service) ValidateCoupon(ctx context.Context, code, planID string) (CouponQuote, error) {
+	var price int
+	err := s.pool.QueryRow(ctx,
+		`select price_cents from membership_plan where id = $1 and status = 'online'`, planID).Scan(&price)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return CouponQuote{}, apiError{404, "PLAN_NOT_FOUND", "套餐不存在"}
+	}
+	if err != nil {
+		return CouponQuote{}, err
+	}
+	item, discount, err := s.couponDiscount(ctx, s.pool, code, price, time.Now(), false)
+	if err != nil {
+		return CouponQuote{}, err
+	}
+	return CouponQuote{Code: item.Code, DiscountCents: discount, PayableCents: price - discount}, nil
+}
+
 func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Order, error) {
+	return s.CreateOrderWithCoupon(ctx, accountID, planID, "")
+}
+
+// CreateOrderWithCoupon 创建订单并可应用固定金额优惠券。
+func (s *Service) CreateOrderWithCoupon(ctx context.Context, accountID, planID, couponCode string) (Order, error) {
 	if accountID == "" {
 		return Order{}, apiError{401, "AUTH_REQUIRED", "家长未登录"}
 	}
@@ -561,18 +828,48 @@ func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Or
 		return Order{}, apiError{409, "PLAN_OFFLINE", "套餐未上线"}
 	}
 
-	item, err := scanOrder(s.pool.QueryRow(ctx, `
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Order{}, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	now := time.Now()
+	discount := 0
+	appliedCode := ""
+	if strings.TrimSpace(couponCode) != "" {
+		var coupon Coupon
+		coupon, discount, err = s.couponDiscount(ctx, tx, couponCode, plan.PriceCents, now, true)
+		if err != nil {
+			return Order{}, err
+		}
+		appliedCode = coupon.Code
+		if _, err := tx.Exec(ctx, `
+			update membership_coupon set used_count = used_count + 1, updated_at = now()
+			where id = $1`, coupon.ID); err != nil {
+			return Order{}, err
+		}
+	}
+	amount := plan.PriceCents - discount
+
+	item, err := scanOrder(tx.QueryRow(ctx, `
 		insert into membership_order (
-			order_no, account_id, plan_id, plan_name, amount_cents, duration_days)
-		values ($1, $2, $3, $4, $5, $6)
-		returning id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+			order_no, account_id, plan_id, plan_name, amount_cents,
+			original_amount_cents, discount_cents, coupon_code, duration_days)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		returning id, order_no, account_id, plan_id, plan_name, amount_cents,
+		          original_amount_cents, discount_cents, coupon_code, duration_days,
 		          status, channel, created_at, paid_at, refunded_at,
 		          coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		          coalesce(external_trade_no, ''),
 		          coalesce(refund_before::text, ''),
 		          coalesce(refund_after::text, '')`,
-		orderNo(), accountID, plan.ID, plan.Name, plan.PriceCents, plan.DurationDays))
+		orderNo(), accountID, plan.ID, plan.Name, amount,
+		plan.PriceCents, discount, appliedCode, plan.DurationDays))
 	if err != nil {
+		return Order{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return Order{}, err
 	}
 	return item, nil
@@ -589,7 +886,7 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	item, err := scanOrder(tx.QueryRow(ctx, `
-		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, original_amount_cents, discount_cents, coupon_code, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
@@ -698,7 +995,7 @@ func (s *Service) Callback(ctx context.Context, body []byte, signature string) (
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	item, err := scanOrder(tx.QueryRow(ctx, `
-		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, original_amount_cents, discount_cents, coupon_code, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
@@ -738,7 +1035,7 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	item, err := scanOrder(tx.QueryRow(ctx, `
-		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
+		select id, order_no, account_id, plan_id, plan_name, amount_cents, original_amount_cents, discount_cents, coupon_code, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
 		       coalesce(external_trade_no, ''),
@@ -817,6 +1114,13 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 	item.RefundedBy = operatorID
 	item.RefundBefore = beforeJSON
 	item.RefundAfter = afterJSON
+	if item.CouponCode != "" {
+		if _, err := tx.Exec(ctx, `
+			update membership_coupon set used_count = greatest(used_count - 1, 0), updated_at = now()
+			where code = $1`, item.CouponCode); err != nil {
+			return Order{}, err
+		}
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return Order{}, err
 	}
@@ -945,7 +1249,8 @@ func scanOrder(row scanner) (Order, error) {
 	var item Order
 	var refundBefore, refundAfter string
 	err := row.Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID,
-		&item.PlanName, &item.AmountCents, &item.DurationDays, &item.Status,
+		&item.PlanName, &item.AmountCents, &item.OriginalAmountCents,
+		&item.DiscountCents, &item.CouponCode, &item.DurationDays, &item.Status,
 		&item.Channel, &item.CreatedAt, &item.PaidAt, &item.RefundedAt,
 		&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo,
 		&refundBefore, &refundAfter)
