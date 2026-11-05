@@ -122,6 +122,7 @@ data class QuizOption(
     @SerializedName("text") val text: String,
     @SerializedName("image") val image: String?,
     @SerializedName("images") val images: List<String>? = null,
+    @SerializedName("audio") val audio: String? = null,
 )
 
 data class StemMedia(

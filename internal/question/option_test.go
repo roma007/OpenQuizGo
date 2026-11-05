@@ -85,6 +85,31 @@ func TestValidateOptionImages(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "audio only valid",
+			options: `[
+				{"id":"a","text":"","audio":"/v1/media/a.mp3"},
+				{"id":"b","text":"B"}
+			]`,
+			answer: `["a"]`,
+		},
+		{
+			name: "audio with image valid",
+			options: `[
+				{"id":"a","text":"","audio":"/v1/media/a.mp3","images":["/v1/media/a.png"]},
+				{"id":"b","text":"B"}
+			]`,
+			answer: `["a"]`,
+		},
+		{
+			name: "blank audio rejected",
+			options: `[
+				{"id":"a","text":"A","audio":" "},
+				{"id":"b","text":"B"}
+			]`,
+			answer:  `["a"]`,
+			wantErr: true,
+		},
+		{
 			name: "duplicate id rejected",
 			options: `[
 				{"id":"a","text":"A"},

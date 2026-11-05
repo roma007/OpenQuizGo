@@ -91,7 +91,10 @@ func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {
 func (s *Service) save(data []byte) (string, string, error) {
 	ext, contentType, err := imageExt(data)
 	if err != nil {
-		return "", "", err
+		ext, contentType, err = audioExt(data)
+	}
+	if err != nil {
+		return "", "", errors.New("仅支持 JPEG/PNG/WebP/GIF/MP3/WAV/M4A/OGG")
 	}
 	if err := os.MkdirAll(s.dir, 0o755); err != nil {
 		return "", "", errors.New("存储不可用")
@@ -124,6 +127,30 @@ func imageExt(data []byte) (string, string, error) {
 	default:
 		return "", "", errors.New("仅支持 JPEG/PNG/WebP/GIF")
 	}
+}
+
+// audioExt 依据文件头识别常见音频格式，避免仅凭扩展名放行。
+func audioExt(data []byte) (string, string, error) {
+	if len(data) >= 3 && string(data[:3]) == "ID3" {
+		return ".mp3", "audio/mpeg", nil
+	}
+	// MP3 帧同步：11 位全 1。
+	if len(data) >= 2 && data[0] == 0xFF && data[1]&0xE0 == 0xE0 {
+		return ".mp3", "audio/mpeg", nil
+	}
+	if len(data) >= 12 && string(data[:4]) == "RIFF" && string(data[8:12]) == "WAVE" {
+		return ".wav", "audio/wav", nil
+	}
+	if len(data) >= 4 && string(data[:4]) == "OggS" {
+		return ".ogg", "audio/ogg", nil
+	}
+	if len(data) >= 12 && string(data[4:8]) == "ftyp" {
+		switch string(data[8:12]) {
+		case "M4A ", "M4B ", "mp42", "isom", "iso2":
+			return ".m4a", "audio/mp4", nil
+		}
+	}
+	return "", "", errors.New("不是有效音频")
 }
 
 func safeName(name string) bool {

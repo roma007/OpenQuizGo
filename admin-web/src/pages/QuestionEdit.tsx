@@ -102,6 +102,7 @@ export default function QuestionEdit() {
   const [stemMediaUrl, setStemMediaUrl] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadingOption, setUploadingOption] = useState<number | null>(null)
+  const [uploadingOptionAudio, setUploadingOptionAudio] = useState<number | null>(null)
 
   const loadAudit = async (targetId: string) => {
     try {
@@ -182,6 +183,25 @@ export default function QuestionEdit() {
     }
   }
 
+  const uploadOptionAudio = async (index: number, file: File) => {
+    setUploadingOptionAudio(index)
+    try {
+      const result = await api.uploadMedia(file)
+      setOptions((prev) => {
+        const next = [...prev]
+        const current = next[index]
+        if (!current) return prev
+        next[index] = { ...current, audio: result.url }
+        return next
+      })
+      message.success('选项音频已上传')
+    } catch (error) {
+      message.error(error instanceof ApiError ? error.message : '上传失败')
+    } finally {
+      setUploadingOptionAudio(null)
+    }
+  }
+
   const removeOptionImage = (index: number, imageIndex: number) => {
     setOptions((prev) => {
       const next = [...prev]
@@ -199,7 +219,10 @@ export default function QuestionEdit() {
       .filter(
         (item) =>
           item.id.trim() &&
-          (item.text.trim() || (item.images ?? []).length > 0 || Boolean(item.image)),
+          (item.text.trim() ||
+            (item.images ?? []).length > 0 ||
+            Boolean(item.image) ||
+            Boolean(item.audio?.trim())),
       )
       .map((item) => {
         const images = (item.images ?? [])
@@ -210,6 +233,7 @@ export default function QuestionEdit() {
           text: item.text,
           images,
           image: images[0] ?? item.image,
+          audio: item.audio?.trim() || undefined,
         }
       })
 
@@ -459,6 +483,21 @@ export default function QuestionEdit() {
                         图片 {images.length}/{MAX_OPTION_IMAGES}
                       </Button>
                     </Upload>
+                    <Upload
+                      accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg"
+                      showUploadList={false}
+                      beforeUpload={(file) => {
+                        void uploadOptionAudio(index, file as File)
+                        return false
+                      }}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        loading={uploadingOptionAudio === index}
+                      >
+                        音频
+                      </Button>
+                    </Upload>
                     <Button
                       danger
                       onClick={() => setOptions(options.filter((_, i) => i !== index))}
@@ -466,6 +505,22 @@ export default function QuestionEdit() {
                       删除
                     </Button>
                   </Space>
+                  {option.audio && (
+                    <Space wrap>
+                      <audio controls src={option.audio} style={{ height: 32 }} />
+                      <Button
+                        size="small"
+                        danger
+                        onClick={() => {
+                          const next = [...options]
+                          next[index] = { ...next[index], audio: undefined }
+                          setOptions(next)
+                        }}
+                      >
+                        移除音频
+                      </Button>
+                    </Space>
+                  )}
                   {images.length > 0 && (
                     <Space wrap size={8}>
                       {images.map((url, imageIndex) => (

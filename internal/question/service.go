@@ -454,6 +454,7 @@ type optionItem struct {
 	Text   string   `json:"text"`
 	Image  string   `json:"image"`
 	Images []string `json:"images"`
+	Audio  string   `json:"audio"`
 }
 
 func validate(in *Input, tags tagSets, topicIDs map[string]bool) []ImportError {
@@ -611,8 +612,13 @@ func validateByType(in *Input) []ImportError {
 					return problems
 				}
 			}
-			if opt.Text == "" && opt.Image == "" && len(opt.Images) == 0 {
-				add("options", "选项 id 不能为空、id 不能重复，且 text/image/images 至少一个")
+			audio := strings.TrimSpace(opt.Audio)
+			if opt.Audio != "" && audio == "" {
+				add("options", "选项音频地址不能为空")
+				return problems
+			}
+			if opt.Text == "" && opt.Image == "" && len(opt.Images) == 0 && audio == "" {
+				add("options", "选项 id 不能为空、id 不能重复，且 text/image/images/audio 至少一个")
 				return problems
 			}
 			ids[opt.ID] = true

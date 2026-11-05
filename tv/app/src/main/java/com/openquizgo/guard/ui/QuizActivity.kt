@@ -1,6 +1,7 @@
 package com.openquizgo.guard.ui
 
 import android.graphics.BitmapFactory
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -305,6 +308,31 @@ private fun QuestionScreen(
     onSelect: (String) -> Unit,
     onNext: () -> Unit,
 ) {
+    val context = LocalContext.current
+    var audioPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    fun playAudio(path: String) {
+        audioPlayer?.release()
+        audioPlayer = MediaPlayer().apply {
+            try {
+                setDataSource(resolveMediaUrl(path))
+                setOnPreparedListener { it.start() }
+                setOnErrorListener { _, _, _ -> true }
+                prepareAsync()
+            } catch (_: Exception) {
+                release()
+                audioPlayer = null
+            }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            audioPlayer?.release()
+            audioPlayer = null
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -341,30 +369,41 @@ private fun QuestionScreen(
                         .filter { it.isNotBlank() }
                         .ifEmpty { listOfNotNull(option.image?.takeIf { it.isNotBlank() }) }
                         .take(3)
-                    Button(
-                        onClick = { onSelect(option.id) },
-                        enabled = !submitting,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            if (images.isNotEmpty()) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    images.forEach { path ->
-                                        RemoteImage(
-                                            url = resolveMediaUrl(path),
-                                            maxHeight = 90.dp,
-                                            modifier = Modifier
-                                                .heightIn(max = 90.dp)
-                                                .widthIn(max = 200.dp),
-                                            contentDescription = "选项图片",
-                                        )
-                                    }
-                                }
-                                Spacer(Modifier.height(6.dp))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        option.audio?.takeIf { it.isNotBlank() }?.let { path ->
+                            Button(
+                                onClick = { playAudio(path) },
+                                enabled = !submitting,
+                            ) {
+                                Text(text = "▶ 播放选项 ${option.id} 音频", fontSize = 22.sp)
                             }
-                            Text(text = "${option.id}. ${option.text}", fontSize = 26.sp)
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        Button(
+                            onClick = { onSelect(option.id) },
+                            enabled = !submitting,
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                if (images.isNotEmpty()) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        images.forEach { path ->
+                                            RemoteImage(
+                                                url = resolveMediaUrl(path),
+                                                maxHeight = 90.dp,
+                                                modifier = Modifier
+                                                    .heightIn(max = 90.dp)
+                                                    .widthIn(max = 200.dp),
+                                                contentDescription = "选项图片",
+                                            )
+                                        }
+                                    }
+                                    Spacer(Modifier.height(6.dp))
+                                }
+                                Text(text = "${option.id}. ${option.text}", fontSize = 26.sp)
+                            }
                         }
                     }
                     Spacer(Modifier.height(12.dp))
