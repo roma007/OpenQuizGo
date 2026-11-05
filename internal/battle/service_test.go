@@ -259,4 +259,14 @@ func TestRoomBattleWorkflow(t *testing.T) {
 	if finished.JoinCode != "" {
 		t.Fatal("finished room should not expose join code")
 	}
+
+	history, err := svc.History(ctx, accountID, childID, 20)
+	if err != nil {
+		t.Fatalf("history: %v", err)
+	}
+	if len(history) != 1 || history[0].Mode != "room" ||
+		history[0].Status != "finished" || history[0].ChildScore != 5 ||
+		history[0].ParentScore != 0 || history[0].QuestionCount != 5 {
+		t.Fatalf("unexpected history: %+v", history)
+	}
 }

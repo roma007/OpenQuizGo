@@ -7,7 +7,9 @@ import (
 	"math/rand"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -29,6 +31,7 @@ type Service struct {
 func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
 
 func (s *Service) Routes(r chi.Router) {
+	r.Get("/family/children/{childID}/battles", s.handleHistory)
 	r.Post("/family/children/{childID}/battles", s.handleCreate)
 	r.Post("/family/children/{childID}/battles/join", s.handleJoin)
 	r.Get("/family/children/{childID}/battles/{battleID}", s.handleGet)
@@ -68,6 +71,17 @@ type State struct {
 	JoinCode      string         `json:"join_code,omitempty"`
 	Result        *ResultView    `json:"result,omitempty"`
 	Answers       []AnswerView   `json:"answers,omitempty"`
+}
+
+type Summary struct {
+	ID            string     `json:"id"`
+	Mode          string     `json:"mode"`
+	Status        string     `json:"status"`
+	QuestionCount int        `json:"question_count"`
+	ChildScore    int        `json:"child_score"`
+	ParentScore   int        `json:"parent_score"`
+	CreatedAt     time.Time  `json:"created_at"`
+	FinishedAt    *time.Time `json:"finished_at,omitempty"`
 }
 
 type Submission struct {
@@ -111,6 +125,17 @@ func randomCode() string {
 		code[i] = codeAlphabet[rand.Intn(len(codeAlphabet))]
 	}
 	return string(code)
+}
+
+func (s *Service) handleHistory(w http.ResponseWriter, r *http.Request) {
+	childID := chi.URLParam(r, "childID")
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	items, err := s.History(r.Context(), identity.AccountIDFrom(r.Context()), childID, limit)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
 func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -195,6 +220,35 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, state)
+}
+
+// History 返回孩子最近的对战摘要。
+func (s *Service) History(ctx context.Context, accountID, childID string, limit int) ([]Summary, error) {
+	if _, err := s.ownsChild(ctx, accountID, childID); err != nil {
+		return nil, err
+	}
+	if limit <= 0 || limit > 50 {
+		limit = 20
+	}
+	rows, err := s.pool.Query(ctx, `
+		select id, mode, status, jsonb_array_length(question_ids),
+		       child_score, parent_score, created_at, finished_at
+		from family_battle where child_id = $1
+		order by created_at desc limit $2`, childID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]Summary, 0, limit)
+	for rows.Next() {
+		var item Summary
+		if err := rows.Scan(&item.ID, &item.Mode, &item.Status, &item.QuestionCount,
+			&item.ChildScore, &item.ParentScore, &item.CreatedAt, &item.FinishedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
 }
 
 // Create 创建一个对局；room 模式返回房间码并等待加入。

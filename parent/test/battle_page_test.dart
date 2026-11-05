@@ -83,6 +83,21 @@ class _FakeBattleRepository implements BattleRepository {
   Future<BattleState> get(String childId, String battleId) async => current;
 
   @override
+  Future<List<BattleSummary>> history(String childId, {int limit = 20}) async =>
+      [
+        BattleSummary(
+          id: 'b0',
+          mode: 'room',
+          status: 'finished',
+          questionCount: 5,
+          childScore: 5,
+          parentScore: 5,
+          createdAt: DateTime(2026, 11, 5, 9, 30),
+          finishedAt: DateTime(2026, 11, 5, 9, 32),
+        ),
+      ];
+
+  @override
   Future<BattleState> submit(
     String childId,
     String battleId,
@@ -195,5 +210,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('孩子答题'), findsOneWidget);
     expect(find.text('2+3=?'), findsOneWidget);
+  });
+
+  testWidgets('入口展示对战记录', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleRepositoryProvider.overrideWithValue(_FakeBattleRepository()),
+        ],
+        child: MaterialApp(
+          home: BattlePage(
+            child: Child(id: 'c1', nickname: '小明', stage: 'low'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('对战记录'), findsOneWidget);
+    expect(find.text('孩子 5 : 5 家长'), findsOneWidget);
+    expect(find.text('平局'), findsOneWidget);
   });
 }

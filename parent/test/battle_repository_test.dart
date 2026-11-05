@@ -87,6 +87,23 @@ void main() {
         request.response.write(
           jsonEncode(_battle(status: 'parent_turn', childScore: 1)),
         );
+      } else if (request.method == 'GET' && path.endsWith('/battles')) {
+        request.response.write(
+          jsonEncode({
+            'items': [
+              {
+                'id': 'b1',
+                'mode': 'room',
+                'status': 'finished',
+                'question_count': 5,
+                'child_score': 5,
+                'parent_score': 5,
+                'created_at': '2026-11-05T09:30:00+08:00',
+                'finished_at': '2026-11-05T09:32:00+08:00',
+              },
+            ],
+          }),
+        );
       } else if (request.method == 'POST' && path.endsWith('/answers')) {
         submitted =
             jsonDecode(await utf8.decoder.bind(request).join())
@@ -120,6 +137,11 @@ void main() {
     expect(created.status, 'child_turn');
     expect(created.questions.single.stem, '2+3=?');
     expect(created.questions.single.options.first.text, '5');
+
+    final history = await repository.history('c1');
+    expect(history.single.mode, 'room');
+    expect(history.single.childScore, 5);
+    expect(history.single.parentScore, 5);
 
     final loaded = await repository.get('c1', 'b1');
     expect(loaded.childTurn, isFalse);

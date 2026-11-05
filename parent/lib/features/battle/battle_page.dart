@@ -29,6 +29,28 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   final Map<String, String> _selections = {};
   _BattleRole _role = _BattleRole.sameDevice;
   Timer? _poll;
+  List<BattleSummary> _history = const [];
+  bool _historyLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    setState(() => _historyLoading = true);
+    try {
+      final items = await ref
+          .read(battleRepositoryProvider)
+          .history(widget.child.id, limit: 10);
+      if (mounted) setState(() => _history = items);
+    } on ApiException {
+      // 记录加载失败不阻塞发起对战。
+    } finally {
+      if (mounted) setState(() => _historyLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -300,49 +322,114 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   }
 
   Widget _intro(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+      children: [
+        const Icon(Icons.sports_esports_outlined, size: 72),
+        const SizedBox(height: 12),
+        Text(
+          '亲子对战',
+          textAlign: TextAlign.center,
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          '同一部手机轮流答题，或两台设备输入房间码对战。孩子先答，最后看谁得分高。',
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        Center(
+          child: FilledButton.icon(
+            onPressed: _starting ? null : _start,
+            icon: _starting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.play_arrow),
+            label: const Text('开始对战'),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: OutlinedButton.icon(
+            onPressed: _starting ? null : _startRoom,
+            icon: const Icon(Icons.people_outline),
+            label: const Text('双设备房间'),
+          ),
+        ),
+        Center(
+          child: TextButton(
+            onPressed: _starting ? null : _joinRoom,
+            child: const Text('输入房间码加入'),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Row(
           children: [
-            const Icon(Icons.sports_esports_outlined, size: 72),
-            const SizedBox(height: 16),
             Text(
-              '亲子对战',
+              '对战记录',
               style: Theme.of(
                 context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            const Text(
-              '同一部手机轮流答题，或两台设备输入房间码对战。孩子先答，最后看谁得分高。',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: _starting ? null : _start,
-              icon: _starting
+            const Spacer(),
+            IconButton(
+              tooltip: '刷新记录',
+              onPressed: _historyLoading ? null : _loadHistory,
+              icon: _historyLoading
                   ? const SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.play_arrow),
-              label: const Text('开始对战'),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _starting ? null : _startRoom,
-              icon: const Icon(Icons.people_outline),
-              label: const Text('双设备房间'),
-            ),
-            TextButton(
-              onPressed: _starting ? null : _joinRoom,
-              child: const Text('输入房间码加入'),
+                  : const Icon(Icons.refresh),
             ),
           ],
         ),
+        if (_history.isEmpty && !_historyLoading)
+          const Card(
+            child: Padding(padding: EdgeInsets.all(20), child: Text('还没有对战记录')),
+          )
+        else
+          for (final item in _history) _historyCard(context, item),
+      ],
+    );
+  }
+
+  Widget _historyCard(BuildContext context, BattleSummary item) {
+    final mode = item.mode == 'room' ? '双设备' : '同设备';
+    final status = switch (item.status) {
+      'finished' => '已完成',
+      'waiting' => '等待加入',
+      _ => '进行中',
+    };
+    final winner = !item.status.startsWith('finished')
+        ? status
+        : item.childScore > item.parentScore
+        ? '孩子获胜'
+        : item.parentScore > item.childScore
+        ? '家长获胜'
+        : '平局';
+    final date = item.createdAt?.toLocal();
+    final dateText = date == null
+        ? '—'
+        : '${date.month}-${date.day} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(
+          item.mode == 'room' ? Icons.people_outline : Icons.phone_android,
+        ),
+        title: Text(
+          '孩子 ${item.childScore} : ${item.parentScore} 家长',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text('$dateText · $mode · $status'),
+        trailing: Chip(label: Text(winner)),
       ),
     );
   }
@@ -515,6 +602,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
                       _state = null;
                       _role = _BattleRole.sameDevice;
                     });
+                    _loadHistory();
                   }
                 },
           icon: const Icon(Icons.replay),

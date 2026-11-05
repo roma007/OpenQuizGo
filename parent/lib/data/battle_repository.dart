@@ -145,6 +145,43 @@ class BattleState {
   }
 }
 
+class BattleSummary {
+  BattleSummary({
+    required this.id,
+    required this.mode,
+    required this.status,
+    required this.questionCount,
+    required this.childScore,
+    required this.parentScore,
+    required this.createdAt,
+    required this.finishedAt,
+  });
+
+  final String id;
+  final String mode;
+  final String status;
+  final int questionCount;
+  final int childScore;
+  final int parentScore;
+  final DateTime? createdAt;
+  final DateTime? finishedAt;
+
+  factory BattleSummary.fromJson(Map<String, dynamic> json) => BattleSummary(
+    id: json['id'] as String? ?? '',
+    mode: json['mode'] as String? ?? 'same_device',
+    status: json['status'] as String? ?? 'finished',
+    questionCount: (json['question_count'] as num?)?.toInt() ?? 0,
+    childScore: (json['child_score'] as num?)?.toInt() ?? 0,
+    parentScore: (json['parent_score'] as num?)?.toInt() ?? 0,
+    createdAt: json['created_at'] is String
+        ? DateTime.tryParse(json['created_at'] as String)
+        : null,
+    finishedAt: json['finished_at'] is String
+        ? DateTime.tryParse(json['finished_at'] as String)
+        : null,
+  );
+}
+
 class BattleRepository {
   BattleRepository(this._api);
 
@@ -168,6 +205,19 @@ class BattleRepository {
       {'code': code},
     );
     return BattleState.fromJson(json);
+  }
+
+  Future<List<BattleSummary>> history(String childId, {int limit = 20}) async {
+    final json = await _api.getJson(
+      '/v1/family/children/$childId/battles?limit=$limit',
+    );
+    final raw = json['items'];
+    return raw is List
+        ? raw
+              .whereType<Map<String, dynamic>>()
+              .map(BattleSummary.fromJson)
+              .toList(growable: false)
+        : const [];
   }
 
   Future<BattleState> get(String childId, String battleId) async {
