@@ -33,7 +33,7 @@ func TestBattleWorkflow(t *testing.T) {
 	questionIDs := seedQuestions(t, pool, 5)
 	svc := New(pool)
 
-	state, err := svc.Create(ctx, accountID, childID, 5)
+	state, err := svc.Create(ctx, accountID, childID, 5, "same_device")
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
@@ -103,7 +103,7 @@ func TestBattleWorkflow(t *testing.T) {
 		returning id`).Scan(&outsider); err != nil {
 		t.Fatalf("outsider: %v", err)
 	}
-	if _, err := svc.Create(ctx, outsider, childID, 3); err == nil || !isCode(err, "CHILD_NOT_FOUND") {
+	if _, err := svc.Create(ctx, outsider, childID, 3, "same_device"); err == nil || !isCode(err, "CHILD_NOT_FOUND") {
 		t.Fatalf("outsider create = %v, want CHILD_NOT_FOUND", err)
 	}
 
@@ -114,7 +114,7 @@ func TestBattleWorkflow(t *testing.T) {
 	if _, err := pool.Exec(ctx, `delete from question`); err != nil {
 		t.Fatalf("clear questions: %v", err)
 	}
-	if _, err := svc.Create(ctx, accountID, childID, 5); err == nil || !isCode(err, "QUESTION_POOL_EMPTY") {
+	if _, err := svc.Create(ctx, accountID, childID, 5, "same_device"); err == nil || !isCode(err, "QUESTION_POOL_EMPTY") {
 		t.Fatalf("empty pool create = %v, want QUESTION_POOL_EMPTY", err)
 	}
 }
@@ -192,4 +192,71 @@ func seedQuestions(t *testing.T, pool *pgxpool.Pool, n int) []string {
 		ids = append(ids, id)
 	}
 	return ids
+}
+
+func TestRoomBattleWorkflow(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	accountID, childID := seedFamily(t, pool)
+	questionIDs := seedQuestions(t, pool, 5)
+	svc := New(pool)
+
+	room, err := svc.Create(ctx, accountID, childID, 5, "room")
+	if err != nil {
+		t.Fatalf("create room: %v", err)
+	}
+	if room.Status != "waiting" || room.Mode != "room" || len(room.JoinCode) != 6 {
+		t.Fatalf("unexpected room: %+v", room)
+	}
+
+	if _, err := svc.Join(ctx, accountID, childID, "ZZZZZZ"); err == nil || !isCode(err, "BATTLE_NOT_FOUND") {
+		t.Fatalf("bad code join = %v, want BATTLE_NOT_FOUND", err)
+	}
+	joined, err := svc.Join(ctx, accountID, childID, room.JoinCode)
+	if err != nil {
+		t.Fatalf("join: %v", err)
+	}
+	if joined.Status != "child_turn" || joined.JoinCode != room.JoinCode {
+		t.Fatalf("unexpected joined: %+v", joined)
+	}
+	if _, err := svc.Join(ctx, accountID, childID, room.JoinCode); err != nil {
+		t.Fatalf("idempotent join: %v", err)
+	}
+
+	childAnswers := make([]Submission, 0, len(questionIDs))
+	for _, id := range questionIDs {
+		childAnswers = append(childAnswers, Submission{QuestionID: id, Answer: json.RawMessage(`["a"]`)})
+	}
+	afterChild, err := svc.Submit(ctx, childID, room.ID, "child", childAnswers)
+	if err != nil {
+		t.Fatalf("child submit: %v", err)
+	}
+	if afterChild.Status != "parent_turn" || afterChild.ChildScore != 5 {
+		t.Fatalf("unexpected after child: %+v", afterChild)
+	}
+	parentAnswers := make([]Submission, 0, len(questionIDs))
+	for _, id := range questionIDs {
+		parentAnswers = append(parentAnswers, Submission{QuestionID: id, Answer: json.RawMessage(`["b"]`)})
+	}
+	finished, err := svc.Submit(ctx, childID, room.ID, "parent", parentAnswers)
+	if err != nil {
+		t.Fatalf("parent submit: %v", err)
+	}
+	if finished.Status != "finished" || finished.Result == nil || finished.Result.Winner != "child" {
+		t.Fatalf("unexpected finished: %+v", finished)
+	}
+	if finished.JoinCode != "" {
+		t.Fatal("finished room should not expose join code")
+	}
 }

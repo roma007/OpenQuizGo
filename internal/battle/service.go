@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -28,6 +30,7 @@ func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
 
 func (s *Service) Routes(r chi.Router) {
 	r.Post("/family/children/{childID}/battles", s.handleCreate)
+	r.Post("/family/children/{childID}/battles/join", s.handleJoin)
 	r.Get("/family/children/{childID}/battles/{battleID}", s.handleGet)
 	r.Post("/family/children/{childID}/battles/{battleID}/answers", s.handleSubmit)
 }
@@ -61,6 +64,8 @@ type State struct {
 	Questions     []QuestionView `json:"questions"`
 	ChildScore    int            `json:"child_score"`
 	ParentScore   int            `json:"parent_score"`
+	Mode          string         `json:"mode"`
+	JoinCode      string         `json:"join_code,omitempty"`
 	Result        *ResultView    `json:"result,omitempty"`
 	Answers       []AnswerView   `json:"answers,omitempty"`
 }
@@ -91,9 +96,21 @@ type battleRecord struct {
 	ID          string
 	FamilyID    string
 	Status      string
+	Mode        string
+	JoinCode    string
 	QuestionIDs []string
 	ChildScore  int
 	ParentScore int
+}
+
+const codeAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+
+func randomCode() string {
+	code := make([]byte, 6)
+	for i := range code {
+		code[i] = codeAlphabet[rand.Intn(len(codeAlphabet))]
+	}
+	return string(code)
 }
 
 func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +121,8 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		QuestionCount int `json:"question_count"`
+		QuestionCount int    `json:"question_count"`
+		Mode          string `json:"mode"`
 	}
 	if r.Body != nil {
 		_ = json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&req)
@@ -117,12 +135,30 @@ func (s *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		writeError(w, apiError{422, "VALIDATION_ERROR", "题数需在 3–10 之间"})
 		return
 	}
-	state, err := s.Create(r.Context(), accountID, childID, count)
+	state, err := s.Create(r.Context(), accountID, childID, count, req.Mode)
 	if err != nil {
 		writeError(w, err)
 		return
 	}
 	writeJSON(w, http.StatusCreated, state)
+}
+
+func (s *Service) handleJoin(w http.ResponseWriter, r *http.Request) {
+	childID := chi.URLParam(r, "childID")
+	accountID := identity.AccountIDFrom(r.Context())
+	var req struct {
+		Code string `json:"code"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	state, err := s.Join(r.Context(), accountID, childID, req.Code)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, state)
 }
 
 func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -161,8 +197,15 @@ func (s *Service) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, state)
 }
 
-// Create 创建一个孩子先答的对局。
-func (s *Service) Create(ctx context.Context, accountID, childID string, count int) (State, error) {
+// Create 创建一个对局；room 模式返回房间码并等待加入。
+func (s *Service) Create(ctx context.Context, accountID, childID string, count int, mode string) (State, error) {
+	mode = strings.TrimSpace(mode)
+	if mode == "" {
+		mode = "same_device"
+	}
+	if mode != "same_device" && mode != "room" {
+		return State{}, apiError{422, "VALIDATION_ERROR", "对战模式不合法"}
+	}
 	familyID, err := s.ownsChild(ctx, accountID, childID)
 	if err != nil {
 		return State{}, err
@@ -198,12 +241,59 @@ func (s *Service) Create(ctx context.Context, accountID, childID string, count i
 	if err != nil {
 		return State{}, err
 	}
+	status := "child_turn"
+	joinCode := ""
+	if mode == "room" {
+		status = "waiting"
+		joinCode = randomCode()
+	}
 	var battleID string
 	err = s.pool.QueryRow(ctx, `
-		insert into family_battle (family_id, child_id, question_ids, created_by)
-		values ($1, $2, $3::jsonb, nullif($4, '')::uuid)
-		returning id`, familyID, childID, string(encoded), accountID).Scan(&battleID)
+		insert into family_battle (
+			family_id, child_id, question_ids, created_by, mode, status, join_code)
+		values ($1, $2, $3::jsonb, nullif($4, '')::uuid, $5, $6, nullif($7, ''))
+		returning id`,
+		familyID, childID, string(encoded), accountID, mode, status, joinCode).Scan(&battleID)
 	if err != nil {
+		return State{}, err
+	}
+	return s.Get(ctx, childID, battleID)
+}
+
+// Join 通过房间码加入房间；重复加入幂等。
+func (s *Service) Join(ctx context.Context, accountID, childID, code string) (State, error) {
+	familyID, err := s.ownsChild(ctx, accountID, childID)
+	if err != nil {
+		return State{}, err
+	}
+	code = strings.ToUpper(strings.TrimSpace(code))
+	if len(code) != 6 {
+		return State{}, apiError{422, "VALIDATION_ERROR", "房间码为 6 位"}
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return State{}, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var battleID, status string
+	err = tx.QueryRow(ctx, `
+		select id, status from family_battle
+		where join_code = $1 and child_id = $2 and family_id = $3 for update`,
+		code, childID, familyID).Scan(&battleID, &status)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return State{}, apiError{404, "BATTLE_NOT_FOUND", "房间不存在或已失效"}
+	}
+	if err != nil {
+		return State{}, err
+	}
+	if status == "waiting" {
+		if _, err := tx.Exec(ctx,
+			`update family_battle set status = 'child_turn' where id = $1`, battleID); err != nil {
+			return State{}, err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return State{}, err
 	}
 	return s.Get(ctx, childID, battleID)
@@ -226,6 +316,10 @@ func (s *Service) Get(ctx context.Context, childID, battleID string) (State, err
 		Questions:     questions,
 		ChildScore:    battle.ChildScore,
 		ParentScore:   battle.ParentScore,
+		Mode:          battle.Mode,
+	}
+	if battle.Mode == "room" && battle.Status != "finished" {
+		state.JoinCode = battle.JoinCode
 	}
 	if battle.Status == "finished" {
 		state.Result = &ResultView{
@@ -268,6 +362,9 @@ func (s *Service) Submit(ctx context.Context, childID, battleID, side string, su
 		return State{}, err
 	}
 
+	if status == "waiting" {
+		return State{}, apiError{409, "BATTLE_NOT_JOINED", "对战房间尚未加入"}
+	}
 	expected := "child"
 	if status == "parent_turn" {
 		expected = "parent"
@@ -366,9 +463,11 @@ func (s *Service) load(ctx context.Context, childID, battleID string) (battleRec
 	var rec battleRecord
 	var rawIDs string
 	err := s.pool.QueryRow(ctx, `
-		select id, family_id, status, question_ids::text, child_score, parent_score
+		select id, family_id, status, mode, coalesce(join_code, ''),
+		       question_ids::text, child_score, parent_score
 		from family_battle where id = $1 and child_id = $2`,
-		battleID, childID).Scan(&rec.ID, &rec.FamilyID, &rec.Status, &rawIDs, &rec.ChildScore, &rec.ParentScore)
+		battleID, childID).Scan(&rec.ID, &rec.FamilyID, &rec.Status, &rec.Mode,
+		&rec.JoinCode, &rawIDs, &rec.ChildScore, &rec.ParentScore)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return battleRecord{}, apiError{404, "BATTLE_NOT_FOUND", "对局不存在"}
 	}

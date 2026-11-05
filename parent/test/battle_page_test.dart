@@ -22,6 +22,8 @@ BattleState _state({
   int childScore = 0,
   int parentScore = 0,
   bool finished = false,
+  String mode = 'same_device',
+  String joinCode = '',
 }) => BattleState(
   id: 'b1',
   status: status,
@@ -29,6 +31,8 @@ BattleState _state({
   questions: [_question()],
   childScore: childScore,
   parentScore: parentScore,
+  mode: mode,
+  joinCode: joinCode,
   result: finished
       ? BattleResult(winner: 'child', childScore: 1, parentScore: 0)
       : null,
@@ -55,13 +59,28 @@ BattleState _state({
 class _FakeBattleRepository implements BattleRepository {
   int childSubmits = 0;
   int parentSubmits = 0;
+  BattleState current = _state();
 
   @override
-  Future<BattleState> create(String childId, {int questionCount = 5}) async =>
-      _state();
+  Future<BattleState> create(
+    String childId, {
+    int questionCount = 5,
+    String mode = 'same_device',
+  }) async {
+    current = mode == 'room'
+        ? _state(status: 'waiting', mode: 'room', joinCode: 'ABC123')
+        : _state();
+    return current;
+  }
 
   @override
-  Future<BattleState> get(String childId, String battleId) async => _state();
+  Future<BattleState> join(String childId, String code) async {
+    current = _state(mode: 'room', joinCode: code);
+    return current;
+  }
+
+  @override
+  Future<BattleState> get(String childId, String battleId) async => current;
 
   @override
   Future<BattleState> submit(
@@ -72,15 +91,24 @@ class _FakeBattleRepository implements BattleRepository {
   ) async {
     if (side == 'child') {
       childSubmits++;
-      return _state(status: 'parent_turn', childScore: 1);
+      current = _state(
+        status: 'parent_turn',
+        childScore: 1,
+        mode: current.mode,
+        joinCode: current.joinCode,
+      );
+      return current;
     }
     parentSubmits++;
-    return _state(
+    current = _state(
       status: 'finished',
       childScore: 1,
       parentScore: 0,
       finished: true,
+      mode: current.mode,
+      joinCode: current.joinCode,
     );
+    return current;
   }
 }
 
@@ -125,5 +153,47 @@ void main() {
     expect(find.text('孩子获胜'), findsOneWidget);
     expect(find.text('孩子 1 : 0 家长'), findsOneWidget);
     expect(find.textContaining('三加二等于五'), findsOneWidget);
+  });
+
+  testWidgets('创建双设备房间显示房间码', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleRepositoryProvider.overrideWithValue(_FakeBattleRepository()),
+        ],
+        child: MaterialApp(
+          home: BattlePage(
+            child: Child(id: 'c1', nickname: '小明', stage: 'low'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('双设备房间'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('房间已创建'), findsOneWidget);
+    expect(find.text('ABC123'), findsOneWidget);
+  });
+
+  testWidgets('输入房间码加入后孩子答题', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleRepositoryProvider.overrideWithValue(_FakeBattleRepository()),
+        ],
+        child: MaterialApp(
+          home: BattlePage(
+            child: Child(id: 'c1', nickname: '小明', stage: 'low'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('输入房间码加入'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'abc123');
+    await tester.tap(find.text('加入'));
+    await tester.pumpAndSettle();
+    expect(find.text('孩子答题'), findsOneWidget);
+    expect(find.text('2+3=?'), findsOneWidget);
   });
 }

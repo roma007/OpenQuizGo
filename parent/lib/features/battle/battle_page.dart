@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +8,8 @@ import '../../core/api/models.dart';
 import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/battle_repository.dart';
+
+enum _BattleRole { sameDevice, parentRoom, childRoom }
 
 class BattlePage extends ConsumerStatefulWidget {
   const BattlePage({super.key, required this.child});
@@ -23,6 +27,14 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   bool _handover = false;
   int _index = 0;
   final Map<String, String> _selections = {};
+  _BattleRole _role = _BattleRole.sameDevice;
+  Timer? _poll;
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
 
   Future<void> _start() async {
     setState(() => _starting = true);
@@ -31,15 +43,122 @@ class _BattlePageState extends ConsumerState<BattlePage> {
           .read(battleRepositoryProvider)
           .create(widget.child.id);
       setState(() {
+        _role = _BattleRole.sameDevice;
         _state = state;
         _index = 0;
         _selections.clear();
         _handover = false;
       });
+      _syncPolling();
     } on ApiException catch (error) {
       _toast(error.message);
     } finally {
       if (mounted) setState(() => _starting = false);
+    }
+  }
+
+  Future<void> _startRoom() async {
+    setState(() => _starting = true);
+    try {
+      final state = await ref
+          .read(battleRepositoryProvider)
+          .create(widget.child.id, mode: 'room');
+      setState(() {
+        _role = _BattleRole.parentRoom;
+        _state = state;
+        _index = 0;
+        _selections.clear();
+        _handover = false;
+      });
+      _syncPolling();
+    } on ApiException catch (error) {
+      _toast(error.message);
+    } finally {
+      if (mounted) setState(() => _starting = false);
+    }
+  }
+
+  Future<void> _joinRoom() async {
+    final controller = TextEditingController();
+    final code = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('输入房间码'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 6,
+          textCapitalization: TextCapitalization.characters,
+          decoration: const InputDecoration(
+            labelText: '6 位房间码',
+            hintText: '如 ABC123',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: const Text('加入'),
+          ),
+        ],
+      ),
+    );
+    if (code == null || code.trim().isEmpty || !mounted) return;
+    setState(() => _starting = true);
+    try {
+      final state = await ref
+          .read(battleRepositoryProvider)
+          .join(widget.child.id, code.trim().toUpperCase());
+      setState(() {
+        _role = _BattleRole.childRoom;
+        _state = state;
+        _index = 0;
+        _selections.clear();
+        _handover = false;
+      });
+      _syncPolling();
+    } on ApiException catch (error) {
+      _toast(error.message);
+    } finally {
+      if (mounted) setState(() => _starting = false);
+    }
+  }
+
+  void _syncPolling() {
+    final state = _state;
+    if (state == null || state.finished) {
+      _poll?.cancel();
+      _poll = null;
+      return;
+    }
+    final shouldPoll =
+        state.mode == 'room' &&
+        ((_role == _BattleRole.parentRoom &&
+                (state.status == 'waiting' || state.childTurn)) ||
+            (_role == _BattleRole.childRoom && state.status == 'parent_turn'));
+    if (shouldPoll && _poll == null) {
+      _poll = Timer.periodic(const Duration(seconds: 2), (_) => _refresh());
+    } else if (!shouldPoll) {
+      _poll?.cancel();
+      _poll = null;
+    }
+  }
+
+  Future<void> _refresh() async {
+    final state = _state;
+    if (state == null || !mounted) return;
+    try {
+      final next = await ref
+          .read(battleRepositoryProvider)
+          .get(widget.child.id, state.id);
+      if (!mounted) return;
+      setState(() => _state = next);
+      _syncPolling();
+    } on ApiException {
+      // 轮询失败保持现状，下次继续。
     }
   }
 
@@ -55,20 +174,23 @@ class _BattlePageState extends ConsumerState<BattlePage> {
     }
     setState(() => _submitting = true);
     try {
+      final side = _role == _BattleRole.childRoom
+          ? 'child'
+          : _role == _BattleRole.parentRoom
+          ? 'parent'
+          : state.childTurn
+          ? 'child'
+          : 'parent';
       final next = await ref
           .read(battleRepositoryProvider)
-          .submit(
-            widget.child.id,
-            state.id,
-            state.childTurn ? 'child' : 'parent',
-            _selections,
-          );
+          .submit(widget.child.id, state.id, side, _selections);
       setState(() {
         _state = next;
         _index = 0;
         _selections.clear();
         _handover = false;
       });
+      _syncPolling();
     } on ApiException catch (error) {
       _toast(error.message);
     } finally {
@@ -101,10 +223,80 @@ class _BattlePageState extends ConsumerState<BattlePage> {
     final state = _state;
     if (state == null) return _intro(context);
     if (state.finished) return _result(context, state);
+    if (state.mode == 'room') {
+      return _roomBody(context, state);
+    }
     if (!state.childTurn && !_handover) {
       return _handoverView(context, state);
     }
     return _questionView(context, state);
+  }
+
+  Widget _roomBody(BuildContext context, BattleState state) {
+    if (_role == _BattleRole.parentRoom) {
+      if (state.childTurn || state.status == 'waiting') {
+        return _waitingView(context, state);
+      }
+      return _questionView(context, state);
+    }
+    if (_role == _BattleRole.childRoom && state.status == 'parent_turn') {
+      return _waitingView(context, state);
+    }
+    return _questionView(context, state);
+  }
+
+  Widget _waitingView(BuildContext context, BattleState state) {
+    final waitingChild =
+        _role == _BattleRole.parentRoom && state.status == 'waiting';
+    final childAnswering = _role == _BattleRole.parentRoom && state.childTurn;
+    final title = waitingChild
+        ? '房间已创建'
+        : childAnswering
+        ? '孩子已加入，正在答题'
+        : '等待家长答题';
+    final subtitle = waitingChild
+        ? '让孩子在另一台设备输入房间码加入'
+        : childAnswering
+        ? '孩子答题完成后，这里会自动进入家长答题'
+        : '家长答题完成后，这里会自动显示结果';
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              waitingChild ? Icons.meeting_room_outlined : Icons.hourglass_top,
+              size: 64,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(subtitle, textAlign: TextAlign.center),
+            if (state.joinCode.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              SelectableText(
+                state.joinCode,
+                style: const TextStyle(
+                  fontSize: 44,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 10,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text('房间码 6 位，区分大小写不敏感'),
+            ],
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _intro(BuildContext context) {
@@ -124,7 +316,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
             ),
             const SizedBox(height: 12),
             const Text(
-              '同一部手机轮流答题：孩子先答，答完交给家长，最后看谁得分高。',
+              '同一部手机轮流答题，或两台设备输入房间码对战。孩子先答，最后看谁得分高。',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -138,6 +330,16 @@ class _BattlePageState extends ConsumerState<BattlePage> {
                     )
                   : const Icon(Icons.play_arrow),
               label: const Text('开始对战'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _starting ? null : _startRoom,
+              icon: const Icon(Icons.people_outline),
+              label: const Text('双设备房间'),
+            ),
+            TextButton(
+              onPressed: _starting ? null : _joinRoom,
+              child: const Text('输入房间码加入'),
             ),
           ],
         ),
@@ -181,7 +383,10 @@ class _BattlePageState extends ConsumerState<BattlePage> {
     final question = state.questions[_index];
     final selected = _selections[question.id];
     final isLast = _index == state.questions.length - 1;
-    final sideLabel = state.childTurn ? '孩子答题' : '家长答题';
+    final isChildSide =
+        _role == _BattleRole.childRoom ||
+        (_role == _BattleRole.sameDevice && state.childTurn);
+    final sideLabel = isChildSide ? '孩子答题' : '家长答题';
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -298,7 +503,20 @@ class _BattlePageState extends ConsumerState<BattlePage> {
           _reviewCard(context, state, state.questions[i], i),
         const SizedBox(height: 8),
         FilledButton.icon(
-          onPressed: _starting ? null : _start,
+          onPressed: _starting
+              ? null
+              : () {
+                  if (_role == _BattleRole.sameDevice) {
+                    _start();
+                  } else {
+                    _poll?.cancel();
+                    _poll = null;
+                    setState(() {
+                      _state = null;
+                      _role = _BattleRole.sameDevice;
+                    });
+                  }
+                },
           icon: const Icon(Icons.replay),
           label: const Text('再来一局'),
         ),

@@ -87,6 +87,8 @@ class BattleState {
     required this.parentScore,
     required this.result,
     required this.answers,
+    required this.mode,
+    required this.joinCode,
   });
 
   final String id;
@@ -97,6 +99,8 @@ class BattleState {
   final int parentScore;
   final BattleResult? result;
   final List<BattleAnswer> answers;
+  final String mode;
+  final String joinCode;
 
   bool get finished => status == 'finished';
   bool get childTurn => status == 'child_turn';
@@ -135,6 +139,8 @@ class BattleState {
                 .map(BattleAnswer.fromJson)
                 .toList(growable: false)
           : const [],
+      mode: json['mode'] as String? ?? 'same_device',
+      joinCode: json['join_code'] as String? ?? '',
     );
   }
 }
@@ -144,10 +150,23 @@ class BattleRepository {
 
   final ApiClient _api;
 
-  Future<BattleState> create(String childId, {int questionCount = 5}) async {
+  Future<BattleState> create(
+    String childId, {
+    int questionCount = 5,
+    String mode = 'same_device',
+  }) async {
     final json = await _api.postJson('/v1/family/children/$childId/battles', {
       'question_count': questionCount,
+      'mode': mode,
     });
+    return BattleState.fromJson(json);
+  }
+
+  Future<BattleState> join(String childId, String code) async {
+    final json = await _api.postJson(
+      '/v1/family/children/$childId/battles/join',
+      {'code': code},
+    );
     return BattleState.fromJson(json);
   }
 
