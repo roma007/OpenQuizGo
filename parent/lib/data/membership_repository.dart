@@ -96,6 +96,33 @@ class MembershipInfo {
   );
 }
 
+class MembershipReminder {
+  MembershipReminder({
+    required this.id,
+    required this.planName,
+    required this.expiresAt,
+    required this.daysBefore,
+    required this.status,
+  });
+
+  final String id;
+  final String planName;
+  final DateTime? expiresAt;
+  final int daysBefore;
+  final String status;
+
+  factory MembershipReminder.fromJson(Map<String, dynamic> json) =>
+      MembershipReminder(
+        id: json['id'] as String? ?? '',
+        planName: json['plan_name'] as String? ?? '',
+        expiresAt: json['expires_at'] is String
+            ? DateTime.tryParse(json['expires_at'] as String)
+            : null,
+        daysBefore: (json['days_before'] as num?)?.toInt() ?? 0,
+        status: json['status'] as String? ?? 'unread',
+      );
+}
+
 class MembershipAutoRenew {
   const MembershipAutoRenew({
     required this.enabled,
@@ -129,12 +156,14 @@ class MembershipCenter {
       planName: '',
       canEdit: true,
     ),
+    this.reminders = const [],
   });
 
   final MembershipInfo? membership;
   final List<MembershipPlan> plans;
   final MembershipSharing sharing;
   final MembershipAutoRenew autoRenew;
+  final List<MembershipReminder> reminders;
 
   factory MembershipCenter.fromJson(Map<String, dynamic> json) {
     final rawMembership = json['membership'];
@@ -157,6 +186,12 @@ class MembershipCenter {
               planName: '',
               canEdit: true,
             ),
+      reminders: json['reminders'] is List
+          ? (json['reminders'] as List)
+                .whereType<Map<String, dynamic>>()
+                .map(MembershipReminder.fromJson)
+                .toList(growable: false)
+          : const [],
       plans: rawPlans is List
           ? rawPlans
                 .whereType<Map<String, dynamic>>()
@@ -331,6 +366,10 @@ class MembershipRepository {
       },
     );
     return MembershipInvoice.fromJson(json);
+  }
+
+  Future<void> markRemindersRead() async {
+    await _api.postJson('/v1/family/membership/reminders/read', const {});
   }
 
   Future<MembershipAutoRenew> autoRenew() async {

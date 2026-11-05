@@ -791,6 +791,63 @@ func TestAutoRenewProcess(t *testing.T) {
 	}
 }
 
+func TestMembershipReminders(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var accountID, planID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('c','reminder-test')
+		returning id`).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `
+		insert into membership_plan (code,name,duration_days,price_cents,status)
+		values ('reminder-plan','提醒套餐',30,1000,'online') returning id`).Scan(&planID); err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		insert into account_membership (account_id, plan_id, plan_name, status, starts_at, expires_at)
+		values ($1, $2, '提醒套餐', 'active', now() - interval '23 days',
+		        now() + interval '7 days')`, accountID, planID); err != nil {
+		t.Fatalf("membership: %v", err)
+	}
+	svc := New(pool, "")
+	created, err := svc.ProcessReminders(ctx)
+	if err != nil || created != 1 {
+		t.Fatalf("created = %d err=%v, want 1", created, err)
+	}
+	again, err := svc.ProcessReminders(ctx)
+	if err != nil || again != 0 {
+		t.Fatalf("second created = %d err=%v, want 0", again, err)
+	}
+	items, err := svc.Reminders(ctx, accountID, 10)
+	if err != nil || len(items) != 1 || items[0].DaysBefore != 7 || items[0].Status != "unread" {
+		t.Fatalf("reminders = %+v err=%v", items, err)
+	}
+	center, err := svc.Center(ctx, accountID)
+	if err != nil || len(center.Reminders) != 1 {
+		t.Fatalf("center reminders = %+v err=%v", center.Reminders, err)
+	}
+	if err := svc.MarkRemindersRead(ctx, accountID); err != nil {
+		t.Fatalf("mark read: %v", err)
+	}
+	center, err = svc.Center(ctx, accountID)
+	if err != nil || len(center.Reminders) != 0 {
+		t.Fatalf("center unread = %+v err=%v", center.Reminders, err)
+	}
+}
+
 func prepareDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)

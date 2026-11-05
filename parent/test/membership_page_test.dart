@@ -36,6 +36,9 @@ class _FakeMembershipRepository implements MembershipRepository {
       MembershipCenter(membership: paid ? _active() : null, plans: [_plan()]);
 
   @override
+  Future<void> markRemindersRead() async {}
+
+  @override
   Future<MembershipAutoRenew> autoRenew() async =>
       const MembershipAutoRenew(
         enabled: false,

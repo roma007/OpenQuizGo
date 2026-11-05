@@ -212,6 +212,10 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    if ((_center?.reminders ?? const []).isNotEmpty)
+                      _reminderCard(context),
+                    if ((_center?.reminders ?? const []).isNotEmpty)
+                      const SizedBox(height: 12),
                     _statusCard(context),
                     const SizedBox(height: 12),
                     _sharingCard(context),
@@ -379,6 +383,37 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
         ),
         value: sharing.shared,
         onChanged: sharing.canEdit && !_sharingSaving ? _toggleSharing : null,
+      ),
+    );
+  }
+
+  Future<void> _markRemindersRead() async {
+    try {
+      await ref.read(membershipRepositoryProvider).markRemindersRead();
+      await _load();
+    } on ApiException catch (error) {
+      _toast(error.message);
+    }
+  }
+
+  Widget _reminderCard(BuildContext context) {
+    final reminders = _center?.reminders ?? const <MembershipReminder>[];
+    if (reminders.isEmpty) return const SizedBox.shrink();
+    return Card(
+      color: Colors.orange.shade50,
+      child: ListTile(
+        leading: const Icon(Icons.notifications_active_outlined),
+        title: Text('会员到期提醒（${reminders.length}）'),
+        subtitle: Text(
+          reminders
+              .map((item) => '${item.planName} · 还有 ${item.daysBefore} 天到期')
+              .join('\n'),
+        ),
+        isThreeLine: reminders.length > 1,
+        trailing: TextButton(
+          onPressed: _markRemindersRead,
+          child: const Text('全部已读'),
+        ),
       ),
     );
   }

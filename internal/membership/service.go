@@ -106,6 +106,7 @@ type Center struct {
 	Membership *Membership `json:"membership,omitempty"`
 	Sharing    Sharing     `json:"sharing"`
 	AutoRenew  AutoRenew   `json:"auto_renew"`
+	Reminders  []Reminder  `json:"reminders"`
 	Plans      []Plan      `json:"plans"`
 }
 
@@ -169,6 +170,16 @@ type AutoRenew struct {
 	PlanID   string `json:"plan_id,omitempty"`
 	PlanName string `json:"plan_name,omitempty"`
 	CanEdit  bool   `json:"can_edit"`
+}
+
+// Reminder 是会员到期站内提醒。
+type Reminder struct {
+	ID         string    `json:"id"`
+	PlanName   string    `json:"plan_name"`
+	ExpiresAt  time.Time `json:"expires_at"`
+	DaysBefore int       `json:"days_before"`
+	Status     string    `json:"status"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // Invoice 是会员发票申请。
@@ -252,6 +263,8 @@ func (s *Service) ParentRoutes(r chi.Router) {
 	r.Get("/family/membership/invoices", s.handleInvoices)
 	r.Get("/family/membership/auto-renew", s.handleAutoRenew)
 	r.Put("/family/membership/auto-renew", s.handleSetAutoRenew)
+	r.Get("/family/membership/reminders", s.handleReminders)
+	r.Post("/family/membership/reminders/read", s.handleMarkRemindersRead)
 	r.Post("/family/membership/orders/{orderID}/invoice", s.handleCreateInvoice)
 	r.Post("/family/membership/orders/{orderID}/pay", s.handlePayOrder)
 }
@@ -444,6 +457,23 @@ func (s *Service) handleSetAutoRenew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, setting)
+}
+
+func (s *Service) handleReminders(w http.ResponseWriter, r *http.Request) {
+	items, err := s.Reminders(r.Context(), identity.AccountIDFrom(r.Context()), 50)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (s *Service) handleMarkRemindersRead(w http.ResponseWriter, r *http.Request) {
+	if err := s.MarkRemindersRead(r.Context(), identity.AccountIDFrom(r.Context())); err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 func (s *Service) handleAdminList(w http.ResponseWriter, r *http.Request) {
@@ -777,7 +807,18 @@ func (s *Service) Center(ctx context.Context, accountID string) (Center, error) 
 	if err != nil {
 		return Center{}, err
 	}
-	return Center{Membership: member, Sharing: sharing, AutoRenew: autoRenew, Plans: plans}, nil
+	reminders, err := s.Reminders(ctx, accountID, 20)
+	if err != nil {
+		return Center{}, err
+	}
+	unread := make([]Reminder, 0, len(reminders))
+	for _, reminder := range reminders {
+		if reminder.Status == "unread" {
+			unread = append(unread, reminder)
+		}
+	}
+	return Center{Membership: member, Sharing: sharing, AutoRenew: autoRenew,
+		Reminders: unread, Plans: plans}, nil
 }
 
 func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error) {
@@ -1086,6 +1127,62 @@ func (s *Service) Reconciliation(ctx context.Context, from, to string) (Reconcil
 	}
 	report.Totals.NetCents = report.Totals.PaidCents - report.Totals.RefundedCents
 	return report, rows.Err()
+}
+
+const reminderColumns = `id, plan_name, expires_at, days_before, status, created_at`
+
+func scanReminder(row scanner) (Reminder, error) {
+	var item Reminder
+	err := row.Scan(&item.ID, &item.PlanName, &item.ExpiresAt, &item.DaysBefore,
+		&item.Status, &item.CreatedAt)
+	return item, err
+}
+
+// ProcessReminders 为 30/7/1 天内到期的会员生成站内提醒。
+func (s *Service) ProcessReminders(ctx context.Context) (int, error) {
+	tag, err := s.pool.Exec(ctx, `
+		insert into membership_reminder (account_id, plan_name, expires_at, days_before)
+		select am.account_id, am.plan_name, am.expires_at,
+		       (am.expires_at::date - current_date)::int
+		from account_membership am
+		where am.status = 'active' and am.expires_at > now()
+		  and (am.expires_at::date - current_date) in (30, 7, 1)
+		on conflict (account_id, expires_at, days_before) do nothing`)
+	if err != nil {
+		return 0, err
+	}
+	return int(tag.RowsAffected()), nil
+}
+
+// Reminders 返回当前账号的到期提醒。
+func (s *Service) Reminders(ctx context.Context, accountID string, limit int) ([]Reminder, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 50
+	}
+	rows, err := s.pool.Query(ctx, `
+		select `+reminderColumns+` from membership_reminder
+		where account_id = $1 order by created_at desc limit $2`, accountID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]Reminder, 0)
+	for rows.Next() {
+		item, err := scanReminder(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+// MarkRemindersRead 标记当前账号全部提醒已读。
+func (s *Service) MarkRemindersRead(ctx context.Context, accountID string) error {
+	_, err := s.pool.Exec(ctx, `
+		update membership_reminder set status = 'read'
+		where account_id = $1 and status = 'unread'`, accountID)
+	return err
 }
 
 // AutoRenew 返回当前账号的自动续费预约。

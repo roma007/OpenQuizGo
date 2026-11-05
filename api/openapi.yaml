@@ -672,6 +672,38 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/MembershipCenter" }
+  /v1/family/membership/reminders:
+    get:
+      tags: [membership]
+      summary: 会员到期提醒
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: 最近提醒
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        plan_name: { type: string }
+                        expires_at: { type: string, format: date-time }
+                        days_before: { type: integer, enum: [30, 7, 1] }
+                        status: { type: string, enum: [unread, read] }
+                        created_at: { type: string, format: date-time }
+  /v1/family/membership/reminders/read:
+    post:
+      tags: [membership]
+      summary: 全部提醒标记已读
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200": { description: OK }
+
   /v1/family/membership/auto-renew:
     get:
       tags: [membership]

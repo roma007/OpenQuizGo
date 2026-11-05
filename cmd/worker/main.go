@@ -54,6 +54,11 @@ func main() {
 		} else {
 			logger.Info("coverage snapshot captured", "date", snap.CapturedOn, "total", snap.Total)
 		}
+		if count, err := membershipSvc.ProcessReminders(ctx); err != nil {
+			logger.Error("process membership reminders", "error", err)
+		} else if count > 0 {
+			logger.Info("membership reminders created", "count", count)
+		}
 		if count, err := membershipSvc.ProcessAutoRenew(ctx); err != nil {
 			logger.Error("process auto renew", "error", err)
 		} else if count > 0 {
