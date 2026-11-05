@@ -14,6 +14,7 @@ import '../data/battle_repository.dart';
 import '../data/membership_repository.dart';
 import '../data/alert_repository.dart';
 import 'storage/pending_rule_store.dart';
+import 'storage/pending_unlock_store.dart';
 import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -26,6 +27,17 @@ final cacheStoreProvider = Provider<CacheStore>((ref) => CacheStore());
 final pendingRuleStoreProvider = Provider<PendingRuleStore>(
   (ref) => PendingRuleStore(),
 );
+
+final pendingUnlockStoreProvider = Provider<PendingUnlockStore>(
+  (ref) => PendingUnlockStore(),
+);
+
+final pendingUnlockProvider = FutureProvider.family<PendingUnlock?, String>((
+  ref,
+  deviceId,
+) {
+  return ref.watch(pendingUnlockStoreProvider).read(deviceId);
+});
 
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(ref.watch(tokenStoreProvider));

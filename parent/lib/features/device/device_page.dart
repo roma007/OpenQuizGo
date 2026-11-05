@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
 import '../../core/providers.dart';
+import '../../core/storage/pending_unlock_store.dart';
 import '../../data/device_repository.dart';
 import 'bind_device_page.dart';
 
@@ -54,11 +55,7 @@ class DevicePage extends ConsumerWidget {
                       : 1;
                   final cards = [
                     for (final device in items)
-                      _DeviceCard(
-                        device: device,
-                        onUnlock: () => _unlock(context, ref, device),
-                        onUnbind: () => _confirmUnbind(context, ref, device),
-                      ),
+                      _deviceCard(context, ref, device),
                   ];
                   return RefreshIndicator(
                     onRefresh: () async => ref.invalidate(devicesProvider),
@@ -87,6 +84,21 @@ class DevicePage extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _deviceCard(BuildContext context, WidgetRef ref, DeviceInfo device) {
+    final pending = ref.watch(pendingUnlockProvider(device.id)).when(
+      data: (value) => value,
+      loading: () => null,
+      error: (_, _) => null,
+    );
+    return _DeviceCard(
+      device: device,
+      pending: pending,
+      onUnlock: () => _unlock(context, ref, device),
+      onSendPending: () => _sendPending(context, ref, device),
+      onUnbind: () => _confirmUnbind(context, ref, device),
     );
   }
 
@@ -124,12 +136,110 @@ class DevicePage extends ConsumerWidget {
         );
       }
     } on ApiException catch (error) {
+      if (error.statusCode == null) {
+        await ref
+            .read(pendingUnlockStoreProvider)
+            .save(device.id, input.minutes);
+        ref.invalidate(pendingUnlockProvider(device.id));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('网络不可用，已暂存解锁请求，10 分钟内可在设备卡片补发')),
+          );
+        }
+      } else if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    }
+  }
+
+  Future<void> _sendPending(
+    BuildContext context,
+    WidgetRef ref,
+    DeviceInfo device,
+  ) async {
+    final store = ref.read(pendingUnlockStoreProvider);
+    final pending = await store.read(device.id);
+    if (pending == null) {
+      ref.invalidate(pendingUnlockProvider(device.id));
+      if (context.mounted) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('待补发解锁已过期')));
+      }
+      return;
+    }
+    if (!context.mounted) return;
+    final pin = await _askPin(
+      context,
+      title: '补发临时解锁（${pending.minutes} 分钟）',
+    );
+    if (pin == null) return;
+    final latest = await store.read(device.id);
+    if (latest == null) {
+      ref.invalidate(pendingUnlockProvider(device.id));
+      if (context.mounted) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('待补发解锁已过期')));
+      }
+      return;
+    }
+    try {
+      final grant = await ref
+          .read(deviceRepositoryProvider)
+          .unlock(bindId: device.id, pin: pin, minutes: latest.minutes);
+      await store.clear(device.id);
+      ref.invalidate(pendingUnlockProvider(device.id));
+      ref.invalidate(devicesProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('已补发解锁 ${grant.minutes} 分钟')),
+        );
+      }
+    } on ApiException catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(error.message)));
       }
     }
+  }
+
+  Future<String?> _askPin(BuildContext context, {required String title}) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          obscureText: true,
+          keyboardType: TextInputType.number,
+          maxLength: 6,
+          decoration: const InputDecoration(
+            labelText: '家长 PIN',
+            counterText: '',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('补发'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return result;
   }
 
   Future<void> _confirmUnbind(
@@ -176,12 +286,16 @@ class DevicePage extends ConsumerWidget {
 class _DeviceCard extends StatelessWidget {
   const _DeviceCard({
     required this.device,
+    required this.pending,
     required this.onUnlock,
+    required this.onSendPending,
     required this.onUnbind,
   });
 
   final DeviceInfo device;
+  final PendingUnlock? pending;
   final VoidCallback onUnlock;
+  final VoidCallback onSendPending;
   final VoidCallback onUnbind;
 
   @override
@@ -203,11 +317,18 @@ class _DeviceCard extends StatelessWidget {
         ),
         subtitle: Text(
           '${platformLabel(device.platform)} · '
-          '${boundAt == null ? "绑定时间未知" : "绑定于 ${DateFormat("yyyy-MM-dd HH:mm").format(boundAt.toLocal())}"}',
+          '${boundAt == null ? "绑定时间未知" : "绑定于 ${DateFormat("yyyy-MM-dd HH:mm").format(boundAt.toLocal())}"}'
+          '${pending == null ? "" : " · 待补发解锁 ${pending!.minutes} 分钟"}',
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (pending != null)
+              IconButton(
+                tooltip: '补发解锁',
+                onPressed: onSendPending,
+                icon: const Icon(Icons.schedule_send),
+              ),
             IconButton(
               tooltip: '远程解锁',
               onPressed: onUnlock,
