@@ -70,6 +70,9 @@ class GuardEngine(
     @Volatile
     private var pending: PendingOffline? = null
 
+    @Volatile
+    private var reportingPending = false
+
     init {
         scope.launch { restore() }
         scope.launch {
@@ -120,6 +123,12 @@ class GuardEngine(
             while (isActive) {
                 delay(LEASE_REFRESH_INTERVAL_MS)
                 refreshLease()
+            }
+        }
+        scope.launch {
+            while (isActive) {
+                delay(PENDING_RETRY_INTERVAL_MS)
+                if (pending != null) reportPendingOffline()
             }
         }
     }
@@ -425,44 +434,50 @@ class GuardEngine(
     }
 
     private suspend fun reportPendingOffline() {
-        val snapshot = pending ?: return
-        if (snapshot.watchedSeconds <= 0) {
-            pending = null
-            preferences.savePendingOffline(null)
-            return
-        }
-        val currentLease = lease
-        if (currentLease == null || snapshot.leaseId == null) {
-            GuardLog.w("offline usage without lease, dropping ${snapshot.watchedSeconds}s")
-            pending = null
-            preferences.savePendingOffline(null)
-            return
-        }
-        val entry = OfflineEntry(
-            startAt = Instant.ofEpochMilli(snapshot.startMillis).toString(),
-            endAt = Instant.ofEpochMilli(snapshot.endMillis).toString(),
-            watchedSeconds = snapshot.watchedSeconds,
-            pausedSeconds = snapshot.pausedSeconds,
-            targetApp = snapshot.targetApp,
-        )
-        runCatching { watchRepository.reportOffline(currentLease.leaseId, listOf(entry)) }
-            .onSuccess { result ->
-                GuardLog.i(
-                    "offline reported=${result.reportedMinutes}m remaining=${result.remainingMinutes}m " +
-                        "clamped=${result.clamped}",
-                )
+        if (reportingPending) return
+        reportingPending = true
+        try {
+            val snapshot = pending ?: return
+            if (snapshot.watchedSeconds <= 0) {
                 pending = null
                 preferences.savePendingOffline(null)
+                return
             }
-            .onFailure { error ->
-                GuardLog.w("offline report failed: ${error.message}")
-                if (error is com.openquizgo.guard.data.watch.WatchApiException &&
-                    error.httpStatus in listOf(404, 409, 410, 422)
-                ) {
+            val leaseId = snapshot.leaseId
+            if (leaseId == null) {
+                GuardLog.w("offline usage without lease, dropping ${snapshot.watchedSeconds}s")
+                pending = null
+                preferences.savePendingOffline(null)
+                return
+            }
+            val entry = OfflineEntry(
+                startAt = Instant.ofEpochMilli(snapshot.startMillis).toString(),
+                endAt = Instant.ofEpochMilli(snapshot.endMillis).toString(),
+                watchedSeconds = snapshot.watchedSeconds,
+                pausedSeconds = snapshot.pausedSeconds,
+                targetApp = snapshot.targetApp,
+            )
+            runCatching { watchRepository.reportOffline(leaseId, listOf(entry)) }
+                .onSuccess { result ->
+                    GuardLog.i(
+                        "offline reported=${result.reportedMinutes}m remaining=${result.remainingMinutes}m " +
+                            "clamped=${result.clamped}",
+                    )
                     pending = null
                     preferences.savePendingOffline(null)
                 }
-            }
+                .onFailure { error ->
+                    GuardLog.w("offline report failed: ${error.message}")
+                    if (error is com.openquizgo.guard.data.watch.WatchApiException &&
+                        error.httpStatus in listOf(401, 403, 404, 409, 410, 422)
+                    ) {
+                        pending = null
+                        preferences.savePendingOffline(null)
+                    }
+                }
+        } finally {
+            reportingPending = false
+        }
     }
 
     private fun clearGrant() {
@@ -509,6 +524,7 @@ class GuardEngine(
     }
 
     companion object {
+        private const val PENDING_RETRY_INTERVAL_MS = 5 * 60 * 1000L
         private const val HEARTBEAT_INTERVAL_MS = 30_000L
         private const val LEASE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000L
 
