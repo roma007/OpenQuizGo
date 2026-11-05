@@ -123,6 +123,20 @@ func TestIdentityFlow(t *testing.T) {
 		t.Fatalf("device me child = %s, want %s", deviceMe.ChildID, child.ID)
 	}
 
+	// 设备端自助解绑：第二台设备解绑后令牌立即失效。
+	deviceID2 := fmt.Sprintf("tv-self-%d", time.Now().UnixNano())
+	var code2 identity.ActivationCode
+	c.expect(http.MethodPost, "/device/activate/code",
+		map[string]string{"device_id": deviceID2, "platform": "tv"}, "", http.StatusOK, &code2)
+	c.expect(http.MethodPost, "/family/devices/activate",
+		map[string]string{"code": code2.Code, "child_id": child.ID}, login.AccessToken, http.StatusOK, nil)
+	var token2 identity.DeviceToken
+	c.expect(http.MethodPost, "/device/token",
+		map[string]string{"code": code2.Code, "device_id": deviceID2}, "", http.StatusOK, &token2)
+	c.expect(http.MethodGet, "/device/me", nil, token2.Token, http.StatusOK, nil)
+	c.expect(http.MethodDelete, "/device/me", nil, token2.Token, http.StatusOK, nil)
+	c.expect(http.MethodGet, "/device/me", nil, token2.Token, http.StatusForbidden, nil)
+
 	var devices []identity.Device
 	c.expect(http.MethodGet, "/family/devices", nil, login.AccessToken, http.StatusOK, &devices)
 	if len(devices) != 1 || devices[0].DeviceID != deviceID {

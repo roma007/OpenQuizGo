@@ -396,6 +396,18 @@ func (r *repository) unbindDevice(ctx context.Context, accountID, bindID string)
 	return tag.RowsAffected() > 0, nil
 }
 
+// unbindDeviceSelf 由设备自身调用，按 device_id 解除 active 绑定。
+func (r *repository) unbindDeviceSelf(ctx context.Context, deviceID string) (bool, error) {
+	tag, err := r.pool.Exec(ctx, `
+		update device_bind
+		set status = 'unbound', unbound_at = now(), token_hash = '', token_expires_at = null
+		where device_id = $1 and status = 'active'`, deviceID)
+	if err != nil {
+		return false, err
+	}
+	return tag.RowsAffected() > 0, nil
+}
+
 func (r *repository) createSession(ctx context.Context, accountID, tokenHash, userAgent, ip string, expiresAt time.Time) error {
 	_, err := r.pool.Exec(ctx, `
 		insert into parent_session (account_id, token_hash, user_agent, ip, expires_at)

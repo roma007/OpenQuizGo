@@ -741,6 +741,13 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         "200": { description: OK }
+    delete:
+      tags: [device]
+      summary: 设备端自助解绑（重置绑定前调用）
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: 已解绑（幂等） }
+        "403": { description: 设备令牌已失效 }
   /v1/device/capability:
     put:
       tags: [device]

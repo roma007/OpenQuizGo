@@ -160,6 +160,7 @@ func (s *Service) Routes(r chi.Router) {
 	r.Group(func(r chi.Router) {
 		r.Use(s.DeviceAuth)
 		r.Get("/device/me", s.handleDeviceMe)
+		r.Delete("/device/me", s.handleUnbindSelf)
 	})
 }
 
@@ -379,6 +380,19 @@ func (s *Service) handleDeviceToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, token)
+}
+
+func (s *Service) handleUnbindSelf(w http.ResponseWriter, r *http.Request) {
+	principal, ok := DeviceFrom(r.Context())
+	if !ok {
+		writeError(w, r, ErrInvalidToken)
+		return
+	}
+	if err := s.UnbindSelf(r.Context(), principal.DeviceID); err != nil {
+		writeError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "unbound"})
 }
 
 func (s *Service) handleUnbindDevice(w http.ResponseWriter, r *http.Request) {

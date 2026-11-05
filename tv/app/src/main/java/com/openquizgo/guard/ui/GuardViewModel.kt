@@ -118,6 +118,11 @@ class GuardViewModel(
         viewModelScope.launch {
             pollJob?.cancel()
             GuardLog.i("binding", "binding reset by user")
+            val token = preferences.deviceToken.first()
+            if (!token.isNullOrBlank()) {
+                runCatching { api.unbindDeviceMe("Bearer $token") }
+                    .onFailure { GuardLog.w("binding", "server unbind failed: ${it.message}") }
+            }
             preferences.clearBinding()
             startActivation()
         }

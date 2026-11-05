@@ -3,6 +3,7 @@ package com.openquizgo.guard.data.remote
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -27,6 +28,9 @@ interface GuardApi {
 
     @GET("v1/device/me")
     suspend fun deviceMe(@Header("Authorization") authorization: String): DeviceMeResponse
+
+    @DELETE("v1/device/me")
+    suspend fun unbindDeviceMe(@Header("Authorization") authorization: String): Response<Unit>
 
     @POST("v1/quiz/sessions")
     suspend fun createQuizSession(

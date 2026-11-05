@@ -527,6 +527,12 @@ func (s *Service) loadActivation(ctx context.Context, code string) (activationRe
 	return record, nil
 }
 
+// UnbindSelf 由设备令牌主动解绑当前设备；重复调用幂等。
+func (s *Service) UnbindSelf(ctx context.Context, deviceID string) error {
+	_, err := s.repo.unbindDeviceSelf(ctx, deviceID)
+	return err
+}
+
 // UnbindDevice 解绑设备，设备令牌立即失效。
 func (s *Service) UnbindDevice(ctx context.Context, accountID, bindID string) error {
 	ok, err := s.repo.unbindDevice(ctx, accountID, bindID)
