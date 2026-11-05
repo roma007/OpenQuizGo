@@ -36,7 +36,15 @@ BattleState _state({
   joinCode: joinCode,
   joinCodeExpiresAt: joinCodeExpiresAt,
   result: finished
-      ? BattleResult(winner: 'child', childScore: 1, parentScore: 0)
+      ? BattleResult(
+          winner: childScore > parentScore
+              ? 'child'
+              : parentScore > childScore
+              ? 'parent'
+              : 'draw',
+          childScore: childScore,
+          parentScore: parentScore,
+        )
       : null,
   answers: finished
       ? [
@@ -93,6 +101,16 @@ class _FakeBattleRepository implements BattleRepository {
   @override
   Future<BattleState> get(String childId, String battleId) async {
     getCalls++;
+    if (battleId == 'b0') {
+      return _state(
+        status: 'finished',
+        childScore: 5,
+        parentScore: 5,
+        finished: true,
+        mode: 'room',
+        joinCode: 'ABC123',
+      );
+    }
     return current;
   }
 
@@ -280,5 +298,26 @@ void main() {
     now = start.add(const Duration(seconds: 20));
     await tester.pump(const Duration(seconds: 5));
     expect(repository.getCalls, callsAfterExpiry);
+  });
+
+  testWidgets('点击对战记录进入详情', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleRepositoryProvider.overrideWithValue(_FakeBattleRepository()),
+        ],
+        child: MaterialApp(
+          home: BattlePage(
+            child: Child(id: 'c1', nickname: '小明', stage: 'low'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('孩子 5 : 5 家长'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('对战详情'), findsOneWidget);
+    expect(find.text('平局'), findsOneWidget);
+    expect(find.text('孩子 5 : 5 家长'), findsOneWidget);
   });
 }

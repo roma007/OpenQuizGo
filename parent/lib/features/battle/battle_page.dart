@@ -8,6 +8,7 @@ import '../../core/api/models.dart';
 import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/battle_repository.dart';
+import 'battle_record_page.dart';
 
 enum _BattleRole { sameDevice, parentRoom, childRoom }
 
@@ -498,6 +499,14 @@ class _BattlePageState extends ConsumerState<BattlePage> {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
+        onTap: item.status == 'finished'
+            ? () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      BattleRecordPage(child: widget.child, battleId: item.id),
+                ),
+              )
+            : null,
         leading: Icon(
           item.mode == 'room' ? Icons.people_outline : Icons.phone_android,
         ),
