@@ -117,6 +117,21 @@ export const api = {
       body,
       headers: { 'Content-Type': contentType },
     }),
+  uploadMedia: async (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    const token = tokenStore.get()
+    const response = await fetch('/v1/admin/media', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: form,
+    })
+    const body = await response.json().catch(() => null)
+    if (!response.ok) {
+      throw new ApiError(body?.message || '上传失败', response.status, body?.code)
+    }
+    return body as { url: string; bytes: number; content_type: string }
+  },
   audit: (params: Record<string, string | undefined> = {}) => {
     const query = new URLSearchParams({ limit: '200' })
     Object.entries(params).forEach(([key, value]) => {

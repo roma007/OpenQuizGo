@@ -1372,6 +1372,55 @@ paths:
         "409": { description: 订单状态不可退款 }
         "422": { $ref: "#/components/responses/ValidationError" }
 
+  /v1/admin/media:
+    post:
+      tags: [media]
+      summary: 上传题目图片
+      security: [{ AdminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string }
+                  bytes: { type: integer }
+                  content_type: { type: string }
+        "413": { description: 文件过大 }
+        "422": { description: 非图片或缺少文件 }
+
+  /v1/media/{name}:
+    get:
+      tags: [media]
+      summary: 读取题目图片
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: 图片
+          content:
+            image/png: { schema: { type: string, format: binary } }
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+            image/gif: { schema: { type: string, format: binary } }
+        "404": { description: 文件不存在 }
+
   /v1/admin/dashboard:
     get:
       tags: [dashboard]

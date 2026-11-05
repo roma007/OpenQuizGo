@@ -31,6 +31,9 @@ type Config struct {
 	SMSMockCode     string
 
 	PaymentCallbackSecret string
+
+	UploadDir   string
+	UploadMaxMB int
 }
 
 // Load 读取环境变量并做最小校验。
@@ -57,6 +60,9 @@ func Load() (Config, error) {
 		SMSMockCode:     getenv("SMS_MOCK_CODE", "123456"),
 
 		PaymentCallbackSecret: os.Getenv("PAYMENT_CALLBACK_SECRET"),
+
+		UploadDir:   getenv("UPLOAD_DIR", "./data/uploads"),
+		UploadMaxMB: getInt("UPLOAD_MAX_MB", 5),
 	}
 
 	if cfg.Env == "dev" {

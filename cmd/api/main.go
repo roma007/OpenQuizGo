@@ -17,6 +17,7 @@ import (
 	"github.com/roma007/OpenQuizGo/internal/dashboard"
 	"github.com/roma007/OpenQuizGo/internal/httpapi"
 	"github.com/roma007/OpenQuizGo/internal/identity"
+	"github.com/roma007/OpenQuizGo/internal/media"
 	"github.com/roma007/OpenQuizGo/internal/membership"
 	"github.com/roma007/OpenQuizGo/internal/platform/cache"
 	"github.com/roma007/OpenQuizGo/internal/platform/cryptox"
@@ -100,6 +101,7 @@ func main() {
 	topicService := topic.New(pool)
 	membershipService := membership.New(pool, cfg.PaymentCallbackSecret)
 	dashboardService := dashboard.New(pool)
+	mediaService := media.New(cfg.UploadDir, cfg.UploadMaxMB)
 	quizService := quiz.New(pool, rdb, ruleService, watchService, logger)
 
 	handler := httpapi.New(httpapi.Deps{
@@ -118,6 +120,7 @@ func main() {
 		Topic:      topicService,
 		Membership: membershipService,
 		Dashboard:  dashboardService,
+		Media:      mediaService,
 		Version:    cfg.Version,
 		Env:        cfg.Env,
 	})

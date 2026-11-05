@@ -26,7 +26,7 @@ export interface Question {
   difficulty: number
   type: string
   stem: string
-  stem_media?: unknown
+  stem_media?: { url?: string } | null
   options?: OptionItem[] | null
   answer: unknown
   answer_alias?: unknown

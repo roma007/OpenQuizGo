@@ -12,10 +12,12 @@ import {
   Select,
   Space,
   Table,
+  Upload,
   Tag,
   Typography,
   message,
 } from 'antd'
+import { UploadOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError } from '../api'
@@ -87,6 +89,8 @@ export default function QuestionEdit() {
   const [audit, setAudit] = useState<AuditEntry[]>([])
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(Boolean(id))
+  const [stemMediaUrl, setStemMediaUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   const loadAudit = async (targetId: string) => {
     try {
@@ -123,6 +127,9 @@ export default function QuestionEdit() {
           explain: result.explain,
           duration_limit: result.duration_limit || undefined,
         })
+        if (result.stem_media && typeof result.stem_media === 'object') {
+          setStemMediaUrl(result.stem_media.url || '')
+        }
         if (Array.isArray(result.options)) {
           setOptions(result.options as OptionItem[])
         }
@@ -154,7 +161,7 @@ export default function QuestionEdit() {
       difficulty: values.difficulty,
       type: values.type,
       stem: values.stem,
-      stem_media: null,
+      stem_media: stemMediaUrl ? { url: stemMediaUrl } : null,
       options: choice
         ? options.filter((item) => item.id.trim() && item.text.trim())
         : optionsJson.trim()
@@ -280,6 +287,49 @@ export default function QuestionEdit() {
           </Row>
           <Form.Item name="stem" label="题干" rules={[{ required: true }]}>
             <Input.TextArea rows={3} />
+          </Form.Item>
+          <Form.Item label="题干图片">
+            <Space orientation="vertical" size={8}>
+              {stemMediaUrl && (
+                <img
+                  src={stemMediaUrl}
+                  alt="题干图片"
+                  style={{ maxWidth: 280, maxHeight: 200, objectFit: 'contain' }}
+                />
+              )}
+              <Space>
+                <Upload
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  showUploadList={false}
+                  beforeUpload={(file) => {
+                    void (async () => {
+                      setUploading(true)
+                      try {
+                        const result = await api.uploadMedia(file as File)
+                        setStemMediaUrl(result.url)
+                        message.success('图片已上传')
+                      } catch (error) {
+                        message.error(
+                          error instanceof ApiError ? error.message : '上传失败',
+                        )
+                      } finally {
+                        setUploading(false)
+                      }
+                    })()
+                    return false
+                  }}
+                >
+                  <Button icon={<UploadOutlined />} loading={uploading}>
+                    上传图片
+                  </Button>
+                </Upload>
+                {stemMediaUrl && (
+                  <Button danger onClick={() => setStemMediaUrl('')}>
+                    移除
+                  </Button>
+                )}
+              </Space>
+            </Space>
           </Form.Item>
           <Form.Item name="explain" label="解析">
             <Input.TextArea rows={2} />
