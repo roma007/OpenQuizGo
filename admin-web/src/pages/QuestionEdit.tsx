@@ -91,6 +91,7 @@ export default function QuestionEdit() {
   const [loading, setLoading] = useState(Boolean(id))
   const [stemMediaUrl, setStemMediaUrl] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [uploadingOption, setUploadingOption] = useState<number | null>(null)
 
   const loadAudit = async (targetId: string) => {
     try {
@@ -151,6 +152,23 @@ export default function QuestionEdit() {
   const isChoice = () =>
     ['choice', 'image'].includes(form.getFieldValue('type'))
 
+  const uploadOptionImage = async (index: number, file: File) => {
+    setUploadingOption(index)
+    try {
+      const result = await api.uploadMedia(file)
+      setOptions((prev) => {
+        const next = [...prev]
+        next[index] = { ...next[index], image: result.url }
+        return next
+      })
+      message.success('选项图片已上传')
+    } catch (error) {
+      message.error(error instanceof ApiError ? error.message : '上传失败')
+    } finally {
+      setUploadingOption(null)
+    }
+  }
+
   const buildPayload = (values: QuestionForm) => {
     const choice = ['choice', 'image'].includes(values.type)
     return {
@@ -163,7 +181,9 @@ export default function QuestionEdit() {
       stem: values.stem,
       stem_media: stemMediaUrl ? { url: stemMediaUrl } : null,
       options: choice
-        ? options.filter((item) => item.id.trim() && item.text.trim())
+        ? options.filter(
+            (item) => item.id.trim() && (item.text.trim() || item.image),
+          )
         : optionsJson.trim()
           ? JSON.parse(optionsJson)
           : null,
@@ -359,15 +379,48 @@ export default function QuestionEdit() {
                   }}
                 />
                 <Input
-                  style={{ width: 420 }}
+                  style={{ width: 360 }}
                   value={option.text}
-                  placeholder="选项内容"
+                  placeholder="选项内容（可留空，仅图片）"
                   onChange={(event) => {
                     const next = [...options]
                     next[index] = { ...next[index], text: event.target.value }
                     setOptions(next)
                   }}
                 />
+                {option.image && (
+                  <img
+                    src={option.image}
+                    alt={`选项 ${option.id}`}
+                    style={{ width: 72, height: 54, objectFit: 'contain' }}
+                  />
+                )}
+                <Upload
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  showUploadList={false}
+                  beforeUpload={(file) => {
+                    void uploadOptionImage(index, file as File)
+                    return false
+                  }}
+                >
+                  <Button
+                    icon={<UploadOutlined />}
+                    loading={uploadingOption === index}
+                  >
+                    图片
+                  </Button>
+                </Upload>
+                {option.image && (
+                  <Button
+                    onClick={() => {
+                      const next = [...options]
+                      next[index] = { ...next[index], image: undefined }
+                      setOptions(next)
+                    }}
+                  >
+                    移除图
+                  </Button>
+                )}
                 <Button danger onClick={() => setOptions(options.filter((_, i) => i !== index))}>
                   删除
                 </Button>

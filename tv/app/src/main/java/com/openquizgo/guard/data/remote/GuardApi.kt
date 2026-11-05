@@ -120,6 +120,7 @@ data class DeviceMeResponse(
 data class QuizOption(
     @SerializedName("id") val id: String,
     @SerializedName("text") val text: String,
+    @SerializedName("image") val image: String?,
 )
 
 data class StemMedia(

@@ -396,8 +396,9 @@ func (s *Service) audit(ctx context.Context, principal admin.Principal, action, 
 /* ------------------------------ 校验 ------------------------------ */
 
 type optionItem struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
+	ID    string `json:"id"`
+	Text  string `json:"text"`
+	Image string `json:"image"`
 }
 
 func validate(in *Input, tags tagSets, topicIDs map[string]bool) []ImportError {
@@ -541,8 +542,8 @@ func validateByType(in *Input) []ImportError {
 		}
 		ids := map[string]bool{}
 		for _, opt := range options {
-			if opt.ID == "" || opt.Text == "" || ids[opt.ID] {
-				add("options", "选项 id/text 不能为空且 id 不能重复")
+			if opt.ID == "" || (opt.Text == "" && opt.Image == "") || ids[opt.ID] {
+				add("options", "选项 id 不能为空、id 不能重复，且 text/image 至少一个")
 				return problems
 			}
 			ids[opt.ID] = true

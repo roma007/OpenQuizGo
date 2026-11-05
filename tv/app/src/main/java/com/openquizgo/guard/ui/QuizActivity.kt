@@ -255,8 +255,12 @@ class QuizActivity : ComponentActivity() {
     }
 }
 
+private fun resolveMediaUrl(path: String): String {
+    return if (path.startsWith("http")) path else BuildConfig.API_BASE_URL.trimEnd('/') + path
+}
+
 @Composable
-private fun RemoteImage(url: String) {
+private fun RemoteImage(url: String, maxHeight: androidx.compose.ui.unit.Dp = 240.dp) {
     var bitmap by remember(url) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     var failed by remember(url) { mutableStateOf(false) }
     LaunchedEffect(url) {
@@ -272,7 +276,7 @@ private fun RemoteImage(url: String) {
         Image(
             bitmap = image,
             contentDescription = "题干图片",
-            modifier = Modifier.fillMaxWidth().heightIn(max = 240.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(max = maxHeight),
             contentScale = ContentScale.Fit,
         )
     } else if (failed) {
@@ -313,13 +317,8 @@ private fun QuestionScreen(
             color = Color.White,
         )
         question.stemMedia?.url?.takeIf { it.isNotBlank() }?.let { path ->
-            val url = if (path.startsWith("http")) {
-                path
-            } else {
-                BuildConfig.API_BASE_URL.trimEnd('/') + path
-            }
             Spacer(Modifier.height(16.dp))
-            RemoteImage(url)
+            RemoteImage(resolveMediaUrl(path))
         }
         Spacer(Modifier.height(32.dp))
 
@@ -333,7 +332,13 @@ private fun QuestionScreen(
                         onClick = { onSelect(option.id) },
                         enabled = !submitting,
                     ) {
-                        Text(text = "${option.id}. ${option.text}", fontSize = 26.sp)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            option.image?.takeIf { it.isNotBlank() }?.let { path ->
+                                RemoteImage(resolveMediaUrl(path), maxHeight = 100.dp)
+                                Spacer(Modifier.height(6.dp))
+                            }
+                            Text(text = "${option.id}. ${option.text}", fontSize = 26.sp)
+                        }
                     }
                     Spacer(Modifier.height(12.dp))
                 }

@@ -15,6 +15,7 @@ export interface LoginResult {
 export interface OptionItem {
   id: string
   text: string
+  image?: string
 }
 
 export interface Question {
