@@ -187,6 +187,12 @@ export interface DashboardExpiring {
   days_remaining: number
 }
 
+export interface DashboardTrendPoint {
+  date: string
+  orders: number
+  revenue_cents: number
+}
+
 export interface DashboardOverview {
   questions: { total: number; online: number; draft: number; review: number }
   topics: { total: number; online: number; active: number }
@@ -201,5 +207,6 @@ export interface DashboardOverview {
   battles_7d: number
   recent_orders: DashboardOrder[]
   expiring_memberships: DashboardExpiring[]
+  trend: DashboardTrendPoint[]
   generated_at: string
 }

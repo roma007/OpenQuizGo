@@ -104,6 +104,41 @@ func TestOverview(t *testing.T) {
 	if len(out.ExpiringMemberships) != 1 || out.ExpiringMemberships[0].DaysRemaining < 1 {
 		t.Fatalf("unexpected expiring: %+v", out.ExpiringMemberships)
 	}
+
+	var todayLabel, yesterdayLabel string
+	if err := pool.QueryRow(ctx, `select to_char(current_date, 'MM-DD'),
+		to_char(current_date - 1, 'MM-DD')`).Scan(&todayLabel, &yesterdayLabel); err != nil {
+		t.Fatalf("trend labels: %v", err)
+	}
+	if len(out.Trend) != 7 {
+		t.Fatalf("trend len = %d, want 7", len(out.Trend))
+	}
+	if out.Trend[len(out.Trend)-1].Date != todayLabel {
+		t.Fatalf("trend last date = %s, want %s", out.Trend[len(out.Trend)-1].Date, todayLabel)
+	}
+	trendByDate := make(map[string]dashboard.TrendPoint, len(out.Trend))
+	for _, item := range out.Trend {
+		trendByDate[item.Date] = item
+	}
+	today, ok := trendByDate[todayLabel]
+	if !ok || today.Orders != 2 || today.RevenueCents != 1990 {
+		t.Fatalf("unexpected today trend: %+v", today)
+	}
+	yesterday, ok := trendByDate[yesterdayLabel]
+	if !ok || yesterday.Orders != 0 || yesterday.RevenueCents != 0 {
+		t.Fatalf("unexpected yesterday trend: %+v", yesterday)
+	}
+
+	cached, err := svc.Overview(ctx)
+	if err != nil {
+		t.Fatalf("cached overview: %v", err)
+	}
+	if !cached.GeneratedAt.Equal(out.GeneratedAt) {
+		t.Fatalf("cache miss: generated_at changed %v -> %v", out.GeneratedAt, cached.GeneratedAt)
+	}
+	if len(cached.Trend) != len(out.Trend) {
+		t.Fatalf("cache trend len = %d, want %d", len(cached.Trend), len(out.Trend))
+	}
 }
 
 func prepareDB(t *testing.T, url string) {

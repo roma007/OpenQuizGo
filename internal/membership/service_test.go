@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"os"
 	"testing"
@@ -158,6 +159,42 @@ func TestMembershipWorkflow(t *testing.T) {
 		refunded.RefundedBy != "00000000-0000-0000-0000-000000000001" {
 		t.Fatalf("unexpected refund: %+v", refunded)
 	}
+	before := decodeRefundSnapshot(t, refunded.RefundBefore)
+	after := decodeRefundSnapshot(t, refunded.RefundAfter)
+	if before.Status != "active" || before.PlanName != updated.Name ||
+		!before.ExpiresAt.Equal(*renewed.Membership.ExpiresAt) {
+		t.Fatalf("unexpected refund before snapshot: %+v", before)
+	}
+	if after.Status != "active" || after.PlanName != updated.Name ||
+		!after.ExpiresAt.Equal(firstExpiry) {
+		t.Fatalf("unexpected refund after snapshot: %+v", after)
+	}
+
+	// 审计记录携带退款前后快照。
+	svc.audit(ctx, "00000000-0000-0000-0000-000000000001", refunded, "用户申请退款", "")
+	var auditData string
+	if err := pool.QueryRow(ctx, `
+		select after_data::text from audit_log
+		where target_id = $1 and action = 'membership.order.refund'
+		order by id desc limit 1`, order2.ID).Scan(&auditData); err != nil {
+		t.Fatalf("audit after_data: %v", err)
+	}
+	var auditPayload struct {
+		OrderNo string         `json:"order_no"`
+		Reason  string         `json:"reason"`
+		Before  refundSnapshot `json:"before"`
+		After   refundSnapshot `json:"after"`
+	}
+	if err := json.Unmarshal([]byte(auditData), &auditPayload); err != nil {
+		t.Fatalf("decode audit after_data: %v", err)
+	}
+	if auditPayload.OrderNo != order2.OrderNo || auditPayload.Reason != "用户申请退款" ||
+		auditPayload.Before.Status != "active" || auditPayload.After.Status != "active" ||
+		!auditPayload.Before.ExpiresAt.Equal(before.ExpiresAt) ||
+		!auditPayload.After.ExpiresAt.Equal(after.ExpiresAt) {
+		t.Fatalf("unexpected audit after_data: %+v", auditPayload)
+	}
+
 	afterRefund, err := svc.Center(ctx, accountID)
 	if err != nil {
 		t.Fatalf("center after refund: %v", err)
@@ -175,6 +212,10 @@ func TestMembershipWorkflow(t *testing.T) {
 		againRefund.RefundReason != "用户申请退款" {
 		t.Fatal("idempotent refund changed expiry or reason")
 	}
+	if canonicalJSON(t, againRefund.RefundBefore) != canonicalJSON(t, refunded.RefundBefore) ||
+		canonicalJSON(t, againRefund.RefundAfter) != canonicalJSON(t, refunded.RefundAfter) {
+		t.Fatal("idempotent refund changed snapshots")
+	}
 
 	adminOrders, total, err := svc.AdminOrders(ctx, "refunded", 20, 0)
 	if err != nil {
@@ -182,6 +223,9 @@ func TestMembershipWorkflow(t *testing.T) {
 	}
 	if total != 1 || len(adminOrders) != 1 || adminOrders[0].ID != order2.ID {
 		t.Fatalf("unexpected admin orders: total=%d items=%+v", total, adminOrders)
+	}
+	if len(adminOrders[0].RefundBefore) == 0 || len(adminOrders[0].RefundAfter) == 0 {
+		t.Fatalf("admin orders missing refund snapshots: %+v", adminOrders[0])
 	}
 
 	// 未支付订单不能退款。
@@ -197,8 +241,17 @@ func TestMembershipWorkflow(t *testing.T) {
 	}
 
 	// 退掉首单后会员到期，权益失效。
-	if _, err := svc.RefundOrder(ctx, order.ID, "全额退款", "00000000-0000-0000-0000-000000000001"); err != nil {
+	fullRefund, err := svc.RefundOrder(ctx, order.ID, "全额退款", "00000000-0000-0000-0000-000000000001")
+	if err != nil {
 		t.Fatalf("refund order1: %v", err)
+	}
+	fullBefore := decodeRefundSnapshot(t, fullRefund.RefundBefore)
+	fullAfter := decodeRefundSnapshot(t, fullRefund.RefundAfter)
+	if fullBefore.Status != "active" || !fullBefore.ExpiresAt.Equal(firstExpiry) {
+		t.Fatalf("unexpected full refund before snapshot: %+v", fullBefore)
+	}
+	if fullAfter.Status != "expired" || fullAfter.ExpiresAt.After(time.Now()) {
+		t.Fatalf("unexpected full refund after snapshot: %+v", fullAfter)
 	}
 	expiredCenter, err := svc.Center(ctx, accountID)
 	if err != nil {
@@ -248,6 +301,24 @@ func TestMembershipWorkflow(t *testing.T) {
 func isCode(err error, code string) bool {
 	var e apiError
 	return errors.As(err, &e) && e.Code == code
+}
+
+type refundSnapshot struct {
+	Status    string    `json:"status"`
+	PlanName  string    `json:"plan_name"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+func decodeRefundSnapshot(t *testing.T, raw json.RawMessage) refundSnapshot {
+	t.Helper()
+	if len(raw) == 0 {
+		t.Fatal("missing refund snapshot")
+	}
+	var snapshot refundSnapshot
+	if err := json.Unmarshal(raw, &snapshot); err != nil {
+		t.Fatalf("decode refund snapshot: %v", err)
+	}
+	return snapshot
 }
 
 func prepareDB(t *testing.T, url string) {
@@ -357,4 +428,20 @@ func TestPaymentCallback(t *testing.T) {
 	if _, err := disabled.Callback(ctx, body, sig); err == nil || !isCode(err, "PAYMENT_DISABLED") {
 		t.Fatalf("disabled callback = %v, want PAYMENT_DISABLED", err)
 	}
+}
+
+func canonicalJSON(t *testing.T, raw json.RawMessage) string {
+	t.Helper()
+	if len(raw) == 0 {
+		return ""
+	}
+	var value any
+	if err := json.Unmarshal(raw, &value); err != nil {
+		t.Fatalf("decode json: %v", err)
+	}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		t.Fatalf("encode json: %v", err)
+	}
+	return string(encoded)
 }

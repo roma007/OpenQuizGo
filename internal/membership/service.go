@@ -55,21 +55,29 @@ type PlanInput struct {
 }
 
 type Order struct {
-	ID              string     `json:"id"`
-	OrderNo         string     `json:"order_no"`
-	AccountID       string     `json:"account_id,omitempty"`
-	PlanID          string     `json:"plan_id"`
-	PlanName        string     `json:"plan_name"`
-	AmountCents     int        `json:"amount_cents"`
-	DurationDays    int        `json:"duration_days"`
-	Status          string     `json:"status"`
-	Channel         string     `json:"channel"`
-	CreatedAt       time.Time  `json:"created_at"`
-	PaidAt          *time.Time `json:"paid_at,omitempty"`
-	RefundedAt      *time.Time `json:"refunded_at,omitempty"`
-	RefundReason    string     `json:"refund_reason,omitempty"`
-	RefundedBy      string     `json:"refunded_by,omitempty"`
-	ExternalTradeNo string     `json:"external_trade_no,omitempty"`
+	ID              string          `json:"id"`
+	OrderNo         string          `json:"order_no"`
+	AccountID       string          `json:"account_id,omitempty"`
+	PlanID          string          `json:"plan_id"`
+	PlanName        string          `json:"plan_name"`
+	AmountCents     int             `json:"amount_cents"`
+	DurationDays    int             `json:"duration_days"`
+	Status          string          `json:"status"`
+	Channel         string          `json:"channel"`
+	CreatedAt       time.Time       `json:"created_at"`
+	PaidAt          *time.Time      `json:"paid_at,omitempty"`
+	RefundedAt      *time.Time      `json:"refunded_at,omitempty"`
+	RefundReason    string          `json:"refund_reason,omitempty"`
+	RefundedBy      string          `json:"refunded_by,omitempty"`
+	ExternalTradeNo string          `json:"external_trade_no,omitempty"`
+	RefundBefore    json.RawMessage `json:"refund_before,omitempty"`
+	RefundAfter     json.RawMessage `json:"refund_after,omitempty"`
+}
+
+type RefundSnapshot struct {
+	Status    string    `json:"status"`
+	PlanName  string    `json:"plan_name"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 type Membership struct {
@@ -223,6 +231,8 @@ func (s *Service) audit(ctx context.Context, actorID string, order Order, reason
 		"amount_cents":  order.AmountCents,
 		"duration_days": order.DurationDays,
 		"reason":        reason,
+		"before":        order.RefundBefore,
+		"after":         order.RefundAfter,
 	})
 	_, _ = s.pool.Exec(ctx, `
 		insert into audit_log (actor_type, actor_id, action, target_type, target_id, after_data, ip)
@@ -390,7 +400,9 @@ func (s *Service) Orders(ctx context.Context, accountID string) ([]Order, error)
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
-		       coalesce(external_trade_no, '')
+		       coalesce(external_trade_no, ''),
+		       coalesce(refund_before::text, ''),
+		       coalesce(refund_after::text, '')
 		from membership_order where account_id = $1
 		order by created_at desc limit 20`, accountID)
 	if err != nil {
@@ -426,7 +438,9 @@ func (s *Service) AdminOrders(ctx context.Context, status string, limit, offset 
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
-		       coalesce(external_trade_no, '')
+		       coalesce(external_trade_no, ''),
+		       coalesce(refund_before::text, ''),
+		       coalesce(refund_after::text, '')
 		from membership_order
 		where ($1 = '' or status = $1)
 		order by created_at desc limit $2 offset $3`, status, limit, offset)
@@ -465,20 +479,17 @@ func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Or
 		return Order{}, apiError{409, "PLAN_OFFLINE", "套餐未上线"}
 	}
 
-	var item Order
-	err = s.pool.QueryRow(ctx, `
+	item, err := scanOrder(s.pool.QueryRow(ctx, `
 		insert into membership_order (
 			order_no, account_id, plan_id, plan_name, amount_cents, duration_days)
 		values ($1, $2, $3, $4, $5, $6)
 		returning id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		          status, channel, created_at, paid_at, refunded_at,
 		          coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
-		       coalesce(external_trade_no, '')`,
-		orderNo(), accountID, plan.ID, plan.Name, plan.PriceCents, plan.DurationDays).
-		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
-			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
+		          coalesce(external_trade_no, ''),
+		          coalesce(refund_before::text, ''),
+		          coalesce(refund_after::text, '')`,
+		orderNo(), accountID, plan.ID, plan.Name, plan.PriceCents, plan.DurationDays))
 	if err != nil {
 		return Order{}, err
 	}
@@ -495,18 +506,15 @@ func (s *Service) PayOrder(ctx context.Context, accountID, orderID string) (PayR
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	var item Order
-	err = tx.QueryRow(ctx, `
+	item, err := scanOrder(tx.QueryRow(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
-		       coalesce(external_trade_no, '')
+		       coalesce(external_trade_no, ''),
+		       coalesce(refund_before::text, ''),
+		       coalesce(refund_after::text, '')
 		from membership_order
-		where id = $1 and account_id = $2 for update`, orderID, accountID).
-		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
-			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
+		where id = $1 and account_id = $2 for update`, orderID, accountID))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return PayResult{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -607,17 +615,14 @@ func (s *Service) Callback(ctx context.Context, body []byte, signature string) (
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	var item Order
-	err = tx.QueryRow(ctx, `
+	item, err := scanOrder(tx.QueryRow(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
-		       coalesce(external_trade_no, '')
-		from membership_order where order_no = $1 for update`, req.OrderNo).
-		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
-			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
+		       coalesce(external_trade_no, ''),
+		       coalesce(refund_before::text, ''),
+		       coalesce(refund_after::text, '')
+		from membership_order where order_no = $1 for update`, req.OrderNo))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -650,17 +655,14 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	var item Order
-	err = tx.QueryRow(ctx, `
+	item, err := scanOrder(tx.QueryRow(ctx, `
 		select id, order_no, account_id, plan_id, plan_name, amount_cents, duration_days,
 		       status, channel, created_at, paid_at, refunded_at,
 		       coalesce(refund_reason, ''), coalesce(refunded_by::text, ''),
-		       coalesce(external_trade_no, '')
-		from membership_order where id = $1 for update`, orderID).
-		Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID, &item.PlanName,
-			&item.AmountCents, &item.DurationDays, &item.Status, &item.Channel,
-			&item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-			&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
+		       coalesce(external_trade_no, ''),
+		       coalesce(refund_before::text, ''),
+		       coalesce(refund_after::text, '')
+		from membership_order where id = $1 for update`, orderID))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Order{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
 	}
@@ -677,13 +679,25 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 		return Order{}, apiError{409, "ORDER_NOT_REFUNDABLE", "只有已支付订单可以退款"}
 	}
 
-	var expiresAt *time.Time
-	_ = tx.QueryRow(ctx,
-		`select expires_at from account_membership where account_id = $1 for update`,
-		item.AccountID).Scan(&expiresAt)
-	if expiresAt != nil {
-		now := time.Now()
-		newExpiry := expiresAt.AddDate(0, 0, -item.DurationDays)
+	var before *RefundSnapshot
+	var prevStatus, prevPlanName string
+	var prevExpiresAt time.Time
+	err = tx.QueryRow(ctx, `
+		select status, plan_name, expires_at
+		from account_membership where account_id = $1 for update`,
+		item.AccountID).Scan(&prevStatus, &prevPlanName, &prevExpiresAt)
+	if err == nil {
+		before = &RefundSnapshot{
+			Status: prevStatus, PlanName: prevPlanName, ExpiresAt: prevExpiresAt,
+		}
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return Order{}, err
+	}
+
+	now := time.Now()
+	var after *RefundSnapshot
+	if before != nil {
+		newExpiry := before.ExpiresAt.AddDate(0, 0, -item.DurationDays)
 		newStatus := "active"
 		if !newExpiry.After(now) {
 			newStatus = "expired"
@@ -693,23 +707,49 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 			where account_id = $1`, item.AccountID, newStatus, newExpiry); err != nil {
 			return Order{}, err
 		}
+		after = &RefundSnapshot{
+			Status: newStatus, PlanName: before.PlanName, ExpiresAt: newExpiry,
+		}
 	}
-	now := time.Now()
+
+	beforeJSON, err := encodeRefundSnapshot(before)
+	if err != nil {
+		return Order{}, err
+	}
+	afterJSON, err := encodeRefundSnapshot(after)
+	if err != nil {
+		return Order{}, err
+	}
 	if _, err := tx.Exec(ctx, `
 		update membership_order set status = 'refunded', refunded_at = $2,
-		       refund_reason = $3, refunded_by = nullif($4, '')::uuid
+		       refund_reason = $3, refunded_by = nullif($4, '')::uuid,
+		       refund_before = coalesce(refund_before, $5::jsonb),
+		       refund_after = coalesce(refund_after, $6::jsonb)
 		where id = $1`,
-		item.ID, now, reason, operatorID); err != nil {
+		item.ID, now, reason, operatorID, beforeJSON, afterJSON); err != nil {
 		return Order{}, err
 	}
 	item.Status = "refunded"
 	item.RefundedAt = &now
 	item.RefundReason = reason
 	item.RefundedBy = operatorID
+	item.RefundBefore = beforeJSON
+	item.RefundAfter = afterJSON
 	if err := tx.Commit(ctx); err != nil {
 		return Order{}, err
 	}
 	return item, nil
+}
+
+func encodeRefundSnapshot(snapshot *RefundSnapshot) (json.RawMessage, error) {
+	if snapshot == nil {
+		return nil, nil
+	}
+	raw, err := json.Marshal(snapshot)
+	if err != nil {
+		return nil, err
+	}
+	return raw, nil
 }
 
 func (s *Service) current(ctx context.Context, accountID string) (*Membership, error) {
@@ -768,11 +808,22 @@ type scanner interface {
 
 func scanOrder(row scanner) (Order, error) {
 	var item Order
+	var refundBefore, refundAfter string
 	err := row.Scan(&item.ID, &item.OrderNo, &item.AccountID, &item.PlanID,
 		&item.PlanName, &item.AmountCents, &item.DurationDays, &item.Status,
 		&item.Channel, &item.CreatedAt, &item.PaidAt, &item.RefundedAt,
-		&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo)
-	return item, err
+		&item.RefundReason, &item.RefundedBy, &item.ExternalTradeNo,
+		&refundBefore, &refundAfter)
+	if err != nil {
+		return item, err
+	}
+	if refundBefore != "" {
+		item.RefundBefore = json.RawMessage(refundBefore)
+	}
+	if refundAfter != "" {
+		item.RefundAfter = json.RawMessage(refundAfter)
+	}
+	return item, nil
 }
 
 func scanPlan(row scanner) (Plan, error) {

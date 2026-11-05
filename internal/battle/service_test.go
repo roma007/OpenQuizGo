@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -42,6 +43,9 @@ func TestBattleWorkflow(t *testing.T) {
 	}
 	if len(state.Answers) != 0 || state.Result != nil {
 		t.Fatal("in-progress battle leaked answers or result")
+	}
+	if state.JoinCodeExpiresAt != nil {
+		t.Fatal("same-device battle should not expose join code expiry")
 	}
 
 	childAnswers := make([]Submission, 0, len(questionIDs))
@@ -219,6 +223,13 @@ func TestRoomBattleWorkflow(t *testing.T) {
 	if room.Status != "waiting" || room.Mode != "room" || len(room.JoinCode) != 6 {
 		t.Fatalf("unexpected room: %+v", room)
 	}
+	if room.JoinCodeExpiresAt == nil {
+		t.Fatal("room should expose join code expiry")
+	}
+	remaining := time.Until(*room.JoinCodeExpiresAt)
+	if remaining < 9*time.Minute || remaining > 10*time.Minute+time.Minute {
+		t.Fatalf("join code ttl = %v, want about 10m", remaining)
+	}
 
 	if _, err := svc.Join(ctx, accountID, childID, "ZZZZZZ"); err == nil || !isCode(err, "BATTLE_NOT_FOUND") {
 		t.Fatalf("bad code join = %v, want BATTLE_NOT_FOUND", err)
@@ -259,6 +270,9 @@ func TestRoomBattleWorkflow(t *testing.T) {
 	if finished.JoinCode != "" {
 		t.Fatal("finished room should not expose join code")
 	}
+	if finished.JoinCodeExpiresAt != nil {
+		t.Fatal("finished room should not expose join code expiry")
+	}
 
 	history, err := svc.History(ctx, accountID, childID, 20)
 	if err != nil {
@@ -268,5 +282,26 @@ func TestRoomBattleWorkflow(t *testing.T) {
 		history[0].Status != "finished" || history[0].ChildScore != 5 ||
 		history[0].ParentScore != 0 || history[0].QuestionCount != 5 {
 		t.Fatalf("unexpected history: %+v", history)
+	}
+
+	// 过期房间仍保持 waiting，但不能再加入。
+	expired, err := svc.Create(ctx, accountID, childID, 5, "room")
+	if err != nil {
+		t.Fatalf("create expiring room: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		update family_battle set join_code_expires_at = now() - interval '1 minute'
+		where id = $1`, expired.ID); err != nil {
+		t.Fatalf("expire room: %v", err)
+	}
+	if _, err := svc.Join(ctx, accountID, childID, expired.JoinCode); err == nil || !isCode(err, "ROOM_EXPIRED") {
+		t.Fatalf("expired join = %v, want ROOM_EXPIRED", err)
+	}
+	expiredState, err := svc.Get(ctx, childID, expired.ID)
+	if err != nil {
+		t.Fatalf("get expired room: %v", err)
+	}
+	if expiredState.Status != "waiting" {
+		t.Fatalf("expired room status = %q, want waiting", expiredState.Status)
 	}
 }

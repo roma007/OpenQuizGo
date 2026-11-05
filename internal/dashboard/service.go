@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -47,6 +48,12 @@ type ExpiringMember struct {
 	DaysRemaining int       `json:"days_remaining"`
 }
 
+type TrendPoint struct {
+	Date         string `json:"date"`
+	Orders       int    `json:"orders"`
+	RevenueCents int    `json:"revenue_cents"`
+}
+
 type Overview struct {
 	Questions           QuestionStats    `json:"questions"`
 	Topics              TopicStats       `json:"topics"`
@@ -56,14 +63,22 @@ type Overview struct {
 	Battles7d           int              `json:"battles_7d"`
 	RecentOrders        []OrderSummary   `json:"recent_orders"`
 	ExpiringMemberships []ExpiringMember `json:"expiring_memberships"`
+	Trend               []TrendPoint     `json:"trend"`
 	GeneratedAt         time.Time        `json:"generated_at"`
 }
 
 type Service struct {
 	pool *pgxpool.Pool
+
+	mu       sync.Mutex
+	cache    Overview
+	cachedAt time.Time
+	cacheTTL time.Duration
 }
 
-func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
+func New(pool *pgxpool.Pool) *Service {
+	return &Service{pool: pool, cacheTTL: 30 * time.Second}
+}
 
 func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 	r.Group(func(r chi.Router) {
@@ -83,8 +98,25 @@ func (s *Service) handleOverview(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, overview)
 }
 
-// Overview 聚合管理端运营指标。
+// Overview 聚合管理端运营指标，并缓存 30 秒。
 func (s *Service) Overview(ctx context.Context) (Overview, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if !s.cachedAt.IsZero() && time.Since(s.cachedAt) < s.cacheTTL {
+		return s.cache, nil
+	}
+
+	out, err := s.loadOverview(ctx)
+	if err != nil {
+		return Overview{}, err
+	}
+	s.cache = out
+	s.cachedAt = time.Now()
+	return out, nil
+}
+
+func (s *Service) loadOverview(ctx context.Context) (Overview, error) {
 	var out Overview
 	out.GeneratedAt = time.Now()
 
@@ -179,7 +211,37 @@ func (s *Service) Overview(ctx context.Context) (Overview, error) {
 		}
 		out.ExpiringMemberships = append(out.ExpiringMemberships, item)
 	}
-	return out, expiringRows.Err()
+	if err := expiringRows.Err(); err != nil {
+		return Overview{}, err
+	}
+
+	trendRows, err := s.pool.Query(ctx, `
+		with days as (
+		    select generate_series(current_date - interval '6 days',
+		                           current_date, interval '1 day')::date as day
+		)
+		select to_char(d.day, 'MM-DD'),
+		       count(o.id)::int,
+		       coalesce(sum(case when o.status = 'paid' then o.amount_cents else 0 end), 0)::int
+		from days d
+		left join membership_order o
+		       on o.created_at >= d.day
+		      and o.created_at < d.day + interval '1 day'
+		group by d.day
+		order by d.day`)
+	if err != nil {
+		return Overview{}, err
+	}
+	defer trendRows.Close()
+	out.Trend = make([]TrendPoint, 0, 7)
+	for trendRows.Next() {
+		var item TrendPoint
+		if err := trendRows.Scan(&item.Date, &item.Orders, &item.RevenueCents); err != nil {
+			return Overview{}, err
+		}
+		out.Trend = append(out.Trend, item)
+	}
+	return out, trendRows.Err()
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {

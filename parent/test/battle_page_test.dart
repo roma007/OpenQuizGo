@@ -24,6 +24,7 @@ BattleState _state({
   bool finished = false,
   String mode = 'same_device',
   String joinCode = '',
+  DateTime? joinCodeExpiresAt,
 }) => BattleState(
   id: 'b1',
   status: status,
@@ -33,6 +34,7 @@ BattleState _state({
   parentScore: parentScore,
   mode: mode,
   joinCode: joinCode,
+  joinCodeExpiresAt: joinCodeExpiresAt,
   result: finished
       ? BattleResult(winner: 'child', childScore: 1, parentScore: 0)
       : null,
@@ -57,8 +59,12 @@ BattleState _state({
 );
 
 class _FakeBattleRepository implements BattleRepository {
+  _FakeBattleRepository({this.roomExpiresAt});
+
+  final DateTime? roomExpiresAt;
   int childSubmits = 0;
   int parentSubmits = 0;
+  int getCalls = 0;
   BattleState current = _state();
 
   @override
@@ -68,7 +74,12 @@ class _FakeBattleRepository implements BattleRepository {
     String mode = 'same_device',
   }) async {
     current = mode == 'room'
-        ? _state(status: 'waiting', mode: 'room', joinCode: 'ABC123')
+        ? _state(
+            status: 'waiting',
+            mode: 'room',
+            joinCode: 'ABC123',
+            joinCodeExpiresAt: roomExpiresAt,
+          )
         : _state();
     return current;
   }
@@ -80,7 +91,10 @@ class _FakeBattleRepository implements BattleRepository {
   }
 
   @override
-  Future<BattleState> get(String childId, String battleId) async => current;
+  Future<BattleState> get(String childId, String battleId) async {
+    getCalls++;
+    return current;
+  }
 
   @override
   Future<List<BattleSummary>> history(String childId, {int limit = 20}) async =>
@@ -229,5 +243,42 @@ void main() {
     expect(find.text('对战记录'), findsOneWidget);
     expect(find.text('孩子 5 : 5 家长'), findsOneWidget);
     expect(find.text('平局'), findsOneWidget);
+  });
+
+  testWidgets('等待页显示房间码倒计时并在过期后停止轮询', (tester) async {
+    final start = DateTime(2026, 11, 5, 10);
+    var now = start;
+    final repository = _FakeBattleRepository(
+      roomExpiresAt: start.add(const Duration(seconds: 3)),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [battleRepositoryProvider.overrideWithValue(repository)],
+        child: MaterialApp(
+          home: BattlePage(
+            child: Child(id: 'c1', nickname: '小明', stage: 'low'),
+            now: () => now,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('双设备房间'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('房间码剩余 00:03'), findsOneWidget);
+
+    now = start.add(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('房间码剩余 00:02'), findsOneWidget);
+
+    now = start.add(const Duration(seconds: 3));
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.text('房间码已过期，请重新创建'), findsOneWidget);
+
+    final callsAfterExpiry = repository.getCalls;
+    now = start.add(const Duration(seconds: 20));
+    await tester.pump(const Duration(seconds: 5));
+    expect(repository.getCalls, callsAfterExpiry);
   });
 }

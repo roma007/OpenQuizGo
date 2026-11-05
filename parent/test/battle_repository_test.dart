@@ -28,6 +28,8 @@ Map<String, dynamic> _battle({
   int childScore = 0,
   int parentScore = 0,
   bool finished = false,
+  String? joinCode,
+  String? joinCodeExpiresAt,
 }) => {
   'id': 'b1',
   'status': status,
@@ -45,6 +47,8 @@ Map<String, dynamic> _battle({
   ],
   'child_score': childScore,
   'parent_score': parentScore,
+  'join_code': ?joinCode,
+  'join_code_expires_at': ?joinCodeExpiresAt,
   if (finished)
     'result': {
       'winner': 'child',
@@ -82,7 +86,15 @@ void main() {
       request.response.headers.contentType = ContentType.json;
       final path = request.uri.path;
       if (request.method == 'POST' && path.endsWith('/battles')) {
-        request.response.write(jsonEncode(_battle()));
+        request.response.write(
+          jsonEncode(
+            _battle(
+              status: 'waiting',
+              joinCode: 'ABC123',
+              joinCodeExpiresAt: '2026-11-05T10:10:00+08:00',
+            ),
+          ),
+        );
       } else if (request.method == 'GET' && path.contains('/battles/b1')) {
         request.response.write(
           jsonEncode(_battle(status: 'parent_turn', childScore: 1)),
@@ -134,7 +146,12 @@ void main() {
     final repository = BattleRepository(api);
 
     final created = await repository.create('c1');
-    expect(created.status, 'child_turn');
+    expect(created.status, 'waiting');
+    expect(created.joinCode, 'ABC123');
+    expect(
+      created.joinCodeExpiresAt,
+      DateTime.parse('2026-11-05T10:10:00+08:00'),
+    );
     expect(created.questions.single.stem, '2+3=?');
     expect(created.questions.single.options.first.text, '5');
 

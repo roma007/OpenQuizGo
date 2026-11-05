@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   Col,
+  Progress,
   Row,
   Space,
   Statistic,
@@ -13,7 +14,12 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '../api'
-import type { DashboardExpiring, DashboardOrder, DashboardOverview } from '../types'
+import type {
+  DashboardExpiring,
+  DashboardOrder,
+  DashboardOverview,
+  DashboardTrendPoint,
+} from '../types'
 
 const orderStatusLabel: Record<string, string> = {
   pending: '待支付',
@@ -108,6 +114,34 @@ export default function DashboardPage() {
     },
   ]
 
+  const maxTrendRevenue = Math.max(
+    0,
+    ...(data?.trend || []).map((item) => item.revenue_cents),
+  )
+
+  const trendColumns: ColumnsType<DashboardTrendPoint> = [
+    { title: '日期', dataIndex: 'date', width: 90 },
+    { title: '订单数', dataIndex: 'orders', width: 90 },
+    {
+      title: '支付金额',
+      dataIndex: 'revenue_cents',
+      width: 120,
+      render: (value: number) => yuan(value),
+    },
+    {
+      title: '趋势',
+      dataIndex: 'revenue_cents',
+      key: 'bar',
+      render: (value: number) => (
+        <Progress
+          percent={maxTrendRevenue > 0 ? Math.round((value / maxTrendRevenue) * 100) : 0}
+          showInfo={false}
+          strokeWidth={8}
+        />
+      ),
+    },
+  ]
+
   return (
     <Space orientation="vertical" size={16} style={{ display: 'flex' }}>
       <Card
@@ -191,6 +225,16 @@ export default function DashboardPage() {
               题目：草稿 {data.questions.draft} · 待审核 {data.questions.review} · 专题总量{' '}
               {data.topics.total} · 近30天支付 {data.membership.paid_30d}
             </Typography.Paragraph>
+            <Card size="small" title="近 7 天趋势" style={{ marginTop: 16 }}>
+              <Table
+                rowKey="date"
+                size="small"
+                columns={trendColumns}
+                dataSource={data.trend}
+                pagination={false}
+                locale={{ emptyText: '暂无趋势数据' }}
+              />
+            </Card>
           </>
         )}
       </Card>

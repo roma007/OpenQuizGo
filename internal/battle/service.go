@@ -22,6 +22,7 @@ const (
 	defaultQuestions = 5
 	minQuestions     = 3
 	maxQuestions     = 10
+	roomCodeTTL      = 10 * time.Minute
 )
 
 type Service struct {
@@ -69,8 +70,10 @@ type State struct {
 	ParentScore   int            `json:"parent_score"`
 	Mode          string         `json:"mode"`
 	JoinCode      string         `json:"join_code,omitempty"`
-	Result        *ResultView    `json:"result,omitempty"`
-	Answers       []AnswerView   `json:"answers,omitempty"`
+	// JoinCodeExpiresAt 仅未结束的 room 下发。
+	JoinCodeExpiresAt *time.Time   `json:"join_code_expires_at,omitempty"`
+	Result            *ResultView  `json:"result,omitempty"`
+	Answers           []AnswerView `json:"answers,omitempty"`
 }
 
 type Summary struct {
@@ -107,14 +110,15 @@ type questionRecord struct {
 }
 
 type battleRecord struct {
-	ID          string
-	FamilyID    string
-	Status      string
-	Mode        string
-	JoinCode    string
-	QuestionIDs []string
-	ChildScore  int
-	ParentScore int
+	ID                string
+	FamilyID          string
+	Status            string
+	Mode              string
+	JoinCode          string
+	JoinCodeExpiresAt *time.Time
+	QuestionIDs       []string
+	ChildScore        int
+	ParentScore       int
 }
 
 const codeAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
@@ -304,10 +308,14 @@ func (s *Service) Create(ctx context.Context, accountID, childID string, count i
 	var battleID string
 	err = s.pool.QueryRow(ctx, `
 		insert into family_battle (
-			family_id, child_id, question_ids, created_by, mode, status, join_code)
-		values ($1, $2, $3::jsonb, nullif($4, '')::uuid, $5, $6, nullif($7, ''))
+			family_id, child_id, question_ids, created_by, mode, status, join_code,
+			join_code_expires_at)
+		values (
+			$1, $2, $3::jsonb, nullif($4, '')::uuid, $5, $6, nullif($7, ''),
+			case when $5 = 'room' then now() + ($8::int * interval '1 second') else null end)
 		returning id`,
-		familyID, childID, string(encoded), accountID, mode, status, joinCode).Scan(&battleID)
+		familyID, childID, string(encoded), accountID, mode, status, joinCode,
+		int(roomCodeTTL.Seconds())).Scan(&battleID)
 	if err != nil {
 		return State{}, err
 	}
@@ -331,10 +339,11 @@ func (s *Service) Join(ctx context.Context, accountID, childID, code string) (St
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	var battleID, status string
+	var expiresAt *time.Time
 	err = tx.QueryRow(ctx, `
-		select id, status from family_battle
+		select id, status, join_code_expires_at from family_battle
 		where join_code = $1 and child_id = $2 and family_id = $3 for update`,
-		code, childID, familyID).Scan(&battleID, &status)
+		code, childID, familyID).Scan(&battleID, &status, &expiresAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return State{}, apiError{404, "BATTLE_NOT_FOUND", "房间不存在或已失效"}
 	}
@@ -342,6 +351,9 @@ func (s *Service) Join(ctx context.Context, accountID, childID, code string) (St
 		return State{}, err
 	}
 	if status == "waiting" {
+		if expiresAt != nil && !expiresAt.After(time.Now()) {
+			return State{}, apiError{409, "ROOM_EXPIRED", "房间码已过期"}
+		}
 		if _, err := tx.Exec(ctx,
 			`update family_battle set status = 'child_turn' where id = $1`, battleID); err != nil {
 			return State{}, err
@@ -374,6 +386,7 @@ func (s *Service) Get(ctx context.Context, childID, battleID string) (State, err
 	}
 	if battle.Mode == "room" && battle.Status != "finished" {
 		state.JoinCode = battle.JoinCode
+		state.JoinCodeExpiresAt = battle.JoinCodeExpiresAt
 	}
 	if battle.Status == "finished" {
 		state.Result = &ResultView{
@@ -518,10 +531,10 @@ func (s *Service) load(ctx context.Context, childID, battleID string) (battleRec
 	var rawIDs string
 	err := s.pool.QueryRow(ctx, `
 		select id, family_id, status, mode, coalesce(join_code, ''),
-		       question_ids::text, child_score, parent_score
+		       join_code_expires_at, question_ids::text, child_score, parent_score
 		from family_battle where id = $1 and child_id = $2`,
 		battleID, childID).Scan(&rec.ID, &rec.FamilyID, &rec.Status, &rec.Mode,
-		&rec.JoinCode, &rawIDs, &rec.ChildScore, &rec.ParentScore)
+		&rec.JoinCode, &rec.JoinCodeExpiresAt, &rawIDs, &rec.ChildScore, &rec.ParentScore)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return battleRecord{}, apiError{404, "BATTLE_NOT_FOUND", "对局不存在"}
 	}

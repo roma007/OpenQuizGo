@@ -12,9 +12,12 @@ import '../../data/battle_repository.dart';
 enum _BattleRole { sameDevice, parentRoom, childRoom }
 
 class BattlePage extends ConsumerStatefulWidget {
-  const BattlePage({super.key, required this.child});
+  const BattlePage({super.key, required this.child, this.now});
 
   final Child child;
+
+  /// 可注入的时钟，便于测试倒计时；生产环境使用 [DateTime.now]。
+  final DateTime Function()? now;
 
   @override
   ConsumerState<BattlePage> createState() => _BattlePageState();
@@ -29,6 +32,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   final Map<String, String> _selections = {};
   _BattleRole _role = _BattleRole.sameDevice;
   Timer? _poll;
+  Timer? _countdown;
   List<BattleSummary> _history = const [];
   bool _historyLoading = false;
 
@@ -55,7 +59,23 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   @override
   void dispose() {
     _poll?.cancel();
+    _countdown?.cancel();
     super.dispose();
+  }
+
+  DateTime _now() => widget.now?.call() ?? DateTime.now();
+
+  bool _joinCodeExpired(BattleState state) {
+    final expires = state.joinCodeExpiresAt;
+    return expires != null && !expires.isAfter(_now());
+  }
+
+  String _formatRemaining(DateTime expires) {
+    final seconds = expires.difference(_now()).inSeconds;
+    final safe = seconds < 0 ? 0 : seconds;
+    final minutes = safe ~/ 60;
+    final rest = safe % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${rest.toString().padLeft(2, '0')}';
   }
 
   Future<void> _start() async {
@@ -154,10 +174,17 @@ class _BattlePageState extends ConsumerState<BattlePage> {
     if (state == null || state.finished) {
       _poll?.cancel();
       _poll = null;
+      _syncCountdown();
       return;
     }
+    final expired =
+        _role == _BattleRole.parentRoom &&
+        state.mode == 'room' &&
+        state.status == 'waiting' &&
+        _joinCodeExpired(state);
     final shouldPoll =
         state.mode == 'room' &&
+        !expired &&
         ((_role == _BattleRole.parentRoom &&
                 (state.status == 'waiting' || state.childTurn)) ||
             (_role == _BattleRole.childRoom && state.status == 'parent_turn'));
@@ -167,6 +194,36 @@ class _BattlePageState extends ConsumerState<BattlePage> {
       _poll?.cancel();
       _poll = null;
     }
+    _syncCountdown();
+  }
+
+  void _syncCountdown() {
+    final state = _state;
+    final shouldTick =
+        state != null &&
+        _role == _BattleRole.parentRoom &&
+        state.mode == 'room' &&
+        state.status == 'waiting' &&
+        state.joinCodeExpiresAt != null &&
+        !_joinCodeExpired(state);
+    if (!shouldTick) {
+      _countdown?.cancel();
+      _countdown = null;
+      return;
+    }
+    if (_countdown != null) return;
+    _countdown = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {});
+      final current = _state;
+      if (current == null ||
+          current.joinCodeExpiresAt == null ||
+          _joinCodeExpired(current)) {
+        _countdown?.cancel();
+        _countdown = null;
+        _syncPolling();
+      }
+    });
   }
 
   Future<void> _refresh() async {
@@ -281,6 +338,10 @@ class _BattlePageState extends ConsumerState<BattlePage> {
         : childAnswering
         ? '孩子答题完成后，这里会自动进入家长答题'
         : '家长答题完成后，这里会自动显示结果';
+    final expired =
+        waitingChild &&
+        state.joinCodeExpiresAt != null &&
+        _joinCodeExpired(state);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -312,9 +373,25 @@ class _BattlePageState extends ConsumerState<BattlePage> {
               ),
               const SizedBox(height: 8),
               const Text('房间码 6 位，区分大小写不敏感'),
+              if (waitingChild && state.joinCodeExpiresAt != null) ...[
+                const SizedBox(height: 8),
+                if (expired)
+                  Text(
+                    '房间码已过期，请重新创建',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                else
+                  Text(
+                    '房间码剩余 ${_formatRemaining(state.joinCodeExpiresAt!)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+              ],
             ],
             const SizedBox(height: 24),
-            const CircularProgressIndicator(),
+            if (!expired) const CircularProgressIndicator(),
           ],
         ),
       ),
@@ -598,6 +675,8 @@ class _BattlePageState extends ConsumerState<BattlePage> {
                   } else {
                     _poll?.cancel();
                     _poll = null;
+                    _countdown?.cancel();
+                    _countdown = null;
                     setState(() {
                       _state = null;
                       _role = _BattleRole.sameDevice;

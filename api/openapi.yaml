@@ -21,6 +21,12 @@ tags:
   - name: quiz
   - name: watch
   - name: report
+  - name: daily
+  - name: topic
+  - name: membership
+  - name: battle
+  - name: dashboard
+  - name: payment
   - name: admin
   - name: system
 paths:
@@ -396,6 +402,267 @@ paths:
           schema: { type: integer, default: 8 }
       responses:
         "200": { description: OK }
+
+  /v1/family/alerts:
+    get:
+      tags: [alert]
+      summary: 家庭告警列表
+      security: [{ ParentAuth: [] }]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: 告警与未读数
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlertList" }
+
+  /v1/family/alerts/read:
+    post:
+      tags: [alert]
+      summary: 标记全部告警已读
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200": { description: OK }
+
+  /v1/family/children/{childID}/daily:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    get:
+      tags: [daily]
+      summary: 每日一题状态
+      description: 返回当天题目、作答状态与连续打卡统计。
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DailyState" }
+        "404": { description: 孩子不存在 }
+        "409": { description: 题库暂无可用题目 }
+  /v1/family/children/{childID}/daily/answers:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    post:
+      tags: [daily]
+      summary: 提交每日一题答案
+      description: 每日仅记录首次作答，重复提交返回当前状态。
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answer]
+              properties:
+                answer: {}
+      responses:
+        "200":
+          description: 判分后的状态
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DailyState" }
+        "404": { description: 孩子不存在 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /v1/family/children/{childID}/battles:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    get:
+      tags: [battle]
+      summary: 亲子对战历史
+      security: [{ ParentAuth: [] }]
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 50 } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/BattleSummary" }
+    post:
+      tags: [battle]
+      summary: 发起亲子对战
+      description: same_device 直接开始；room 模式返回 6 位房间码等待加入，房间码 10 分钟内有效。
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BattleCreateRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BattleState" }
+        "409": { description: 题库可用题目不足 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /v1/family/children/{childID}/battles/join:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+    post:
+      tags: [battle]
+      summary: 凭房间码加入对战
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BattleJoinRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BattleState" }
+        "404": { description: 房间不存在或已失效 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /v1/family/children/{childID}/battles/{battleID}:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+      - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [battle]
+      summary: 对战状态
+      description: 未结束时不下发正确答案与解析。
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BattleState" }
+        "404": { description: 对局不存在 }
+  /v1/family/children/{childID}/battles/{battleID}/answers:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+      - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [battle]
+      summary: 提交一方全部答案
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BattleSubmitRequest" }
+      responses:
+        "200":
+          description: 推进后的对战状态
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BattleState" }
+        "404": { description: 对局不存在 }
+        "409": { description: 房间未加入或非当前答题轮次 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /v1/family/membership:
+    get:
+      tags: [membership]
+      summary: 会员中心
+      description: 当前会员状态与在售套餐。
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipCenter" }
+  /v1/family/membership/orders:
+    get:
+      tags: [membership]
+      summary: 我的订单
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: 最近 20 笔订单
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MembershipOrder" }
+    post:
+      tags: [membership]
+      summary: 创建订单
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_id]
+              properties:
+                plan_id: { type: string, format: uuid }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipOrder" }
+        "404": { description: 套餐不存在 }
+        "409": { description: 套餐未上线 }
+  /v1/family/membership/orders/{orderID}/pay:
+    parameters:
+      - { name: orderID, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [membership]
+      summary: 支付订单（mock 渠道即时到账）
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: 订单与最新会员状态
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipPayResult" }
+        "404": { description: 订单不存在 }
+        "409": { description: 订单已取消 }
+
+  /v1/payments/callback:
+    post:
+      tags: [payment]
+      summary: 支付渠道回调
+      description: 使用 `X-Payment-Signature`（HMAC-SHA256(原始请求体, 回调密钥) 的十六进制小写）校验；无需登录令牌。
+      security: []
+      parameters:
+        - name: X-Payment-Signature
+          in: header
+          required: true
+          description: HMAC-SHA256 十六进制签名
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PaymentCallbackRequest" }
+      responses:
+        "200":
+          description: 已处理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  order_no: { type: string }
+                  paid: { type: boolean }
+        "401": { description: 回调签名无效 }
+        "404": { description: 订单不存在 }
+        "409": { description: 订单已退款 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "503": { description: 支付回调未启用 }
 
   /v1/device/activate/code:
     post:
@@ -783,6 +1050,18 @@ paths:
                         count: { type: integer }
                   total: { type: integer }
 
+  /v1/admin/coverage/export:
+    get:
+      tags: [admin]
+      summary: 导出覆盖率 CSV
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: CSV 文件
+          content:
+            text/csv:
+              schema: { type: string }
+
   /v1/admin/calibration/preview:
     get:
       tags: [admin]
@@ -835,12 +1114,253 @@ paths:
         "200": { description: 组卷结果 }
         "409": { description: 题池不足 }
 
+  /v1/admin/topics:
+    get:
+      tags: [topic]
+      summary: 专题题包列表
+      security: [{ AdminAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/TopicPack" }
+    post:
+      tags: [topic]
+      summary: 创建专题题包
+      security: [{ AdminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TopicPackInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TopicPack" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /v1/admin/topics/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [topic]
+      summary: 专题详情
+      security: [{ AdminAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TopicPack" }
+        "404": { description: 专题不存在 }
+    put:
+      tags: [topic]
+      summary: 更新专题
+      security: [{ AdminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TopicPackInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TopicPack" }
+        "404": { description: 专题不存在 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      tags: [topic]
+      summary: 删除专题
+      security: [{ AdminAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+        "404": { description: 专题不存在 }
+  /v1/admin/topics/{id}/questions:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [topic]
+      summary: 设置专题题目（覆盖式，最多 500 题）
+      security: [{ AdminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question_ids:
+                  type: array
+                  maxItems: 500
+                  items: { type: string, format: uuid }
+      responses:
+        "200":
+          description: 更新后的专题
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TopicPack" }
+        "404": { description: 专题不存在 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /v1/admin/membership/plans:
+    get:
+      tags: [membership]
+      summary: 会员套餐列表（含草稿/下线）
+      security: [{ AdminAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MembershipPlan" }
+    post:
+      tags: [membership]
+      summary: 创建会员套餐
+      security: [{ AdminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MembershipPlanInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipPlan" }
+        "409": { description: 套餐编码已存在 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /v1/admin/membership/plans/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [membership]
+      summary: 更新会员套餐
+      security: [{ AdminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MembershipPlanInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipPlan" }
+        "404": { description: 套餐不存在 }
+        "409": { description: 套餐编码已存在 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      tags: [membership]
+      summary: 删除会员套餐
+      security: [{ AdminAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+        "404": { description: 套餐不存在 }
+        "409": { description: 套餐已有订单引用，请改为下线 }
+  /v1/admin/membership/orders:
+    get:
+      tags: [membership]
+      summary: 全部会员订单
+      security: [{ AdminAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, paid, cancelled, refunded] } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+        - { name: offset, in: query, schema: { type: integer, default: 0 } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MembershipOrder" }
+                  total: { type: integer }
+  /v1/admin/membership/orders/{id}/refund:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [membership]
+      summary: 订单退款
+      description: 仅已支付订单可退款，按订单时长回退会员到期时间并写审计日志。
+      security: [{ AdminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 200 }
+      responses:
+        "200":
+          description: 退款后的订单
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipOrder" }
+        "404": { description: 订单不存在 }
+        "409": { description: 订单状态不可退款 }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /v1/admin/dashboard:
+    get:
+      tags: [dashboard]
+      summary: 运营概览
+      security: [{ AdminAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardOverview" }
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT or opaque device token
+    ParentAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: parent JWT
+    AdminAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: admin JWT
   parameters:
     ChildID:
       name: childID
@@ -1023,3 +1543,285 @@ components:
             remaining_seconds: { type: integer }
             lease_token: { type: string }
         grant_error: { type: string }
+
+    DailyQuestion:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        stem: { type: string }
+        type: { type: string }
+        options: {}
+    DailyState:
+      type: object
+      properties:
+        date: { type: string, example: "2026-11-05" }
+        question: { $ref: "#/components/schemas/DailyQuestion" }
+        answered: { type: boolean }
+        correct: { type: boolean }
+        correct_answer: {}
+        explain: { type: string }
+        points: { type: integer }
+        streak: { type: integer }
+        total_points: { type: integer }
+
+    TopicPackInput:
+      type: object
+      required: [name, type, status]
+      properties:
+        name: { type: string, maxLength: 100 }
+        type: { type: string, enum: [holiday, ip, vacation, daily] }
+        subject_scope:
+          type: array
+          items: { type: string }
+        stage_scope:
+          type: array
+          items: { type: string, enum: [preschool, low, mid, high] }
+        start_at: { type: string, format: date-time }
+        end_at: { type: string, format: date-time }
+        is_paid: { type: boolean }
+        status: { type: string, enum: [draft, online, offline] }
+    TopicPack:
+      allOf:
+        - $ref: "#/components/schemas/TopicPackInput"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            question_count: { type: integer }
+            question_ids:
+              type: array
+              items: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+
+    MembershipPlanInput:
+      type: object
+      required: [code, name, duration_days, price_cents, status]
+      properties:
+        code: { type: string, example: monthly }
+        name: { type: string }
+        description: { type: string }
+        duration_days: { type: integer, minimum: 1, maximum: 3650 }
+        price_cents: { type: integer, minimum: 0 }
+        features:
+          type: array
+          items: { type: string }
+        entitlement_codes:
+          type: array
+          items: { type: string, enum: [topic_pack, report_advanced, customer_service] }
+        status: { type: string, enum: [draft, online, offline] }
+        sort: { type: integer, minimum: 0 }
+    MembershipPlan:
+      allOf:
+        - $ref: "#/components/schemas/MembershipPlanInput"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+    MembershipOrder:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        order_no: { type: string }
+        account_id: { type: string, format: uuid }
+        plan_id: { type: string, format: uuid }
+        plan_name: { type: string }
+        amount_cents: { type: integer }
+        duration_days: { type: integer }
+        status: { type: string, enum: [pending, paid, cancelled, refunded] }
+        channel: { type: string, example: mock }
+        created_at: { type: string, format: date-time }
+        paid_at: { type: string, format: date-time }
+        refunded_at: { type: string, format: date-time }
+        refund_reason: { type: string }
+        refunded_by: { type: string, format: uuid }
+        external_trade_no: { type: string }
+        refund_before: { $ref: "#/components/schemas/MembershipRefundSnapshot" }
+        refund_after: { $ref: "#/components/schemas/MembershipRefundSnapshot" }
+    MembershipRefundSnapshot:
+      type: object
+      properties:
+        status: { type: string, enum: [active, expired] }
+        plan_name: { type: string }
+        expires_at: { type: string, format: date-time }
+    MembershipState:
+      type: object
+      properties:
+        active: { type: boolean }
+        status: { type: string, enum: [active, expired, none] }
+        plan_name: { type: string }
+        starts_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        days_remaining: { type: integer }
+        entitlements:
+          type: array
+          items: { type: string }
+    MembershipCenter:
+      type: object
+      properties:
+        membership: { $ref: "#/components/schemas/MembershipState" }
+        plans:
+          type: array
+          items: { $ref: "#/components/schemas/MembershipPlan" }
+    MembershipPayResult:
+      type: object
+      properties:
+        order: { $ref: "#/components/schemas/MembershipOrder" }
+        membership: { $ref: "#/components/schemas/MembershipState" }
+    PaymentCallbackRequest:
+      type: object
+      required: [order_no, trade_no, status]
+      properties:
+        order_no: { type: string }
+        trade_no: { type: string }
+        status: { type: string, enum: [paid] }
+
+    BattleQuestion:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        stem: { type: string }
+        type: { type: string }
+        options: {}
+    BattleAnswer:
+      type: object
+      properties:
+        side: { type: string, enum: [child, parent] }
+        question_id: { type: string, format: uuid }
+        answer: {}
+        correct: { type: boolean }
+        correct_answer: {}
+        explain: { type: string }
+    BattleResult:
+      type: object
+      properties:
+        winner: { type: string, enum: [child, parent, draw] }
+        child_score: { type: integer }
+        parent_score: { type: integer }
+    BattleState:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [waiting, child_turn, parent_turn, finished] }
+        question_count: { type: integer }
+        questions:
+          type: array
+          items: { $ref: "#/components/schemas/BattleQuestion" }
+        child_score: { type: integer }
+        parent_score: { type: integer }
+        mode: { type: string, enum: [same_device, room] }
+        join_code: { type: string }
+        join_code_expires_at: { type: string, format: date-time }
+        result: { $ref: "#/components/schemas/BattleResult" }
+        answers:
+          type: array
+          items: { $ref: "#/components/schemas/BattleAnswer" }
+    BattleSummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        mode: { type: string, enum: [same_device, room] }
+        status: { type: string, enum: [waiting, child_turn, parent_turn, finished] }
+        question_count: { type: integer }
+        child_score: { type: integer }
+        parent_score: { type: integer }
+        created_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+    BattleCreateRequest:
+      type: object
+      properties:
+        question_count: { type: integer, minimum: 3, maximum: 10, default: 5 }
+        mode: { type: string, enum: [same_device, room], default: same_device }
+    BattleJoinRequest:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 6, maxLength: 6 }
+    BattleSubmission:
+      type: object
+      required: [question_id, answer]
+      properties:
+        question_id: { type: string, format: uuid }
+        answer: {}
+    BattleSubmitRequest:
+      type: object
+      required: [side, answers]
+      properties:
+        side: { type: string, enum: [child, parent] }
+        answers:
+          type: array
+          items: { $ref: "#/components/schemas/BattleSubmission" }
+
+    DashboardOverview:
+      type: object
+      properties:
+        questions:
+          type: object
+          properties:
+            total: { type: integer }
+            online: { type: integer }
+            draft: { type: integer }
+            review: { type: integer }
+        topics:
+          type: object
+          properties:
+            total: { type: integer }
+            online: { type: integer }
+            active: { type: integer }
+        membership:
+          type: object
+          properties:
+            active_members: { type: integer }
+            revenue_cents: { type: integer }
+            orders_30d: { type: integer }
+            paid_30d: { type: integer }
+        families: { type: integer }
+        children: { type: integer }
+        battles_7d: { type: integer }
+        recent_orders:
+          type: array
+          items:
+            type: object
+            properties:
+              order_no: { type: string }
+              plan_name: { type: string }
+              amount_cents: { type: integer }
+              status: { type: string }
+              created_at: { type: string, format: date-time }
+        expiring_memberships:
+          type: array
+          items:
+            type: object
+            properties:
+              account_id: { type: string, format: uuid }
+              plan_name: { type: string }
+              expires_at: { type: string, format: date-time }
+              days_remaining: { type: integer }
+        trend:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string, example: "2026-11-05" }
+              orders: { type: integer }
+              revenue_cents: { type: integer }
+        generated_at: { type: string, format: date-time }
+
+    Alert:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        type: { type: string }
+        detail: {}
+        reported_at: { type: string, format: date-time }
+        child_id: { type: string, format: uuid }
+        child_name: { type: string }
+        device_id: { type: string }
+        read: { type: boolean }
+    AlertList:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Alert" }
+        unread: { type: integer }

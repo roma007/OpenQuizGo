@@ -18,6 +18,7 @@
 | `docs/conversations/` | 对话留档（Markdown + 原始 JSON） | [INDEX.md](conversations/INDEX.md) |
 | `docs/design/` | 设计方案 | [TEMPLATE.md](design/TEMPLATE.md) |
 | `docs/plans/` | 实施计划 | [TEMPLATE.md](plans/TEMPLATE.md)、[BACKLOG.md](plans/BACKLOG.md) |
+| `docs/auto-continue.md` | 10 分钟无人值守自动推进 | [auto-continue.md](auto-continue.md) |
 
 ## 常用命令
 
@@ -54,5 +55,8 @@ node scripts/archive-conversation.mjs --all
 | 020 | 管理端运营概览 | [设计](design/020-管理端运营概览设计.md) | [计划](plans/020-管理端运营概览实施计划.md) | done（v0.20.0） |
 | 021 | 双设备亲子对战 | [设计](design/021-双设备亲子对战设计.md) | [计划](plans/021-双设备亲子对战实施计划.md) | done（v0.21.0） |
 | 022 | 对战记录 | [设计](design/022-对战记录设计.md) | [计划](plans/022-对战记录实施计划.md) | done（v0.22.0） |
+| 023 | 房间码过期与倒计时 | [设计](design/023-房间码过期与倒计时设计.md) | [计划](plans/023-房间码过期与倒计时实施计划.md) | done（v0.23.0） |
+| 024 | 退款会员快照 | [设计](design/024-退款会员快照设计.md) | [计划](plans/024-退款会员快照实施计划.md) | done（v0.23.0） |
+| 025 | 运营趋势与缓存 | [设计](design/025-运营趋势与缓存设计.md) | [计划](plans/025-运营趋势与缓存实施计划.md) | done（v0.23.0） |
 
 > 新增设计/计划后，请同步更新此表。

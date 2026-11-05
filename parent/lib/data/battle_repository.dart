@@ -89,6 +89,7 @@ class BattleState {
     required this.answers,
     required this.mode,
     required this.joinCode,
+    this.joinCodeExpiresAt,
   });
 
   final String id;
@@ -101,6 +102,7 @@ class BattleState {
   final List<BattleAnswer> answers;
   final String mode;
   final String joinCode;
+  final DateTime? joinCodeExpiresAt;
 
   bool get finished => status == 'finished';
   bool get childTurn => status == 'child_turn';
@@ -141,6 +143,9 @@ class BattleState {
           : const [],
       mode: json['mode'] as String? ?? 'same_device',
       joinCode: json['join_code'] as String? ?? '',
+      joinCodeExpiresAt: json['join_code_expires_at'] is String
+          ? DateTime.tryParse(json['join_code_expires_at'] as String)
+          : null,
     );
   }
 }
