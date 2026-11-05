@@ -214,7 +214,10 @@ func (s *Service) ApplyCalibration(ctx context.Context, items []CalibrationApply
 }
 
 // Coverage 返回题库覆盖率聚合。
-func (s *Service) Coverage(ctx context.Context) (CoverageResult, error) {
+func (s *Service) Coverage(ctx context.Context, threshold int) (CoverageResult, error) {
+	if threshold < 1 || threshold > 10000 {
+		threshold = coverageMinOnline
+	}
 	cells, total, err := s.repo.Coverage(ctx)
 	if err != nil {
 		return CoverageResult{}, err
@@ -227,12 +230,12 @@ func (s *Service) Coverage(ctx context.Context) (CoverageResult, error) {
 	}
 	warnings := make([]string, 0)
 	for key, count := range online {
-		if count >= coverageMinOnline {
+		if count >= threshold {
 			continue
 		}
 		parts := strings.SplitN(key, "|", 2)
 		warnings = append(warnings, fmt.Sprintf("%s/%s 在线题量 %d，低于建议 %d",
-			subjectName(parts[0]), stageName(parts[1]), count, coverageMinOnline))
+			subjectName(parts[0]), stageName(parts[1]), count, threshold))
 	}
 	sort.Strings(warnings)
 	return CoverageResult{Cells: cells, Total: total, Warnings: warnings}, nil

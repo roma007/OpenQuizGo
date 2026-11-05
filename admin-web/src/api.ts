@@ -139,7 +139,8 @@ export const api = {
     })
     return request<AuditEntry[]>(`/admin/audit?${query.toString()}`)
   },
-  coverage: () => request<CoverageResult>('/admin/coverage'),
+  coverage: (threshold = 50) =>
+    request<CoverageResult>(`/admin/coverage?threshold=${threshold}`),
   auditExport: async (params: Record<string, string | undefined> = {}) => {
     const query = new URLSearchParams({ limit: '5000' })
     Object.entries(params).forEach(([key, value]) => {
@@ -152,9 +153,9 @@ export const api = {
     if (!response.ok) throw new ApiError('导出失败', response.status)
     return response.blob()
   },
-  coverageExport: async () => {
+  coverageExport: async (threshold = 50) => {
     const token = tokenStore.get()
-    const response = await fetch('/v1/admin/coverage/export', {
+    const response = await fetch(`/v1/admin/coverage/export?threshold=${threshold}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     })
     if (!response.ok) throw new ApiError('导出失败', response.status)

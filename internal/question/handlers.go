@@ -45,7 +45,12 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 }
 
 func (s *Service) handleCoverage(w http.ResponseWriter, r *http.Request) {
-	result, err := s.Coverage(r.Context())
+	threshold, err := coverageThreshold(r)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	result, err := s.Coverage(r.Context(), threshold)
 	if err != nil {
 		writeServiceError(w, r, err)
 		return
@@ -54,7 +59,12 @@ func (s *Service) handleCoverage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) handleCoverageExport(w http.ResponseWriter, r *http.Request) {
-	result, err := s.Coverage(r.Context())
+	threshold, err := coverageThreshold(r)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	result, err := s.Coverage(r.Context(), threshold)
 	if err != nil {
 		writeServiceError(w, r, err)
 		return
@@ -68,6 +78,18 @@ func (s *Service) handleCoverageExport(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(cell.Difficulty), strconv.Itoa(cell.Count)})
 	}
 	writer.Flush()
+}
+
+func coverageThreshold(r *http.Request) (int, error) {
+	raw := r.URL.Query().Get("threshold")
+	if raw == "" {
+		return coverageMinOnline, nil
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value < 1 || value > 10000 {
+		return 0, newAPIError(422, "VALIDATION_ERROR", "threshold 需为 1–10000")
+	}
+	return value, nil
 }
 
 func (s *Service) handleCalibrationPreview(w http.ResponseWriter, r *http.Request) {

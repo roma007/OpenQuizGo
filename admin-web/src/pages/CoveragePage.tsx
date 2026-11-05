@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Col, Row, Space, Statistic, Table, Typography, message } from 'antd'
+import { Alert, Button, Card, Col, InputNumber, Row, Space, Statistic, Table, Typography, message } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { api, ApiError } from '../api'
 import type { CoverageCell } from '../types'
@@ -20,21 +20,25 @@ export default function CoveragePage() {
   const [total, setTotal] = useState(0)
   const [warnings, setWarnings] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [threshold, setThreshold] = useState(50)
 
-  useEffect(() => {
-    void (async () => {
-      setLoading(true)
-      try {
-        const result = await api.coverage()
+  const load = async (next = threshold) => {
+    setLoading(true)
+    try {
+      const result = await api.coverage(next)
         setCells(result.cells || [])
         setTotal(result.total || 0)
-        setWarnings(result.warnings || [])
-      } catch (error) {
-        message.error(error instanceof ApiError ? error.message : '加载失败')
-      } finally {
-        setLoading(false)
-      }
-    })()
+      setWarnings(result.warnings || [])
+    } catch (error) {
+      message.error(error instanceof ApiError ? error.message : '加载失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const byStatus = useMemo(() => {
@@ -49,14 +53,27 @@ export default function CoveragePage() {
 
   return (
     <Card loading={loading}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-        <Typography.Title level={4} style={{ marginTop: 0 }}>
-          题库覆盖率
-        </Typography.Title>
+      <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+        <Space>
+          <Typography.Title level={4} style={{ marginTop: 0 }}>
+            题库覆盖率
+          </Typography.Title>
+          <span>
+            告警阈值
+            <InputNumber
+              style={{ width: 110, marginInline: 8 }}
+              min={1}
+              max={10000}
+              value={threshold}
+              onChange={(value) => setThreshold(value || 50)}
+            />
+            <Button onClick={() => void load(threshold)}>刷新</Button>
+          </span>
+        </Space>
         <Button
           onClick={async () => {
             try {
-              const blob = await api.coverageExport()
+              const blob = await api.coverageExport(threshold)
               const url = URL.createObjectURL(blob)
               const link = document.createElement('a')
               link.href = url
@@ -76,7 +93,7 @@ export default function CoveragePage() {
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}
-          message={`覆盖不足告警（${warnings.length} 项）`}
+          title={`覆盖不足告警（${warnings.length} 项，阈值 ${threshold}）`}
           description={
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               {warnings.map((item) => (

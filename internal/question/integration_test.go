@@ -113,6 +113,15 @@ func TestQuestionWorkflow(t *testing.T) {
 		t.Fatal("audit log is empty")
 	}
 
+	var highCoverage question.CoverageResult
+	c.expect(http.MethodGet, "/admin/coverage?threshold=10000",
+		nil, adminToken, http.StatusOK, &highCoverage)
+	if len(highCoverage.Warnings) == 0 {
+		t.Fatal("expected coverage warnings at threshold 10000")
+	}
+	c.expect(http.MethodGet, "/admin/coverage?threshold=0",
+		nil, adminToken, http.StatusUnprocessableEntity, nil)
+
 	var filtered []question.AuditEntry
 	c.expect(http.MethodGet,
 		"/admin/audit?target_type=question&action=question.create&limit=20",
