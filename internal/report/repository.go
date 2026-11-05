@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -172,4 +173,92 @@ type childRow struct {
 
 func isNoRows(err error) bool {
 	return err == pgx.ErrNoRows
+}
+
+// subjectWeaknesses 返回最近 days 天各学科正确率（样本 >= minSample）。
+func (r *repository) subjectWeaknesses(ctx context.Context, childID string, days, minSample int) ([]SubjectWeakness, error) {
+	rows, err := r.pool.Query(ctx, `
+		select q.subject_code, count(*)::int,
+		       count(*) filter (where a.is_correct)::int
+		from answer_log a
+		join question q on q.id = a.question_id
+		where a.child_id = $1 and a.answered_at >= now() - ($2 * interval '1 day')
+		group by q.subject_code
+		having count(*) >= $3
+		order by (count(*) filter (where a.is_correct))::numeric / count(*) asc
+		limit 3`, childID, days, minSample)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]SubjectWeakness, 0)
+	for rows.Next() {
+		var item SubjectWeakness
+		if err := rows.Scan(&item.Subject, &item.Answered, &item.Correct); err != nil {
+			return nil, err
+		}
+		item.Accuracy = float64(item.Correct) / float64(item.Answered)
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+// recommendationBaseline 返回孩子学段、最近平均难度与整体正确率。
+func (r *repository) recommendationBaseline(ctx context.Context, childID string) (string, int, float64, error) {
+	var stage string
+	if err := r.pool.QueryRow(ctx,
+		`select stage_code from child_profile where id = $1`, childID).Scan(&stage); err != nil {
+		return "", 0, 0, err
+	}
+	var avgDifficulty *float64
+	var answered, correct int
+	err := r.pool.QueryRow(ctx, `
+		select avg(q.difficulty)::float8, count(*)::int,
+		       count(*) filter (where a.is_correct)::int
+		from answer_log a
+		join question q on q.id = a.question_id
+		where a.child_id = $1 and a.answered_at >= now() - interval '30 days'`,
+		childID).Scan(&avgDifficulty, &answered, &correct)
+	if err != nil {
+		return "", 0, 0, err
+	}
+	difficulty := 2
+	if avgDifficulty != nil {
+		difficulty = int(math.Round(*avgDifficulty))
+	}
+	accuracy := 0.0
+	if answered > 0 {
+		accuracy = float64(correct) / float64(answered)
+	}
+	return stage, difficulty, accuracy, nil
+}
+
+// recommendationTopics 返回匹配学段/学科的在线专题。
+func (r *repository) recommendationTopics(ctx context.Context, stage, subject string, limit int) ([]TopicSuggestion, error) {
+	rows, err := r.pool.Query(ctx, `
+		select tp.id, tp.name, count(*)::int
+		from topic_pack tp
+		join topic_question tq on tq.topic_id = tp.id
+		join question q on q.id = tq.question_id and q.status = 'online'
+		where tp.status = 'online'
+		  and (jsonb_array_length(tp.stage_scope) = 0 or tp.stage_scope ? $1)
+		  and ($2 = '' or jsonb_array_length(tp.subject_scope) = 0 or tp.subject_scope ? $2)
+		group by tp.id, tp.name
+		having count(*) >= 3
+		order by count(*) desc
+		limit $3`, stage, subject, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]TopicSuggestion, 0)
+	for rows.Next() {
+		var item TopicSuggestion
+		var count int
+		if err := rows.Scan(&item.TopicID, &item.Name, &count); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
 }

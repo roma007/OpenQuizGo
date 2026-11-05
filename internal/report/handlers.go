@@ -14,6 +14,17 @@ import (
 // ParentRoutes 注册家长端报告接口。
 func (s *Service) ParentRoutes(r chi.Router) {
 	r.Get("/family/children/{childID}/reports", s.handleList)
+	r.Get("/family/children/{childID}/recommendations", s.handleRecommendations)
+}
+
+func (s *Service) handleRecommendations(w http.ResponseWriter, r *http.Request) {
+	result, err := s.Recommendations(r.Context(), identity.AccountIDFrom(r.Context()),
+		chi.URLParam(r, "childID"))
+	if err != nil {
+		writeReportError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 func (s *Service) handleList(w http.ResponseWriter, r *http.Request) {

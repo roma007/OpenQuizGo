@@ -42,3 +42,27 @@ func (e *Error) Error() string { return e.Message }
 func newError(status int, code, message string) *Error {
 	return &Error{Status: status, Code: code, Message: message}
 }
+
+// SubjectWeakness 是薄弱学科统计。
+type SubjectWeakness struct {
+	Subject  string  `json:"subject"`
+	Answered int     `json:"answered"`
+	Correct  int     `json:"correct"`
+	Accuracy float64 `json:"accuracy"`
+}
+
+// TopicSuggestion 是推荐专题。
+type TopicSuggestion struct {
+	TopicID string `json:"topic_id"`
+	Name    string `json:"name"`
+	Reason  string `json:"reason,omitempty"`
+}
+
+// Recommendations 是练习推荐结果。
+type Recommendations struct {
+	ChildID             string            `json:"child_id"`
+	WeakSubjects        []SubjectWeakness `json:"weak_subjects"`
+	SuggestedDifficulty int               `json:"suggested_difficulty"`
+	Topics              []TopicSuggestion `json:"topics"`
+	GeneratedAt         time.Time         `json:"generated_at"`
+}

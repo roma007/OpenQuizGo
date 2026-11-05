@@ -158,6 +158,11 @@ final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   return ReportRepository(ref.watch(apiClientProvider));
 });
 
+final recommendationsProvider = FutureProvider.autoDispose
+    .family<Recommendations, String>((ref, childId) {
+      return ref.watch(reportRepositoryProvider).recommendations(childId);
+    });
+
 final reportsProvider =
     FutureProvider.family<Cached<List<GrowthReport>>, ReportQuery>((
       ref,

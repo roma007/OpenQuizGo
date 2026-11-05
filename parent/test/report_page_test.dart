@@ -15,6 +15,16 @@ class _FakeReportRepository implements ReportRepository {
   final List<GrowthReport> reports;
 
   @override
+  Future<Recommendations> recommendations(String childId) async =>
+      Recommendations(
+        childId: childId,
+        weakSubjects: const [],
+        suggestedDifficulty: 2,
+        topics: const [],
+        generatedAt: null,
+      );
+
+  @override
   Future<List<GrowthReport>> listReports(ReportQuery query) async => reports;
 }
 

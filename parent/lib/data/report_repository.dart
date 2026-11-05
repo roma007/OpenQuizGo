@@ -109,10 +109,98 @@ class ReportQuery {
   int get hashCode => Object.hash(childId, period);
 }
 
+class WeakSubject {
+  WeakSubject({
+    required this.subject,
+    required this.answered,
+    required this.correct,
+    required this.accuracy,
+  });
+
+  final String subject;
+  final int answered;
+  final int correct;
+  final double accuracy;
+
+  factory WeakSubject.fromJson(Map<String, dynamic> json) => WeakSubject(
+    subject: json['subject'] as String? ?? '',
+    answered: (json['answered'] as num?)?.toInt() ?? 0,
+    correct: (json['correct'] as num?)?.toInt() ?? 0,
+    accuracy: (json['accuracy'] as num?)?.toDouble() ?? 0,
+  );
+}
+
+class TopicSuggestion {
+  TopicSuggestion({
+    required this.topicId,
+    required this.name,
+    required this.reason,
+  });
+
+  final String topicId;
+  final String name;
+  final String reason;
+
+  factory TopicSuggestion.fromJson(Map<String, dynamic> json) =>
+      TopicSuggestion(
+        topicId: json['topic_id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        reason: json['reason'] as String? ?? '',
+      );
+}
+
+class Recommendations {
+  Recommendations({
+    required this.childId,
+    required this.weakSubjects,
+    required this.suggestedDifficulty,
+    required this.topics,
+    required this.generatedAt,
+  });
+
+  final String childId;
+  final List<WeakSubject> weakSubjects;
+  final int suggestedDifficulty;
+  final List<TopicSuggestion> topics;
+  final DateTime? generatedAt;
+
+  factory Recommendations.fromJson(Map<String, dynamic> json) {
+    final subjects = json['weak_subjects'];
+    final topics = json['topics'];
+    return Recommendations(
+      childId: json['child_id'] as String? ?? '',
+      weakSubjects: subjects is List
+          ? subjects
+                .whereType<Map<String, dynamic>>()
+                .map(WeakSubject.fromJson)
+                .toList(growable: false)
+          : const [],
+      suggestedDifficulty:
+          (json['suggested_difficulty'] as num?)?.toInt() ?? 2,
+      topics: topics is List
+          ? topics
+                .whereType<Map<String, dynamic>>()
+                .map(TopicSuggestion.fromJson)
+                .toList(growable: false)
+          : const [],
+      generatedAt: json['generated_at'] is String
+          ? DateTime.tryParse(json['generated_at'] as String)
+          : null,
+    );
+  }
+}
+
 class ReportRepository {
   ReportRepository(this._api);
 
   final ApiClient _api;
+
+  Future<Recommendations> recommendations(String childId) async {
+    final json = await _api.getJson(
+      '/v1/family/children/$childId/recommendations',
+    );
+    return Recommendations.fromJson(json);
+  }
 
   Future<List<GrowthReport>> listReports(ReportQuery query) async {
     final json = await _api.getJson(

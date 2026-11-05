@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../data/family_repository.dart';
 import '../battle/battle_page.dart';
 import '../daily/daily_quiz_page.dart';
+import '../recommendation/recommendations_page.dart';
 import '../rule/rule_page.dart';
 import 'child_edit_page.dart';
 
@@ -64,6 +65,8 @@ class ChildPage extends ConsumerWidget {
                               onRule: () => _openRule(context, child),
                               onDaily: () => _openDaily(context, child),
                               onBattle: () => _openBattle(context, child),
+                              onRecommendations: () =>
+                                  _openRecommendations(context, child),
                             ),
                         ];
                         return RefreshIndicator(
@@ -106,6 +109,12 @@ class ChildPage extends ConsumerWidget {
     return '${stageLabel(child.stage)} · $birthday';
   }
 
+  void _openRecommendations(BuildContext context, Child child) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => RecommendationsPage(child: child)),
+    );
+  }
+
   void _openBattle(BuildContext context, Child child) {
     Navigator.of(
       context,
@@ -144,6 +153,7 @@ class _ChildCard extends StatelessWidget {
     required this.onRule,
     required this.onDaily,
     required this.onBattle,
+    required this.onRecommendations,
   });
 
   final Child child;
@@ -152,6 +162,7 @@ class _ChildCard extends StatelessWidget {
   final VoidCallback onRule;
   final VoidCallback onDaily;
   final VoidCallback onBattle;
+  final VoidCallback onRecommendations;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +187,11 @@ class _ChildCard extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            IconButton(
+              tooltip: '练习推荐',
+              icon: const Icon(Icons.tips_and_updates_outlined),
+              onPressed: onRecommendations,
+            ),
             IconButton(
               tooltip: '亲子对战',
               icon: const Icon(Icons.sports_esports_outlined),

@@ -59,6 +59,56 @@ func (s *Service) List(ctx context.Context, accountID, childID, period string, l
 }
 
 // Generate 聚合指定周期的报告（幂等）。
+// Recommendations 返回规则版练习推荐。
+func (s *Service) Recommendations(ctx context.Context, accountID, childID string) (Recommendations, error) {
+	owns, err := s.repo.ownsChild(ctx, accountID, childID)
+	if err != nil {
+		return Recommendations{}, err
+	}
+	if !owns {
+		return Recommendations{}, newError(404, "CHILD_NOT_FOUND", "孩子档案不存在")
+	}
+	weak, err := s.repo.subjectWeaknesses(ctx, childID, 30, 5)
+	if err != nil {
+		return Recommendations{}, err
+	}
+	stage, difficulty, accuracy, err := s.repo.recommendationBaseline(ctx, childID)
+	if err != nil {
+		return Recommendations{}, err
+	}
+	if accuracy > 0 && accuracy < 0.4 {
+		difficulty--
+	} else if accuracy > 0.85 {
+		difficulty++
+	}
+	if difficulty < 1 {
+		difficulty = 1
+	}
+	if difficulty > 5 {
+		difficulty = 5
+	}
+	subject := ""
+	reason := "综合推荐"
+	if len(weak) > 0 {
+		subject = weak[0].Subject
+		reason = "匹配薄弱学科 " + subject
+	}
+	topics, err := s.repo.recommendationTopics(ctx, stage, subject, 3)
+	if err != nil {
+		return Recommendations{}, err
+	}
+	for i := range topics {
+		topics[i].Reason = reason
+	}
+	return Recommendations{
+		ChildID:             childID,
+		WeakSubjects:        weak,
+		SuggestedDifficulty: difficulty,
+		Topics:              topics,
+		GeneratedAt:         time.Now(),
+	}, nil
+}
+
 func (s *Service) Generate(ctx context.Context, childID, period string, start time.Time) (Report, error) {
 	if period != "week" && period != "month" {
 		return Report{}, newError(422, "VALIDATION_ERROR", "period 需为 week 或 month")

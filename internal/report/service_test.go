@@ -110,6 +110,76 @@ func TestPeriodStart(t *testing.T) {
 	}
 }
 
+func TestRecommendations(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareReportDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	accountID, childID := seedReportChild(t, pool)
+	now := time.Now()
+	mathIDs := []string{
+		insertQuestion(t, pool, "math", "core"),
+		insertQuestion(t, pool, "math", "core"),
+		insertQuestion(t, pool, "math", "core"),
+	}
+	chineseID := insertQuestion(t, pool, "chinese", "core")
+	for i := 0; i < 5; i++ {
+		insertAnswer(t, pool, childID, mathIDs[i%len(mathIDs)], now.Add(-time.Duration(i)*time.Minute), i == 0)
+		insertAnswer(t, pool, childID, chineseID, now.Add(-time.Duration(i)*time.Minute), i < 4)
+	}
+
+	var packID string
+	if err := pool.QueryRow(ctx, `
+		insert into topic_pack (name, type, subject_scope, stage_scope, status)
+		values ('数学强化', 'vacation', '["math"]'::jsonb, '["low"]'::jsonb, 'online')
+		returning id`).Scan(&packID); err != nil {
+		t.Fatalf("pack: %v", err)
+	}
+	for position, id := range mathIDs {
+		if _, err := pool.Exec(ctx, `
+			insert into topic_question (topic_id, question_id, position) values ($1, $2, $3)`,
+			packID, id, position); err != nil {
+			t.Fatalf("link: %v", err)
+		}
+	}
+
+	svc := New(pool, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	rec, err := svc.Recommendations(ctx, accountID, childID)
+	if err != nil {
+		t.Fatalf("recommendations: %v", err)
+	}
+	if len(rec.WeakSubjects) != 2 || rec.WeakSubjects[0].Subject != "math" ||
+		rec.WeakSubjects[0].Accuracy >= rec.WeakSubjects[1].Accuracy {
+		t.Fatalf("unexpected weak subjects: %+v", rec.WeakSubjects)
+	}
+	if rec.SuggestedDifficulty != 2 {
+		t.Fatalf("difficulty = %d, want 2", rec.SuggestedDifficulty)
+	}
+	if len(rec.Topics) != 1 || rec.Topics[0].TopicID != packID ||
+		rec.Topics[0].Reason == "" {
+		t.Fatalf("unexpected topics: %+v", rec.Topics)
+	}
+
+	var otherAccount string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'hash-report-other')
+		returning id`).Scan(&otherAccount); err != nil {
+		t.Fatalf("other account: %v", err)
+	}
+	if _, err := svc.Recommendations(ctx, otherAccount, childID); err == nil {
+		t.Fatal("expected ownership error")
+	}
+}
+
 func prepareReportDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)
@@ -125,6 +195,7 @@ func prepareReportDB(t *testing.T, url string) {
 		t.Fatalf("migrate: %v", err)
 	}
 	if _, err := db.Exec(`truncate table
+		topic_question, topic_pack, question,
 		growth_report, answer_log, watch_log, watch_grant,
 		quiz_session_item, quiz_session, watch_rule,
 		child_profile, family_member, family, parent_account
