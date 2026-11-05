@@ -117,10 +117,13 @@ export const api = {
       body,
       headers: { 'Content-Type': contentType },
     }),
-  audit: (targetId?: string) =>
-    request<AuditEntry[]>(
-      `/admin/audit?limit=100${targetId ? `&target_id=${encodeURIComponent(targetId)}` : ''}`,
-    ),
+  audit: (params: Record<string, string | undefined> = {}) => {
+    const query = new URLSearchParams({ limit: '200' })
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) query.set(key, value)
+    })
+    return request<AuditEntry[]>(`/admin/audit?${query.toString()}`)
+  },
   coverage: () => request<CoverageResult>('/admin/coverage'),
   coverageExport: async () => {
     const token = tokenStore.get()

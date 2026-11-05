@@ -111,6 +111,15 @@ func TestQuestionWorkflow(t *testing.T) {
 	if len(audit) == 0 {
 		t.Fatal("audit log is empty")
 	}
+
+	var filtered []question.AuditEntry
+	c.expect(http.MethodGet,
+		"/admin/audit?target_type=question&action=question.create&limit=20",
+		nil, adminToken, http.StatusOK, &filtered)
+	if len(filtered) != 1 || filtered[0].Action != "question.create" ||
+		filtered[0].TargetType != "question" {
+		t.Fatalf("unexpected filtered audit: %+v", filtered)
+	}
 }
 
 type client struct {

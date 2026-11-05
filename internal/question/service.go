@@ -369,11 +369,11 @@ func (s *Service) Import(ctx context.Context, inputs []Input, principal admin.Pr
 }
 
 // Audit 返回题目审计日志。
-func (s *Service) Audit(ctx context.Context, targetID string, limit int) ([]AuditEntry, error) {
-	if limit <= 0 || limit > 200 {
-		limit = 50
+func (s *Service) Audit(ctx context.Context, filter AuditFilter) ([]AuditEntry, error) {
+	if filter.Limit <= 0 || filter.Limit > 200 {
+		filter.Limit = 50
 	}
-	return s.repo.listAudit(ctx, targetID, limit)
+	return s.repo.listAudit(ctx, filter)
 }
 
 func (s *Service) audit(ctx context.Context, principal admin.Principal, action, targetID string, after any, ip string) {

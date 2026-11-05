@@ -90,7 +90,7 @@ export default function QuestionEdit() {
 
   const loadAudit = async (targetId: string) => {
     try {
-      setAudit(await api.audit(targetId))
+      setAudit(await api.audit({ target_id: targetId }))
     } catch {
       // 审计不可用时不影响编辑
     }

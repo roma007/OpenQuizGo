@@ -251,7 +251,14 @@ func (s *Service) handleImport(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) handleAudit(w http.ResponseWriter, r *http.Request) {
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	entries, err := s.Audit(r.Context(), r.URL.Query().Get("target_id"), limit)
+	q := r.URL.Query()
+	entries, err := s.Audit(r.Context(), AuditFilter{
+		TargetID:   q.Get("target_id"),
+		TargetType: q.Get("target_type"),
+		Action:     q.Get("action"),
+		ActorID:    q.Get("actor_id"),
+		Limit:      limit,
+	})
 	if err != nil {
 		writeServiceError(w, r, err)
 		return

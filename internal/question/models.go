@@ -137,6 +137,14 @@ type ImportResult struct {
 }
 
 // AuditEntry 是审计日志视图。
+type AuditFilter struct {
+	TargetID   string
+	TargetType string
+	Action     string
+	ActorID    string
+	Limit      int
+}
+
 type AuditEntry struct {
 	ID         int64           `json:"id"`
 	ActorType  string          `json:"actor_type"`

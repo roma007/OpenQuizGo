@@ -339,15 +339,25 @@ func (r *repository) audit(ctx context.Context, actorID, action, targetID string
 	return err
 }
 
-func (r *repository) listAudit(ctx context.Context, targetID string, limit int) ([]AuditEntry, error) {
+func (r *repository) listAudit(ctx context.Context, filter AuditFilter) ([]AuditEntry, error) {
 	query := `
 		select id, actor_type, actor_id, action, target_type, target_id,
 		       coalesce(after_data::text, ''), created_at
-		from audit_log
-		where ($1 = '' or target_id = $1)`
-	args := []any{targetID}
-	args = append(args, limit)
-	query += fmt.Sprintf(` order by id desc limit $%d`, len(args))
+		from audit_log where 1 = 1`
+	args := make([]any, 0, 5)
+	add := func(field, value string) {
+		if value == "" {
+			return
+		}
+		args = append(args, value)
+		query += fmt.Sprintf(" and %s = $%d", field, len(args))
+	}
+	add("target_id", filter.TargetID)
+	add("target_type", filter.TargetType)
+	add("action", filter.Action)
+	add("actor_id", filter.ActorID)
+	args = append(args, filter.Limit)
+	query += fmt.Sprintf(" order by id desc limit $%d", len(args))
 
 	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
