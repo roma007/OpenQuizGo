@@ -1721,6 +1721,44 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/MembershipCoupon" }
 
+  /v1/admin/membership/reconciliation:
+    get:
+      tags: [admin]
+      summary: 会员对账报表
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: 按日支付/退款/优惠汇总
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  from: { type: string }
+                  to: { type: string }
+                  days:
+                    type: array
+                    items: { $ref: "#/components/schemas/ReconciliationDay" }
+                  totals: { $ref: "#/components/schemas/ReconciliationDay" }
+        "422": { description: 日期范围非法 }
+  /v1/admin/membership/reconciliation/export:
+    get:
+      tags: [admin]
+      summary: 导出会员对账 CSV
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: CSV 文件
+          content:
+            text/csv:
+              schema: { type: string }
+
   /v1/admin/membership/invoices:
     get:
       tags: [admin]
@@ -1927,6 +1965,16 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    ReconciliationDay:
+      type: object
+      properties:
+        date: { type: string }
+        paid_count: { type: integer }
+        paid_cents: { type: integer }
+        refunded_count: { type: integer }
+        refunded_cents: { type: integer }
+        discount_cents: { type: integer }
+        net_cents: { type: integer }
     MembershipInvoice:
       type: object
       properties:

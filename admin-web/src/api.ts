@@ -24,6 +24,7 @@ import type {
   MembershipCouponList,
   MembershipInvoice,
   MembershipInvoiceList,
+  ReconciliationReport,
   DashboardOverview,
 } from './types'
 
@@ -220,6 +221,24 @@ export const api = {
     return request<FamilyList>(`/admin/families?${query.toString()}`)
   },
   family: (id: string) => request<FamilyDetail>(`/admin/families/${id}`),
+  membershipReconciliation: (from: string, to: string) => {
+    const query = new URLSearchParams({ from, to })
+    return request<ReconciliationReport>(
+      `/admin/membership/reconciliation?${query.toString()}`,
+    )
+  },
+  membershipReconciliationExport: async (from: string, to: string) => {
+    const query = new URLSearchParams({ from, to })
+    const response = await fetch(
+      `/v1/admin/membership/reconciliation/export?${query.toString()}`,
+      {
+        headers: { [ADMIN_REQUEST_HEADER]: '1' },
+        credentials: 'include',
+      },
+    )
+    if (!response.ok) throw new ApiError('导出失败', response.status)
+    return response.blob()
+  },
   membershipInvoices: (status = '', limit = 50) => {
     const query = new URLSearchParams({ limit: String(limit) })
     if (status) query.set('status', status)

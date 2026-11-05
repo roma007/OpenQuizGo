@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -141,6 +142,25 @@ type CouponQuote struct {
 	PayableCents  int    `json:"payable_cents"`
 }
 
+// ReconciliationDay 是单日对账汇总。
+type ReconciliationDay struct {
+	Date          string `json:"date"`
+	PaidCount     int    `json:"paid_count"`
+	PaidCents     int    `json:"paid_cents"`
+	RefundedCount int    `json:"refunded_count"`
+	RefundedCents int    `json:"refunded_cents"`
+	DiscountCents int    `json:"discount_cents"`
+	NetCents      int    `json:"net_cents"`
+}
+
+// ReconciliationReport 是会员对账报表。
+type ReconciliationReport struct {
+	From   string              `json:"from"`
+	To     string              `json:"to"`
+	Days   []ReconciliationDay `json:"days"`
+	Totals ReconciliationDay   `json:"totals"`
+}
+
 // Invoice 是会员发票申请。
 type Invoice struct {
 	ID          string     `json:"id"`
@@ -192,6 +212,8 @@ func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("membership.read")).Get("/admin/membership/coupons", s.handleAdminCoupons)
 		r.With(guard.Require("membership.write")).Post("/admin/membership/coupons", s.handleAdminCreateCoupon)
 		r.With(guard.Require("membership.write")).Put("/admin/membership/coupons/{id}", s.handleAdminUpdateCoupon)
+		r.With(guard.Require("membership.read")).Get("/admin/membership/reconciliation", s.handleReconciliation)
+		r.With(guard.Require("membership.read")).Get("/admin/membership/reconciliation/export", s.handleReconciliationExport)
 		r.With(guard.Require("membership.read")).Get("/admin/membership/invoices", s.handleAdminInvoices)
 		r.With(guard.Require("membership.write")).Put("/admin/membership/invoices/{id}", s.handleAdminUpdateInvoice)
 	})
@@ -344,6 +366,37 @@ func (s *Service) handleAdminUpdateInvoice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	writeJSON(w, http.StatusOK, invoice)
+}
+
+func (s *Service) handleReconciliation(w http.ResponseWriter, r *http.Request) {
+	report, err := s.Reconciliation(r.Context(),
+		r.URL.Query().Get("from"), r.URL.Query().Get("to"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, report)
+}
+
+func (s *Service) handleReconciliationExport(w http.ResponseWriter, r *http.Request) {
+	report, err := s.Reconciliation(r.Context(),
+		r.URL.Query().Get("from"), r.URL.Query().Get("to"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="membership-reconciliation.csv"`)
+	writer := csv.NewWriter(w)
+	_ = writer.Write([]string{"date", "paid_count", "paid_cents",
+		"refunded_count", "refunded_cents", "discount_cents", "net_cents"})
+	for _, day := range report.Days {
+		_ = writer.Write([]string{day.Date,
+			strconv.Itoa(day.PaidCount), strconv.Itoa(day.PaidCents),
+			strconv.Itoa(day.RefundedCount), strconv.Itoa(day.RefundedCents),
+			strconv.Itoa(day.DiscountCents), strconv.Itoa(day.NetCents)})
+	}
+	writer.Flush()
 }
 
 func (s *Service) handleAdminList(w http.ResponseWriter, r *http.Request) {
@@ -883,6 +936,84 @@ func (s *Service) ValidateCoupon(ctx context.Context, code, planID string) (Coup
 		return CouponQuote{}, err
 	}
 	return CouponQuote{Code: item.Code, DiscountCents: discount, PayableCents: price - discount}, nil
+}
+
+// Reconciliation 按天汇总支付/退款/优惠。
+func (s *Service) Reconciliation(ctx context.Context, from, to string) (ReconciliationReport, error) {
+	end := time.Now()
+	if to != "" {
+		parsed, err := time.ParseInLocation("2006-01-02", to, time.Local)
+		if err != nil {
+			return ReconciliationReport{}, apiError{422, "VALIDATION_ERROR", "to 需为 YYYY-MM-DD"}
+		}
+		end = parsed
+	}
+	start := end.AddDate(0, 0, -29)
+	if from != "" {
+		parsed, err := time.ParseInLocation("2006-01-02", from, time.Local)
+		if err != nil {
+			return ReconciliationReport{}, apiError{422, "VALIDATION_ERROR", "from 需为 YYYY-MM-DD"}
+		}
+		start = parsed
+	}
+	if start.After(end) {
+		return ReconciliationReport{}, apiError{422, "VALIDATION_ERROR", "from 不能晚于 to"}
+	}
+	if end.Sub(start) > 366*24*time.Hour {
+		return ReconciliationReport{}, apiError{422, "VALIDATION_ERROR", "日期范围不能超过 366 天"}
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		select to_char(day, 'YYYY-MM-DD'),
+		       sum(paid_count)::int, sum(paid_cents)::int,
+		       sum(refunded_count)::int, sum(refunded_cents)::int,
+		       sum(discount_cents)::int
+		from (
+			select paid_at::date as day, count(*)::int as paid_count,
+			       coalesce(sum(amount_cents), 0)::int as paid_cents,
+			       0 as refunded_count, 0 as refunded_cents,
+			       coalesce(sum(discount_cents), 0)::int as discount_cents
+			from membership_order
+			where status in ('paid', 'refunded')
+			  and paid_at >= $1::date and paid_at < ($2::date + 1)
+			group by 1
+			union all
+			select refunded_at::date, 0, 0, count(*)::int,
+			       coalesce(sum(amount_cents), 0)::int, 0
+			from membership_order
+			where status = 'refunded'
+			  and refunded_at >= $1::date and refunded_at < ($2::date + 1)
+			group by 1
+		) t
+		group by day
+		order by day`,
+		start.Format("2006-01-02"), end.Format("2006-01-02"))
+	if err != nil {
+		return ReconciliationReport{}, err
+	}
+	defer rows.Close()
+
+	report := ReconciliationReport{
+		From: start.Format("2006-01-02"),
+		To:   end.Format("2006-01-02"),
+		Days: make([]ReconciliationDay, 0),
+	}
+	for rows.Next() {
+		var day ReconciliationDay
+		if err := rows.Scan(&day.Date, &day.PaidCount, &day.PaidCents,
+			&day.RefundedCount, &day.RefundedCents, &day.DiscountCents); err != nil {
+			return ReconciliationReport{}, err
+		}
+		day.NetCents = day.PaidCents - day.RefundedCents
+		report.Days = append(report.Days, day)
+		report.Totals.PaidCount += day.PaidCount
+		report.Totals.PaidCents += day.PaidCents
+		report.Totals.RefundedCount += day.RefundedCount
+		report.Totals.RefundedCents += day.RefundedCents
+		report.Totals.DiscountCents += day.DiscountCents
+	}
+	report.Totals.NetCents = report.Totals.PaidCents - report.Totals.RefundedCents
+	return report, rows.Err()
 }
 
 const invoiceColumns = `id, order_id, account_id, title_type, title, tax_no, email,

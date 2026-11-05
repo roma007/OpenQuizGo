@@ -561,6 +561,73 @@ func TestInvoiceWorkflow(t *testing.T) {
 	}
 }
 
+func TestReconciliationReport(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'reconcile-test')
+		returning id`).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	svc := New(pool, "")
+	plan, err := svc.CreatePlan(ctx, PlanInput{
+		Code: "reconcile-plan", Name: "对账套餐", DurationDays: 30, PriceCents: 1000,
+		Status: "online", EntitlementCodes: []string{"topic_pack"},
+	})
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	order1, err := svc.CreateOrder(ctx, accountID, plan.ID)
+	if err != nil {
+		t.Fatalf("order1: %v", err)
+	}
+	if _, err := svc.PayOrder(ctx, accountID, order1.ID); err != nil {
+		t.Fatalf("pay1: %v", err)
+	}
+	order2, err := svc.CreateOrder(ctx, accountID, plan.ID)
+	if err != nil {
+		t.Fatalf("order2: %v", err)
+	}
+	if _, err := svc.PayOrder(ctx, accountID, order2.ID); err != nil {
+		t.Fatalf("pay2: %v", err)
+	}
+	if _, err := svc.RefundOrder(ctx, order2.ID, "对账测试", ""); err != nil {
+		t.Fatalf("refund: %v", err)
+	}
+
+	today := time.Now().Format("2006-01-02")
+	report, err := svc.Reconciliation(ctx, today, today)
+	if err != nil {
+		t.Fatalf("reconcile: %v", err)
+	}
+	if len(report.Days) != 1 {
+		t.Fatalf("days = %+v", report.Days)
+	}
+	day := report.Days[0]
+	if day.PaidCount != 2 || day.PaidCents != 2000 ||
+		day.RefundedCount != 1 || day.RefundedCents != 1000 || day.NetCents != 1000 {
+		t.Fatalf("unexpected day: %+v", day)
+	}
+	if report.Totals.NetCents != 1000 {
+		t.Fatalf("totals = %+v", report.Totals)
+	}
+	if _, err := svc.Reconciliation(ctx, "2026-11-10", "2026-11-01"); !isCode(err, "VALIDATION_ERROR") {
+		t.Fatalf("invalid range = %v", err)
+	}
+}
+
 func prepareDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)

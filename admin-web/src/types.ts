@@ -226,6 +226,23 @@ export interface MembershipSnapshot {
   expires_at: string
 }
 
+export interface ReconciliationDay {
+  date: string
+  paid_count: number
+  paid_cents: number
+  refunded_count: number
+  refunded_cents: number
+  discount_cents: number
+  net_cents: number
+}
+
+export interface ReconciliationReport {
+  from: string
+  to: string
+  days: ReconciliationDay[]
+  totals: ReconciliationDay
+}
+
 export interface MembershipInvoice {
   id: string
   order_id: string
