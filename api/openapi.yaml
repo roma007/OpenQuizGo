@@ -712,6 +712,42 @@ paths:
                   payable_cents: { type: integer }
         "422": { description: 优惠券无效 }
 
+  /v1/family/membership/orders/{orderID}/invoice:
+    parameters:
+      - { name: orderID, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [membership]
+      summary: 申请发票
+      security: [{ ParentAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MembershipInvoiceInput" }
+      responses:
+        "201":
+          description: 申请已提交
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipInvoice" }
+        "409": { description: 订单未支付或已申请 }
+  /v1/family/membership/invoices:
+    get:
+      tags: [membership]
+      summary: 我的发票申请
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: 最近 50 条
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MembershipInvoice" }
+
   /v1/family/membership/orders/{orderID}/pay:
     parameters:
       - { name: orderID, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1685,6 +1721,49 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/MembershipCoupon" }
 
+  /v1/admin/membership/invoices:
+    get:
+      tags: [admin]
+      summary: 发票申请列表
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [requested, issued, rejected] } }
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 100 } }
+      responses:
+        "200":
+          description: 发票申请
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MembershipInvoice" }
+  /v1/admin/membership/invoices/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [admin]
+      summary: 标记发票已开具/驳回
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [issued, rejected] }
+                remark: { type: string }
+      responses:
+        "200":
+          description: 更新后的申请
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembershipInvoice" }
+
   /v1/admin/membership/orders:
     get:
       tags: [membership]
@@ -1848,6 +1927,30 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    MembershipInvoice:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        order_id: { type: string, format: uuid }
+        account_id: { type: string, format: uuid }
+        title_type: { type: string, enum: [personal, company] }
+        title: { type: string }
+        tax_no: { type: string }
+        email: { type: string }
+        amount_cents: { type: integer }
+        status: { type: string, enum: [requested, issued, rejected] }
+        remark: { type: string }
+        created_at: { type: string, format: date-time }
+        issued_at: { type: string, format: date-time }
+    MembershipInvoiceInput:
+      type: object
+      required: [title]
+      properties:
+        title_type: { type: string, enum: [personal, company], default: personal }
+        title: { type: string }
+        tax_no: { type: string }
+        email: { type: string }
+
     MembershipCoupon:
       type: object
       properties:

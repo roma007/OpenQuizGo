@@ -36,6 +36,30 @@ class _FakeMembershipRepository implements MembershipRepository {
       MembershipCenter(membership: paid ? _active() : null, plans: [_plan()]);
 
   @override
+  Future<List<MembershipInvoice>> invoices() async => const [];
+
+  @override
+  Future<MembershipInvoice> applyInvoice(
+    String orderId, {
+    required String titleType,
+    required String title,
+    String taxNo = '',
+    String email = '',
+  }) async => MembershipInvoice(
+    id: 'i1',
+    orderId: orderId,
+    titleType: titleType,
+    title: title,
+    taxNo: taxNo,
+    email: email,
+    amountCents: 1990,
+    status: 'requested',
+    remark: '',
+    createdAt: DateTime(2026, 11, 5),
+    issuedAt: null,
+  );
+
+  @override
   Future<MembershipSharing> sharing() async =>
       const MembershipSharing(shared: false, canEdit: false);
 

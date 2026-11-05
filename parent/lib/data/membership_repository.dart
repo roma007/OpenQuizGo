@@ -179,6 +179,53 @@ class MembershipOrder {
       );
 }
 
+class MembershipInvoice {
+  MembershipInvoice({
+    required this.id,
+    required this.orderId,
+    required this.titleType,
+    required this.title,
+    required this.taxNo,
+    required this.email,
+    required this.amountCents,
+    required this.status,
+    required this.remark,
+    required this.createdAt,
+    required this.issuedAt,
+  });
+
+  final String id;
+  final String orderId;
+  final String titleType;
+  final String title;
+  final String taxNo;
+  final String email;
+  final int amountCents;
+  final String status;
+  final String remark;
+  final DateTime? createdAt;
+  final DateTime? issuedAt;
+
+  factory MembershipInvoice.fromJson(Map<String, dynamic> json) =>
+      MembershipInvoice(
+        id: json['id'] as String? ?? '',
+        orderId: json['order_id'] as String? ?? '',
+        titleType: json['title_type'] as String? ?? 'personal',
+        title: json['title'] as String? ?? '',
+        taxNo: json['tax_no'] as String? ?? '',
+        email: json['email'] as String? ?? '',
+        amountCents: (json['amount_cents'] as num?)?.toInt() ?? 0,
+        status: json['status'] as String? ?? 'requested',
+        remark: json['remark'] as String? ?? '',
+        createdAt: json['created_at'] is String
+            ? DateTime.tryParse(json['created_at'] as String)
+            : null,
+        issuedAt: json['issued_at'] is String
+            ? DateTime.tryParse(json['issued_at'] as String)
+            : null,
+      );
+}
+
 class MembershipPayResult {
   MembershipPayResult({required this.order, required this.membership});
 
@@ -215,6 +262,36 @@ class MembershipRepository {
               .map(MembershipOrder.fromJson)
               .toList(growable: false)
         : const [];
+  }
+
+  Future<List<MembershipInvoice>> invoices() async {
+    final json = await _api.getJson('/v1/family/membership/invoices');
+    final raw = json['items'];
+    return raw is List
+        ? raw
+              .whereType<Map<String, dynamic>>()
+              .map(MembershipInvoice.fromJson)
+              .toList(growable: false)
+        : const [];
+  }
+
+  Future<MembershipInvoice> applyInvoice(
+    String orderId, {
+    required String titleType,
+    required String title,
+    String taxNo = '',
+    String email = '',
+  }) async {
+    final json = await _api.postJson(
+      '/v1/family/membership/orders/$orderId/invoice',
+      {
+        'title_type': titleType,
+        'title': title,
+        'tax_no': taxNo,
+        'email': email,
+      },
+    );
+    return MembershipInvoice.fromJson(json);
   }
 
   Future<MembershipSharing> sharing() async {

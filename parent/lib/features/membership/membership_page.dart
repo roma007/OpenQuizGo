@@ -22,6 +22,7 @@ class MembershipPage extends ConsumerStatefulWidget {
 class _MembershipPageState extends ConsumerState<MembershipPage> {
   MembershipCenter? _center;
   List<MembershipOrder> _orders = const [];
+  List<MembershipInvoice> _invoices = const [];
   bool _loading = true;
   bool _sharingSaving = false;
   String? _payingPlanId;
@@ -38,11 +39,13 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
       final results = await Future.wait([
         ref.read(membershipRepositoryProvider).center(),
         ref.read(membershipRepositoryProvider).orders(),
+        ref.read(membershipRepositoryProvider).invoices(),
       ]);
       if (!mounted) return;
       setState(() {
         _center = results[0] as MembershipCenter;
         _orders = results[1] as List<MembershipOrder>;
+        _invoices = results[2] as List<MembershipInvoice>;
       });
     } on ApiException catch (error) {
       _toast(error.message);
@@ -108,6 +111,83 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
       _toast(error.message);
     } finally {
       if (mounted) setState(() => _payingPlanId = null);
+    }
+  }
+
+  Future<void> _applyInvoice(MembershipOrder order) async {
+    final title = TextEditingController();
+    final taxNo = TextEditingController();
+    final email = TextEditingController();
+    var titleType = 'personal';
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('申请发票 · ${order.orderNo}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                initialValue: titleType,
+                decoration: const InputDecoration(labelText: '抬头类型'),
+                items: const [
+                  DropdownMenuItem(value: 'personal', child: Text('个人')),
+                  DropdownMenuItem(value: 'company', child: Text('企业')),
+                ],
+                onChanged: (value) =>
+                    setDialogState(() => titleType = value ?? 'personal'),
+              ),
+              TextField(
+                controller: title,
+                decoration: const InputDecoration(labelText: '发票抬头'),
+              ),
+              if (titleType == 'company')
+                TextField(
+                  controller: taxNo,
+                  decoration: const InputDecoration(labelText: '税号'),
+                ),
+              TextField(
+                controller: email,
+                decoration: const InputDecoration(labelText: '接收邮箱（可选）'),
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('提交申请'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (submitted != true || !mounted) {
+      title.dispose();
+      taxNo.dispose();
+      email.dispose();
+      return;
+    }
+    try {
+      await ref.read(membershipRepositoryProvider).applyInvoice(
+        order.id,
+        titleType: titleType,
+        title: title.text.trim(),
+        taxNo: taxNo.text.trim(),
+        email: email.text.trim(),
+      );
+      await _load();
+      _toast('发票申请已提交');
+    } on ApiException catch (error) {
+      _toast(error.message);
+    } finally {
+      title.dispose();
+      taxNo.dispose();
+      email.dispose();
     }
   }
 
@@ -370,6 +450,9 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
     final reason = order.status == 'refunded' && order.refundReason.isNotEmpty
         ? '\n退款原因：${order.refundReason}'
         : '';
+    final invoice = _invoices
+        .where((item) => item.orderId == order.id)
+        .firstOrNull;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -379,9 +462,19 @@ class _MembershipPageState extends ConsumerState<MembershipPage> {
         ),
         title: Text('${order.planName} · ${formatYuan(order.amountCents)}'),
         subtitle: Text(
-          '${formatDateTime(order.createdAt)} · ${order.orderNo}\n$label$reason',
+          '${formatDateTime(order.createdAt)} · ${order.orderNo}\n$label'
+          '${invoice == null ? '' : ' · 发票${invoice.status == 'issued' ? '已开具' : invoice.status == 'rejected' ? '已驳回' : '申请中'}'}'
+          '$reason',
         ),
         isThreeLine: true,
+        trailing: paid
+            ? invoice == null
+                  ? TextButton(
+                      onPressed: () => _applyInvoice(order),
+                      child: const Text('申请发票'),
+                    )
+                  : null
+            : null,
       ),
     );
   }

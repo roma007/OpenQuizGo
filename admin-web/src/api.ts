@@ -22,6 +22,8 @@ import type {
   MembershipOrderList,
   MembershipCoupon,
   MembershipCouponList,
+  MembershipInvoice,
+  MembershipInvoiceList,
   DashboardOverview,
 } from './types'
 
@@ -218,6 +220,16 @@ export const api = {
     return request<FamilyList>(`/admin/families?${query.toString()}`)
   },
   family: (id: string) => request<FamilyDetail>(`/admin/families/${id}`),
+  membershipInvoices: (status = '', limit = 50) => {
+    const query = new URLSearchParams({ limit: String(limit) })
+    if (status) query.set('status', status)
+    return request<MembershipInvoiceList>(`/admin/membership/invoices?${query.toString()}`)
+  },
+  updateMembershipInvoice: (id: string, payload: unknown) =>
+    request<MembershipInvoice>(`/admin/membership/invoices/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
   membershipCoupons: () => request<MembershipCouponList>('/admin/membership/coupons'),
   createMembershipCoupon: (payload: unknown) =>
     request<MembershipCoupon>('/admin/membership/coupons', {

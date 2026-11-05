@@ -489,6 +489,78 @@ func TestCouponWorkflow(t *testing.T) {
 	}
 }
 
+func TestInvoiceWorkflow(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	var accountID string
+	if err := pool.QueryRow(ctx, `
+		insert into parent_account (phone_cipher, phone_hash) values ('cipher', 'invoice-test')
+		returning id`).Scan(&accountID); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	svc := New(pool, "")
+	plan, err := svc.CreatePlan(ctx, PlanInput{
+		Code: "invoice-plan", Name: "发票套餐", DurationDays: 30, PriceCents: 1000,
+		Status: "online", EntitlementCodes: []string{"topic_pack"},
+	})
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	order, err := svc.CreateOrder(ctx, accountID, plan.ID)
+	if err != nil {
+		t.Fatalf("order: %v", err)
+	}
+	if _, err := svc.CreateInvoice(ctx, accountID, order.ID, InvoiceInput{
+		TitleType: "personal", Title: "张三",
+	}); err == nil {
+		t.Fatal("expected unpaid order rejection")
+	}
+	if _, err := svc.PayOrder(ctx, accountID, order.ID); err != nil {
+		t.Fatalf("pay: %v", err)
+	}
+	invoice, err := svc.CreateInvoice(ctx, accountID, order.ID, InvoiceInput{
+		TitleType: "personal", Title: "张三", Email: "a@example.com",
+	})
+	if err != nil {
+		t.Fatalf("invoice: %v", err)
+	}
+	if invoice.AmountCents != 1000 || invoice.Status != "requested" || invoice.OrderID != order.ID {
+		t.Fatalf("unexpected invoice: %+v", invoice)
+	}
+	if _, err := svc.CreateInvoice(ctx, accountID, order.ID, InvoiceInput{
+		Title: "张三",
+	}); !isCode(err, "INVOICE_EXISTS") {
+		t.Fatalf("duplicate = %v, want INVOICE_EXISTS", err)
+	}
+	if _, err := svc.UpdateInvoiceStatus(ctx, invoice.ID, "issued", "已开具"); err != nil {
+		t.Fatalf("issue: %v", err)
+	}
+	items, err := svc.Invoices(ctx, accountID)
+	if err != nil || len(items) != 1 || items[0].Status != "issued" {
+		t.Fatalf("invoices = %+v err=%v", items, err)
+	}
+	adminItems, err := svc.AdminInvoices(ctx, "issued", 10)
+	if err != nil || len(adminItems) != 1 {
+		t.Fatalf("admin invoices = %+v err=%v", adminItems, err)
+	}
+	if _, err := svc.CreateInvoice(ctx, accountID, order.ID, InvoiceInput{
+		TitleType: "company", Title: "公司",
+	}); err == nil {
+		t.Fatal("expected duplicate before tax validation")
+	}
+}
+
 func prepareDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)
@@ -505,8 +577,8 @@ func prepareDB(t *testing.T, url string) {
 		t.Fatalf("migrate: %v", err)
 	}
 	if _, err := db.Exec(`truncate table
-		account_membership, membership_order, membership_plan,
-		parent_account cascade`); err != nil {
+		membership_invoice, account_membership, membership_order, membership_coupon,
+		membership_plan, parent_account cascade`); err != nil {
 		t.Fatalf("truncate: %v", err)
 	}
 	// 重新插入种子套餐，避免被 truncate 清空。

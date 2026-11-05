@@ -141,6 +141,31 @@ type CouponQuote struct {
 	PayableCents  int    `json:"payable_cents"`
 }
 
+// Invoice 是会员发票申请。
+type Invoice struct {
+	ID          string     `json:"id"`
+	OrderID     string     `json:"order_id"`
+	AccountID   string     `json:"account_id,omitempty"`
+	TitleType   string     `json:"title_type"`
+	Title       string     `json:"title"`
+	TaxNo       string     `json:"tax_no,omitempty"`
+	Email       string     `json:"email,omitempty"`
+	AmountCents int        `json:"amount_cents"`
+	Status      string     `json:"status"`
+	Remark      string     `json:"remark,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+	IssuedAt    *time.Time `json:"issued_at,omitempty"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
+// InvoiceInput 是发票申请入参。
+type InvoiceInput struct {
+	TitleType string `json:"title_type"`
+	Title     string `json:"title"`
+	TaxNo     string `json:"tax_no"`
+	Email     string `json:"email"`
+}
+
 type PayResult struct {
 	Order      Order      `json:"order"`
 	Membership Membership `json:"membership"`
@@ -167,6 +192,8 @@ func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("membership.read")).Get("/admin/membership/coupons", s.handleAdminCoupons)
 		r.With(guard.Require("membership.write")).Post("/admin/membership/coupons", s.handleAdminCreateCoupon)
 		r.With(guard.Require("membership.write")).Put("/admin/membership/coupons/{id}", s.handleAdminUpdateCoupon)
+		r.With(guard.Require("membership.read")).Get("/admin/membership/invoices", s.handleAdminInvoices)
+		r.With(guard.Require("membership.write")).Put("/admin/membership/invoices/{id}", s.handleAdminUpdateInvoice)
 	})
 }
 
@@ -182,6 +209,8 @@ func (s *Service) ParentRoutes(r chi.Router) {
 	r.Get("/family/membership/orders", s.handleOrders)
 	r.Post("/family/membership/orders", s.handleCreateOrder)
 	r.Post("/family/membership/coupons/validate", s.handleValidateCoupon)
+	r.Get("/family/membership/invoices", s.handleInvoices)
+	r.Post("/family/membership/orders/{orderID}/invoice", s.handleCreateInvoice)
 	r.Post("/family/membership/orders/{orderID}/pay", s.handlePayOrder)
 }
 
@@ -262,6 +291,59 @@ func (s *Service) handleValidateCoupon(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, quote)
+}
+
+func (s *Service) handleInvoices(w http.ResponseWriter, r *http.Request) {
+	items, err := s.Invoices(r.Context(), identity.AccountIDFrom(r.Context()))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (s *Service) handleCreateInvoice(w http.ResponseWriter, r *http.Request) {
+	var in InvoiceInput
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&in); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	invoice, err := s.CreateInvoice(
+		r.Context(), identity.AccountIDFrom(r.Context()),
+		chi.URLParam(r, "orderID"), in)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, invoice)
+}
+
+func (s *Service) handleAdminInvoices(w http.ResponseWriter, r *http.Request) {
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	items, err := s.AdminInvoices(r.Context(), r.URL.Query().Get("status"), limit)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (s *Service) handleAdminUpdateInvoice(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Status string `json:"status"`
+		Remark string `json:"remark"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		writeError(w, apiError{422, "VALIDATION_ERROR", "请求体不合法"})
+		return
+	}
+	invoice, err := s.UpdateInvoiceStatus(
+		r.Context(), chi.URLParam(r, "id"), req.Status, req.Remark)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, invoice)
 }
 
 func (s *Service) handleAdminList(w http.ResponseWriter, r *http.Request) {
@@ -801,6 +883,145 @@ func (s *Service) ValidateCoupon(ctx context.Context, code, planID string) (Coup
 		return CouponQuote{}, err
 	}
 	return CouponQuote{Code: item.Code, DiscountCents: discount, PayableCents: price - discount}, nil
+}
+
+const invoiceColumns = `id, order_id, account_id, title_type, title, tax_no, email,
+	amount_cents, status, remark, created_at, issued_at, updated_at`
+
+func scanInvoice(row scanner) (Invoice, error) {
+	var item Invoice
+	err := row.Scan(&item.ID, &item.OrderID, &item.AccountID, &item.TitleType,
+		&item.Title, &item.TaxNo, &item.Email, &item.AmountCents, &item.Status,
+		&item.Remark, &item.CreatedAt, &item.IssuedAt, &item.UpdatedAt)
+	return item, err
+}
+
+func validateInvoiceInput(in InvoiceInput) error {
+	if in.TitleType == "" {
+		in.TitleType = "personal"
+	}
+	if in.TitleType != "personal" && in.TitleType != "company" {
+		return apiError{422, "VALIDATION_ERROR", "发票类型不合法"}
+	}
+	if strings.TrimSpace(in.Title) == "" || len([]rune(in.Title)) > 100 {
+		return apiError{422, "VALIDATION_ERROR", "发票抬头需为 1–100 字"}
+	}
+	if in.TitleType == "company" && len(strings.TrimSpace(in.TaxNo)) < 6 {
+		return apiError{422, "VALIDATION_ERROR", "企业抬头需填写税号"}
+	}
+	email := strings.TrimSpace(in.Email)
+	if email != "" && (!strings.Contains(email, "@") || len(email) > 120) {
+		return apiError{422, "VALIDATION_ERROR", "邮箱不合法"}
+	}
+	return nil
+}
+
+// CreateInvoice 为已支付订单提交发票申请。
+func (s *Service) CreateInvoice(ctx context.Context, accountID, orderID string, in InvoiceInput) (Invoice, error) {
+	if accountID == "" {
+		return Invoice{}, apiError{401, "AUTH_REQUIRED", "家长未登录"}
+	}
+	if in.TitleType == "" {
+		in.TitleType = "personal"
+	}
+	if err := validateInvoiceInput(in); err != nil {
+		return Invoice{}, err
+	}
+	var status string
+	var amount int
+	err := s.pool.QueryRow(ctx, `
+		select status, amount_cents from membership_order
+		where id = $1 and account_id = $2`, orderID, accountID).Scan(&status, &amount)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Invoice{}, apiError{404, "ORDER_NOT_FOUND", "订单不存在"}
+	}
+	if err != nil {
+		return Invoice{}, err
+	}
+	if status != "paid" {
+		return Invoice{}, apiError{409, "ORDER_NOT_PAID", "只有已支付订单可以申请发票"}
+	}
+	item, err := scanInvoice(s.pool.QueryRow(ctx, `
+		insert into membership_invoice (
+			order_id, account_id, title_type, title, tax_no, email, amount_cents)
+		values ($1, $2, $3, $4, $5, $6, $7)
+		returning `+invoiceColumns,
+		orderID, accountID, in.TitleType, strings.TrimSpace(in.Title),
+		strings.TrimSpace(in.TaxNo), strings.TrimSpace(in.Email), amount))
+	if err != nil {
+		if isUniqueViolation(err) {
+			return Invoice{}, apiError{409, "INVOICE_EXISTS", "该订单已提交发票申请"}
+		}
+		return Invoice{}, err
+	}
+	return item, nil
+}
+
+// Invoices 返回当前账号的发票申请。
+func (s *Service) Invoices(ctx context.Context, accountID string) ([]Invoice, error) {
+	rows, err := s.pool.Query(ctx, `
+		select `+invoiceColumns+` from membership_invoice
+		where account_id = $1 order by created_at desc limit 50`, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]Invoice, 0)
+	for rows.Next() {
+		item, err := scanInvoice(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+// AdminInvoices 返回全部发票申请，可按状态筛选。
+func (s *Service) AdminInvoices(ctx context.Context, status string, limit int) ([]Invoice, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 50
+	}
+	rows, err := s.pool.Query(ctx, `
+		select `+invoiceColumns+` from membership_invoice
+		where ($1 = '' or status = $1)
+		order by created_at desc limit $2`, status, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]Invoice, 0)
+	for rows.Next() {
+		item, err := scanInvoice(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+// UpdateInvoiceStatus 由管理员标记已开具/驳回。
+func (s *Service) UpdateInvoiceStatus(ctx context.Context, id, status, remark string) (Invoice, error) {
+	if status != "issued" && status != "rejected" {
+		return Invoice{}, apiError{422, "VALIDATION_ERROR", "状态需为 issued 或 rejected"}
+	}
+	if len([]rune(remark)) > 200 {
+		return Invoice{}, apiError{422, "VALIDATION_ERROR", "备注最多 200 字"}
+	}
+	item, err := scanInvoice(s.pool.QueryRow(ctx, `
+		update membership_invoice
+		set status = $2, remark = $3, updated_at = now(),
+		    issued_at = case when $2 = 'issued' then now() else issued_at end
+		where id = $1
+		returning `+invoiceColumns, id, status, strings.TrimSpace(remark)))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Invoice{}, apiError{404, "INVOICE_NOT_FOUND", "发票申请不存在"}
+	}
+	if err != nil {
+		return Invoice{}, err
+	}
+	return item, nil
 }
 
 func (s *Service) CreateOrder(ctx context.Context, accountID, planID string) (Order, error) {

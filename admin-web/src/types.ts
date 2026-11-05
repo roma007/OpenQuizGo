@@ -226,6 +226,25 @@ export interface MembershipSnapshot {
   expires_at: string
 }
 
+export interface MembershipInvoice {
+  id: string
+  order_id: string
+  account_id?: string
+  title_type: string
+  title: string
+  tax_no?: string
+  email?: string
+  amount_cents: number
+  status: string
+  remark?: string
+  created_at: string
+  issued_at?: string
+}
+
+export interface MembershipInvoiceList {
+  items: MembershipInvoice[]
+}
+
 export interface MembershipCoupon {
   id: string
   code: string

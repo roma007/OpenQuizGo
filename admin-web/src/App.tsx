@@ -34,6 +34,7 @@ import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
 import MembershipOrdersPage from './pages/MembershipOrdersPage'
 import MembershipCouponsPage from './pages/MembershipCouponsPage'
+import MembershipInvoicesPage from './pages/MembershipInvoicesPage'
 import MembershipPlansPage from './pages/MembershipPlansPage'
 import QuestionEdit from './pages/QuestionEdit'
 import Questions from './pages/Questions'
@@ -210,6 +211,7 @@ export default function App() {
               <Route path="/membership" element={<MembershipPlansPage />} />
               <Route path="/membership/orders" element={<MembershipOrdersPage />} />
               <Route path="/membership/coupons" element={<MembershipCouponsPage />} />
+              <Route path="/membership/invoices" element={<MembershipInvoicesPage />} />
               <Route path="/import" element={<ImportPage />} />
               <Route path="/audit" element={<AuditPage />} />
               <Route path="/coverage" element={<CoveragePage />} />
