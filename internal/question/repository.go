@@ -183,6 +183,41 @@ func (r *repository) applyCalibration(ctx context.Context, items []CalibrationAp
 	return applied, nil
 }
 
+// calibrationHistory 从审计日志读取难度校准历史；after_data 缺少 from/to 的记录跳过。
+func (r *repository) calibrationHistory(ctx context.Context, questionID string, limit int) ([]CalibrationHistoryItem, error) {
+	query := `
+		select id, target_id, (after_data->>'from')::int, (after_data->>'to')::int,
+		       actor_id, created_at
+		from audit_log
+		where action = 'question.calibrate' and target_type = 'question'
+		  and jsonb_typeof(after_data->'from') = 'number'
+		  and jsonb_typeof(after_data->'to') = 'number'`
+	args := make([]any, 0, 2)
+	if questionID != "" {
+		args = append(args, questionID)
+		query += fmt.Sprintf(" and target_id = $%d", len(args))
+	}
+	args = append(args, limit)
+	query += fmt.Sprintf(" order by id desc limit $%d", len(args))
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("calibration history: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]CalibrationHistoryItem, 0)
+	for rows.Next() {
+		var item CalibrationHistoryItem
+		if err := rows.Scan(&item.ID, &item.QuestionID, &item.From, &item.To,
+			&item.ActorID, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan calibration history: %w", err)
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
 // Coverage 聚合题库分布。
 func (r *repository) Coverage(ctx context.Context) ([]CoverageCell, int, error) {
 	rows, err := r.pool.Query(ctx, `

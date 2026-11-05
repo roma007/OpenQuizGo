@@ -76,5 +76,8 @@ node scripts/archive-conversation.mjs --all
 | 038 | 覆盖率阈值配置 | [设计](design/038-覆盖率阈值配置设计.md) | [计划](plans/038-覆盖率阈值配置实施计划.md) | done（v0.36.0） |
 | 039 | 管理端家庭与设备查询 | [设计](design/039-管理端家庭与设备查询设计.md) | [计划](plans/039-管理端家庭与设备查询实施计划.md) | done（v0.37.0） |
 | 040 | 选项图片 | [设计](design/040-选项图片设计.md) | [计划](plans/040-选项图片实施计划.md) | done（v0.38.0，构建级） |
+| 041 | 校准历史与回滚 | [设计](design/041-校准历史与回滚设计.md) | [计划](plans/041-校准历史与回滚实施计划.md) | done（v0.39.0） |
+| 042 | 共享 Redis 订阅 | [设计](design/042-共享Redis订阅设计.md) | [计划](plans/042-共享Redis订阅实施计划.md) | done（v0.39.0） |
+| 043 | 管理端 Playwright E2E | [设计](design/043-管理端Playwright-E2E设计.md) | [计划](plans/043-管理端Playwright-E2E实施计划.md) | done（v0.39.0，7/7 通过） |
 
 > 新增设计/计划后，请同步更新此表。

@@ -103,6 +103,16 @@ type CalibrationApplyRequest struct {
 	Items []CalibrationApplyItem `json:"items"`
 }
 
+// CalibrationHistoryItem 是单条难度校准历史。
+type CalibrationHistoryItem struct {
+	ID         int64     `json:"id"`
+	QuestionID string    `json:"question_id"`
+	From       int       `json:"from"`
+	To         int       `json:"to"`
+	ActorID    string    `json:"actor_id"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 // Filter 是四维检索条件。
 type Filter struct {
 	Subject    string

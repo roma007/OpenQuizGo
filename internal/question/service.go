@@ -213,6 +213,17 @@ func (s *Service) ApplyCalibration(ctx context.Context, items []CalibrationApply
 	return s.repo.applyCalibration(ctx, clean, principal.ID, ip)
 }
 
+// CalibrationHistory 返回难度校准历史，limit 默认 20、最大 200。
+func (s *Service) CalibrationHistory(ctx context.Context, questionID string, limit int) ([]CalibrationHistoryItem, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 200 {
+		limit = 200
+	}
+	return s.repo.calibrationHistory(ctx, questionID, limit)
+}
+
 // Coverage 返回题库覆盖率聚合。
 func (s *Service) Coverage(ctx context.Context, threshold int) (CoverageResult, error) {
 	if threshold < 1 || threshold > 10000 {

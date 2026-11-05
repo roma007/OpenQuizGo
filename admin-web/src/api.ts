@@ -6,6 +6,7 @@ import type {
   Question,
   QuestionList,
   CalibrationResult,
+  CalibrationHistoryItem,
   TopicPack,
   TopicPackList,
   QuizPreviewResult,
@@ -167,6 +168,13 @@ export const api = {
     request<CalibrationResult>(
       `/admin/calibration/preview?min_answers=${minAnswers}&limit=200`,
     ),
+  calibrationHistory: (questionId?: string, limit = 20) => {
+    const query = new URLSearchParams({ limit: String(limit) })
+    if (questionId) query.set('question_id', questionId)
+    return request<CalibrationHistoryItem[]>(
+      `/admin/calibration/history?${query.toString()}`,
+    )
+  },
   quizPreview: (payload: unknown) =>
     request<QuizPreviewResult>('/admin/quiz/preview', {
       method: 'POST',

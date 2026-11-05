@@ -107,6 +107,38 @@ func TestQuestionWorkflow(t *testing.T) {
 	editorToken := c.login("editor", "editor12345")
 	c.expect(http.MethodPost, "/admin/questions/"+created.ID+"/publish", nil, editorToken, http.StatusForbidden, nil)
 
+	// 校准历史：apply 后可从审计日志读取 from/to；editor 拥有 question.read 也可读。
+	c.expect(http.MethodPost, "/admin/calibration/apply",
+		map[string]any{"items": []map[string]any{
+			{"question_id": created.ID, "difficulty": 4},
+		}}, adminToken, http.StatusOK, nil)
+
+	var history []question.CalibrationHistoryItem
+	c.expect(http.MethodGet, "/admin/calibration/history?question_id="+created.ID+"&limit=20",
+		nil, adminToken, http.StatusOK, &history)
+	if len(history) != 1 || history[0].QuestionID != created.ID ||
+		history[0].From != 2 || history[0].To != 4 {
+		t.Fatalf("unexpected calibration history: %+v", history)
+	}
+
+	var editorHistory []question.CalibrationHistoryItem
+	c.expect(http.MethodGet, "/admin/calibration/history?question_id="+created.ID,
+		nil, editorToken, http.StatusOK, &editorHistory)
+	if len(editorHistory) != 1 {
+		t.Fatalf("editor history = %d, want 1", len(editorHistory))
+	}
+
+	// 回滚复用 apply：再次调整会新增一条历史，最新记录在前。
+	c.expect(http.MethodPost, "/admin/calibration/apply",
+		map[string]any{"items": []map[string]any{
+			{"question_id": created.ID, "difficulty": 2},
+		}}, adminToken, http.StatusOK, nil)
+	c.expect(http.MethodGet, "/admin/calibration/history?question_id="+created.ID+"&limit=1000",
+		nil, adminToken, http.StatusOK, &history)
+	if len(history) != 2 || history[0].From != 4 || history[0].To != 2 {
+		t.Fatalf("unexpected rollback history: %+v", history)
+	}
+
 	var audit []question.AuditEntry
 	c.expect(http.MethodGet, "/admin/audit?limit=20", nil, adminToken, http.StatusOK, &audit)
 	if len(audit) == 0 {

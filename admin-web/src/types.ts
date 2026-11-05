@@ -90,6 +90,15 @@ export interface CalibrationResult {
   thresholds: { min_answers: number; up: number; down: number }
 }
 
+export interface CalibrationHistoryItem {
+  id: number
+  question_id: string
+  from: number
+  to: number
+  actor_id: string
+  created_at: string
+}
+
 export interface TopicPack {
   id: string
   name: string

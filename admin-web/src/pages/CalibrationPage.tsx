@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   InputNumber,
+  Modal,
   Popconfirm,
   Space,
   Table,
@@ -12,7 +13,7 @@ import {
 } from 'antd'
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '../api'
-import type { CalibrationItem } from '../types'
+import type { CalibrationHistoryItem, CalibrationItem } from '../types'
 
 const subjectLabel: Record<string, string> = {
   math: '数学', chinese: '语文', english: '英语', science: '科学',
@@ -28,6 +29,11 @@ export default function CalibrationPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [applying, setApplying] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyItems, setHistoryItems] = useState<CalibrationHistoryItem[]>([])
+  const [historyQuestion, setHistoryQuestion] = useState<CalibrationItem | null>(null)
+  const [rollingBack, setRollingBack] = useState(false)
 
   const load = async (threshold = minAnswers) => {
     setLoading(true)
@@ -74,6 +80,39 @@ export default function CalibrationPage() {
   const changeCount = items.filter(
     (item) => item.suggested_difficulty !== item.difficulty,
   ).length
+
+  const openHistory = async (row: CalibrationItem) => {
+    setHistoryQuestion(row)
+    setHistoryOpen(true)
+    setHistoryLoading(true)
+    setHistoryItems([])
+    try {
+      const result = await api.calibrationHistory(row.question_id)
+      setHistoryItems(result || [])
+    } catch (error) {
+      message.error(error instanceof ApiError ? error.message : '加载历史失败')
+      setHistoryItems([])
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  const rollback = async (entry: CalibrationHistoryItem) => {
+    if (!historyQuestion) return
+    setRollingBack(true)
+    try {
+      const result = await api.calibrationApply([
+        { question_id: historyQuestion.question_id, difficulty: entry.from },
+      ])
+      message.success(`已回滚 ${result.applied} 题`)
+      setHistoryOpen(false)
+      await load()
+    } catch (error) {
+      message.error(error instanceof ApiError ? error.message : '回滚失败')
+    } finally {
+      setRollingBack(false)
+    }
+  }
 
   return (
     <Card loading={loading}>
@@ -148,8 +187,62 @@ export default function CalibrationPage() {
             render: (_, row) => `${(row.accuracy * 100).toFixed(0)}%`,
           },
           { title: '建议', dataIndex: 'reason' },
+          {
+            title: '历史',
+            width: 80,
+            render: (_, row) => (
+              <Button size="small" onClick={() => openHistory(row)}>
+                历史
+              </Button>
+            ),
+          },
         ]}
       />
+      <Modal
+        title={`校准历史${historyQuestion ? `：${historyQuestion.stem}` : ''}`}
+        open={historyOpen}
+        onCancel={() => setHistoryOpen(false)}
+        footer={null}
+        width={720}
+      >
+        <Table
+          rowKey="id"
+          size="small"
+          loading={historyLoading}
+          dataSource={historyItems}
+          pagination={false}
+          locale={{ emptyText: '暂无校准记录' }}
+          columns={[
+            {
+              title: '难度变化',
+              width: 120,
+              render: (_, row) => `${row.from} → ${row.to}`,
+            },
+            {
+              title: '时间',
+              width: 180,
+              render: (_, row) => new Date(row.created_at).toLocaleString(),
+            },
+            { title: '操作人', dataIndex: 'actor_id', ellipsis: true },
+            {
+              title: '操作',
+              width: 150,
+              render: (_, row) => (
+                <Popconfirm
+                  title={`确认回滚到难度 ${row.from}？`}
+                  description="回滚会生成一条新的校准记录。"
+                  onConfirm={() => rollback(row)}
+                  disabled={rollingBack}
+                >
+                  <Button size="small" loading={rollingBack} disabled={rollingBack}>
+                    回滚到此难度
+                  </Button>
+                </Popconfirm>
+              ),
+            },
+          ]}
+        />
+      </Modal>
     </Card>
   )
 }

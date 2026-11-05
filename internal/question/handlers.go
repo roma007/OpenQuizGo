@@ -40,6 +40,7 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("question.read")).Get("/admin/coverage", s.handleCoverage)
 		r.With(guard.Require("question.read")).Get("/admin/coverage/export", s.handleCoverageExport)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/preview", s.handleCalibrationPreview)
+		r.With(guard.Require("question.read")).Get("/admin/calibration/history", s.handleCalibrationHistory)
 		r.With(guard.Require("question.write")).Post("/admin/calibration/apply", s.handleCalibrationApply)
 	})
 }
@@ -116,6 +117,16 @@ func (s *Service) handleCalibrationApply(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]int{"applied": applied})
+}
+
+func (s *Service) handleCalibrationHistory(w http.ResponseWriter, r *http.Request) {
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	items, err := s.CalibrationHistory(r.Context(), r.URL.Query().Get("question_id"), limit)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, items)
 }
 
 func (s *Service) handleList(w http.ResponseWriter, r *http.Request) {

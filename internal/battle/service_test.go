@@ -429,6 +429,52 @@ func TestEventBroker(t *testing.T) {
 	}
 }
 
+func TestEventBrokerSharedSubscribers(t *testing.T) {
+	ctx := context.Background()
+	broker := newEventBroker(nil)
+	ch1, unsubscribe1 := broker.subscribe(ctx, "battle-shared")
+	ch2, unsubscribe2 := broker.subscribe(ctx, "battle-shared")
+
+	broker.publish(ctx, "battle-shared")
+	waitEvent(t, ch1, "first subscriber")
+	waitEvent(t, ch2, "second subscriber")
+
+	unsubscribe1()
+	broker.publish(ctx, "battle-shared")
+	waitEvent(t, ch2, "remaining subscriber")
+	select {
+	case <-ch1:
+		t.Fatal("unsubscribed subscriber received event")
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	unsubscribe2()
+	broker.mu.Lock()
+	sharedCount := len(broker.shared)
+	localCount := len(broker.subs)
+	broker.mu.Unlock()
+	if sharedCount != 0 || localCount != 0 {
+		t.Fatalf("shared subscriptions = %d, local subscriptions = %d, want 0/0",
+			sharedCount, localCount)
+	}
+
+	broker.publish(ctx, "battle-shared")
+	select {
+	case <-ch2:
+		t.Fatal("subscriber received event after unsubscribe")
+	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+func waitEvent(t *testing.T, ch <-chan struct{}, name string) {
+	t.Helper()
+	select {
+	case <-ch:
+	case <-time.After(time.Second):
+		t.Fatalf("%s did not receive published event", name)
+	}
+}
+
 func hasMedal(entry RankingEntry, medal string) bool {
 	for _, item := range entry.Medals {
 		if item == medal {
@@ -463,5 +509,61 @@ func TestRedisEventBroker(t *testing.T) {
 	case <-ch:
 	case <-ctx.Done():
 		t.Fatal("did not receive Redis event")
+	}
+}
+
+func TestSharedRedisEventBroker(t *testing.T) {
+	redisURL := os.Getenv("TEST_REDIS_URL")
+	if redisURL == "" {
+		t.Skip("TEST_REDIS_URL not set")
+	}
+	opts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		t.Fatalf("redis url: %v", err)
+	}
+	rdb := redis.NewClient(opts)
+	defer func() { _ = rdb.Close() }()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	battleID := fmt.Sprintf("redis-shared-test-%d", time.Now().UnixNano())
+	broker := newEventBroker(rdb)
+	ch1, unsubscribe1 := broker.subscribe(ctx, battleID)
+	defer unsubscribe1()
+	ch2, unsubscribe2 := broker.subscribe(ctx, battleID)
+	defer unsubscribe2()
+
+	broker.mu.Lock()
+	shared := broker.shared[battleID]
+	sharedCount := len(broker.shared)
+	subscriberCount := 0
+	if shared != nil {
+		subscriberCount = len(shared.subs)
+	}
+	broker.mu.Unlock()
+	if sharedCount != 1 || subscriberCount != 2 {
+		t.Fatalf("shared subscriptions = %d with %d subscribers, want 1/2",
+			sharedCount, subscriberCount)
+	}
+
+	broker.publish(ctx, battleID)
+	waitEvent(t, ch1, "first Redis subscriber")
+	waitEvent(t, ch2, "second Redis subscriber")
+
+	unsubscribe1()
+	broker.publish(ctx, battleID)
+	waitEvent(t, ch2, "remaining Redis subscriber")
+	select {
+	case <-ch1:
+		t.Fatal("unsubscribed Redis subscriber received event")
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	unsubscribe2()
+	broker.mu.Lock()
+	sharedCount = len(broker.shared)
+	broker.mu.Unlock()
+	if sharedCount != 0 {
+		t.Fatalf("shared subscriptions = %d, want 0 after last unsubscribe", sharedCount)
 	}
 }
