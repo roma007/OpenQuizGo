@@ -537,6 +537,13 @@ class _BattlePageState extends ConsumerState<BattlePage> {
     BattleRankingEntry entry,
     int rank,
   ) {
+    const medalLabels = <String, String>{
+      'first_win': '首胜',
+      'streak_3': '三连胜',
+      'veteran': '十战',
+      'all_win': '全胜',
+      'champion': '榜首',
+    };
     final current = entry.childId == widget.child.id;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -564,9 +571,32 @@ class _BattlePageState extends ConsumerState<BattlePage> {
             ],
           ],
         ),
-        subtitle: Text(
-          '${entry.wins} 胜 / ${entry.draws} 平 / ${entry.losses} 负'
-          ' · 最佳连胜 ${entry.bestStreak}',
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${entry.wins} 胜 / ${entry.draws} 平 / ${entry.losses} 负'
+              ' · 最佳连胜 ${entry.bestStreak}',
+            ),
+            if (entry.medals.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  for (final medal in entry.medals)
+                    Chip(
+                      label: Text(
+                        medalLabels[medal] ?? medal,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                ],
+              ),
+            ],
+          ],
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -367,10 +367,18 @@ func TestFamilyRanking(t *testing.T) {
 		first.CurrentStreak != 0 || first.BestStreak != 3 {
 		t.Fatalf("unexpected first: %+v", first)
 	}
+	if !hasMedal(first, "first_win") || !hasMedal(first, "streak_3") ||
+		!hasMedal(first, "champion") || hasMedal(first, "veteran") ||
+		hasMedal(first, "all_win") {
+		t.Fatalf("unexpected first medals: %+v", first.Medals)
+	}
 	second := items[1]
 	if second.ChildID != childB || second.Battles != 2 || second.Wins != 1 ||
 		second.Draws != 1 || second.Points != 4 || second.BestStreak != 1 {
 		t.Fatalf("unexpected second: %+v", second)
+	}
+	if !hasMedal(second, "first_win") || hasMedal(second, "champion") {
+		t.Fatalf("unexpected second medals: %+v", second.Medals)
 	}
 
 	week, err := svc.Ranking(ctx, accountID, "week")
@@ -416,4 +424,13 @@ func TestEventBroker(t *testing.T) {
 		t.Fatal("received event after unsubscribe")
 	default:
 	}
+}
+
+func hasMedal(entry RankingEntry, medal string) bool {
+	for _, item := range entry.Medals {
+		if item == medal {
+			return true
+		}
+	}
+	return false
 }

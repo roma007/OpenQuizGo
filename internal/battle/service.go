@@ -93,15 +93,16 @@ type Summary struct {
 }
 
 type RankingEntry struct {
-	ChildID       string `json:"child_id"`
-	ChildName     string `json:"child_name"`
-	Battles       int    `json:"battles"`
-	Wins          int    `json:"wins"`
-	Draws         int    `json:"draws"`
-	Losses        int    `json:"losses"`
-	Points        int    `json:"points"`
-	CurrentStreak int    `json:"current_streak"`
-	BestStreak    int    `json:"best_streak"`
+	ChildID       string   `json:"child_id"`
+	ChildName     string   `json:"child_name"`
+	Battles       int      `json:"battles"`
+	Wins          int      `json:"wins"`
+	Draws         int      `json:"draws"`
+	Losses        int      `json:"losses"`
+	Points        int      `json:"points"`
+	CurrentStreak int      `json:"current_streak"`
+	BestStreak    int      `json:"best_streak"`
+	Medals        []string `json:"medals"`
 }
 
 type Submission struct {
@@ -420,6 +421,26 @@ func (s *Service) Ranking(ctx context.Context, accountID, period string) ([]Rank
 		}
 		return items[i].ChildName < items[j].ChildName
 	})
+	for i := range items {
+		item := &items[i]
+		medals := make([]string, 0, 5)
+		if item.Wins > 0 {
+			medals = append(medals, "first_win")
+		}
+		if item.BestStreak >= 3 {
+			medals = append(medals, "streak_3")
+		}
+		if item.Battles >= 10 {
+			medals = append(medals, "veteran")
+		}
+		if item.Battles >= 3 && item.Wins == item.Battles {
+			medals = append(medals, "all_win")
+		}
+		if i == 0 && item.Battles > 0 {
+			medals = append(medals, "champion")
+		}
+		item.Medals = medals
+	}
 	return items, nil
 }
 

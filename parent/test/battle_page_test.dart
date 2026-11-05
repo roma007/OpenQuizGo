@@ -133,6 +133,7 @@ class _FakeBattleRepository implements BattleRepository {
         points: 7,
         currentStreak: 2,
         bestStreak: 2,
+        medals: const ['first_win', 'champion'],
       ),
     ];
   }
@@ -284,6 +285,8 @@ void main() {
     expect(find.text('小明'), findsOneWidget);
     expect(find.text('7 分'), findsOneWidget);
     expect(find.text('2 连胜'), findsOneWidget);
+    expect(find.text('首胜'), findsOneWidget);
+    expect(find.text('榜首'), findsOneWidget);
     await tester.tap(find.text('本周'));
     await tester.pumpAndSettle();
     expect(repository.lastRankingPeriod, 'week');

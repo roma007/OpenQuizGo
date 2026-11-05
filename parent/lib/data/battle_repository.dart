@@ -198,6 +198,7 @@ class BattleRankingEntry {
     required this.points,
     required this.currentStreak,
     required this.bestStreak,
+    required this.medals,
   });
 
   final String childId;
@@ -209,6 +210,7 @@ class BattleRankingEntry {
   final int points;
   final int currentStreak;
   final int bestStreak;
+  final List<String> medals;
 
   factory BattleRankingEntry.fromJson(Map<String, dynamic> json) =>
       BattleRankingEntry(
@@ -221,6 +223,9 @@ class BattleRankingEntry {
         points: (json['points'] as num?)?.toInt() ?? 0,
         currentStreak: (json['current_streak'] as num?)?.toInt() ?? 0,
         bestStreak: (json['best_streak'] as num?)?.toInt() ?? 0,
+        medals: json['medals'] is List
+            ? (json['medals'] as List).map((e) => '$e').toList(growable: false)
+            : const [],
       );
 }
 
