@@ -34,6 +34,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   _BattleRole _role = _BattleRole.sameDevice;
   Timer? _poll;
   Timer? _countdown;
+  StreamSubscription<void>? _events;
   List<BattleSummary> _history = const [];
   List<BattleRankingEntry> _ranking = const [];
   bool _historyLoading = false;
@@ -69,6 +70,7 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   void dispose() {
     _poll?.cancel();
     _countdown?.cancel();
+    _events?.cancel();
     super.dispose();
   }
 
@@ -181,6 +183,8 @@ class _BattlePageState extends ConsumerState<BattlePage> {
   void _syncPolling() {
     final state = _state;
     if (state == null || state.finished) {
+      _events?.cancel();
+      _events = null;
       _poll?.cancel();
       _poll = null;
       _syncCountdown();
@@ -197,9 +201,15 @@ class _BattlePageState extends ConsumerState<BattlePage> {
         ((_role == _BattleRole.parentRoom &&
                 (state.status == 'waiting' || state.childTurn)) ||
             (_role == _BattleRole.childRoom && state.status == 'parent_turn'));
-    if (shouldPoll && _poll == null) {
-      _poll = Timer.periodic(const Duration(seconds: 2), (_) => _refresh());
-    } else if (!shouldPoll) {
+    if (shouldPoll) {
+      _events ??= ref
+          .read(battleRepositoryProvider)
+          .events(widget.child.id, state.id)
+          .listen((_) => _refresh(), onError: (_) {}, cancelOnError: false);
+      _poll ??= Timer.periodic(const Duration(seconds: 10), (_) => _refresh());
+    } else {
+      _events?.cancel();
+      _events = null;
       _poll?.cancel();
       _poll = null;
     }

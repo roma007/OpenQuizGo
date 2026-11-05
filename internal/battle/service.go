@@ -26,10 +26,13 @@ const (
 )
 
 type Service struct {
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	events *eventBroker
 }
 
-func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
+func New(pool *pgxpool.Pool) *Service {
+	return &Service{pool: pool, events: newEventBroker()}
+}
 
 func (s *Service) Routes(r chi.Router) {
 	r.Get("/family/battles/ranking", s.handleRanking)
@@ -37,6 +40,7 @@ func (s *Service) Routes(r chi.Router) {
 	r.Post("/family/children/{childID}/battles", s.handleCreate)
 	r.Post("/family/children/{childID}/battles/join", s.handleJoin)
 	r.Get("/family/children/{childID}/battles/{battleID}", s.handleGet)
+	r.Get("/family/children/{childID}/battles/{battleID}/events", s.handleEvents)
 	r.Post("/family/children/{childID}/battles/{battleID}/answers", s.handleSubmit)
 }
 
@@ -218,6 +222,48 @@ func (s *Service) handleJoin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, state)
+}
+
+func (s *Service) handleEvents(w http.ResponseWriter, r *http.Request) {
+	childID := chi.URLParam(r, "childID")
+	battleID := chi.URLParam(r, "battleID")
+	if _, err := s.ownsChild(r.Context(), identity.AccountIDFrom(r.Context()), childID); err != nil {
+		writeError(w, err)
+		return
+	}
+	if _, err := s.load(r.Context(), childID, battleID); err != nil {
+		writeError(w, err)
+		return
+	}
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		writeError(w, apiError{500, "STREAM_UNSUPPORTED", "当前连接不支持事件流"})
+		return
+	}
+	w.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("event: update\ndata: {}\n\n"))
+	flusher.Flush()
+
+	ch, unsubscribe := s.events.subscribe(battleID)
+	defer unsubscribe()
+	ticker := time.NewTicker(20 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-r.Context().Done():
+			return
+		case <-ch:
+			_, _ = w.Write([]byte("event: update\ndata: {}\n\n"))
+			flusher.Flush()
+		case <-ticker.C:
+			_, _ = w.Write([]byte(": ping\n\n"))
+			flusher.Flush()
+		}
+	}
 }
 
 func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {
@@ -513,6 +559,7 @@ func (s *Service) Join(ctx context.Context, accountID, childID, code string) (St
 	if err := tx.Commit(ctx); err != nil {
 		return State{}, err
 	}
+	s.events.publish(battleID)
 	return s.Get(ctx, childID, battleID)
 }
 
@@ -653,6 +700,7 @@ func (s *Service) Submit(ctx context.Context, childID, battleID, side string, su
 	if err := tx.Commit(ctx); err != nil {
 		return State{}, err
 	}
+	s.events.publish(battleID)
 	return s.Get(ctx, childID, battleID)
 }
 

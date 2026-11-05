@@ -47,6 +47,10 @@ BattleState _finishedState() => BattleState(
 
 class _FakeBattleRepository implements BattleRepository {
   @override
+  Stream<void> events(String childId, String battleId) =>
+      const Stream<void>.empty();
+
+  @override
   Future<BattleState> get(String childId, String battleId) async =>
       _finishedState();
 

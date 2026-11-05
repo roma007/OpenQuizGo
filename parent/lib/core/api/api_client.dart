@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../config.dart';
@@ -99,6 +101,29 @@ class ApiClient {
     } catch (_) {
       await _tokenStore.clear();
       return false;
+    }
+  }
+
+  /// 读取 text/event-stream，逐条产出 data: 内容。
+  Stream<String> eventStream(String path) async* {
+    final response = await _dio.get<ResponseBody>(
+      path,
+      options: Options(
+        responseType: ResponseType.stream,
+        receiveTimeout: const Duration(minutes: 30),
+        headers: {'Accept': 'text/event-stream'},
+      ),
+    );
+    final stream = response.data?.stream;
+    if (stream == null) return;
+    final lines = stream
+        .cast<List<int>>()
+        .transform(utf8.decoder)
+        .transform(const LineSplitter());
+    await for (final line in lines) {
+      if (line.startsWith('data:')) {
+        yield line.substring(5).trim();
+      }
     }
   }
 

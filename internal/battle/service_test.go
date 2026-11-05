@@ -389,3 +389,31 @@ func TestFamilyRanking(t *testing.T) {
 		t.Fatalf("unexpected month ranking: %+v", month)
 	}
 }
+
+func TestEventBroker(t *testing.T) {
+	broker := newEventBroker()
+	ch, unsubscribe := broker.subscribe("battle-1")
+	defer unsubscribe()
+
+	broker.publish("other-battle")
+	select {
+	case <-ch:
+		t.Fatal("received event for another battle")
+	default:
+	}
+
+	broker.publish("battle-1")
+	select {
+	case <-ch:
+	case <-time.After(time.Second):
+		t.Fatal("did not receive published event")
+	}
+
+	unsubscribe()
+	broker.publish("battle-1")
+	select {
+	case <-ch:
+		t.Fatal("received event after unsubscribe")
+	default:
+	}
+}

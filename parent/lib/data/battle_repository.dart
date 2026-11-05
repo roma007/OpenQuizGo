@@ -262,6 +262,12 @@ class BattleRepository {
         : const [];
   }
 
+  Stream<void> events(String childId, String battleId) {
+    return _api
+        .eventStream('/v1/family/children/$childId/battles/$battleId/events')
+        .map((_) {});
+  }
+
   Future<List<BattleRankingEntry>> ranking({String period = 'all'}) async {
     final json = await _api.getJson(
       '/v1/family/battles/ranking?period=$period',

@@ -563,6 +563,22 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/BattleState" }
         "404": { description: 对局不存在 }
+  /v1/family/children/{childID}/battles/{battleID}/events:
+    parameters:
+      - $ref: "#/components/parameters/ChildID"
+      - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [battle]
+      summary: 对战事件流（SSE）
+      description: "初始与状态变更时发送 event: update；每 20 秒发送心跳。"
+      security: [{ ParentAuth: [] }]
+      responses:
+        "200":
+          description: text/event-stream
+          content:
+            text/event-stream:
+              schema: { type: string }
+
   /v1/family/children/{childID}/battles/{battleID}/answers:
     parameters:
       - $ref: "#/components/parameters/ChildID"

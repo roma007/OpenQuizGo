@@ -100,6 +100,10 @@ class _FakeBattleRepository implements BattleRepository {
   }
 
   @override
+  Stream<void> events(String childId, String battleId) =>
+      const Stream<void>.empty();
+
+  @override
   Future<BattleState> get(String childId, String battleId) async {
     getCalls++;
     if (battleId == 'b0') {
