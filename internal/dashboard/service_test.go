@@ -139,6 +139,31 @@ func TestOverview(t *testing.T) {
 	if len(cached.Trend) != len(out.Trend) {
 		t.Fatalf("cache trend len = %d, want %d", len(cached.Trend), len(out.Trend))
 	}
+
+	month, err := svc.OverviewRange(ctx, 30)
+	if err != nil {
+		t.Fatalf("30-day overview: %v", err)
+	}
+	if len(month.Trend) != 30 {
+		t.Fatalf("30-day trend len = %d, want 30", len(month.Trend))
+	}
+	if month.Trend[len(month.Trend)-1].Date != todayLabel ||
+		month.Trend[len(month.Trend)-1].Orders != 2 ||
+		month.Trend[len(month.Trend)-1].RevenueCents != 1990 {
+		t.Fatalf("unexpected 30-day today: %+v", month.Trend[len(month.Trend)-1])
+	}
+	cachedMonth, err := svc.OverviewRange(ctx, 30)
+	if err != nil {
+		t.Fatalf("cached 30-day overview: %v", err)
+	}
+	if !cachedMonth.GeneratedAt.Equal(month.GeneratedAt) {
+		t.Fatal("30-day cache miss")
+	}
+
+	quarter, err := svc.OverviewRange(ctx, 90)
+	if err != nil || len(quarter.Trend) != 90 {
+		t.Fatalf("90-day trend = %d, err=%v", len(quarter.Trend), err)
+	}
 }
 
 func prepareDB(t *testing.T, url string) {

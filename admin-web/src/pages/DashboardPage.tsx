@@ -4,6 +4,7 @@ import {
   Col,
   Progress,
   Row,
+  Segmented,
   Space,
   Statistic,
   Table,
@@ -44,11 +45,12 @@ function yuan(cents: number) {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardOverview | null>(null)
   const [loading, setLoading] = useState(false)
+  const [days, setDays] = useState(7)
 
-  const load = async () => {
+  const load = async (nextDays = days) => {
     setLoading(true)
     try {
-      setData(await api.dashboard())
+      setData(await api.dashboard(nextDays))
     } catch (error) {
       message.error(error instanceof ApiError ? error.message : '加载失败')
     } finally {
@@ -154,6 +156,19 @@ export default function DashboardPage() {
                 更新于 {new Date(data.generated_at).toLocaleTimeString()}
               </Typography.Text>
             )}
+            <Segmented
+              value={String(days)}
+              options={[
+                { label: '7 天', value: '7' },
+                { label: '30 天', value: '30' },
+                { label: '90 天', value: '90' },
+              ]}
+              onChange={(value) => {
+                const next = Number(value)
+                setDays(next)
+                void load(next)
+              }}
+            />
             <Button onClick={() => void load()} loading={loading}>
               刷新
             </Button>
@@ -225,7 +240,7 @@ export default function DashboardPage() {
               题目：草稿 {data.questions.draft} · 待审核 {data.questions.review} · 专题总量{' '}
               {data.topics.total} · 近30天支付 {data.membership.paid_30d}
             </Typography.Paragraph>
-            <Card size="small" title="近 7 天趋势" style={{ marginTop: 16 }}>
+            <Card size="small" title={`近 ${days} 天趋势`} style={{ marginTop: 16 }}>
               <Table
                 rowKey="date"
                 size="small"

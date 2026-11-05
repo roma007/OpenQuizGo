@@ -1357,12 +1357,18 @@ paths:
       tags: [dashboard]
       summary: 运营概览
       security: [{ AdminAuth: [] }]
+      parameters:
+        - name: days
+          in: query
+          description: 趋势天数，仅支持 7/30/90
+          schema: { type: integer, enum: [7, 30, 90], default: 7 }
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema: { $ref: "#/components/schemas/DashboardOverview" }
+        "422": { description: days 不在 7/30/90 内 }
 
 components:
   securitySchemes:

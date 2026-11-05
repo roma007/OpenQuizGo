@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -67,17 +68,25 @@ type Overview struct {
 	GeneratedAt         time.Time        `json:"generated_at"`
 }
 
+type cacheEntry struct {
+	overview Overview
+	cachedAt time.Time
+}
+
 type Service struct {
 	pool *pgxpool.Pool
 
 	mu       sync.Mutex
-	cache    Overview
-	cachedAt time.Time
+	cache    map[int]cacheEntry
 	cacheTTL time.Duration
 }
 
 func New(pool *pgxpool.Pool) *Service {
-	return &Service{pool: pool, cacheTTL: 30 * time.Second}
+	return &Service{
+		pool:     pool,
+		cache:    make(map[int]cacheEntry),
+		cacheTTL: 30 * time.Second,
+	}
 }
 
 func (s *Service) Routes(r chi.Router, guard *admin.Service) {
@@ -88,7 +97,17 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 }
 
 func (s *Service) handleOverview(w http.ResponseWriter, r *http.Request) {
-	overview, err := s.Overview(r.Context())
+	days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+	if days == 0 {
+		days = 7
+	}
+	if days != 7 && days != 30 && days != 90 {
+		writeJSON(w, http.StatusUnprocessableEntity, map[string]string{
+			"code": "VALIDATION_ERROR", "message": "days 仅支持 7/30/90",
+		})
+		return
+	}
+	overview, err := s.OverviewRange(r.Context(), days)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{
 			"code": "INTERNAL", "message": "服务端错误",
@@ -98,25 +117,33 @@ func (s *Service) handleOverview(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, overview)
 }
 
-// Overview 聚合管理端运营指标，并缓存 30 秒。
+// Overview 返回默认 7 天趋势。
 func (s *Service) Overview(ctx context.Context) (Overview, error) {
+	return s.OverviewRange(ctx, 7)
+}
+
+// OverviewRange 聚合管理端运营指标，按天数缓存 30 秒。
+func (s *Service) OverviewRange(ctx context.Context, days int) (Overview, error) {
+	if days != 7 && days != 30 && days != 90 {
+		days = 7
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !s.cachedAt.IsZero() && time.Since(s.cachedAt) < s.cacheTTL {
-		return s.cache, nil
+	entry, ok := s.cache[days]
+	if ok && time.Since(entry.cachedAt) < s.cacheTTL {
+		return entry.overview, nil
 	}
 
-	out, err := s.loadOverview(ctx)
+	out, err := s.loadOverview(ctx, days)
 	if err != nil {
 		return Overview{}, err
 	}
-	s.cache = out
-	s.cachedAt = time.Now()
+	s.cache[days] = cacheEntry{overview: out, cachedAt: time.Now()}
 	return out, nil
 }
 
-func (s *Service) loadOverview(ctx context.Context) (Overview, error) {
+func (s *Service) loadOverview(ctx context.Context, days int) (Overview, error) {
 	var out Overview
 	out.GeneratedAt = time.Now()
 
@@ -217,8 +244,9 @@ func (s *Service) loadOverview(ctx context.Context) (Overview, error) {
 
 	trendRows, err := s.pool.Query(ctx, `
 		with days as (
-		    select generate_series(current_date - interval '6 days',
-		                           current_date, interval '1 day')::date as day
+		    select generate_series(
+		               current_date - (($1 - 1) * interval '1 day'),
+		               current_date, interval '1 day')::date as day
 		)
 		select to_char(d.day, 'MM-DD'),
 		       count(o.id)::int,
@@ -228,12 +256,12 @@ func (s *Service) loadOverview(ctx context.Context) (Overview, error) {
 		       on o.created_at >= d.day
 		      and o.created_at < d.day + interval '1 day'
 		group by d.day
-		order by d.day`)
+		order by d.day`, days)
 	if err != nil {
 		return Overview{}, err
 	}
 	defer trendRows.Close()
-	out.Trend = make([]TrendPoint, 0, 7)
+	out.Trend = make([]TrendPoint, 0, days)
 	for trendRows.Next() {
 		var item TrendPoint
 		if err := trendRows.Scan(&item.Date, &item.Orders, &item.RevenueCents); err != nil {
