@@ -127,6 +127,21 @@ type CalibrationHistoryItem struct {
 	To         int       `json:"to"`
 	ActorID    string    `json:"actor_id"`
 	CreatedAt  time.Time `json:"created_at"`
+	Rollback   bool      `json:"rollback,omitempty"`
+}
+
+// CalibrationTrendPoint 是按天聚合的校准活动。
+type CalibrationTrendPoint struct {
+	Date    string `json:"date"`
+	Changes int    `json:"changes"`
+	Up      int    `json:"up"`
+	Down    int    `json:"down"`
+}
+
+// CalibrationRollbackResult 是批量撤销最近校准的结果。
+type CalibrationRollbackResult struct {
+	Applied int `json:"applied"`
+	Skipped int `json:"skipped"`
 }
 
 // Filter 是四维检索条件。

@@ -13,7 +13,11 @@ import {
 } from 'antd'
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '../api'
-import type { CalibrationHistoryItem, CalibrationItem } from '../types'
+import type {
+  CalibrationHistoryItem,
+  CalibrationItem,
+  CalibrationTrendPoint,
+} from '../types'
 
 const subjectLabel: Record<string, string> = {
   math: '数学', chinese: '语文', english: '英语', science: '科学',
@@ -34,6 +38,7 @@ export default function CalibrationPage() {
   const [historyItems, setHistoryItems] = useState<CalibrationHistoryItem[]>([])
   const [historyQuestion, setHistoryQuestion] = useState<CalibrationItem | null>(null)
   const [rollingBack, setRollingBack] = useState(false)
+  const [trend, setTrend] = useState<CalibrationTrendPoint[]>([])
 
   const load = async (threshold = minAnswers) => {
     setLoading(true)
@@ -52,8 +57,17 @@ export default function CalibrationPage() {
     }
   }
 
+  const loadTrend = async () => {
+    try {
+      setTrend((await api.calibrationTrend(30)) || [])
+    } catch {
+      setTrend([])
+    }
+  }
+
   useEffect(() => {
     void load()
+    void loadTrend()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -70,10 +84,26 @@ export default function CalibrationPage() {
       )
       message.success(`已应用 ${result.applied} 题`)
       await load()
+      await loadTrend()
     } catch (error) {
       message.error(error instanceof ApiError ? error.message : '应用失败')
     } finally {
       setApplying(false)
+    }
+  }
+
+  const rollbackLatest = async () => {
+    if (selected.length === 0) return
+    setRollingBack(true)
+    try {
+      const result = await api.calibrationRollback(selected)
+      message.success(`已撤销 ${result.applied} 题，跳过 ${result.skipped} 题`)
+      await load()
+      await loadTrend()
+    } catch (error) {
+      message.error(error instanceof ApiError ? error.message : '撤销失败')
+    } finally {
+      setRollingBack(false)
     }
   }
 
@@ -107,6 +137,7 @@ export default function CalibrationPage() {
       message.success(`已回滚 ${result.applied} 题`)
       setHistoryOpen(false)
       await load()
+      await loadTrend()
     } catch (error) {
       message.error(error instanceof ApiError ? error.message : '回滚失败')
     } finally {
@@ -140,7 +171,45 @@ export default function CalibrationPage() {
             应用选中（{selected.length}）
           </Button>
         </Popconfirm>
+        <Popconfirm
+          title={`确认撤销选中 ${selected.length} 题最近一次校准？`}
+          description="仅撤销最近一次、且当前难度未被再次修改的校准。"
+          onConfirm={rollbackLatest}
+          disabled={selected.length === 0}
+        >
+          <Button disabled={selected.length === 0} loading={rollingBack}>
+            撤销最近校准（{selected.length}）
+          </Button>
+        </Popconfirm>
       </Space>
+      <Card size="small" title="近 30 天校准趋势" style={{ marginBottom: 16 }}>
+        {trend.length === 0 ? (
+          <span style={{ color: '#999' }}>暂无校准记录</span>
+        ) : (
+          <Space direction="vertical" size={6} style={{ width: '100%' }}>
+            {trend.map((point) => {
+              const max = Math.max(...trend.map((item) => item.changes), 1)
+              return (
+                <Space key={point.date} style={{ width: '100%' }}>
+                  <span style={{ width: 96, display: 'inline-block' }}>{point.date}</span>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: `${Math.max(4, (point.changes / max) * 360)}px`,
+                      height: 10,
+                      borderRadius: 4,
+                      background: '#1677ff',
+                    }}
+                  />
+                  <span>
+                    {point.changes} 次（↑{point.up} / ↓{point.down}）
+                  </span>
+                </Space>
+              )
+            })}
+          </Space>
+        )}
+      </Card>
       <Alert
         style={{ marginBottom: 16 }}
         type="info"
@@ -216,7 +285,12 @@ export default function CalibrationPage() {
             {
               title: '难度变化',
               width: 120,
-              render: (_, row) => `${row.from} → ${row.to}`,
+              render: (_, row) => (
+                <Space>
+                  <span>{`${row.from} → ${row.to}`}</span>
+                  {row.rollback && <Tag color="orange">回滚</Tag>}
+                </Space>
+              ),
             },
             {
               title: '时间',

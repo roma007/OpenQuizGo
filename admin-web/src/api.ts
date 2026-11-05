@@ -8,6 +8,8 @@ import type {
   QuestionList,
   CalibrationResult,
   CalibrationHistoryItem,
+  CalibrationTrendPoint,
+  CalibrationRollbackResult,
   TopicPack,
   TopicPackList,
   QuizPreviewResult,
@@ -181,6 +183,13 @@ export const api = {
     request<CalibrationResult>(
       `/admin/calibration/preview?min_answers=${minAnswers}&limit=200`,
     ),
+  calibrationTrend: (days = 30) =>
+    request<CalibrationTrendPoint[]>(`/admin/calibration/trend?days=${days}`),
+  calibrationRollback: (questionIds: string[]) =>
+    request<CalibrationRollbackResult>('/admin/calibration/rollback', {
+      method: 'POST',
+      body: JSON.stringify({ question_ids: questionIds }),
+    }),
   calibrationHistory: (questionId?: string, limit = 20) => {
     const query = new URLSearchParams({ limit: String(limit) })
     if (questionId) query.set('question_id', questionId)

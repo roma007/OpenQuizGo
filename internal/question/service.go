@@ -224,6 +224,38 @@ func (s *Service) CalibrationHistory(ctx context.Context, questionID string, lim
 	return s.repo.calibrationHistory(ctx, questionID, limit)
 }
 
+// CalibrationTrend 返回最近 days 天的校准活动，days 默认 30、最大 365。
+func (s *Service) CalibrationTrend(ctx context.Context, days int) ([]CalibrationTrendPoint, error) {
+	if days <= 0 {
+		days = 30
+	}
+	if days > 365 {
+		days = 365
+	}
+	return s.repo.calibrationTrend(ctx, days)
+}
+
+// RollbackLatestCalibration 批量撤销每道题最近一次非回滚校准。
+func (s *Service) RollbackLatestCalibration(ctx context.Context, questionIDs []string,
+	principal admin.Principal, ip string) (CalibrationRollbackResult, error) {
+	if len(questionIDs) == 0 || len(questionIDs) > 200 {
+		return CalibrationRollbackResult{}, newAPIError(422, "VALIDATION_ERROR", "题目数量需在 1–200 之间")
+	}
+	seen := make(map[string]bool, len(questionIDs))
+	clean := make([]string, 0, len(questionIDs))
+	for _, id := range questionIDs {
+		if id == "" || seen[id] {
+			continue
+		}
+		seen[id] = true
+		clean = append(clean, id)
+	}
+	if len(clean) == 0 {
+		return CalibrationRollbackResult{}, newAPIError(422, "VALIDATION_ERROR", "题目数量需在 1–200 之间")
+	}
+	return s.repo.rollbackCalibration(ctx, clean, principal.ID, ip)
+}
+
 // Coverage 返回题库覆盖率聚合。
 func (s *Service) Coverage(ctx context.Context, threshold int) (CoverageResult, error) {
 	if threshold < 1 || threshold > 10000 {

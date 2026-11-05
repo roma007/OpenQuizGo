@@ -112,6 +112,19 @@ export interface CalibrationHistoryItem {
   to: number
   actor_id: string
   created_at: string
+  rollback?: boolean
+}
+
+export interface CalibrationTrendPoint {
+  date: string
+  changes: number
+  up: number
+  down: number
+}
+
+export interface CalibrationRollbackResult {
+  applied: number
+  skipped: number
 }
 
 export interface TopicPack {

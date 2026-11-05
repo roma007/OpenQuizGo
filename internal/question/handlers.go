@@ -42,7 +42,9 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("question.read")).Get("/admin/coverage/export", s.handleCoverageExport)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/preview", s.handleCalibrationPreview)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/history", s.handleCalibrationHistory)
+		r.With(guard.Require("question.read")).Get("/admin/calibration/trend", s.handleCalibrationTrend)
 		r.With(guard.Require("question.write")).Post("/admin/calibration/apply", s.handleCalibrationApply)
+		r.With(guard.Require("question.write")).Post("/admin/calibration/rollback", s.handleCalibrationRollback)
 	})
 }
 
@@ -153,6 +155,33 @@ func (s *Service) handleCalibrationApply(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]int{"applied": applied})
+}
+
+func (s *Service) handleCalibrationTrend(w http.ResponseWriter, r *http.Request) {
+	days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+	points, err := s.CalibrationTrend(r.Context(), days)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, points)
+}
+
+func (s *Service) handleCalibrationRollback(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		QuestionIDs []string `json:"question_ids"`
+	}
+	if err := decodeJSON(w, r, &req); err != nil {
+		writeServiceError(w, r, newAPIError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	principal, _ := admin.From(r.Context())
+	result, err := s.RollbackLatestCalibration(r.Context(), req.QuestionIDs, principal, clientIP(r))
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 func (s *Service) handleCalibrationHistory(w http.ResponseWriter, r *http.Request) {

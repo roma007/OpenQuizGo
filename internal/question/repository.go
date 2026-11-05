@@ -187,7 +187,8 @@ func (r *repository) applyCalibration(ctx context.Context, items []CalibrationAp
 func (r *repository) calibrationHistory(ctx context.Context, questionID string, limit int) ([]CalibrationHistoryItem, error) {
 	query := `
 		select id, target_id, (after_data->>'from')::int, (after_data->>'to')::int,
-		       actor_id, created_at
+		       actor_id, created_at,
+		       coalesce((after_data->>'rollback')::boolean, false)
 		from audit_log
 		where action = 'question.calibrate' and target_type = 'question'
 		  and jsonb_typeof(after_data->'from') = 'number'
@@ -210,12 +211,108 @@ func (r *repository) calibrationHistory(ctx context.Context, questionID string, 
 	for rows.Next() {
 		var item CalibrationHistoryItem
 		if err := rows.Scan(&item.ID, &item.QuestionID, &item.From, &item.To,
-			&item.ActorID, &item.CreatedAt); err != nil {
+			&item.ActorID, &item.CreatedAt, &item.Rollback); err != nil {
 			return nil, fmt.Errorf("scan calibration history: %w", err)
 		}
 		items = append(items, item)
 	}
 	return items, rows.Err()
+}
+
+// calibrationTrend 返回最近若干天的校准活动（按数据库日期聚合）。
+func (r *repository) calibrationTrend(ctx context.Context, days int) ([]CalibrationTrendPoint, error) {
+	rows, err := r.pool.Query(ctx, `
+		select to_char(date_trunc('day', created_at), 'YYYY-MM-DD'),
+		       count(*)::int,
+		       count(*) filter (where (after_data->>'to')::int > (after_data->>'from')::int)::int,
+		       count(*) filter (where (after_data->>'to')::int < (after_data->>'from')::int)::int
+		from audit_log
+		where action = 'question.calibrate' and target_type = 'question'
+		  and created_at >= now() - ($1 * interval '1 day')
+		  and jsonb_typeof(after_data->'from') = 'number'
+		  and jsonb_typeof(after_data->'to') = 'number'
+		group by 1
+		order by 1`, days)
+	if err != nil {
+		return nil, fmt.Errorf("calibration trend: %w", err)
+	}
+	defer rows.Close()
+
+	points := make([]CalibrationTrendPoint, 0)
+	for rows.Next() {
+		var point CalibrationTrendPoint
+		if err := rows.Scan(&point.Date, &point.Changes, &point.Up, &point.Down); err != nil {
+			return nil, fmt.Errorf("scan calibration trend: %w", err)
+		}
+		points = append(points, point)
+	}
+	return points, rows.Err()
+}
+
+// rollbackCalibration 批量撤销每道题最近一次非回滚校准；当前难度已变化时跳过。
+func (r *repository) rollbackCalibration(ctx context.Context, questionIDs []string,
+	adminID, ip string) (CalibrationRollbackResult, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return CalibrationRollbackResult{}, fmt.Errorf("begin: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	result := CalibrationRollbackResult{}
+	for _, questionID := range questionIDs {
+		var current int
+		err := tx.QueryRow(ctx, `
+			select difficulty from question
+			where id = $1 and status = 'online' for update`, questionID).Scan(&current)
+		if errors.Is(err, pgx.ErrNoRows) {
+			result.Skipped++
+			continue
+		}
+		if err != nil {
+			return CalibrationRollbackResult{}, fmt.Errorf("lock question: %w", err)
+		}
+
+		var from, to int
+		err = tx.QueryRow(ctx, `
+			select (after_data->>'from')::int, (after_data->>'to')::int
+			from audit_log
+			where action = 'question.calibrate' and target_type = 'question'
+			  and target_id = $1
+			  and coalesce((after_data->>'rollback')::boolean, false) = false
+			  and jsonb_typeof(after_data->'from') = 'number'
+			  and jsonb_typeof(after_data->'to') = 'number'
+			order by id desc limit 1`, questionID).Scan(&from, &to)
+		if errors.Is(err, pgx.ErrNoRows) {
+			result.Skipped++
+			continue
+		}
+		if err != nil {
+			return CalibrationRollbackResult{}, fmt.Errorf("latest calibration: %w", err)
+		}
+		if current != to {
+			// 最近一次校准已被后续修改覆盖，避免误回滚。
+			result.Skipped++
+			continue
+		}
+
+		if _, err := tx.Exec(ctx, `
+			update question set difficulty = $2, version = version + 1, updated_at = now()
+			where id = $1`, questionID, from); err != nil {
+			return CalibrationRollbackResult{}, fmt.Errorf("rollback difficulty: %w", err)
+		}
+		after, _ := json.Marshal(map[string]any{"from": current, "to": from, "rollback": true})
+		if _, err := tx.Exec(ctx, `
+			insert into audit_log (actor_type, actor_id, action, target_type, target_id, after_data, ip)
+			values ('admin', $1, 'question.calibrate', 'question', $2, $3::jsonb, nullif($4, '')::inet)`,
+			adminID, questionID, string(after), ip); err != nil {
+			return CalibrationRollbackResult{}, fmt.Errorf("audit rollback: %w", err)
+		}
+		result.Applied++
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return CalibrationRollbackResult{}, err
+	}
+	return result, nil
 }
 
 // Coverage 聚合题库分布。

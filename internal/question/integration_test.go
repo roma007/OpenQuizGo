@@ -139,6 +139,34 @@ func TestQuestionWorkflow(t *testing.T) {
 		t.Fatalf("unexpected rollback history: %+v", history)
 	}
 
+	// 批量撤销最近一次校准：只回退一步，重复调用不再来回切换。
+	var rollbackResult question.CalibrationRollbackResult
+	c.expect(http.MethodPost, "/admin/calibration/rollback",
+		map[string]any{"question_ids": []string{created.ID}},
+		adminToken, http.StatusOK, &rollbackResult)
+	if rollbackResult.Applied != 1 || rollbackResult.Skipped != 0 {
+		t.Fatalf("unexpected rollback result: %+v", rollbackResult)
+	}
+	c.expect(http.MethodGet, "/admin/calibration/history?question_id="+created.ID+"&limit=1000",
+		nil, adminToken, http.StatusOK, &history)
+	if len(history) != 3 || !history[0].Rollback || history[0].From != 2 || history[0].To != 4 {
+		t.Fatalf("unexpected rollback audit: %+v", history)
+	}
+	c.expect(http.MethodPost, "/admin/calibration/rollback",
+		map[string]any{"question_ids": []string{created.ID}},
+		adminToken, http.StatusOK, &rollbackResult)
+	if rollbackResult.Applied != 0 || rollbackResult.Skipped != 1 {
+		t.Fatalf("second rollback should skip: %+v", rollbackResult)
+	}
+
+	// 校准趋势按天聚合。
+	var trend []question.CalibrationTrendPoint
+	c.expect(http.MethodGet, "/admin/calibration/trend?days=7",
+		nil, adminToken, http.StatusOK, &trend)
+	if len(trend) == 0 || trend[0].Changes < 3 {
+		t.Fatalf("unexpected calibration trend: %+v", trend)
+	}
+
 	var audit []question.AuditEntry
 	c.expect(http.MethodGet, "/admin/audit?limit=20", nil, adminToken, http.StatusOK, &audit)
 	if len(audit) == 0 {

@@ -1173,6 +1173,56 @@ paths:
                     to: { type: integer }
                     actor_id: { type: string }
                     created_at: { type: string, format: date-time }
+                    rollback: { type: boolean }
+  /v1/admin/calibration/trend:
+    get:
+      tags: [admin]
+      summary: 难度校准趋势（按天）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: days, in: query, schema: { type: integer, default: 30, maximum: 365 } }
+      responses:
+        "200":
+          description: 每日校准次数与升降分布
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date: { type: string, example: "2026-11-05" }
+                    changes: { type: integer }
+                    up: { type: integer }
+                    down: { type: integer }
+  /v1/admin/calibration/rollback:
+    post:
+      tags: [admin]
+      summary: 批量撤销最近一次校准
+      description: "仅当题目当前难度等于最近一次非回滚校准的目标难度时才撤销，否则跳过。"
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question_ids]
+              properties:
+                question_ids:
+                  type: array
+                  maxItems: 200
+                  items: { type: string, format: uuid }
+      responses:
+        "200":
+          description: 撤销与跳过数量
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applied: { type: integer }
+                  skipped: { type: integer }
   /v1/admin/calibration/apply:
     post:
       tags: [admin]
