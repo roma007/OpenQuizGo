@@ -356,6 +356,14 @@ func (r *repository) listAudit(ctx context.Context, filter AuditFilter) ([]Audit
 	add("target_type", filter.TargetType)
 	add("action", filter.Action)
 	add("actor_id", filter.ActorID)
+	if filter.From != nil {
+		args = append(args, *filter.From)
+		query += fmt.Sprintf(" and created_at >= $%d", len(args))
+	}
+	if filter.To != nil {
+		args = append(args, filter.To.AddDate(0, 0, 1))
+		query += fmt.Sprintf(" and created_at < $%d", len(args))
+	}
 	args = append(args, filter.Limit)
 	query += fmt.Sprintf(" order by id desc limit $%d", len(args))
 

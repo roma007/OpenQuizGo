@@ -376,6 +376,14 @@ func (s *Service) Audit(ctx context.Context, filter AuditFilter) ([]AuditEntry, 
 	return s.repo.listAudit(ctx, filter)
 }
 
+// AuditExport 返回用于导出的审计记录，最多 5000 条。
+func (s *Service) AuditExport(ctx context.Context, filter AuditFilter) ([]AuditEntry, error) {
+	if filter.Limit <= 0 || filter.Limit > 5000 {
+		filter.Limit = 5000
+	}
+	return s.repo.listAudit(ctx, filter)
+}
+
 func (s *Service) audit(ctx context.Context, principal admin.Principal, action, targetID string, after any, ip string) {
 	if err := s.repo.audit(ctx, principal.ID, action, targetID, after, ip); err != nil {
 		s.logger.Error("write audit log", "error", err, "action", action, "target_id", targetID)

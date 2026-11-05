@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -119,6 +120,36 @@ func TestQuestionWorkflow(t *testing.T) {
 	if len(filtered) != 1 || filtered[0].Action != "question.create" ||
 		filtered[0].TargetType != "question" {
 		t.Fatalf("unexpected filtered audit: %+v", filtered)
+	}
+
+	today := time.Now().Format("2006-01-02")
+	tomorrow := time.Now().AddDate(0, 0, 1).Format("2006-01-02")
+	var todayAudit []question.AuditEntry
+	c.expect(http.MethodGet, "/admin/audit?from="+today+"&to="+today,
+		nil, adminToken, http.StatusOK, &todayAudit)
+	if len(todayAudit) == 0 {
+		t.Fatal("today audit is empty")
+	}
+	var tomorrowAudit []question.AuditEntry
+	c.expect(http.MethodGet, "/admin/audit?from="+tomorrow,
+		nil, adminToken, http.StatusOK, &tomorrowAudit)
+	if len(tomorrowAudit) != 0 {
+		t.Fatalf("tomorrow audit = %d, want 0", len(tomorrowAudit))
+	}
+
+	req, _ := http.NewRequest(http.MethodGet,
+		c.base+"/admin/audit/export?action=question.create", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("export audit: %v", err)
+	}
+	defer resp.Body.Close()
+	payload, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK ||
+		!strings.Contains(string(payload), "actor_type") ||
+		!strings.Contains(string(payload), "question.create") {
+		t.Fatalf("unexpected audit csv: status=%d body=%s", resp.StatusCode, payload)
 	}
 }
 

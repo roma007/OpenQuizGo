@@ -142,6 +142,8 @@ type AuditFilter struct {
 	TargetType string
 	Action     string
 	ActorID    string
+	From       *time.Time
+	To         *time.Time
 	Limit      int
 }
 

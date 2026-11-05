@@ -125,6 +125,18 @@ export const api = {
     return request<AuditEntry[]>(`/admin/audit?${query.toString()}`)
   },
   coverage: () => request<CoverageResult>('/admin/coverage'),
+  auditExport: async (params: Record<string, string | undefined> = {}) => {
+    const query = new URLSearchParams({ limit: '5000' })
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) query.set(key, value)
+    })
+    const token = tokenStore.get()
+    const response = await fetch(`/v1/admin/audit/export?${query.toString()}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+    if (!response.ok) throw new ApiError('导出失败', response.status)
+    return response.blob()
+  },
   coverageExport: async () => {
     const token = tokenStore.get()
     const response = await fetch('/v1/admin/coverage/export', {

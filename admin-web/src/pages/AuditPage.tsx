@@ -1,4 +1,5 @@
-import { Button, Card, Input, Select, Space, Table, Typography } from 'antd'
+import { Button, Card, DatePicker, Input, Select, Space, Table, Typography, message } from 'antd'
+import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { AuditEntry } from '../types'
@@ -11,6 +12,8 @@ export default function AuditPage() {
     action: '',
     target_type: '',
     actor_id: '',
+    from: '',
+    to: '',
   })
 
   const load = async (next = filters) => {
@@ -22,6 +25,8 @@ export default function AuditPage() {
           action: next.action || undefined,
           target_type: next.target_type || undefined,
           actor_id: next.actor_id || undefined,
+          from: next.from || undefined,
+          to: next.to || undefined,
         }),
       )
     } finally {
@@ -86,13 +91,60 @@ export default function AuditPage() {
         <Input
           placeholder="操作人 ID"
           allowClear
-          style={{ width: 260 }}
+          style={{ width: 240 }}
           value={filters.actor_id}
           onChange={(event) => update('actor_id', event.target.value)}
         />
+        <DatePicker.RangePicker
+          value={
+            filters.from && filters.to
+              ? [dayjs(filters.from), dayjs(filters.to)]
+              : undefined
+          }
+          onChange={(values) => {
+            const next = {
+              ...filters,
+              from: values?.[0]?.format('YYYY-MM-DD') || '',
+              to: values?.[1]?.format('YYYY-MM-DD') || '',
+            }
+            setFilters(next)
+            void load(next)
+          }}
+        />
+        <Button
+          onClick={async () => {
+            try {
+              const blob = await api.auditExport({
+                target_id: filters.target_id || undefined,
+                action: filters.action || undefined,
+                target_type: filters.target_type || undefined,
+                actor_id: filters.actor_id || undefined,
+                from: filters.from || undefined,
+                to: filters.to || undefined,
+              })
+              const url = URL.createObjectURL(blob)
+              const anchor = document.createElement('a')
+              anchor.href = url
+              anchor.download = 'audit.csv'
+              anchor.click()
+              URL.revokeObjectURL(url)
+            } catch {
+              message.error('导出失败')
+            }
+          }}
+        >
+          导出 CSV
+        </Button>
         <Button
           onClick={() => {
-            const empty = { target_id: '', action: '', target_type: '', actor_id: '' }
+            const empty = {
+              target_id: '',
+              action: '',
+              target_type: '',
+              actor_id: '',
+              from: '',
+              to: '',
+            }
             setFilters(empty)
             void load(empty)
           }}

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -35,6 +36,7 @@ func (s *Service) Routes(r chi.Router, guard *admin.Service) {
 		r.With(guard.Require("question.write")).Post("/admin/questions/{id}/resubmit", s.handleAction("resubmit"))
 
 		r.With(guard.Require("audit.read")).Get("/admin/audit", s.handleAudit)
+		r.With(guard.Require("audit.read")).Get("/admin/audit/export", s.handleAuditExport)
 		r.With(guard.Require("question.read")).Get("/admin/coverage", s.handleCoverage)
 		r.With(guard.Require("question.read")).Get("/admin/coverage/export", s.handleCoverageExport)
 		r.With(guard.Require("question.read")).Get("/admin/calibration/preview", s.handleCalibrationPreview)
@@ -251,19 +253,85 @@ func (s *Service) handleImport(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) handleAudit(w http.ResponseWriter, r *http.Request) {
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	q := r.URL.Query()
-	entries, err := s.Audit(r.Context(), AuditFilter{
-		TargetID:   q.Get("target_id"),
-		TargetType: q.Get("target_type"),
-		Action:     q.Get("action"),
-		ActorID:    q.Get("actor_id"),
-		Limit:      limit,
-	})
+	filter, err := auditFilter(r)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	filter.Limit = limit
+	entries, err := s.Audit(r.Context(), filter)
 	if err != nil {
 		writeServiceError(w, r, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, entries)
+}
+
+func (s *Service) handleAuditExport(w http.ResponseWriter, r *http.Request) {
+	filter, err := auditFilter(r)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	entries, err := s.AuditExport(r.Context(), filter)
+	if err != nil {
+		writeServiceError(w, r, err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="audit.csv"`)
+	writer := csv.NewWriter(w)
+	_ = writer.Write([]string{"id", "actor_type", "actor_id", "action", "target_type", "target_id", "created_at", "after_data"})
+	for _, entry := range entries {
+		_ = writer.Write([]string{
+			strconv.FormatInt(entry.ID, 10), entry.ActorType, entry.ActorID,
+			entry.Action, entry.TargetType, entry.TargetID,
+			entry.CreatedAt.Format(time.RFC3339), csvSafe(string(entry.After)),
+		})
+	}
+	writer.Flush()
+}
+
+func auditFilter(r *http.Request) (AuditFilter, error) {
+	q := r.URL.Query()
+	filter := AuditFilter{
+		TargetID:   q.Get("target_id"),
+		TargetType: q.Get("target_type"),
+		Action:     q.Get("action"),
+		ActorID:    q.Get("actor_id"),
+	}
+	parse := func(value string) (*time.Time, error) {
+		if value == "" {
+			return nil, nil
+		}
+		parsed, err := time.ParseInLocation("2006-01-02", value, time.Local)
+		if err != nil {
+			return nil, newAPIError(422, "VALIDATION_ERROR", "日期格式需为 YYYY-MM-DD")
+		}
+		return &parsed, nil
+	}
+	var err error
+	if filter.From, err = parse(q.Get("from")); err != nil {
+		return AuditFilter{}, err
+	}
+	if filter.To, err = parse(q.Get("to")); err != nil {
+		return AuditFilter{}, err
+	}
+	if filter.From != nil && filter.To != nil && filter.To.Before(*filter.From) {
+		return AuditFilter{}, newAPIError(422, "VALIDATION_ERROR", "结束日期不能早于开始日期")
+	}
+	return filter, nil
+}
+
+func csvSafe(value string) string {
+	if value == "" {
+		return ""
+	}
+	switch value[0] {
+	case '=', '+', '-', '@':
+		return "'" + value
+	}
+	return value
 }
 
 /* ------------------------------ CSV ------------------------------ */
