@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import java.io.File
-import java.io.Writer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -33,10 +32,7 @@ object LogExporter {
 
         val stamp = SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(Date())
         val exportFile = File(exportDir, "openquizgo-tv-log-$stamp.txt")
-        exportFile.bufferedWriter(Charsets.UTF_8).use { writer ->
-            appendIfPresent(writer, File(logsDir, LogStore.ROTATED_FILE_NAME))
-            appendIfPresent(writer, File(logsDir, LogStore.FILE_NAME))
-        }
+        exportFile.writeText(combined(context), Charsets.UTF_8)
 
         val uri = FileProvider.getUriForFile(
             context,
@@ -59,9 +55,22 @@ object LogExporter {
         GuardLog.i("export", "log shared file=$stamp")
     }
 
-    private fun appendIfPresent(writer: Writer, file: File) {
-        if (!file.exists() || file.length() <= 0) return
-        writer.write(file.readText(Charsets.UTF_8))
-        writer.write("\n")
+    /**
+     * 合并轮转日志与当前日志；超过 maxBytes 时保留最近的尾部内容。
+     */
+    fun combined(context: Context, maxBytes: Int = Int.MAX_VALUE): String {
+        val logsDir = File(context.filesDir, LogStore.DIRECTORY)
+        val builder = StringBuilder()
+        for (name in listOf(LogStore.ROTATED_FILE_NAME, LogStore.FILE_NAME)) {
+            val file = File(logsDir, name)
+            if (file.exists() && file.length() > 0) {
+                builder.append(file.readText(Charsets.UTF_8))
+                builder.append('\n')
+            }
+        }
+        val text = builder.toString()
+        val bytes = text.toByteArray(Charsets.UTF_8)
+        if (bytes.size <= maxBytes) return text
+        return String(bytes.copyOfRange(bytes.size - maxBytes, bytes.size), Charsets.UTF_8)
     }
 }

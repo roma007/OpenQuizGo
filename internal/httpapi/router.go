@@ -122,6 +122,9 @@ func New(d Deps) http.Handler {
 		if d.Families != nil && d.Admin != nil {
 			d.Families.Routes(r, d.Admin)
 		}
+		if d.Watch != nil && d.Admin != nil {
+			d.Watch.AdminRoutes(r, d.Admin)
+		}
 		if d.Quiz != nil && d.Identity != nil {
 			r.Group(func(r chi.Router) {
 				r.Use(d.Identity.DeviceAuth)

@@ -102,6 +102,18 @@ class GuardViewModel(
         }
     }
 
+    fun uploadDiagnostics() {
+        viewModelScope.launch {
+            _reportStatus.value = "上传日志中…"
+            val result = diagnostics.uploadLogs()
+            _reportStatus.value = if (result.isSuccess) {
+                "诊断日志已上传"
+            } else {
+                "上传失败：${result.exceptionOrNull()?.message}"
+            }
+        }
+    }
+
     fun resetBinding() {
         viewModelScope.launch {
             pollJob?.cancel()

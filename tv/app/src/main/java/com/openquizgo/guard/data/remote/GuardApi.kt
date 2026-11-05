@@ -86,7 +86,18 @@ interface GuardApi {
         @Header("Authorization") authorization: String,
         @Body request: TamperReport,
     ): Response<Unit>
+
+    @POST("v1/device/diagnostics")
+    suspend fun uploadDiagnostics(
+        @Header("Authorization") authorization: String,
+        @Body request: DiagnosticUploadRequest,
+    ): Response<Unit>
 }
+
+data class DiagnosticUploadRequest(
+    @SerializedName("content") val content: String,
+    @SerializedName("note") val note: String = "",
+)
 
 data class ActivationCodeRequest(
     @SerializedName("device_id") val deviceId: String,

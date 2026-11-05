@@ -72,6 +72,33 @@ type Capability struct {
 	AppVersion  string          `json:"app_version"`
 }
 
+// DiagnosticUpload 是 TV 上传的诊断日志。
+type DiagnosticUpload struct {
+	Content string `json:"content"`
+	Note    string `json:"note"`
+}
+
+// DiagnosticEntry 是一条设备诊断日志。
+type DiagnosticEntry struct {
+	ID        int64     `json:"id"`
+	DeviceID  string    `json:"device_id"`
+	ChildID   string    `json:"child_id"`
+	Content   string    `json:"content,omitempty"`
+	Bytes     int       `json:"bytes"`
+	Note      string    `json:"note"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// DiagnosticSummary 是诊断日志列表项（不含正文）。
+type DiagnosticSummary struct {
+	ID        int64     `json:"id"`
+	DeviceID  string    `json:"device_id"`
+	ChildID   string    `json:"child_id"`
+	Bytes     int       `json:"bytes"`
+	Note      string    `json:"note"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // Alert 是家长端告警条目（来源于 tamper_event）。
 type Alert struct {
 	ID         int64           `json:"id"`

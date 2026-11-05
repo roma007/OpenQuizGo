@@ -57,6 +57,16 @@ class DiagnosticsReporter(
         GuardLog.i("capability reported")
     }.onFailure { GuardLog.w("capability report failed: ${it.message}") }
 
+    /** 手动上传最近日志，服务端限制 256KB，超出保留尾部。 */
+    suspend fun uploadLogs(): Result<Unit> = runCatching {
+        if (preferences.deviceToken.first().isNullOrBlank()) {
+            throw IllegalStateException("设备未激活")
+        }
+        val content = LogExporter.combined(appContext, MAX_UPLOAD_BYTES)
+        watchRepository.uploadDiagnostics(content, "manual upload from TV")
+        GuardLog.i("diagnostics uploaded bytes=${content.toByteArray().size}")
+    }.onFailure { GuardLog.w("diagnostics upload failed: ${it.message}") }
+
     suspend fun reportTamper(type: String, detail: Map<String, String?>) {
         runCatching {
             if (preferences.deviceToken.first().isNullOrBlank()) return@runCatching
@@ -109,6 +119,7 @@ class DiagnosticsReporter(
     }
 
     companion object {
+        private const val MAX_UPLOAD_BYTES = 256 * 1024
         private const val PERMISSION_CHECK_MS = 3_000L
         private const val REPORT_INTERVAL_MS = 10 * 60 * 1000L
     }

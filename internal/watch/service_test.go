@@ -9,6 +9,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -163,6 +164,60 @@ func TestGrantAndHeartbeat(t *testing.T) {
 	}
 }
 
+func TestDiagnosticsUploadAndList(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareWatchDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedWatchChild(t, pool)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	svc, err := New(pool, rule.New(pool, nil, logger), nil,
+		"test-secret-0123456789-0123456789", "", logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	principal := identity.DevicePrincipal{DeviceID: "tv-diag", ChildID: childID}
+
+	entry, err := svc.UploadDiagnostics(ctx, principal, "line-1\nline-2\n", " 测试上传 ")
+	if err != nil {
+		t.Fatalf("upload: %v", err)
+	}
+	if entry.ID == 0 || entry.Bytes == 0 || entry.Note != "测试上传" {
+		t.Fatalf("unexpected entry: %+v", entry)
+	}
+	items, err := svc.ListDiagnostics(ctx, "tv-diag", 10)
+	if err != nil {
+		t.Fatalf("list: %v", err)
+	}
+	if len(items) != 1 || items[0].DeviceID != "tv-diag" {
+		t.Fatalf("unexpected list: %+v", items)
+	}
+	detail, err := svc.Diagnostic(ctx, entry.ID)
+	if err != nil {
+		t.Fatalf("detail: %v", err)
+	}
+	if !strings.Contains(detail.Content, "line-2") {
+		t.Fatalf("detail content = %q", detail.Content)
+	}
+
+	if _, err := svc.UploadDiagnostics(ctx, principal, "", ""); err == nil {
+		t.Fatal("expected empty content error")
+	}
+	tooLarge := strings.Repeat("x", maxDiagnosticBytes+1)
+	if _, err := svc.UploadDiagnostics(ctx, principal, tooLarge, ""); err == nil {
+		t.Fatal("expected oversize error")
+	}
+}
+
 func prepareWatchDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)
@@ -178,6 +233,7 @@ func prepareWatchDB(t *testing.T, url string) {
 		t.Fatalf("migrate: %v", err)
 	}
 	if _, err := db.Exec(`truncate table
+		device_diagnostic,
 		watch_log, watch_grant, quiz_session_item, quiz_session,
 		watch_rule, child_profile, family_member, family, parent_account, audit_log
 		cascade`); err != nil {

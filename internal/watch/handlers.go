@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/roma007/OpenQuizGo/internal/admin"
 	"github.com/roma007/OpenQuizGo/internal/identity"
 )
 
@@ -39,14 +40,68 @@ func (s *Service) handleMarkAlertsRead(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
+// AdminRoutes 注册管理端诊断日志查询接口。
+func (s *Service) AdminRoutes(r chi.Router, guard *admin.Service) {
+	r.Group(func(r chi.Router) {
+		r.Use(guard.Auth)
+		r.With(guard.Require("family.read")).Get("/admin/diagnostics", s.handleAdminListDiagnostics)
+		r.With(guard.Require("family.read")).Get("/admin/diagnostics/{id}", s.handleAdminGetDiagnostic)
+	})
+}
+
 // DeviceRoutes 注册电视端计量与设备上报接口。
 func (s *Service) DeviceRoutes(r chi.Router) {
 	r.Post("/watch/grants/{grantID}/heartbeat", s.handleHeartbeat)
 	r.Get("/watch/grants/active", s.handleActiveGrant)
 	r.Put("/device/capability", s.handleCapability)
 	r.Post("/device/tamper", s.handleTamper)
+	r.Post("/device/diagnostics", s.handleUploadDiagnostics)
 	r.Get("/offline/lease", s.handleOfflineLease)
 	r.Post("/watch/logs", s.handleOfflineReport)
+}
+
+func (s *Service) handleUploadDiagnostics(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeWatchError(w, r, newError(401, "AUTH_REQUIRED", "设备未绑定"))
+		return
+	}
+	var req DiagnosticUpload
+	r.Body = http.MaxBytesReader(w, r.Body, maxDiagnosticBytes+(1<<20))
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeWatchError(w, r, newError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	entry, err := s.UploadDiagnostics(r.Context(), principal, req.Content, req.Note)
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, entry)
+}
+
+func (s *Service) handleAdminListDiagnostics(w http.ResponseWriter, r *http.Request) {
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	items, err := s.ListDiagnostics(r.Context(), r.URL.Query().Get("device_id"), limit)
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, items)
+}
+
+func (s *Service) handleAdminGetDiagnostic(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil || id <= 0 {
+		writeWatchError(w, r, newError(422, "VALIDATION_ERROR", "诊断日志 ID 不合法"))
+		return
+	}
+	entry, err := s.Diagnostic(r.Context(), id)
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, entry)
 }
 
 func (s *Service) handleParentUnlock(w http.ResponseWriter, r *http.Request) {

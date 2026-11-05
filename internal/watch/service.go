@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -258,6 +259,44 @@ func (s *Service) ReportTamper(ctx context.Context, principal identity.DevicePri
 		return newError(422, "VALIDATION_ERROR", "异常类型不合法")
 	}
 	return s.repo.insertTamper(ctx, principal.DeviceID, principal.ChildID, event)
+}
+
+const maxDiagnosticBytes = 256 * 1024
+
+// UploadDiagnostics 保存设备上传的诊断日志。
+func (s *Service) UploadDiagnostics(ctx context.Context, principal identity.DevicePrincipal,
+	content, note string) (DiagnosticEntry, error) {
+	if len([]byte(content)) == 0 || len([]byte(content)) > maxDiagnosticBytes {
+		return DiagnosticEntry{}, newError(422, "VALIDATION_ERROR", "诊断日志需在 1–256KB 之间")
+	}
+	note = strings.TrimSpace(note)
+	if len([]rune(note)) > 200 {
+		note = string([]rune(note)[:200])
+	}
+	return s.repo.insertDiagnostic(ctx, principal.DeviceID, principal.ChildID, content, note)
+}
+
+// ListDiagnostics 返回诊断日志列表，limit 默认 20、最大 100。
+func (s *Service) ListDiagnostics(ctx context.Context, deviceID string, limit int) ([]DiagnosticSummary, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	return s.repo.listDiagnostics(ctx, deviceID, limit)
+}
+
+// Diagnostic 返回诊断日志详情。
+func (s *Service) Diagnostic(ctx context.Context, id int64) (DiagnosticEntry, error) {
+	entry, err := s.repo.diagnostic(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return DiagnosticEntry{}, newError(404, "NOT_FOUND", "诊断日志不存在")
+		}
+		return DiagnosticEntry{}, err
+	}
+	return entry, nil
 }
 
 func (s *Service) toGrant(rec grantRecord) Grant {

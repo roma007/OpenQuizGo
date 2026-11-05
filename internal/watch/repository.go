@@ -193,6 +193,67 @@ func (r *repository) issueParent(ctx context.Context, childID, deviceID string,
 }
 
 // insertAudit 记录家长操作审计。
+// insertDiagnostic 保存一条设备诊断日志。
+func (r *repository) insertDiagnostic(ctx context.Context, deviceID, childID, content, note string) (DiagnosticEntry, error) {
+	var entry DiagnosticEntry
+	err := r.pool.QueryRow(ctx, `
+		insert into device_diagnostic (device_id, child_id, content, bytes, note)
+		values ($1, $2, $3, $4, $5)
+		returning id, device_id, coalesce(child_id::text, ''), content, bytes, note, created_at`,
+		deviceID, childID, content, len([]byte(content)), note).
+		Scan(&entry.ID, &entry.DeviceID, &entry.ChildID, &entry.Content,
+			&entry.Bytes, &entry.Note, &entry.CreatedAt)
+	if err != nil {
+		return DiagnosticEntry{}, fmt.Errorf("insert diagnostic: %w", err)
+	}
+	return entry, nil
+}
+
+// listDiagnostics 返回诊断日志列表，可按设备过滤。
+func (r *repository) listDiagnostics(ctx context.Context, deviceID string, limit int) ([]DiagnosticSummary, error) {
+	query := `
+		select id, device_id, coalesce(child_id::text, ''), bytes, note, created_at
+		from device_diagnostic`
+	args := make([]any, 0, 2)
+	if deviceID != "" {
+		args = append(args, deviceID)
+		query += fmt.Sprintf(" where device_id = $%d", len(args))
+	}
+	args = append(args, limit)
+	query += fmt.Sprintf(" order by created_at desc limit $%d", len(args))
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("list diagnostics: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]DiagnosticSummary, 0)
+	for rows.Next() {
+		var item DiagnosticSummary
+		if err := rows.Scan(&item.ID, &item.DeviceID, &item.ChildID, &item.Bytes,
+			&item.Note, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan diagnostic: %w", err)
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+// diagnostic 返回一条诊断日志详情。
+func (r *repository) diagnostic(ctx context.Context, id int64) (DiagnosticEntry, error) {
+	var entry DiagnosticEntry
+	err := r.pool.QueryRow(ctx, `
+		select id, device_id, coalesce(child_id::text, ''), content, bytes, note, created_at
+		from device_diagnostic where id = $1`, id).
+		Scan(&entry.ID, &entry.DeviceID, &entry.ChildID, &entry.Content,
+			&entry.Bytes, &entry.Note, &entry.CreatedAt)
+	if err != nil {
+		return DiagnosticEntry{}, err
+	}
+	return entry, nil
+}
+
 // listAlerts 返回家庭告警与未读数。
 func (r *repository) listAlerts(ctx context.Context, accountID string, limit int) ([]Alert, int, error) {
 	const base = `

@@ -405,6 +405,7 @@ private fun DiagnosticsScreen(
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = { LogExporter.share(context) }) { Text("导出日志", fontSize = 14.sp) }
+            Button(onClick = viewModel::uploadDiagnostics) { Text("上传诊断", fontSize = 14.sp) }
             Button(onClick = viewModel::reportCapabilityNow) { Text("上报能力", fontSize = 14.sp) }
             Button(onClick = onBack) { Text("返回", fontSize = 14.sp) }
         }
