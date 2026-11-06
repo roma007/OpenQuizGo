@@ -1756,7 +1756,9 @@ func (s *Service) RefundOrder(ctx context.Context, orderID, reason, operatorID s
 		return Order{}, err
 	}
 
-	now := time.Now()
+	// PostgreSQL timestamptz 只有微秒精度；截断后再落库并返回，
+	// 保证首次退款与幂等重放返回的 refunded_at 完全一致。
+	now := time.Now().Truncate(time.Microsecond)
 	var after *RefundSnapshot
 	if before != nil {
 		newExpiry := before.ExpiresAt.AddDate(0, 0, -item.DurationDays)

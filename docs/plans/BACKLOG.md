@@ -8,5 +8,6 @@
 | 2026-11-04 | 修复 GitHub Actions：升级 Actions、固定 ubuntu-24.04、config 测试解耦环境 | CI/测试 | CI 红；root cause 为 APP_ENV=ci 时缺少 JWT_SECRET | AI |
 | 2026-11-05 | 同步 009–022 新增接口到 OpenAPI 契约 | 文档 | 实现已先行、契约补档 | AI |
 | 2026-11-05 | 新增 `scripts/auto-continue.sh` 与使用说明 | 工具/文档 | 10 分钟无人值守自动推进，不改变业务行为 | AI |
+| 2026-11-06 | 退款时间戳截断到微秒 | 缺陷修复 | CI 中 PostgreSQL 微秒精度导致幂等退款断言失败（macOS 本地为微秒精度未复现） | AI |
 
 类型：错别字 / 注释 / 文档 / 无行为变化修改
