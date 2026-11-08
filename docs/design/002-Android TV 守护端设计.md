@@ -161,7 +161,7 @@ BLOCKED ──家长解锁/重新答题──> QUIZZING
 ```
 ForegroundDetector 发现视频播放
   -> GuardEngine 拉取 /child/context
-  -> 需要答题：Toast/TTS 提示「按确认键开始答题」，进入 armed 状态
+  -> 需要答题：Toast/TTS 提示「按确认键开始答题；90 秒未按将自动答题，返回播放可能从头开始」，进入 armed 状态
   -> 用户按 OK：播放器自身暂停（不重启，无广告）
   -> AccessibilityService 监听按键（不消费），延迟 ~600ms
   -> 拉起半透明 QuizActivity（玩家 Activity 不被 stop，保持 paused）
@@ -171,6 +171,7 @@ ForegroundDetector 发现视频播放
   -> 超时未按键/不支持按键：回退到全屏 Activity 接管（可能重播广告）
 ```
 
+- 提示同时说明 90 秒兜底与答题后可能重头播放的风险；常驻通知同步显示；
 - 题目与选项大字、焦点清晰；低龄支持图片/语音；
 - 单题限时与服务端一致；
 - 断网时不允许答题解锁，只展示离线说明。
