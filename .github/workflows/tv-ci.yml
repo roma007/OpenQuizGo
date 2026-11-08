@@ -24,8 +24,20 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # 官方分发包会重定向到 GitHub Releases，偶发 5xx 导致 wrapper 下载失败；
+      # 失败后自动切换镜像并重试，避免 CI 被外部 CDN 抖动阻塞。
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest --no-daemon
+        run: |
+          for attempt in 1 2 3; do
+            echo "Gradle attempt $attempt"
+            if ./gradlew :app:testDebugUnitTest --no-daemon; then
+              exit 0
+            fi
+            sed -i 's#services.gradle.org/distributions#mirrors.cloud.tencent.com/gradle#' \
+              gradle/wrapper/gradle-wrapper.properties
+            sleep 10
+          done
+          exit 1
 
       - name: Assemble debug
         run: ./gradlew :app:assembleDebug --no-daemon
