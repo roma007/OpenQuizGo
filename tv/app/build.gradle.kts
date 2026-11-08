@@ -13,8 +13,8 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 14
-        versionName = "0.4.1"
+        versionCode = 15
+        versionName = "0.4.2"
         val apiBaseUrl = providers.gradleProperty("apiBaseUrl")
             .orElse("http://192.168.1.27:8080/")
             .get()

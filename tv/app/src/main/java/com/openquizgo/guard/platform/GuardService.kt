@@ -167,7 +167,7 @@ class GuardService : Service() {
                 if (Permissions.accessibilityEnabled(this@GuardService) &&
                     GuardAccessibilityService.isConnected()
                 ) {
-                    toast("按确认键开始答题")
+                    toast("按确认键开始答题\n90 秒未按将自动答题；返回播放可能从头开始")
                     GuardAccessibilityService.armQuiz()
                     GuardLog.i("quiz required, armed for confirm key")
                     return@launch
@@ -229,7 +229,7 @@ class GuardService : Service() {
         GuardState.UNBOUND -> "设备未激活"
         GuardState.IDLE -> "空闲"
         GuardState.WATCHING -> "观看中"
-        GuardState.QUIZ_REQUIRED -> "需要答题"
+        GuardState.QUIZ_REQUIRED -> "需要答题：按确认键开始（90 秒未按将自动答题）"
         GuardState.QUIZZING -> "答题中"
         GuardState.GRANTED -> "已授权"
         GuardState.BLOCKED -> "已锁定"
