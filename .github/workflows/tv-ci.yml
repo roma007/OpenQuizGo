@@ -53,5 +53,15 @@ jobs:
           done
           exit 1
 
+      - name: Report Gradle failure
+        if: failure()
+        run: |
+          for f in /tmp/gradle-*.log; do
+            echo "### $f"
+            tail -n 80 "$f"
+          done > /tmp/report.txt
+          msg=$(tail -n 120 /tmp/report.txt | tr '\n' ' ' | tr -s ' ' | cut -c1-4000 | sed 's/%/%25/g')
+          echo "::error title=gradle-log::$msg"
+
       - name: Assemble debug
         run: ./gradlew :app:assembleDebug --no-daemon
