@@ -26,9 +26,9 @@ jobs:
 
       - name: Gradle network diagnostics
         run: |
-          official=$(curl -sS -L -o /dev/null -w '%{http_code}' --max-time 30 \
+          official=$(curl -sSI -o /dev/null -w '%{http_code}' --max-time 30 \
             https://services.gradle.org/distributions/gradle-9.3.1-bin.zip || echo ERR)
-          mirror=$(curl -sS -L -o /dev/null -w '%{http_code}' --max-time 30 \
+          mirror=$(curl -sSI -o /dev/null -w '%{http_code}' --max-time 30 \
             https://mirrors.cloud.tencent.com/gradle/gradle-9.3.1-bin.zip || echo ERR)
           echo "::notice title=gradle-network::official=$official mirror=$mirror java=$(java -version 2>&1 | head -1)"
 
@@ -36,6 +36,8 @@ jobs:
       # 失败后自动切换镜像并重试，避免 CI 被外部 CDN 抖动阻塞。
       - name: Unit tests
         run: |
+          # GitHub 默认 bash -e，必须先关闭才能在失败后重试。
+          set +e
           set -o pipefail
           for attempt in 1 2 3; do
             echo "Gradle attempt $attempt"
