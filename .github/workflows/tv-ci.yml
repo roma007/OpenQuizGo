@@ -24,15 +24,31 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Gradle network diagnostics
+        run: |
+          {
+            echo "official:"
+            curl -sSIL --max-time 20 https://services.gradle.org/distributions/gradle-9.3.1-bin.zip | head -5 || true
+            echo "mirror:"
+            curl -sSIL --max-time 20 https://mirrors.cloud.tencent.com/gradle/gradle-9.3.1-bin.zip | head -5 || true
+          } > /tmp/net.txt
+          msg=$(cat /tmp/net.txt | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::notice title=gradle-network::$msg"
+
       # 官方分发包会重定向到 GitHub Releases，偶发 5xx 导致 wrapper 下载失败；
       # 失败后自动切换镜像并重试，避免 CI 被外部 CDN 抖动阻塞。
       - name: Unit tests
         run: |
+          set -o pipefail
           for attempt in 1 2 3; do
             echo "Gradle attempt $attempt"
-            if ./gradlew :app:testDebugUnitTest --no-daemon; then
+            ./gradlew :app:testDebugUnitTest --no-daemon 2>&1 | tee "/tmp/gradle-$attempt.log"
+            code=${PIPESTATUS[0]}
+            if [ "$code" -eq 0 ]; then
               exit 0
             fi
+            msg=$(tail -n 60 "/tmp/gradle-$attempt.log" | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=gradle-attempt-$attempt::$msg"
             sed -i 's#services.gradle.org/distributions#mirrors.cloud.tencent.com/gradle#' \
               gradle/wrapper/gradle-wrapper.properties
             sleep 10
