@@ -48,6 +48,9 @@ func TestBattleWorkflow(t *testing.T) {
 	if len(state.Answers) != 0 || state.Result != nil {
 		t.Fatal("in-progress battle leaked answers or result")
 	}
+	if len(state.Questions[0].StemMedia) == 0 {
+		t.Fatal("battle question missing stem media")
+	}
 	if state.JoinCodeExpiresAt != nil {
 		t.Fatal("same-device battle should not expose join code expiry")
 	}
@@ -189,9 +192,10 @@ func seedQuestions(t *testing.T, pool *pgxpool.Pool, n int) []string {
 		err := pool.QueryRow(context.Background(), `
 			insert into question (
 				subject_code, category_code, stage_code, difficulty, type_code, stem,
-				options, answer, explain, status, version, schema_ver)
+				stem_media, options, answer, explain, status, version, schema_ver)
 			values ('math', 'core', 'low', 2, 'choice', $1,
-			        '[{"id":"a","text":"1"},{"id":"b","text":"2"}]'::jsonb,
+			        '{"url":"/v1/media/stem.png"}'::jsonb,
+			        '[{"id":"a","text":"1","images":["/v1/media/a.png"],"audio":"/v1/media/a.mp3"},{"id":"b","text":"2"}]'::jsonb,
 			        '["a"]'::jsonb, '解析', 'online', 1, 1)
 			returning id`, "对战题").Scan(&id)
 		if err != nil {

@@ -39,6 +39,7 @@ func New(pool *pgxpool.Pool, rdb *redis.Client) *Service {
 func (s *Service) DeviceRoutes(r chi.Router) {
 	r.Post("/device/battles/join", s.handleDeviceJoin)
 	r.Get("/device/battles/{battleID}", s.handleDeviceGet)
+	r.Get("/device/battles/{battleID}/events", s.handleDeviceEvents)
 	r.Post("/device/battles/{battleID}/answers", s.handleDeviceSubmit)
 }
 
@@ -53,10 +54,11 @@ func (s *Service) Routes(r chi.Router) {
 }
 
 type QuestionView struct {
-	ID      string          `json:"id"`
-	Stem    string          `json:"stem"`
-	Type    string          `json:"type"`
-	Options json.RawMessage `json:"options,omitempty"`
+	ID        string          `json:"id"`
+	Stem      string          `json:"stem"`
+	Type      string          `json:"type"`
+	StemMedia json.RawMessage `json:"stem_media,omitempty"`
+	Options   json.RawMessage `json:"options,omitempty"`
 }
 
 type AnswerView struct {
@@ -127,12 +129,13 @@ type apiError struct {
 func (e apiError) Error() string { return e.Message }
 
 type questionRecord struct {
-	ID      string
-	Stem    string
-	Type    string
-	Options json.RawMessage
-	Answer  json.RawMessage
-	Explain string
+	ID        string
+	Stem      string
+	Type      string
+	StemMedia json.RawMessage
+	Options   json.RawMessage
+	Answer    json.RawMessage
+	Explain   string
 }
 
 type battleRecord struct {
@@ -244,6 +247,25 @@ func (s *Service) handleEvents(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err)
 		return
 	}
+	s.streamEvents(w, r, battleID)
+}
+
+func (s *Service) handleDeviceEvents(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeError(w, apiError{401, "AUTH_REQUIRED", "设备未绑定"})
+		return
+	}
+	battleID := chi.URLParam(r, "battleID")
+	if _, err := s.load(r.Context(), principal.ChildID, battleID); err != nil {
+		writeError(w, err)
+		return
+	}
+	s.streamEvents(w, r, battleID)
+}
+
+// streamEvents 把对局版本变化以 SSE 推送给已经完成鉴权与归属校验的调用方。
+func (s *Service) streamEvents(w http.ResponseWriter, r *http.Request, battleID string) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		writeError(w, apiError{500, "STREAM_UNSUPPORTED", "当前连接不支持事件流"})
@@ -849,7 +871,8 @@ func (s *Service) questions(ctx context.Context, ids []string) ([]QuestionView, 
 			return nil, err
 		}
 		items = append(items, QuestionView{
-			ID: rec.ID, Stem: rec.Stem, Type: rec.Type, Options: rec.Options,
+			ID: rec.ID, Stem: rec.Stem, Type: rec.Type,
+			StemMedia: rec.StemMedia, Options: rec.Options,
 		})
 	}
 	return items, nil
@@ -858,10 +881,10 @@ func (s *Service) questions(ctx context.Context, ids []string) ([]QuestionView, 
 func (s *Service) question(ctx context.Context, id string) (questionRecord, error) {
 	var rec questionRecord
 	err := s.pool.QueryRow(ctx, `
-		select id, stem, type_code, coalesce(options::text, '[]'),
-		       answer::text, coalesce(explain, '')
+		select id, stem, type_code, coalesce(stem_media::text, ''),
+		       coalesce(options::text, '[]'), answer::text, coalesce(explain, '')
 		from question where id = $1`, id).
-		Scan(&rec.ID, &rec.Stem, &rec.Type, &rec.Options, &rec.Answer, &rec.Explain)
+		Scan(&rec.ID, &rec.Stem, &rec.Type, &rec.StemMedia, &rec.Options, &rec.Answer, &rec.Explain)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return questionRecord{}, apiError{404, "QUESTION_NOT_FOUND", "题目不存在"}
 	}

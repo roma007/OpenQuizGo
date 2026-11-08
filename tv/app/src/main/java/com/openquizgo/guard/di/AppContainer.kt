@@ -21,7 +21,11 @@ class AppContainer(context: Context) {
     val api: GuardApi = ApiFactory.create(BuildConfig.API_BASE_URL)
     val quizRepository: QuizRepository = QuizRepository(api, preferences)
     val watchRepository: WatchRepository = WatchRepository(api, preferences)
-    val battleRepository: BattleRepository = BattleRepository(api, preferences)
+    val battleRepository: BattleRepository = BattleRepository(
+        api,
+        ApiFactory.createBattleEvents(BuildConfig.API_BASE_URL),
+        preferences,
+    )
     val diagnosticsReporter: DiagnosticsReporter =
         DiagnosticsReporter(context, preferences, watchRepository, scope)
     val foregroundDetector: ForegroundDetector = ForegroundDetector(context, scope)

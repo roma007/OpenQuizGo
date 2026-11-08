@@ -262,42 +262,6 @@ class QuizActivity : ComponentActivity() {
     }
 }
 
-private fun resolveMediaUrl(path: String): String {
-    return if (path.startsWith("http")) path else BuildConfig.API_BASE_URL.trimEnd('/') + path
-}
-
-@Composable
-private fun RemoteImage(
-    url: String,
-    maxHeight: Dp = 240.dp,
-    modifier: Modifier = Modifier.fillMaxWidth(),
-    contentDescription: String = "图片",
-) {
-    var bitmap by remember(url) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-    var failed by remember(url) { mutableStateOf(false) }
-    LaunchedEffect(url) {
-        val loaded = withContext(Dispatchers.IO) {
-            runCatching {
-                URL(url).openStream().use { BitmapFactory.decodeStream(it)?.asImageBitmap() }
-            }.getOrNull()
-        }
-        if (loaded == null) failed = true else bitmap = loaded
-    }
-    val image = bitmap
-    if (image != null) {
-        Image(
-            bitmap = image,
-            contentDescription = contentDescription,
-            modifier = modifier.heightIn(max = maxHeight),
-            contentScale = ContentScale.Fit,
-        )
-    } else if (failed) {
-        Text("图片加载失败", fontSize = 20.sp, color = Color(0xFFFFC107))
-    } else {
-        Text("图片加载中…", fontSize = 20.sp, color = Color(0xFFB0B0B0))
-    }
-}
-
 @Composable
 private fun QuestionScreen(
     question: SessionQuestion,

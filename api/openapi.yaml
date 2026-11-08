@@ -1043,6 +1043,21 @@ paths:
       responses:
         "200": { description: 对局状态 }
         "404": { description: 对局不存在 }
+  /v1/device/battles/{battleID}/events:
+    parameters:
+      - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [battle]
+      summary: TV 端订阅对局 SSE 事件
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 'SSE 事件流，data 为 {"version": N}；每 20 秒发送心跳'
+          content:
+            text/event-stream:
+              schema: { type: string }
+        "404": { description: 对局不存在或不属于当前设备孩子 }
+
   /v1/device/battles/{battleID}/answers:
     parameters:
       - { name: battleID, in: path, required: true, schema: { type: string, format: uuid } }

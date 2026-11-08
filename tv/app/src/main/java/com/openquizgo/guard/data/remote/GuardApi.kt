@@ -140,6 +140,7 @@ data class BattleQuestion(
     @SerializedName("id") val id: String,
     @SerializedName("stem") val stem: String,
     @SerializedName("type") val type: String,
+    @SerializedName("stem_media") val stemMedia: StemMedia? = null,
     @SerializedName("options") val options: List<QuizOption>? = null,
 )
 
