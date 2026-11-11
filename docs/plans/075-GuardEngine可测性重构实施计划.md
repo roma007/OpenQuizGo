@@ -3,7 +3,7 @@
 | 项目 | 内容 |
 | --- | --- |
 | 编号 | 075 |
-| 状态 | in-progress |
+| 状态 | done |
 | 负责人 | AI |
 | 创建日期 | 2026-11-11 |
 | 最后更新 | 2026-11-11 |
@@ -24,7 +24,7 @@
 | T3 | 时钟注入与测试配置 | T2 | `GuardEngine.kt`、`build.gradle.kts` | 6 处时间调用改为 `clock()`；单测可运行 | done |
 | T4 | 编写 `GuardEngineTest` | T3 | 8 个用例 | 覆盖轮询、媒体、401、撤销、耗尽、恢复 | done |
 | T5 | 构建、版本与验收 | T4 | APK、验收报告、ROADMAP | `testDebugUnitTest`、`assembleDebug`、`assembleRelease` 通过 | done |
-| T6 | 发布与归档 | T5 | tag、双远端、归档 | 提交与标签同步 | doing |
+| T6 | 发布与归档 | T5 | tag、双远端、归档 | 提交与标签同步 | done |
 
 状态取值：`todo` / `doing` / `done` / `blocked` / `cancelled`
 
@@ -59,6 +59,7 @@
 | 2026-11-11 | T3 时钟注入 | 6 处 `System.currentTimeMillis()` 改为 `clock()` |
 | 2026-11-11 | T4 单测 | 9 个用例全绿；修正虚拟时间边界 2 处 |
 | 2026-11-11 | T5 构建与验收 | 18 个单测、debug/release 构建通过 |
+| 2026-11-11 | T6 发布与归档 | tag v0.65.3，双远端已同步 |
 
 ## 7. 验收结论
 
