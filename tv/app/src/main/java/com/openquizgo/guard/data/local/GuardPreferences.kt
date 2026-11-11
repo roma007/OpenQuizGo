@@ -15,12 +15,12 @@ import kotlinx.coroutines.flow.map
 
 private val Context.guardDataStore by preferencesDataStore(name = "guard")
 
-class GuardPreferences(private val context: Context) {
+class GuardPreferences(private val context: Context) : com.openquizgo.guard.domain.GuardStorage {
 
     private val cipher = TokenCipher()
     private val gson = Gson()
 
-    val deviceToken: Flow<String?> = context.guardDataStore.data.map { prefs ->
+    override val deviceToken: Flow<String?> = context.guardDataStore.data.map { prefs ->
         prefs[KEY_DEVICE_TOKEN]?.let { cipher.decrypt(it) ?: it }
     }
 
@@ -49,34 +49,34 @@ class GuardPreferences(private val context: Context) {
         }
     }
 
-    suspend fun guardSnapshot(): Pair<String, Long> {
+    override suspend fun guardSnapshot(): Pair<String, Long> {
         val prefs = context.guardDataStore.data.first()
         return (prefs[KEY_GUARD_STATE] ?: "IDLE") to (prefs[KEY_WATCH_SECONDS] ?: 0L)
     }
 
-    suspend fun saveGuardSnapshot(state: String, watchSeconds: Long) {
+    override suspend fun saveGuardSnapshot(state: String, watchSeconds: Long) {
         context.guardDataStore.edit { prefs ->
             prefs[KEY_GUARD_STATE] = state
             prefs[KEY_WATCH_SECONDS] = watchSeconds
         }
     }
 
-    suspend fun storedGrant(): StoredGrant? = readJson(KEY_STORED_GRANT, StoredGrant::class.java)
+    override suspend fun storedGrant(): StoredGrant? = readJson(KEY_STORED_GRANT, StoredGrant::class.java)
 
-    suspend fun saveStoredGrant(grant: StoredGrant?) {
+    override suspend fun saveStoredGrant(grant: StoredGrant?) {
         writeJson(KEY_STORED_GRANT, grant)
     }
 
-    suspend fun storedLease(): StoredLease? = readJson(KEY_STORED_LEASE, StoredLease::class.java)
+    override suspend fun storedLease(): StoredLease? = readJson(KEY_STORED_LEASE, StoredLease::class.java)
 
-    suspend fun saveStoredLease(lease: StoredLease?) {
+    override suspend fun saveStoredLease(lease: StoredLease?) {
         writeJson(KEY_STORED_LEASE, lease)
     }
 
-    suspend fun pendingOffline(): PendingOffline? =
+    override suspend fun pendingOffline(): PendingOffline? =
         readJson(KEY_PENDING_OFFLINE, PendingOffline::class.java)
 
-    suspend fun savePendingOffline(pending: PendingOffline?) {
+    override suspend fun savePendingOffline(pending: PendingOffline?) {
         writeJson(KEY_PENDING_OFFLINE, pending)
     }
 

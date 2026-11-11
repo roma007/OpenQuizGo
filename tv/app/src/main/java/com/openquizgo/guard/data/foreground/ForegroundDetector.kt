@@ -27,13 +27,13 @@ data class ForegroundState(
 class ForegroundDetector(
     context: Context,
     scope: CoroutineScope,
-) {
+) : com.openquizgo.guard.domain.ForegroundSource {
     private val appContext = context.applicationContext
     private val usageStats = appContext.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
     private val audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
     private val _state = MutableStateFlow(ForegroundState())
-    val state: StateFlow<ForegroundState> = _state.asStateFlow()
+    override val state: StateFlow<ForegroundState> = _state.asStateFlow()
 
     init {
         scope.launch {

@@ -28,17 +28,17 @@ class WatchApiException(
 class WatchRepository(
     private val api: GuardApi,
     private val preferences: GuardPreferences,
-) {
+) : com.openquizgo.guard.domain.WatchGateway {
     private val gson = Gson()
 
     /** 当前有效授权；无授权时返回 null。 */
-    suspend fun activeGrant(): WatchGrant? {
+    override suspend fun activeGrant(): WatchGrant? {
         val response = api.activeGrant(authorization())
         if (response.code() == 404) return null
         return bodyOrThrow(response)
     }
 
-    suspend fun heartbeat(
+    override suspend fun heartbeat(
         grantId: String,
         foregroundApp: String?,
         paused: Boolean,
@@ -55,13 +55,13 @@ class WatchRepository(
     )
 
     /** 离线租约；规则不允许时返回 null。 */
-    suspend fun offlineLease(): OfflineLease? {
+    override suspend fun offlineLease(): OfflineLease? {
         val response = api.offlineLease(authorization())
         if (response.code() == 403 || response.code() == 404) return null
         return bodyOrThrow(response)
     }
 
-    suspend fun reportOffline(
+    override suspend fun reportOffline(
         leaseId: String,
         entries: List<OfflineEntry>,
     ): OfflineReportResult = bodyOrThrow(

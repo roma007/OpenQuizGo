@@ -13,8 +13,8 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 16
-        versionName = "0.4.3"
+        versionCode = 17
+        versionName = "0.4.4"
         val apiBaseUrl = providers.gradleProperty("apiBaseUrl")
             .orElse("http://192.168.1.27:8080/")
             .get()
@@ -67,6 +67,11 @@ android {
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
+
+    testOptions {
+        // GuardLog 直接调用 android.util.Log；JVM 单测下返回默认值即可。
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -91,4 +96,5 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }

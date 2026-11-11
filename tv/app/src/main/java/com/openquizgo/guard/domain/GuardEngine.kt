@@ -1,13 +1,9 @@
 package com.openquizgo.guard.domain
 
-import com.openquizgo.guard.data.foreground.ForegroundDetector
-import com.openquizgo.guard.data.local.GuardPreferences
 import com.openquizgo.guard.data.remote.OfflineEntry
 import com.openquizgo.guard.data.watch.PendingOffline
 import com.openquizgo.guard.data.watch.StoredGrant
 import com.openquizgo.guard.data.watch.StoredLease
-import com.openquizgo.guard.data.watch.WatchRepository
-import com.openquizgo.guard.platform.DiagnosticsReporter
 import com.openquizgo.guard.platform.GuardLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -36,11 +32,11 @@ data class GrantInfo(
  * 暂停（无媒体播放）不计入观看时长；断网期间按离线租约累计，联网后补报。
  */
 class GuardEngine(
-    private val preferences: GuardPreferences,
-    private val foregroundDetector: ForegroundDetector,
-    private val watchRepository: WatchRepository,
-    private val diagnostics: DiagnosticsReporter,
+    private val preferences: GuardStorage,
+    private val foregroundDetector: ForegroundSource,
+    private val watchRepository: WatchGateway,
     private val scope: CoroutineScope,
+    private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val _state = MutableStateFlow(GuardState.UNBOUND)
     val state: StateFlow<GuardState> = _state.asStateFlow()
@@ -176,7 +172,7 @@ class GuardEngine(
         grantValidUntilMillis = grant.validUntilMillis
         _grantSeconds.value = grant.remainingSeconds.toLong().coerceAtLeast(0)
         _grantMinutes.value = grant.minutes
-        lastHeartbeatMillis = System.currentTimeMillis()
+        lastHeartbeatMillis = clock()
         offline = false
         scope.launch {
             preferences.saveStoredGrant(
@@ -227,7 +223,7 @@ class GuardEngine(
         _watchSeconds.value = snapshot.second
 
         val stored = preferences.storedGrant()
-        val now = System.currentTimeMillis()
+        val now = clock()
         if (stored != null && stored.remainingSeconds > 0 && stored.validUntilMillis > now) {
             grantId = stored.grantId
             grantValidUntilMillis = stored.validUntilMillis
@@ -294,7 +290,7 @@ class GuardEngine(
             syncActiveGrant()
             return
         }
-        val now = System.currentTimeMillis()
+        val now = clock()
         if (now - lastHeartbeatMillis < HEARTBEAT_INTERVAL_MS - 2_000) return
 
         val paused = !(_state.value == GuardState.WATCHING &&
@@ -383,7 +379,7 @@ class GuardEngine(
                     grantValidUntilMillis = parseMillis(grant.validUntil) ?: grantValidUntilMillis
                     _grantSeconds.value = grant.remainingSeconds.toLong().coerceAtLeast(0)
                     _grantMinutes.value = grant.minutes
-                    lastHeartbeatMillis = System.currentTimeMillis()
+                    lastHeartbeatMillis = clock()
                     offline = false
                     GuardLog.i(
                         "grant",
@@ -447,7 +443,7 @@ class GuardEngine(
     }
 
     private fun recordOfflineTick() {
-        val now = System.currentTimeMillis()
+        val now = clock()
         val currentLease = lease ?: return
         if (currentLease.expiresAtMillis in 1..now) return
         val existing = pending
@@ -525,7 +521,7 @@ class GuardEngine(
         val remaining = _grantSeconds.value
         if (remaining <= 0) return false
         val validUntil = grantValidUntilMillis
-        return validUntil <= 0 || validUntil > System.currentTimeMillis()
+        return validUntil <= 0 || validUntil > clock()
     }
 
     private suspend fun persist() {
