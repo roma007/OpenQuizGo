@@ -11,7 +11,7 @@
 
 ## 1. 结论
 
-**通过。** 除「权限被撤销→篡改上报」未能在本次会话中触发外，其余主链路均在模拟器上完成端到端验证，TV、服务端数据库与家长端接口三侧数据一致。
+**通过。** 主链路均在模拟器上完成端到端验证，TV、服务端数据库与家长端接口三侧数据一致；权限撤销→篡改上报已通过「使用情况访问」验证，无障碍撤销路径受模拟器进程回收影响未复现（见第 4 节）。
 
 ## 2. 分步结果
 
@@ -133,6 +133,19 @@ unlock_minutes=5, pass_threshold=1, time_window=07:00–21:00
 
 - 服务端 `device_diagnostic` 新增记录：`note="manual upload from TV"`。
 
+### 2.9 权限撤销与篡改上报
+
+- 在应用运行中关闭「使用情况访问」：
+
+```text
+13:30:40 POST /v1/device/tamper → 200
+13:30:40 OQG_GUARD: tamper reported type=permission_revoked detail={permission=usage_stats}
+13:30:40 PUT /v1/device/capability → 200
+```
+
+- `tamper_event` 新增 `permission_revoked / usage_stats`；
+- 家长端告警接口返回未读告警 1 条，含孩子与设备信息。
+
 ## 3. 截图
 
 | 步骤 | 截图 |
@@ -148,7 +161,7 @@ unlock_minutes=5, pass_threshold=1, time_window=07:00–21:00
 
 ## 4. 未覆盖与限制
 
-- **篡改上报未触发**：模拟器上关闭无障碍后，`permission_revoked` 未写入 `tamper_event`；应用重启会重置 `lastAccessibility` 基线，需在同一进程内从「已授权」切到「已撤销」并等待 3 秒轮询，本次未稳定复现，留待后续专项验证。
+- **无障碍撤销未稳定触发**：关闭「使用情况访问」可正常上报；但在模拟器上直接移除无障碍服务时，守护进程被系统回收，未发出 `permission_revoked / accessibility`。该路径以真机 2026-11-04 的历史上报记录为准，模拟器暂不作为结论依据。
 - **触摸注入无效**：本机模拟器无法通过 `adb shell input tap` 触发 Compose 按钮，全部操作改用方向键 + 确认键完成，因此未验证触摸交互。
 - **误触重置绑定**：导航过程中曾误触「重置绑定」，已重新激活并继续；不影响上述结论。
 - 媒体播放由 `app_process` + `AudioTrack` 模拟，并非真实视频 App；真实播放器识别仍以真机 074 结论为准。
