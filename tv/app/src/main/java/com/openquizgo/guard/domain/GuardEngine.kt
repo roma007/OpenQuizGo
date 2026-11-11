@@ -73,6 +73,9 @@ class GuardEngine(
     @Volatile
     private var reportingPending = false
 
+    @Volatile
+    private var syncingGrant = false
+
     init {
         scope.launch { restore() }
         scope.launch {
@@ -111,6 +114,12 @@ class GuardEngine(
             while (isActive) {
                 delay(HEARTBEAT_INTERVAL_MS)
                 heartbeat()
+            }
+        }
+        scope.launch {
+            while (isActive) {
+                delay(UNLOCK_POLL_INTERVAL_MS)
+                pollUnlockGrant()
             }
         }
         scope.launch {
@@ -337,55 +346,80 @@ class GuardEngine(
         }
     }
 
-    private suspend fun syncActiveGrant() {
+    /**
+     * 待答题状态下轮询家长新签发的授权。
+     *
+     * 进入 QUIZ_REQUIRED 且本地无可用授权时，心跳会提前返回；若不单独轮询，
+     * 家长远程解锁要等孩子答题或设备重启才生效。
+     */
+    private suspend fun pollUnlockGrant() {
+        if (_state.value != GuardState.QUIZ_REQUIRED) return
+        if (grantId != null && hasUsableGrant()) return
+        syncActiveGrant(quiet = true)
+    }
+
+    private suspend fun syncActiveGrant(quiet: Boolean = false) {
         if (_state.value == GuardState.UNBOUND || _state.value == GuardState.QUIZZING) return
-        runCatching { watchRepository.activeGrant() }
-            .onSuccess { grant ->
-                if (grant == null) {
-                    GuardLog.w("no active grant")
-                    if (grantId != null) {
-                        grantId = null
-                        _grantSeconds.value = 0
-                        preferences.saveStoredGrant(null)
+        if (syncingGrant) return
+        syncingGrant = true
+        try {
+            runCatching { watchRepository.activeGrant() }
+                .onSuccess { grant ->
+                    if (grant == null) {
+                        if (!quiet) GuardLog.w("no active grant")
+                        if (grantId != null) {
+                            grantId = null
+                            _grantSeconds.value = 0
+                            preferences.saveStoredGrant(null)
+                        }
+                        if (foregroundDetector.state.value.mediaActive &&
+                            _state.value != GuardState.QUIZ_REQUIRED
+                        ) {
+                            transition(GuardState.QUIZ_REQUIRED)
+                        }
+                        return@onSuccess
                     }
-                    if (foregroundDetector.state.value.mediaActive &&
-                        _state.value != GuardState.QUIZ_REQUIRED
+                    grantId = grant.grantId
+                    grantValidUntilMillis = parseMillis(grant.validUntil) ?: grantValidUntilMillis
+                    _grantSeconds.value = grant.remainingSeconds.toLong().coerceAtLeast(0)
+                    _grantMinutes.value = grant.minutes
+                    lastHeartbeatMillis = System.currentTimeMillis()
+                    offline = false
+                    GuardLog.i(
+                        "grant",
+                        "refreshed id=${grant.grantId} remaining=${grant.remainingSeconds} " +
+                            "status=${grant.status} quiet=$quiet",
+                    )
+                    preferences.saveStoredGrant(
+                        StoredGrant(
+                            grantId = grant.grantId,
+                            minutes = grant.minutes,
+                            remainingSeconds = grant.remainingSeconds,
+                            validUntilMillis = grantValidUntilMillis,
+                        ),
+                    )
+                    if (_state.value == GuardState.QUIZ_REQUIRED) {
+                        // 媒体仍在播放时直接进入观看中，避免提示「按确认键继续观看」造成误解。
+                        if (foregroundDetector.state.value.mediaActive) {
+                            transition(GuardState.WATCHING)
+                        } else {
+                            transition(GuardState.GRANTED)
+                        }
+                    }
+                    reportPendingOffline()
+                }
+                .onFailure { error ->
+                    GuardLog.w("grant", "refresh failed: ${error.message}")
+                    offline = true
+                    if (error is com.openquizgo.guard.data.watch.WatchApiException &&
+                        error.httpStatus == 401
                     ) {
-                        transition(GuardState.QUIZ_REQUIRED)
-                    }
-                    return@onSuccess
-                }
-                grantId = grant.grantId
-                grantValidUntilMillis = parseMillis(grant.validUntil) ?: grantValidUntilMillis
-                _grantSeconds.value = grant.remainingSeconds.toLong().coerceAtLeast(0)
-                _grantMinutes.value = grant.minutes
-                lastHeartbeatMillis = System.currentTimeMillis()
-                offline = false
-                GuardLog.i(
-                    "grant",
-                    "refreshed id=${grant.grantId} remaining=${grant.remainingSeconds} " +
-                        "status=${grant.status}",
-                )
-                preferences.saveStoredGrant(
-                    StoredGrant(
-                        grantId = grant.grantId,
-                        minutes = grant.minutes,
-                        remainingSeconds = grant.remainingSeconds,
-                        validUntilMillis = grantValidUntilMillis,
-                    ),
-                )
-                if (_state.value == GuardState.QUIZ_REQUIRED) {
-                    transition(GuardState.GRANTED)
-                    if (foregroundDetector.state.value.mediaActive) {
-                        transition(GuardState.WATCHING)
+                        transition(GuardState.UNBOUND)
                     }
                 }
-                reportPendingOffline()
-            }
-            .onFailure { error ->
-                GuardLog.w("grant", "refresh failed: ${error.message}")
-                offline = true
-            }
+        } finally {
+            syncingGrant = false
+        }
     }
 
     private suspend fun refreshLease() {
@@ -526,6 +560,7 @@ class GuardEngine(
     companion object {
         private const val PENDING_RETRY_INTERVAL_MS = 5 * 60 * 1000L
         private const val HEARTBEAT_INTERVAL_MS = 30_000L
+        private const val UNLOCK_POLL_INTERVAL_MS = 10_000L
         private const val LEASE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000L
 
         fun parseMillis(iso: String?): Long? = runCatching {
