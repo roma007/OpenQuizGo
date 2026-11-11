@@ -12,5 +12,6 @@
 | 2026-11-08 | tv-ci Gradle 下载 504 时切换镜像重试 | CI/构建 | 官方分发包重定向 GitHub Releases 返回 504；同时修正 bash -e 导致重试未执行 | AI |
 | 2026-11-08 | 答题提示补充 90 秒自动答题与重播风险 | 文案/TV | 让用户提前知道不按 OK 的后果；TV 0.4.2 | AI |
 | 2026-11-11 | iOS Info.plist 声明 `ITSAppUsesNonExemptEncryption=false` | 构建/上架 | App 仅使用 HTTPS/系统 Keychain 标准加密，避免每次上传被要求提供加密文稿 | AI |
+| 2026-11-11 | 首页孩子卡片改为「身份信息 + 操作按钮」两行布局 | UI 优化 | 四个操作按钮挤压标题，iPhone 上副标题折行 | AI |
 
 类型：错别字 / 注释 / 文档 / 无行为变化修改

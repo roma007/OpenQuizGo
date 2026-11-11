@@ -82,15 +82,19 @@ class ChildPage extends ConsumerWidget {
                                       const SizedBox(height: 12),
                                   itemBuilder: (_, index) => cards[index],
                                 )
-                              : GridView.count(
+                              : GridView.builder(
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
                                   padding: const EdgeInsets.all(16),
-                                  crossAxisCount: columns,
-                                  mainAxisSpacing: 12,
-                                  crossAxisSpacing: 12,
-                                  childAspectRatio: 4.2,
-                                  children: cards,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: columns,
+                                        mainAxisSpacing: 12,
+                                        crossAxisSpacing: 12,
+                                        mainAxisExtent: 168,
+                                      ),
+                                  itemCount: cards.length,
+                                  itemBuilder: (_, index) => cards[index],
                                 ),
                         );
                       },
@@ -166,51 +170,141 @@ class _ChildCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
-        ),
-        leading: CircleAvatar(
-          radius: 26,
-          child: Text(
-            child.nickname.isEmpty ? '?' : child.nickname.substring(0, 1),
-            style: const TextStyle(fontSize: 20),
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onEdit,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 12, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    child: Text(
+                      child.nickname.isEmpty
+                          ? '?'
+                          : child.nickname.substring(0, 1),
+                      style: const TextStyle(fontSize: 19),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          child.nickname,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, color: colors.onSurfaceVariant),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ChildAction(
+                      icon: Icons.tips_and_updates_outlined,
+                      label: '推荐',
+                      tooltip: '练习推荐',
+                      onTap: onRecommendations,
+                    ),
+                  ),
+                  Expanded(
+                    child: _ChildAction(
+                      icon: Icons.sports_esports_outlined,
+                      label: '对战',
+                      tooltip: '亲子对战',
+                      onTap: onBattle,
+                    ),
+                  ),
+                  Expanded(
+                    child: _ChildAction(
+                      icon: Icons.quiz_outlined,
+                      label: '每日',
+                      tooltip: '每日一题',
+                      onTap: onDaily,
+                    ),
+                  ),
+                  Expanded(
+                    child: _ChildAction(
+                      icon: Icons.tune,
+                      label: '规则',
+                      tooltip: '观看规则',
+                      onTap: onRule,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        title: Text(
-          child.nickname,
-          style: Theme.of(context).textTheme.titleMedium,
+      ),
+    );
+  }
+}
+
+class _ChildAction extends StatelessWidget {
+  const _ChildAction({
+    required this.icon,
+    required this.label,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20, color: theme.colorScheme.primary),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
-        subtitle: Text(subtitle),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              tooltip: '练习推荐',
-              icon: const Icon(Icons.tips_and_updates_outlined),
-              onPressed: onRecommendations,
-            ),
-            IconButton(
-              tooltip: '亲子对战',
-              icon: const Icon(Icons.sports_esports_outlined),
-              onPressed: onBattle,
-            ),
-            IconButton(
-              tooltip: '每日一题',
-              icon: const Icon(Icons.quiz_outlined),
-              onPressed: onDaily,
-            ),
-            IconButton(
-              tooltip: '观看规则',
-              icon: const Icon(Icons.tune),
-              onPressed: onRule,
-            ),
-            const Icon(Icons.chevron_right),
-          ],
-        ),
-        onTap: onEdit,
       ),
     );
   }
