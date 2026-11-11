@@ -11,7 +11,7 @@
 
 ## 1. 结论
 
-**通过。** 主链路均在模拟器上完成端到端验证，TV、服务端数据库与家长端接口三侧数据一致；权限撤销→篡改上报已通过「使用情况访问」验证，无障碍撤销路径受模拟器进程回收影响未复现（见第 4 节）。
+**通过。** 主链路均在模拟器上完成端到端验证，TV、服务端数据库与家长端接口三侧数据一致；权限撤销→篡改上报对「使用情况访问」与「无障碍」两条路径均已验证。
 
 ## 2. 分步结果
 
@@ -143,8 +143,15 @@ unlock_minutes=5, pass_threshold=1, time_window=07:00–21:00
 13:30:40 PUT /v1/device/capability → 200
 ```
 
-- `tamper_event` 新增 `permission_revoked / usage_stats`；
-- 家长端告警接口返回未读告警 1 条，含孩子与设备信息。
+- 在应用运行中移除无障碍服务：
+
+```text
+13:33:56 OQG_GUARD: tamper reported type=permission_revoked detail={permission=accessibility}
+13:33:56 PUT /v1/device/capability → 200
+```
+
+- `tamper_event` 新增 `permission_revoked / usage_stats` 与 `permission_revoked / accessibility` 两条记录；
+- 家长端告警接口返回未读告警，含孩子与设备信息。
 
 ## 3. 截图
 
@@ -161,7 +168,6 @@ unlock_minutes=5, pass_threshold=1, time_window=07:00–21:00
 
 ## 4. 未覆盖与限制
 
-- **无障碍撤销未稳定触发**：关闭「使用情况访问」可正常上报；但在模拟器上直接移除无障碍服务时，守护进程被系统回收，未发出 `permission_revoked / accessibility`。该路径以真机 2026-11-04 的历史上报记录为准，模拟器暂不作为结论依据。
 - **触摸注入无效**：本机模拟器无法通过 `adb shell input tap` 触发 Compose 按钮，全部操作改用方向键 + 确认键完成，因此未验证触摸交互。
 - **误触重置绑定**：导航过程中曾误触「重置绑定」，已重新激活并继续；不影响上述结论。
 - 媒体播放由 `app_process` + `AudioTrack` 模拟，并非真实视频 App；真实播放器识别仍以真机 074 结论为准。
