@@ -9,8 +9,8 @@ void main() {
       const ProviderScope(child: MaterialApp(home: LoginScreen())),
     );
 
-    expect(find.text('OpenQuizGo'), findsOneWidget);
-    expect(find.text('家长端'), findsOneWidget);
+    expect(find.text('电视时间管家'), findsOneWidget);
+    expect(find.text('帮孩子管好电视时间'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, '登录'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(FilledButton, '登录'));

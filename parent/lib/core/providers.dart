@@ -20,8 +20,13 @@ import 'storage/token_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 final tokenStoreProvider = Provider<TokenStore>((ref) => SecureTokenStore());
+
+final packageInfoProvider = FutureProvider<PackageInfo>(
+  (ref) => PackageInfo.fromPlatform(),
+);
 
 final cacheStoreProvider = Provider<CacheStore>((ref) => CacheStore());
 

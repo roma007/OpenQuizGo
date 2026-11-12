@@ -114,7 +114,7 @@
 - 服务端：Go 1.25（模块化单体）、PostgreSQL、Redis
 - 迁移：goose（SQL 内嵌，单二进制）
 - 电视端：Android TV（Kotlin + Compose for TV）
-- 家长端：Flutter（Android / iOS / iPad 自适应）
+- 家长端：Flutter（Android / iOS / iPad 自适应），应用名「电视时间管家」
 
 ## 目录结构
 

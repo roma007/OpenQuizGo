@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/config.dart';
 import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/membership_repository.dart';
@@ -16,6 +15,9 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final membership = ref.watch(membershipCenterProvider).value?.membership;
+    final packageInfo = ref
+        .watch(packageInfoProvider)
+        .whenOrNull(data: (value) => value);
     final membershipSubtitle = membership?.active == true
         ? '${membership!.planName} · 有效期至 ${formatDate(membership.expiresAt)}'
         : membership?.status == 'expired'
@@ -85,7 +87,12 @@ class SettingsPage extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('关于'),
-              subtitle: Text('OpenQuizGo 家长端 ${AppConfig.appVersion}'),
+              subtitle: Text(
+                packageInfo == null
+                    ? '电视时间管家'
+                    : '电视时间管家 v${packageInfo.version} '
+                          '(${packageInfo.buildNumber})',
+              ),
             ),
           ),
           const SizedBox(height: 24),

@@ -90,14 +90,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'OpenQuizGo',
+                      '电视时间管家',
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text('家长端', style: theme.textTheme.titleMedium),
+                    Text('帮孩子管好电视时间', style: theme.textTheme.titleMedium),
                     const SizedBox(height: 32),
                     TextFormField(
                       controller: _phone,
