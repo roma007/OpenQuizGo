@@ -1,9 +1,21 @@
-# OpenQuizGo 守护端（Android TV）
+# 电视时间管家（Android TV 本地版）
 
 正式电视端工程。包名 `com.openquizgo.quiz`（`namespace` 仍为 `com.openquizgo.guard`）。
 
 > 创维等机型会拦截部分包名/新包安装，`com.openquizgo.guard`、`com.openquizgo.tv` 实测会被
 > `INSTALL_FAILED_USER_RESTRICTED` 拦截；`com.openquizgo.quiz` 可安装。若更换包名需重新实测。
+
+## 当前模式（077）
+
+- **完全离线**：不连接服务器、不需要激活、不需要家长端；安装并开启无障碍服务后即可使用。
+- 内置 120 道本地单选题（`app/src/main/assets/questions.json`），不按学龄筛选，全部混合随机出题。
+- 首页只有一个开关「定时答题」，默认开启。
+- 累计视频播放 **15 分钟**自动弹出 1 道题：
+  - 答对：显示解析，点「继续观看」退出，计时清零；
+  - 答错：停留本题，返回键无效，直到答对；
+  - 切到桌面/关闭答题界面：守护服务看门狗会自动重新拉起。
+- 关闭开关后不再弹题；重新开启后从 0 开始计时。
+- 开关状态与累计秒数保存在本地 DataStore，重启后恢复。
 
 ## 构建
 
@@ -11,21 +23,12 @@
 cd tv
 ./gradlew :app:assembleDebug
 # 产物：app/build/outputs/apk/debug/app-debug.apk
+
+./gradlew :app:assembleRelease
+# 产物：app/build/outputs/apk/release/app-release.apk
 ```
 
-API 地址默认 `http://192.168.1.27:8080/`，可通过 Gradle 属性覆盖。
-
-### 本地联调（推荐 adb reverse）
-
-部分电视/防火墙会阻止电视反向访问开发机，用 `adb reverse` 把电视的
-localhost 映射到开发机，可绕过该问题：
-
-```bash
-adb reverse tcp:18080 tcp:18080
-./gradlew :app:assembleDebug -PapiBaseUrl=http://127.0.0.1:18080/
-```
-
-debug 构建通过 `src/debug/AndroidManifest.xml` 允许明文 HTTP；release 必须使用 HTTPS。
+不再需要 `-PapiBaseUrl`，也没有明文 HTTP 配置。
 
 ## 测试
 
@@ -33,7 +36,9 @@ debug 构建通过 `src/debug/AndroidManifest.xml` 允许明文 HTTP；release �
 ./gradlew :app:testDebugUnitTest
 ```
 
-## 安装
+覆盖：15 分钟计时、暂停不计时、答对清零、开关关闭、恢复累计时间、题库结构（120 题、4 选项、答案合法）。
+
+## 安装与调试
 
 ```bash
 adb connect <TV_IP>:5555
@@ -47,28 +52,41 @@ adb shell pm install -r -d /data/local/tmp/q.apk
 adb shell am start -n com.openquizgo.quiz/com.openquizgo.guard.ui.MainActivity
 ```
 
-## 当前进度
+### 立即触发答题（仅 debug）
 
-- P2-T1 工程骨架：Compose for TV、DataStore、Retrofit、手工 DI、CI
-- P2-T2 设备激活：激活码、轮询绑定、令牌持久化、重置、离线缓存
-- P2-T3 前台识别：无障碍事件 + UsageStats 校正 + 媒体计时 + 诊断页
-- P2-T4 守护状态机：前台服务、启动恢复、60s 演示阈值触发需要答题
-- P2-T5 答题接管：确认键暂停 + 半透明答题 + 无广告/进度保留
-- P2-T6 服务端答题：会话创建、逐题判分、结算授权、断线恢复
-- P2-T7 授权心跳：本地倒计时、30s 心跳、暂停不计量、离线补报
-- P2-T8 阻挡与看门狗：全屏阻挡、HOME 重拉、家长解锁、90s 超时回退
-- P2-T9 权限与诊断：权限向导、自检、能力/篡改上报、最近日志
-- 下一步 P2-T10：机型/App 矩阵测试
+```bash
+adb shell am broadcast \
+  -a com.openquizgo.guard.DEBUG_FORCE_QUIZ \
+  -n com.openquizgo.quiz/com.openquizgo.guard.debug.DebugReceiver
+```
 
-> 注意：创维机型更新 APK 后会注销无障碍服务，需重启电视或从设置重新开启。
+### 关键权限
+
+- **无障碍服务**：用于到点自动拉起答题界面。未开启时首页会提示，无法自动弹题。
+- 不再需要「使用情况访问」与网络权限。
+
+> 注意：部分机型更新 APK 后会注销无障碍服务，需重启电视或从设置重新开启。
 
 ## 目录
 
 ```
-app/src/main/java/com/openquizgo/guard/
-├── GuardApplication.kt
-├── di/AppContainer.kt
-├── data/local/GuardPreferences.kt
-├── data/remote/GuardApi.kt, ApiFactory.kt
-└── ui/MainActivity.kt
+app/src/main/
+├── assets/questions.json                  # 本地题库
+├── java/com/openquizgo/guard/
+│   ├── GuardApplication.kt
+│   ├── di/AppContainer.kt
+│   ├── data/local/QuestionBank.kt         # 题库加载与随机取题
+│   ├── data/local/LocalSettings.kt        # 开关与计时持久化
+│   ├── data/foreground/MediaPlaybackDetector.kt
+│   ├── domain/LocalGuardEngine.kt         # 本地状态机
+│   ├── platform/GuardService.kt           # 前台服务 + 看门狗
+│   ├── platform/GuardAccessibilityService.kt
+│   └── ui/MainActivity.kt, QuizActivity.kt
+└── res/xml/guard_accessibility.xml
 ```
+
+## 题库维护
+
+题库为普通 JSON，字段与约束见
+[`docs/design/077-TV本地题库与定时答题设计.md`](../docs/design/077-TV本地题库与定时答题设计.md)。
+替换 `assets/questions.json` 后重新构建 APK 即可，无需改代码。

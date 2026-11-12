@@ -13,9 +13,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.widget.Toast
 import com.openquizgo.guard.GuardApplication
-import com.openquizgo.guard.data.foreground.ForegroundState
-import com.openquizgo.guard.domain.GuardState
-import com.openquizgo.guard.ui.BlockerActivity
+import com.openquizgo.guard.domain.LocalGuardState
 import com.openquizgo.guard.ui.MainActivity
 import com.openquizgo.guard.ui.QuizActivity
 import kotlinx.coroutines.CoroutineScope
@@ -23,55 +21,48 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+/**
+ * 前台守护服务（本地模式）。
+ *
+ * 观察本地状态机：累计播放满 15 分钟进入 QUIZ_REQUIRED 后拉起答题界面；
+ * 看门狗在答题界面被切走/关闭时重新拉起，确保「答对前不能继续看」。
+ */
 class GuardService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val mainHandler = Handler(Looper.getMainLooper())
     private var stateJob: Job? = null
-    private var promptJob: Job? = null
     private var watchdogJob: Job? = null
-    private var engine: com.openquizgo.guard.domain.GuardEngine? = null
-    private var quizRequiredSince = 0L
-    private var lastGuardLaunchAt = 0L
+    private var engine: com.openquizgo.guard.domain.LocalGuardEngine? = null
+    private var lastQuizLaunchAt = 0L
+    private var quizNotified = false
 
     override fun onCreate() {
         super.onCreate()
-        GuardLog.i("service", "guard service created")
+        GuardLog.i("service", "local guard service created")
         createChannel()
-        startForeground(NOTIFICATION_ID, buildNotification("守护端启动中"))
-        val container = (application as GuardApplication).container
-        engine = container.guardEngine
-        scope.launch {
-            delay(1_500)
-            container.diagnosticsReporter.reportCapabilityNow()
-        }
+        startForeground(NOTIFICATION_ID, buildNotification("启动中"))
+        engine = (application as GuardApplication).container.guardEngine
         stateJob = scope.launch {
-            engine?.state?.collect { state ->
-                updateNotification(label(state))
+            combine(engine!!.enabled, engine!!.state) { enabled, state ->
+                enabled to state
+            }.collect { (enabled, state) ->
+                updateNotification(label(enabled, state))
                 when (state) {
-                    GuardState.QUIZ_REQUIRED -> {
-                        if (quizRequiredSince == 0L) quizRequiredSince = System.currentTimeMillis()
-                        startPromptLoop()
+                    LocalGuardState.QUIZ_REQUIRED -> {
+                        if (!quizNotified) {
+                            quizNotified = true
+                            toast("答题时间到，答对后继续观看")
+                        }
+                        launchQuiz()
                     }
-                    GuardState.BLOCKED -> {
-                        quizRequiredSince = 0L
-                        promptJob?.cancel()
-                        GuardAccessibilityService.disarmQuiz()
-                        launchBlocker()
-                    }
-                    GuardState.GRANTED -> {
-                        quizRequiredSince = 0L
-                        promptJob?.cancel()
-                        GuardAccessibilityService.disarmQuiz()
-                        toast("按确认键继续观看")
-                    }
+                    LocalGuardState.QUIZZING -> Unit
                     else -> {
-                        quizRequiredSince = 0L
-                        promptJob?.cancel()
-                        GuardAccessibilityService.disarmQuiz()
+                        quizNotified = false
                     }
                 }
             }
@@ -86,65 +77,31 @@ class GuardService : Service() {
 
     private fun watchdogTick() {
         val current = engine?.state?.value ?: return
-        val foreground = (application as GuardApplication).container.foregroundDetector.state.value
-        when (current) {
-            GuardState.BLOCKED -> {
-                if (blockerEscaped(foreground) && !BlockerActivity.isShowing &&
-                    nowSinceLaunch() > GUARD_RELAUNCH_GAP_MS
-                ) {
-                    GuardLog.w("watchdog: blocker missing pkg=${foreground.packageName}")
-                    launchBlocker()
-                }
-            }
-            GuardState.QUIZ_REQUIRED -> {
-                if (!Permissions.accessibilityEnabled(this) ||
-                    !GuardAccessibilityService.isConnected()
-                ) {
-                    return
-                }
-                GuardAccessibilityService.armQuiz()
-                val waited = System.currentTimeMillis() - quizRequiredSince
-                if (waited > QUIZ_FALLBACK_MS && guardTarget(foreground) &&
-                    nowSinceLaunch() > GUARD_RELAUNCH_GAP_MS
-                ) {
-                    GuardLog.w("watchdog: quiz fallback after ${waited}ms")
-                    launchQuiz()
-                }
-            }
-            else -> Unit
+        if (current != LocalGuardState.QUIZ_REQUIRED &&
+            current != LocalGuardState.QUIZZING
+        ) {
+            return
         }
-    }
-
-    /** 阻挡态：除家长需要的系统设置外，任何前台都重新拉起阻挡页。 */
-    private fun blockerEscaped(foreground: ForegroundState): Boolean {
-        val pkg = foreground.packageName ?: return false
-        if (pkg == packageName) return false
-        return pkg !in ALLOWED_WHILE_BLOCKED
-    }
-
-    private fun guardTarget(foreground: ForegroundState): Boolean {
-        val pkg = foreground.packageName ?: return false
-        if (pkg == packageName) return false
-        if (pkg in IGNORED_PACKAGES) return false
-        return foreground.mediaActive || pkg in MEDIA_PACKAGES
-    }
-
-    private fun nowSinceLaunch(): Long = System.currentTimeMillis() - lastGuardLaunchAt
-
-    private fun launchBlocker() {
-        lastGuardLaunchAt = System.currentTimeMillis()
-        val intent = Intent(this, BlockerActivity::class.java)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        runCatching { startActivity(intent) }
-            .onFailure { GuardLog.e("service", "blocker launch failed", it) }
+        if (QuizActivity.isShowing) return
+        if (System.currentTimeMillis() - lastQuizLaunchAt < RELAUNCH_GAP_MS) return
+        GuardLog.w("watchdog", "quiz activity missing, relaunch")
+        launchQuiz()
     }
 
     private fun launchQuiz() {
-        lastGuardLaunchAt = System.currentTimeMillis()
+        lastQuizLaunchAt = System.currentTimeMillis()
+        if (GuardAccessibilityService.launchQuizActivity()) {
+            GuardLog.i("service", "quiz launched via accessibility")
+            return
+        }
+        GuardLog.w("service", "accessibility unavailable, fallback startActivity")
         val intent = Intent(this, QuizActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         runCatching { startActivity(intent) }
-            .onFailure { GuardLog.e("service", "quiz launch failed", it) }
+            .onFailure {
+                GuardLog.e("service", "quiz launch failed", it)
+                toast("请开启无障碍服务，否则无法自动弹出答题")
+            }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -159,29 +116,6 @@ class GuardService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun startPromptLoop() {
-        promptJob?.cancel()
-        promptJob = scope.launch {
-            var warned = false
-            while (isActive) {
-                if (Permissions.accessibilityEnabled(this@GuardService) &&
-                    GuardAccessibilityService.isConnected()
-                ) {
-                    toast("按确认键开始答题\n90 秒未按将自动答题；返回播放可能从头开始")
-                    GuardAccessibilityService.armQuiz()
-                    GuardLog.i("quiz required, armed for confirm key")
-                    return@launch
-                }
-                if (!warned) {
-                    toast("请开启无障碍服务以开始答题")
-                    GuardLog.w("quiz required but accessibility not ready")
-                    warned = true
-                }
-                delay(2_000)
-            }
-        }
-    }
-
     private fun toast(message: String) {
         mainHandler.post {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
@@ -193,7 +127,7 @@ class GuardService : Service() {
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "守护服务",
+            "定时答题",
             NotificationManager.IMPORTANCE_LOW,
         )
         manager.createNotificationChannel(channel)
@@ -212,8 +146,8 @@ class GuardService : Service() {
             Notification.Builder(this)
         }
         return builder
-            .setSmallIcon(android.R.drawable.ic_lock_lock)
-            .setContentTitle("OpenQuizGo 守护中")
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle("电视时间管家 · 定时答题")
             .setContentText(text)
             .setContentIntent(pending)
             .setOngoing(true)
@@ -225,51 +159,22 @@ class GuardService : Service() {
         manager.notify(NOTIFICATION_ID, buildNotification(text))
     }
 
-    private fun label(state: GuardState): String = when (state) {
-        GuardState.UNBOUND -> "设备未激活"
-        GuardState.IDLE -> "空闲"
-        GuardState.WATCHING -> "观看中"
-        GuardState.QUIZ_REQUIRED -> "需要答题：按确认键开始（90 秒未按将自动答题）"
-        GuardState.QUIZZING -> "答题中"
-        GuardState.GRANTED -> "已授权"
-        GuardState.BLOCKED -> "已锁定"
+    private fun label(enabled: Boolean, state: LocalGuardState): String {
+        if (!enabled) return "已关闭，不会弹出答题"
+        return when (state) {
+            LocalGuardState.IDLE -> "已开启 · 等待视频播放"
+            LocalGuardState.WATCHING -> "已开启 · 正在累计观看时间"
+            LocalGuardState.QUIZ_REQUIRED -> "答题时间到"
+            LocalGuardState.QUIZZING -> "答题中，答对后继续"
+            LocalGuardState.GRANTED -> "回答正确，继续观看"
+        }
     }
 
     companion object {
-        private const val CHANNEL_ID = "guard_service"
+        private const val CHANNEL_ID = "local_quiz"
         private const val NOTIFICATION_ID = 1001
-        private const val WATCHDOG_INTERVAL_MS = 1_500L
-        private const val GUARD_RELAUNCH_GAP_MS = 2_000L
-        private const val QUIZ_FALLBACK_MS = 90_000L
-
-        private val MEDIA_PACKAGES = setOf(
-            "com.tianci.movieplatform",
-            "com.tianci.localmedia",
-            "com.tianci.videoplayer",
-            "com.qiyi.video",
-            "com.tencent.qqlive",
-            "com.youku.tv",
-            "tv.danmaku.bili",
-        )
-
-        private val IGNORED_PACKAGES = setOf(
-            "com.tianci.system",
-            "com.android.settings",
-            "com.android.systemui",
-            "com.android.tv.settings",
-            "com.skyworth.setting",
-            "com.skyworth.settings",
-            "com.tianci.launcher",
-        )
-
-        private val ALLOWED_WHILE_BLOCKED = setOf(
-            "com.android.settings",
-            "com.android.systemui",
-            "com.android.tv.settings",
-            "com.skyworth.setting",
-            "com.skyworth.settings",
-            "com.tianci.system",
-        )
+        private const val WATCHDOG_INTERVAL_MS = 2_000L
+        private const val RELAUNCH_GAP_MS = 3_000L
 
         fun start(context: Context) {
             val intent = Intent(context, GuardService::class.java)

@@ -13,16 +13,8 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 104
-        versionName = "1.0.4"
-        val apiBaseUrl = providers.gradleProperty("apiBaseUrl")
-            .orElse("http://192.168.1.27:8080/")
-            .get()
-        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
-        val expectedSignature = providers.gradleProperty("expectedSignature")
-            .orElse("")
-            .get()
-        buildConfigField("String", "EXPECTED_SIGNATURE", "\"$expectedSignature\"")
+        versionCode = 105
+        versionName = "1.0.5"
     }
 
     // 生产签名：在仓库根目录放置 keystore.properties（已 gitignore），否则回退 debug 签名仅供内部验收。
@@ -90,11 +82,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    // JVM 单测使用真实 org.json 实现解析题库（Android 运行时使用系统内置实现）。
+    testImplementation("org.json:json:20240303")
 }
