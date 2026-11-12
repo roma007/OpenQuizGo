@@ -96,6 +96,7 @@
 - ✅ 073 TV 对战题媒体与 SSE（v0.65.0，TV 0.4.1；提示文案 v0.65.1，TV 0.4.2）
 - ✅ 074 TV 待答题状态感知家长解锁（v0.65.2，TV 0.4.3）
 - ✅ 075 GuardEngine 可测性重构与单测（v0.65.3，TV 0.4.4）
+- ✅ 076 iOS 与 iPad 自适应（v1.0.2，家长端 1.0.2）
 - ✅ OpenAPI 契约同步 009–022（v0.23.0，文档）
 
 **第一期服务端已交付**：验收报告见 [`docs/acceptance/phase1.md`](docs/acceptance/phase1.md)。
@@ -113,7 +114,7 @@
 - 服务端：Go 1.25（模块化单体）、PostgreSQL、Redis
 - 迁移：goose（SQL 内嵌，单二进制）
 - 电视端：Android TV（Kotlin + Compose for TV）
-- 家长端：Flutter
+- 家长端：Flutter（Android / iOS / iPad 自适应）
 
 ## 目录结构
 
@@ -154,6 +155,23 @@ curl localhost:8080/healthz
 curl localhost:8080/readyz
 curl localhost:8080/v1/meta
 ```
+
+## 家长端（Flutter / iOS）
+
+前置：Flutter 3.44+、Xcode 26+、CocoaPods。
+
+```bash
+cd parent
+flutter pub get
+flutter run -d "iPad Pro 13-inch (M4)"   # 任选 iPhone / iPad 模拟器
+flutter test
+flutter build ios --simulator --debug
+flutter build ios --release --no-codesign
+```
+
+- iPad 使用侧边导航；窗口宽度变化（旋转、Split View、Stage Manager）会自动重排。
+- iOS 真机签名、TestFlight 与 App Store 上架仍需 Apple 开发者证书（外部阻塞）。
+- 重新生成 iOS 图标与启动图：`swift tool/generate_ios_assets.swift`。
 
 ## 常用命令
 

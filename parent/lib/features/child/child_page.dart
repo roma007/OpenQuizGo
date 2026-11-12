@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/models.dart';
+import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/family_repository.dart';
 import '../battle/battle_page.dart';
@@ -50,11 +51,7 @@ class ChildPage extends ConsumerWidget {
                   ? _EmptyView(onCreate: () => _openEditor(context, ref))
                   : LayoutBuilder(
                       builder: (context, constraints) {
-                        final columns = constraints.maxWidth >= 1400
-                            ? 3
-                            : constraints.maxWidth >= 900
-                            ? 2
-                            : 1;
+                        final columns = gridColumns(constraints.maxWidth);
                         final cards = [
                           for (final child in items)
                             _ChildCard(

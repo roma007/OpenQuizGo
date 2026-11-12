@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/models.dart';
+import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../core/storage/pending_unlock_store.dart';
 import '../../data/device_repository.dart';
@@ -48,11 +49,7 @@ class DevicePage extends ConsumerWidget {
               }
               return LayoutBuilder(
                 builder: (context, constraints) {
-                  final columns = constraints.maxWidth >= 1400
-                      ? 3
-                      : constraints.maxWidth >= 900
-                      ? 2
-                      : 1;
+                  final columns = gridColumns(constraints.maxWidth);
                   final cards = [
                     for (final device in items)
                       _deviceCard(context, ref, device),

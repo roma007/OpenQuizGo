@@ -111,5 +111,6 @@ node scripts/archive-conversation.mjs --all
 | 073 | TV 对战媒体与 SSE | [设计](design/073-TV对战媒体与SSE设计.md) | [计划](plans/073-TV对战媒体与SSE实施计划.md) | done（v0.65.0，TV 0.4.1；提示文案 v0.65.1，TV 0.4.2） |
 | 074 | TV 待答题状态感知家长解锁 | [设计](design/074-TV待答题感知家长解锁设计.md) | [计划](plans/074-TV待答题感知家长解锁实施计划.md) | done（v0.65.2，TV 0.4.3） |
 | 075 | GuardEngine 可测性重构 | [设计](design/075-GuardEngine可测性重构设计.md) | [计划](plans/075-GuardEngine可测性重构实施计划.md) | done（v0.65.3，TV 0.4.4） |
+| 076 | iOS 与 iPad 适配 | [设计](design/076-iOS与iPad适配设计.md) | [计划](plans/076-iOS与iPad适配实施计划.md) | done（v1.0.2，家长端 1.0.2） |
 
 > 新增设计/计划后，请同步更新此表。

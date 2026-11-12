@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/models.dart';
+import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../data/report_repository.dart';
 import '../../data/rule_repository.dart';
@@ -169,7 +170,8 @@ class _ReportBody extends ConsumerWidget {
         ];
         return LayoutBuilder(
           builder: (context, constraints) {
-            final wide = constraints.maxWidth >= 1000 && items.length > 1;
+            final wide =
+                constraints.maxWidth >= Breakpoints.twoPane && items.length > 1;
             if (wide) {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
