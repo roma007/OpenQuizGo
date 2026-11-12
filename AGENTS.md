@@ -41,6 +41,23 @@
 
 **例外（轻量变更）**：错别字、注释、纯文档修正、无行为变化的单行修改，可免设计与计划，但必须在 `docs/plans/BACKLOG.md` 登记一行（日期 / 内容 / 原因）。
 
+### 铁律 3：每次提交必须升级版本（1.0.X）
+
+- 全项目统一版本号为 `1.0.X`（主版本 1、次版本 0、修订号 X），**每提交一次，X 加 1**，从 `1.0.0` 起单调递增；禁止回退、复用或跳号。
+- **唯一真源**是仓库根目录 `VERSION`，其它位置由脚本同步，不得手工改出不一致：
+  - `VERSION` → `1.0.X`
+  - `tv/app/build.gradle.kts` → `versionName = "1.0.X"`、`versionCode = 100 + X`
+  - `parent/pubspec.yaml` → `version: 1.0.X+<100 + X>`
+  - 服务端发布时在部署环境显式设置 `APP_VERSION=v1.0.X`
+- **自动化（默认生效）**：
+  - 每台开发机执行一次 `make hooks`（即 `git config core.hooksPath scripts/git-hooks`）。
+  - `scripts/git-hooks/pre-commit` 在每次提交前调用 `scripts/bump-version.mjs`，自增版本并自动暂存 `VERSION`、TV、家长端三处。
+  - 手动检查：`node scripts/bump-version.mjs --dry-run`；手动升级：`node scripts/bump-version.mjs`。
+- **跳过仅限紧急情况**：`OQG_SKIP_VERSION_BUMP=1 git commit ...`。使用后必须在提交说明中写明原因，并在下一次提交补齐版本。
+- **发布**：发布提交必须打 tag `v1.0.X`（与 `VERSION` 完全一致），随后同步两个远端。
+- 文档、截图等非代码提交同样按本规则自增；历史文档中的 `v0.65.x` 等旧版本号是既有记录，保留不改写。
+- 任何一次提交后，`git show HEAD:VERSION` 必须与 tag、TV `versionName`、家长端 `version` 一致。
+
 ---
 
 ## 二、文档体系
@@ -105,5 +122,6 @@ docs/
   git push gitee main:master
   ```
 - 不要在单一远端上产生分叉；如发生冲突，先在本地合并解决，再同时推送。
+- 版本号与 tag 规则见「铁律 3：每次提交必须升级版本（1.0.X）」。
 - 公开仓库注意：归档前若对话含密钥、口令、个人信息，先用 `--sanitize` 归档并复查 `docs/conversations/raw/`，敏感内容不得提交。
 

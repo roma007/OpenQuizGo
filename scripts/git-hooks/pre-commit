@@ -1,0 +1,18 @@
+#!/bin/sh
+# 铁律 3：每次提交自动升级版本（1.0.X）。
+#
+# 安装：make hooks
+# 临时跳过：OQG_SKIP_VERSION_BUMP=1 git commit ...
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+if [ "${OQG_SKIP_VERSION_BUMP:-0}" = "1" ]; then
+  echo "[version] 已按 OQG_SKIP_VERSION_BUMP=1 跳过版本升级"
+  exit 0
+fi
+
+node scripts/bump-version.mjs
+
+git add VERSION tv/app/build.gradle.kts parent/pubspec.yaml
