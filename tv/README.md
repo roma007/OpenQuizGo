@@ -40,6 +40,16 @@ cd tv
 
 ## 安装与调试
 
+安装后必须启动一次 App（Android 新装应用的 stopped 状态限制），之后即可后台常驻并在开机时自启。
+可以使用一键脚本：
+
+```bash
+# 安装 -> 无界面初始化（不显示 App 界面）；ENABLE_A11Y=1 同时通过 adb 开启无障碍
+ENABLE_A11Y=1 ./scripts/install_and_start.sh
+```
+
+手动安装：
+
 ```bash
 adb connect <TV_IP>:5555
 adb install -r app/build/outputs/apk/debug/app-debug.apk
