@@ -3,7 +3,7 @@
 > 服务器：`ecs-user@8.163.122.39`（华南3 广州 / ALinux 4 / 2C2G / 40G）
 > 登录：**`ssh quizgo`**（走 Tailscale，推荐）；`ssh quizgo-pub` 仅在安全组放行当前出口 IP 时可用
 > 域名：`openapp.asia`
-> 线上版本：`1.0.8`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
+> 线上版本：`1.0.10`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
 > 最后更新：2026-11-14
 
 ---
@@ -106,13 +106,18 @@
 - [x] **更新发布流程固化** ✅ 2026-11-14
   - 已实现：`scripts/deploy.sh`（备份 → 打 `openquizgo:rollback` → rsync → `.env` 版本对齐 →
     `docker compose build` → `up -d`（migrate 先跑）→ 自检）
-  - 参数：`--with-admin-web`、`--with-units`、`--skip-backup`、`--skip-build`、`--dry-run`
+  - 参数：`--with-admin-web`、`--with-nginx`、`--with-units`、`--skip-backup`、`--skip-build`、`--dry-run`
   - 解决了版本真空期：提交 hook 升 `VERSION` 后，脚本自动写入 `.env APP_VERSION` 并重建容器
   - 仍待做：CI 构建镜像推 ACR，服务器只 pull（当前 2C2G 上构建约 4.5 分钟）
-  - ⚠️ `--skip-build` 仅用于纯文档/纯配置提交；有代码或迁移变更时不要用
-- [ ] **清理构建缓存**（不急）
-  - 当前构建缓存约 566MB；`openquizgo:local` 镜像本身 63MB，两者是不同口径
-  - `docker builder prune -f`
+  - ⚠️ `--skip-build` / `--skip-backup` 有硬保护：以服务器 `/srv/quizgo/.deployed-image`
+    为基线，服务端代码/迁移有变化、工作区脏、或本机解析不到基线 commit 时直接 `exit 2`
+  - ⚠️ 改 `deploy/nginx` 必须加 `--with-nginx`（会 `nginx -t` 通过后再 reload）；
+    改 `deploy/systemd` 必须加 `--with-units`，否则会「发布成功但配置没生效」
+- [x] **清理构建缓存** ✅ 2026-11-14
+  - 已执行 `docker builder prune -f`，回收 911.7MB，`docker system df` 里 Build Cache 归零
+  - 同时删除了 `/srv/quizgo` 下已停止更新的陈旧副本 `bin`/`dist`/`parent`/`tv`/`android`（141M）
+  - `openquizgo:local` 镜像本身 63MB，与构建缓存是不同口径
+  - ⚠️ 缓存清空后**下次代码发布会全量编译，约 5 分钟**；发布窗口内不要并行做别的重活
 - [ ] **Tailscale 加固**（见上方「定时复核 2026-11-21」）
   - 已完成：UDP 41641 放行（A/B 抓包验证）、直连建立、延迟 18–24ms
   - 待办：一周后决定是否删掉 `TCP 22 → 223.73.119.15/32`
@@ -327,13 +332,26 @@ daemon 二进制、SIP、版本新旧（1.104.7 已是 stable 最新）——全
 pgrep -fl "Tailscale.app/Contents/MacOS/Tailscale"
 ```
 
-### 3. `tailscale netcheck` 的端口不能用来判断 UDP 规则
+### 3. 发布基线 `/srv/quizgo/.deployed-image`（不要删、不要提交）
+
+`scripts/deploy.sh` 每次成功发布后写入两行：上次构建的 commit 与镜像 ID。
+`--skip-build` / `--skip-backup` 靠它判断「代码有没有变」，没有它就会拒绝跳过类参数。
+
+- 不要手工编辑或删除；删掉后下一次只能做完整发布
+- 不要提交进仓库（已在 `deploy.sh` 的 rsync 排除项里）
+- 内容形如：
+  ```
+  c2b09ae6ea65645dfbbc46334447ca4be1189440
+  sha256:8bcb5c3136352e7acd28ffeed8cfa0b254b37982d5df2378a55c1c5c130e3938
+  ```
+
+### 4. `tailscale netcheck` 的端口不能用来判断 UDP 规则
 
 netcheck 用临时端口做 STUN 探测，显示的映射端口永远是随机高位值（如 56881），
 **不能**据此判断安全组里 `UDP 41641` 是否放行。正确方法是 A/B 抓包对照，
 命令见「三、常用命令」。
 
-### 4. 本机 `log` 命令要写全路径
+### 5. 本机 `log` 命令要写全路径
 
 zsh 里 `log` 是内置数学函数，直接写 `log show ...` 会报
 `zsh:log: too many arguments`。查系统日志必须用 `/usr/bin/log`。

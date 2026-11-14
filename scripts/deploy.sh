@@ -7,6 +7,7 @@
 # 用法：
 #   scripts/deploy.sh                    # 标准发布
 #   scripts/deploy.sh --with-admin-web   # 管理端前端有改动时，附带同步 admin-web/dist
+#   scripts/deploy.sh --with-nginx       # deploy/nginx 有改动时，同步配置 + nginx -t + reload
 #   scripts/deploy.sh --with-units       # deploy/systemd 有改动时，重装 unit 并重启 timer
 #   scripts/deploy.sh --skip-backup      # 仅跳过备份（服务端代码/迁移没变时可用，有硬保护）
 #   scripts/deploy.sh --skip-build       # 不重建镜像，只对齐版本号（服务端代码/迁移没变时可用，有硬保护）
@@ -28,6 +29,7 @@ BASE_URL="${BASE_URL:-http://127.0.0.1:8082}"
 MARKER_NAME=".deployed-image"
 
 WITH_ADMIN_WEB=0
+WITH_NGINX=0
 WITH_UNITS=0
 SKIP_BACKUP=0
 SKIP_BUILD=0
@@ -36,6 +38,7 @@ DRY_RUN=0
 for arg in "$@"; do
   case "$arg" in
     --with-admin-web) WITH_ADMIN_WEB=1 ;;
+    --with-nginx)     WITH_NGINX=1 ;;
     --with-units)     WITH_UNITS=1 ;;
     --skip-backup)    SKIP_BACKUP=1 ;;
     --skip-build)     SKIP_BUILD=1 ;;
@@ -80,22 +83,54 @@ fi
 # 服务端代码路径：这些路径有变化就必须重建镜像
 CODE_PATHS=(api internal cmd migrations go.mod go.sum Dockerfile docker-compose.yml)
 
-DEPLOYED_SHA=""
-if [ "$DRY_RUN" = 0 ]; then
-  DEPLOYED_SHA="$(ssh "$SSH_HOST" "cat $REMOTE_DIR/$MARKER_NAME 2>/dev/null | head -n1" 2>/dev/null || true)"
+# 基线是只读查询，dry-run 也要读，否则跳过类参数的护栏在 dry-run 下形同虚设
+DEPLOYED_SHA="$(ssh "$SSH_HOST" "cat $REMOTE_DIR/$MARKER_NAME 2>/dev/null | head -n1" 2>/dev/null || true)"
+
+SKIP_FLAGS_USED=""
+if [ "$SKIP_BUILD" = 1 ] || [ "$SKIP_BACKUP" = 1 ]; then SKIP_FLAGS_USED=1; fi
+
+# 脏工作区无法确定镜像对应哪份代码，跳过类参数一律拒绝
+if [ "$SKIP_FLAGS_USED" = 1 ] && [ -n "$(git status --porcelain)" ]; then
+  echo "工作区有未提交改动，不能用 --skip-build / --skip-backup" >&2
+  exit 2
 fi
 
 BASELINE=""
-if [ -n "$DEPLOYED_SHA" ] && git rev-parse --verify -q "${DEPLOYED_SHA}^{commit}" >/dev/null 2>&1; then
-  BASELINE="$DEPLOYED_SHA"
-else
-  if [ -n "$DEPLOYED_SHA" ]; then
-    echo "提示：无法解析服务器记录的基线 $DEPLOYED_SHA（可能来自另一台机器）"
+HAVE_MARKER=0
+if [ -n "$DEPLOYED_SHA" ]; then
+  case "$DEPLOYED_SHA" in
+    *+dirty)
+      echo "警告：上次发布来自脏工作区（$DEPLOYED_SHA），该基线不可信" >&2
+      if [ "$SKIP_FLAGS_USED" = 1 ]; then
+        echo "请先做一次干净的完整发布，再用 --skip-build / --skip-backup" >&2
+        exit 2
+      fi
+      DEPLOYED_SHA=""
+      ;;
+    *)
+      HAVE_MARKER=1
+      ;;
+  esac
+fi
+
+if [ "$HAVE_MARKER" = 1 ]; then
+  if git rev-parse --verify -q "${DEPLOYED_SHA}^{commit}" >/dev/null 2>&1; then
+    BASELINE="$DEPLOYED_SHA"
+  else
+    # 记录存在但本地没有这个 commit（换机器 / 未 fetch）：拒绝跳过类参数，
+    # 不能退回 HEAD~1，否则只比较最近一次提交，可能放行旧镜像
+    echo "无法解析服务器记录的发布基线 $DEPLOYED_SHA（本机没有该 commit）" >&2
+    if [ "$SKIP_FLAGS_USED" = 1 ]; then
+      echo "拒绝使用 --skip-build / --skip-backup：请先 git fetch 到该 commit，或做一次完整发布" >&2
+      exit 2
+    fi
   fi
-  # 没有可信基线时退回上一个提交；连它都没有就拒绝使用跳过类参数
+elif [ "$SKIP_FLAGS_USED" = 1 ]; then
+  # 只有「从未发布过」（没有基线文件）才允许退回 HEAD~1
   if git rev-parse --verify -q 'HEAD~1^{commit}' >/dev/null 2>&1; then
     BASELINE='HEAD~1'
-  elif [ "$SKIP_BUILD" = 1 ] || [ "$SKIP_BACKUP" = 1 ]; then
+    echo "提示：服务器没有发布基线（首次发布），按 HEAD~1 校验跳过类参数"
+  else
     echo "无法确定发布基线，拒绝使用 --skip-build / --skip-backup" >&2
     exit 2
   fi
@@ -119,6 +154,25 @@ if [ "$SKIP_BACKUP" = 1 ]; then
   changed="$(changed_since_baseline migrations)"
   if [ -n "$changed" ]; then
     echo "--skip-backup 不能用于带迁移的发布，检测到：" >&2
+    echo "$changed" | sed 's/^/  /' >&2
+    exit 2
+  fi
+fi
+
+# nginx / systemd 不在镜像里，漏传参数就会「发布成功但配置没生效」，所以改成硬性要求
+if [ "$WITH_NGINX" = 0 ]; then
+  changed="$(changed_since_baseline deploy/nginx)"
+  if [ -n "$changed" ]; then
+    echo "deploy/nginx 有变化，必须加 --with-nginx（否则服务器 nginx 仍是旧配置）：" >&2
+    echo "$changed" | sed 's/^/  /' >&2
+    exit 2
+  fi
+fi
+
+if [ "$WITH_UNITS" = 0 ]; then
+  changed="$(changed_since_baseline deploy/systemd)"
+  if [ -n "$changed" ]; then
+    echo "deploy/systemd 有变化，必须加 --with-units（否则 unit 仍是旧的）：" >&2
     echo "$changed" | sed 's/^/  /' >&2
     exit 2
   fi
@@ -152,7 +206,24 @@ fi
 # 4. 版本写入 .env：容器只读 env_file，不同步就永远是旧版本
 run_ssh "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$VERSION|' $REMOTE_DIR/.env && sudo chown ecs-user:ecs-user $REMOTE_DIR/.env && sudo chmod 600 $REMOTE_DIR/.env && sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env"
 
-# 5. 可选：重装 systemd unit（deploy/systemd 有改动时）
+# 5a. 可选：同步 nginx 配置并热加载（deploy/nginx 有改动时）
+#     容器挂的是 /srv/nginx/*，仓库里的 deploy/nginx/* 不会自动生效，必须显式同步
+if [ "$WITH_NGINX" = 1 ]; then
+  run_ssh "sudo cp -a /srv/nginx /srv/nginx.prev 2>/dev/null || true"
+  run rsync -az deploy/nginx/nginx.conf "$SSH_HOST:/srv/nginx/nginx.conf"
+  run rsync -az --delete deploy/nginx/conf.d/ "$SSH_HOST:/srv/nginx/conf.d/"
+  # 先 nginx -t 再 reload：配置写错时运行中的实例继续用旧配置，不会把站点弄挂
+  if ! run_ssh "cd $REMOTE_DIR && docker compose exec -T web nginx -t"; then
+    echo "nginx 配置校验失败，未 reload；运行中的实例仍用旧配置" >&2
+    echo "上一版在服务器 /srv/nginx.prev，可执行：" >&2
+    echo "  ssh $SSH_HOST 'sudo rsync -a --delete /srv/nginx.prev/ /srv/nginx/ && cd $REMOTE_DIR && docker compose exec -T web nginx -s reload'" >&2
+    exit 1
+  fi
+  run_ssh "cd $REMOTE_DIR && docker compose exec -T web nginx -s reload"
+  echo "nginx 配置已生效"
+fi
+
+# 5b. 可选：重装 systemd unit（deploy/systemd 有改动时）
 if [ "$WITH_UNITS" = 1 ]; then
   run_ssh "sudo install -m 644 $REMOTE_DIR/deploy/systemd/quizgo-backup.service $REMOTE_DIR/deploy/systemd/quizgo-backup.timer $REMOTE_DIR/deploy/systemd/tailscale-aliyun-fix.service $REMOTE_DIR/deploy/systemd/tailscale-aliyun-fix.timer /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable quizgo-backup.timer tailscale-aliyun-fix.timer && sudo systemctl restart quizgo-backup.timer tailscale-aliyun-fix.timer"
 fi
