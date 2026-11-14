@@ -81,8 +81,22 @@ class BlockerActivity : ComponentActivity() {
             MaterialTheme(colorScheme = darkColorScheme()) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val guardState by engine.state.collectAsState()
+                    // 080：拦截原因可能比界面晚到（重启后先 BLOCKED 再刷新 context），
+                    // 必须按状态收集，否则文案会一直停在「当前不能继续观看」。
+                    val blockReason by engine.blockReason.collectAsState()
 
                     LaunchedEffect(screen, guardState) {
+                        // 080：服务端放开限制（额度/时段）后引擎会自己恢复，
+                        // 拦截页必须跟着退出，否则孩子会一直卡在「休息一下吧」。
+                        if (screen == Screen.MAIN &&
+                            (guardState == GuardState.IDLE ||
+                                guardState == GuardState.WATCHING ||
+                                guardState == GuardState.GRANTED)
+                        ) {
+                            GuardLog.i("blocker auto dismissed, state=$guardState")
+                            finish()
+                            return@LaunchedEffect
+                        }
                         if (screen != Screen.PARENT) return@LaunchedEffect
                         if (guardState == GuardState.GRANTED ||
                             guardState == GuardState.WATCHING ||
@@ -116,7 +130,7 @@ class BlockerActivity : ComponentActivity() {
 
                     when (screen) {
                         Screen.MAIN -> BlockerScreen(
-                            reason = engine.blockReason.value,
+                            reason = blockReason,
                             onRetryQuiz = { startQuiz() },
                             onParentUnlock = {
                                 screen = Screen.PARENT
@@ -210,6 +224,14 @@ private fun BlockerScreen(
     onRetryQuiz: () -> Unit,
     onParentUnlock: () -> Unit,
 ) {
+    // 080：额度耗尽或不在时段内时，补答题拿不到授权（服务端会拒绝开题），
+    // 因此不再展示「重新答题」，文案也要说清原因。
+    val quizUseful = reason != "daily_limit" && reason != "time_window"
+    val hint = when {
+        reason == "daily_limit" -> "今天的额度已经用完，明天再来；也可以请家长解锁"
+        reason == "time_window" -> "现在不在允许观看的时段，换个时间再来；也可以请家长解锁"
+        else -> "完成答题可以获得观看时间，或请家长解锁"
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -232,14 +254,16 @@ private fun BlockerScreen(
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "完成答题可以获得观看时间，或请家长解锁",
+            text = hint,
             fontSize = 22.sp,
             color = Color(0xFFB0B0B0),
         )
         Spacer(Modifier.height(48.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
-            Button(onClick = onRetryQuiz, modifier = Modifier.widthIn(min = 220.dp)) {
-                Text("重新答题", fontSize = 28.sp)
+            if (quizUseful) {
+                Button(onClick = onRetryQuiz, modifier = Modifier.widthIn(min = 220.dp)) {
+                    Text("重新答题", fontSize = 28.sp)
+                }
             }
             Button(onClick = onParentUnlock, modifier = Modifier.widthIn(min = 220.dp)) {
                 Text("家长解锁", fontSize = 28.sp)
@@ -333,6 +357,7 @@ private fun ParentUnlockScreen(
 private fun reasonText(reason: String?): String = when (reason) {
     "quiz_failed" -> "本次答题未通过"
     "time_window" -> "当前不在允许观看的时段"
+    "daily_limit" -> "今天的观看额度已经用完"
     "revoked" -> "观看授权已失效"
     else -> "当前不能继续观看"
 }

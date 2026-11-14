@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <application>
+    <!-- 仅 debug 构建允许明文 HTTP，便于局域网联调；release 必须使用 HTTPS。 -->
+    <application android:usesCleartextTraffic="true">
         <!-- 仅 debug：允许 adb 直接拉起答题界面做联调（release 不可导出）。 -->
         <activity
             android:name=".ui.QuizActivity"
+            android:exported="true"
+            tools:node="merge"
+            tools:replace="android:exported" />
+
+        <activity
+            android:name=".ui.BlockerActivity"
             android:exported="true"
             tools:node="merge"
             tools:replace="android:exported" />
@@ -14,6 +21,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="com.openquizgo.guard.DEBUG_FORCE_QUIZ" />
+                <action android:name="com.openquizgo.guard.DEBUG_FORCE_BLOCK" />
             </intent-filter>
         </receiver>
     </application>

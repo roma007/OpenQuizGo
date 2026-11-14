@@ -478,20 +478,31 @@ class GuardEngine(
                 _contextRemainingMinutes.value = ctx.remainingMinutes
                 _contextAllowed.value = ctx.allowed
                 _contextReason.value = ctx.reason
-                serverBlockedReason = if (ctx.allowed) null else (ctx.reason ?: "blocked")
+                // 已签发的授权在其有效期内优先于额度/时段判定（设计 001：授权即已扣减额度，
+                // 家长远程解锁也明确忽略时段限制）。否则会出现 BLOCKED/GRANTED 反复抖动。
+                serverBlockedReason = when {
+                    ctx.allowed -> null
+                    hasUsableGrant() -> null
+                    else -> ctx.reason ?: "blocked"
+                }
                 offline = false
 
                 val blocked = serverBlockedReason
                 when {
-                    blocked != null && _state.value !in setOf(
-                        GuardState.BLOCKED,
-                        GuardState.QUIZZING,
-                        GuardState.UNBOUND,
-                    ) -> {
-                        _blockReason.value = blocked
-                        transition(GuardState.BLOCKED)
+                    blocked != null -> {
+                        // 重启后状态可能已经是 BLOCKED 但原因为空，这里一并补上，
+                        // 否则拦截页只能显示兜底文案。
+                        if (_blockReason.value != blocked) _blockReason.value = blocked
+                        if (_state.value !in setOf(
+                                GuardState.BLOCKED,
+                                GuardState.QUIZZING,
+                                GuardState.UNBOUND,
+                            )
+                        ) {
+                            transition(GuardState.BLOCKED)
+                        }
                     }
-                    blocked == null && _state.value == GuardState.BLOCKED &&
+                    _state.value == GuardState.BLOCKED &&
                         SERVER_BLOCK_REASONS.contains(_blockReason.value) -> {
                         // 家长放开限制后自动恢复：还在播就直接回到观看中。
                         _blockReason.value = null
