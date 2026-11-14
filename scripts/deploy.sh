@@ -209,18 +209,46 @@ run_ssh "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$VERSION|' $REMOTE_DIR/.env 
 # 5a. 可选：同步 nginx 配置并热加载（deploy/nginx 有改动时）
 #     容器挂的是 /srv/nginx/*，仓库里的 deploy/nginx/* 不会自动生效，必须显式同步
 if [ "$WITH_NGINX" = 1 ]; then
-  run_ssh "sudo cp -a /srv/nginx /srv/nginx.prev 2>/dev/null || true"
+  # 只同步 nginx.conf 与 conf.d/；仓库里若新增 snippets/ 之类，这里必须同步扩展，
+  # 否则 include 指向不存在的文件（有护栏不至于挂站，但配置不会生效）
+  extras="$(cd deploy/nginx && ls -1 | grep -vEx 'nginx\.conf|conf\.d' || true)"
+  if [ -n "$extras" ]; then
+    echo "警告：deploy/nginx 下有未纳管条目：$(echo "$extras" | tr '\n' ' ')" >&2
+    echo "       deploy.sh 只同步 nginx.conf 与 conf.d/，请扩展同步逻辑" >&2
+  fi
+
+  # 备份必须整体替换：cp -a 在目标已存在时会把源塞进目标目录，第二次就套娃，
+  # 之后的「自动回滚」会恢复到更早一代。备份失败（磁盘满/权限）直接中止发布。
+  run_ssh "sudo rm -rf /srv/nginx.prev && sudo cp -a /srv/nginx /srv/nginx.prev"
   run rsync -az deploy/nginx/nginx.conf "$SSH_HOST:/srv/nginx/nginx.conf"
   run rsync -az --delete deploy/nginx/conf.d/ "$SSH_HOST:/srv/nginx/conf.d/"
-  # 先 nginx -t 再 reload：配置写错时运行中的实例继续用旧配置，不会把站点弄挂
+
+  # 先 nginx -t 再 reload；失败自动回滚——否则磁盘上留着坏配置，
+  # 只要 web 容器因 OOM / 重启 / 下次 up -d 重建，两个站会一起起不来
   if ! run_ssh "cd $REMOTE_DIR && docker compose exec -T web nginx -t"; then
-    echo "nginx 配置校验失败，未 reload；运行中的实例仍用旧配置" >&2
-    echo "上一版在服务器 /srv/nginx.prev，可执行：" >&2
-    echo "  ssh $SSH_HOST 'sudo rsync -a --delete /srv/nginx.prev/ /srv/nginx/ && cd $REMOTE_DIR && docker compose exec -T web nginx -s reload'" >&2
+    echo "nginx 配置校验失败，回滚 /srv/nginx ← /srv/nginx.prev" >&2
+    if run_ssh "sudo rsync -a --delete /srv/nginx.prev/ /srv/nginx/ && cd $REMOTE_DIR && docker compose exec -T web nginx -t"; then
+      echo "已回滚，运行中的 nginx 未受影响；请修正 deploy/nginx 后重跑" >&2
+    else
+      echo "自动回滚也失败，请人工处理：/srv/nginx.prev 是上一代可用配置" >&2
+    fi
     exit 1
   fi
   run_ssh "cd $REMOTE_DIR && docker compose exec -T web nginx -s reload"
   echo "nginx 配置已生效"
+
+  # 漂移检查（仅告警）：/srv/nginx 是独立副本，不是软链，可能被人手工改过
+  local_sum="$(cd deploy/nginx && python3 - <<'PY'
+import glob, hashlib
+for f in ['nginx.conf'] + sorted(glob.glob('conf.d/*.conf')):
+    print(hashlib.md5(open(f, 'rb').read()).hexdigest() + '  ' + f)
+PY
+)"
+  remote_sum="$(ssh "$SSH_HOST" "cd /srv/nginx && md5sum nginx.conf conf.d/*.conf" 2>/dev/null | awk '{print $1"  "$2}')"
+  if [ "$local_sum" != "$remote_sum" ]; then
+    echo "警告：/srv/nginx 与仓库 deploy/nginx 不一致（可能被手工改过）：" >&2
+    diff <(printf '%s\n' "$local_sum") <(printf '%s\n' "$remote_sum") | sed 's/^/  /' >&2 || true
+  fi
 fi
 
 # 5b. 可选：重装 systemd unit（deploy/systemd 有改动时）
