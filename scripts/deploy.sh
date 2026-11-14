@@ -9,6 +9,7 @@
 #   scripts/deploy.sh --with-admin-web   # 管理端前端有改动时，附带同步 admin-web/dist
 #   scripts/deploy.sh --with-units       # deploy/systemd 有改动时，重装 unit 并重启 timer
 #   scripts/deploy.sh --skip-backup      # 仅跳过备份（无迁移的纯前端改动才可用）
+#   scripts/deploy.sh --skip-build       # 不重建镜像，只同步配置与版本号（纯文档/注释提交用）
 #   scripts/deploy.sh --dry-run          # 只打印将执行的命令
 #
 # 环境变量：SSH_HOST(默认 quizgo) REMOTE_DIR(默认 /srv/quizgo) BASE_URL(默认 http://127.0.0.1:8082)
@@ -24,6 +25,7 @@ BASE_URL="${BASE_URL:-http://127.0.0.1:8082}"
 WITH_ADMIN_WEB=0
 WITH_UNITS=0
 SKIP_BACKUP=0
+SKIP_BUILD=0
 DRY_RUN=0
 
 for arg in "$@"; do
@@ -31,8 +33,9 @@ for arg in "$@"; do
     --with-admin-web) WITH_ADMIN_WEB=1 ;;
     --with-units)     WITH_UNITS=1 ;;
     --skip-backup)    SKIP_BACKUP=1 ;;
+    --skip-build)     SKIP_BUILD=1 ;;
     --dry-run)        DRY_RUN=1 ;;
-    -h|--help)        sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help)        sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "未知参数：$arg（--help 查看用法）" >&2; exit 2 ;;
   esac
 done
@@ -76,8 +79,14 @@ else
 fi
 
 # 3. 同步源码：不带 --delete，避免删掉服务器上的产物；.env 永远不传
-RSYNC_ARGS=(-az --exclude '.git' --exclude '.env' --exclude 'node_modules'
-            --exclude 'admin-web/dist' --exclude 'data')
+#    只同步服务端构建/运行需要的部分：parent(Flutter)、tv、android、admin-web 源码
+#    都是 GB 级构建产物，传过去既没用又会把 40G 盘塞满（实测曾把发布卡住 15 分钟）
+RSYNC_ARGS=(-az
+            --exclude '.git' --exclude '.env' --exclude 'node_modules'
+            --exclude 'parent' --exclude 'tv' --exclude 'android'
+            --exclude 'admin-web' --exclude 'bin' --exclude 'dist'
+            --exclude 'docs/conversations'
+            --exclude 'data' --exclude '.opencode')
 run rsync "${RSYNC_ARGS[@]}" ./ "$SSH_HOST:$REMOTE_DIR/"
 
 if [ "$WITH_ADMIN_WEB" = 1 ]; then
@@ -94,7 +103,12 @@ fi
 
 # 6. 构建并重启：必须用 up -d（而不是只重建 api/worker），
 #    这样镜像变更会重建 migrate，迁移成功后才起 api/worker
-run_ssh "cd $REMOTE_DIR && docker compose build api && docker compose up -d"
+if [ "$SKIP_BUILD" = 1 ]; then
+  echo "跳过镜像构建（--skip-build），仅重建 api/worker 让新配置生效"
+  run_ssh "cd $REMOTE_DIR && docker compose up -d --force-recreate api worker"
+else
+  run_ssh "cd $REMOTE_DIR && docker compose build api && docker compose up -d"
+fi
 
 # 7. 自检：版本、状态、日志
 if [ "$DRY_RUN" = 1 ]; then

@@ -256,6 +256,7 @@ git tag                     # v1.0.X
 scripts/deploy.sh                   # 标准发布
 scripts/deploy.sh --with-admin-web  # 管理端前端有改动
 scripts/deploy.sh --with-units      # deploy/systemd 有改动（重装 unit + 重启 timer）
+scripts/deploy.sh --skip-build      # 纯文档/注释提交：不重建镜像，只对齐版本号
 scripts/deploy.sh --dry-run         # 只看会执行什么
 ```
 
@@ -271,7 +272,10 @@ ssh quizgo 'docker tag openquizgo:local openquizgo:rollback || true'
 ssh quizgo 'sudo systemctl start quizgo-backup.service'
 
 # 2. 同步源码（不要 --delete，避免删掉服务器上的东西；.env 必须排除）
+#    注意排除 GB 级的客户端构建产物，否则会把 3Mbps 的发布拖死
 rsync -az --exclude '.git' --exclude '.env' --exclude 'node_modules' \
+  --exclude 'parent' --exclude 'tv' --exclude 'android' --exclude 'admin-web' \
+  --exclude 'bin' --exclude 'dist' --exclude 'docs/conversations' \
   ./ quizgo:/srv/quizgo/
 ```
 
