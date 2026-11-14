@@ -203,15 +203,12 @@ if [ "$WITH_ADMIN_WEB" = 1 ]; then
   run rsync -az --delete admin-web/dist/ "$SSH_HOST:$REMOTE_DIR/admin-web/dist/"
 fi
 
-# 4. 版本写入 .env：容器只读 env_file，不同步就永远是旧版本
-run_ssh "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$VERSION|' $REMOTE_DIR/.env && sudo chown ecs-user:ecs-user $REMOTE_DIR/.env && sudo chmod 600 $REMOTE_DIR/.env && sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env"
-
 # 5a. 可选：同步 nginx 配置并热加载（deploy/nginx 有改动时）
 #     容器挂的是 /srv/nginx/*，仓库里的 deploy/nginx/* 不会自动生效，必须显式同步
 if [ "$WITH_NGINX" = 1 ]; then
   # 只同步 nginx.conf 与 conf.d/；仓库里若新增 snippets/ 之类，这里必须同步扩展，
   # 否则 include 指向不存在的文件（有护栏不至于挂站，但配置不会生效）
-  extras="$(cd deploy/nginx && ls -1 | grep -vEx 'nginx\.conf|conf\.d' || true)"
+  extras="$(cd deploy/nginx && ls -1 | grep -vEx 'nginx\.conf|conf\.d' | grep -v '^\.' || true)"
   if [ -n "$extras" ]; then
     echo "警告：deploy/nginx 下有未纳管条目：$(echo "$extras" | tr '\n' ' ')" >&2
     echo "       deploy.sh 只同步 nginx.conf 与 conf.d/，请扩展同步逻辑" >&2
@@ -256,6 +253,11 @@ fi
 if [ "$WITH_UNITS" = 1 ]; then
   run_ssh "sudo install -m 644 $REMOTE_DIR/deploy/systemd/quizgo-backup.service $REMOTE_DIR/deploy/systemd/quizgo-backup.timer $REMOTE_DIR/deploy/systemd/tailscale-aliyun-fix.service $REMOTE_DIR/deploy/systemd/tailscale-aliyun-fix.timer /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable quizgo-backup.timer tailscale-aliyun-fix.timer && sudo systemctl restart quizgo-backup.timer tailscale-aliyun-fix.timer"
 fi
+
+# 4. 版本写入 .env：容器只读 env_file，不同步就永远是旧版本。
+#    放在 nginx / unit 之后：这两步失败会 exit，必须保证 .env 没有被改成新版本，
+#    否则之后任何一次 docker compose up -d 都会「报新版本、跑旧代码」
+run_ssh "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$VERSION|' $REMOTE_DIR/.env && sudo chown ecs-user:ecs-user $REMOTE_DIR/.env && sudo chmod 600 $REMOTE_DIR/.env && sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env"
 
 # 6. 构建并重启：必须用 up -d（而不是只重建 api/worker），
 #    这样镜像变更会重建 migrate，迁移成功后才起 api/worker
