@@ -13,8 +13,8 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 122
-        versionName = "1.0.22"
+        versionCode = 123
+        versionName = "1.0.23"
     }
 
     // 生产签名：在仓库根目录放置 keystore.properties（已 gitignore），否则回退 debug 签名仅供内部验收。
