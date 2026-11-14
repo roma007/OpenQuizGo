@@ -41,7 +41,7 @@ const initialValues = {
   child_id: '',
   stage: 'low',
   grade_tag: 'g2',
-  unlock_minutes: 20,
+  unlock_minutes: 15,
   pass_threshold: 3,
   math: 2,
   chinese: 1,

@@ -61,7 +61,7 @@ class Rule {
       }
     }
     return Rule(
-      unlockMinutes: (json['unlock_minutes'] as num?)?.toInt() ?? 20,
+      unlockMinutes: (json['unlock_minutes'] as num?)?.toInt() ?? 15,
       passThreshold: (json['pass_threshold'] as num?)?.toDouble() ?? 3,
       subjectWeight: weights,
       funRatioCap: (json['fun_ratio_cap'] as num?)?.toInt() ?? 2,

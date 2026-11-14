@@ -187,7 +187,7 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
       for (final entry in _weights.entries) entry.key: _double(entry.value, 0),
     };
     return Rule(
-      unlockMinutes: _int(_unlock, 20),
+      unlockMinutes: _int(_unlock, 15),
       passThreshold: _double(_threshold, 3),
       subjectWeight: weights,
       funRatioCap: _int(_funCap, 2),

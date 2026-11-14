@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <uses-feature
         android:name="android.software.leanback"
@@ -14,7 +20,7 @@
     <application
         android:name=".GuardApplication"
         android:allowBackup="false"
-        android:label="电视时间管家"
+        android:label="OpenQuizGo 守护端"
         android:supportsRtl="true"
         android:theme="@style/Theme.Guard">
 
@@ -37,13 +43,33 @@
         <activity
             android:name=".ui.QuizActivity"
             android:exported="false"
-            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Guard.Translucent" />
+
+        <activity
+            android:name=".ui.BattleActivity"
+            android:exported="false"
+            android:launchMode="singleTask" />
+
+        <activity
+            android:name=".ui.BlockerActivity"
+            android:exported="false"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Guard" />
 
         <service
             android:name=".platform.GuardService"
             android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <receiver
             android:name=".platform.BootReceiver"

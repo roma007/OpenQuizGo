@@ -394,7 +394,7 @@ func defaultRule() ruleSnapshot {
 	return ruleSnapshot{
 		Version: 0,
 		Rule: Rule{
-			UnlockMinutes: 20,
+			UnlockMinutes: 15,
 			PassThreshold: 3,
 			SubjectWeight: map[string]float64{
 				"math": 1.5, "chinese": 1.5, "english": 1.5,
