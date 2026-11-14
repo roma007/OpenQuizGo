@@ -3,7 +3,7 @@
 > 服务器：`ecs-user@8.163.122.39`（华南3 广州 / ALinux 4 / 2C2G / 40G）
 > 登录：**`ssh quizgo`**（走 Tailscale，推荐）；`ssh quizgo-pub` 仅在安全组放行当前出口 IP 时可用
 > 域名：`openapp.asia`
-> 线上版本：`1.0.17`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
+> 线上版本：`1.0.18`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
 > 最后更新：2026-11-14
 
 ---
@@ -109,19 +109,21 @@
   - 参数：`--with-admin-web`、`--with-nginx`、`--with-units`、`--skip-backup`、`--skip-build`、
     `--ack-open`、`--dry-run`
   - 解决了版本真空期：提交 hook 升 `VERSION` 后，脚本自动写入 `.env APP_VERSION` 并重建容器
-  - 仍待做：CI 构建镜像推 ACR，服务器只 pull（当前 2C2G 上构建约 4.5 分钟）
+  - 仍待做：CI 构建镜像推 ACR，服务器只 pull（当前 2C2G 上全量构建实测 >13 分钟，预留 20 分钟）
   - ⚠️ `--skip-build` / `--skip-backup` 有硬保护：以服务器 `/srv/quizgo/.deployed-image`
     为基线，服务端代码/迁移有变化、工作区脏、或本机解析不到基线 commit 时直接 `exit 2`
   - ⚠️ 改 `deploy/nginx` 必须加 `--with-nginx`（会 `nginx -t` 通过后再 reload）；
     改 `deploy/systemd` 必须加 `--with-units`，否则会「发布成功但配置没生效」
   - 跨项目协作：发布前读 `/srv/ops/bin/inbox.sh quizgo`，有 open 请求直接 `exit 2`，
     确认无关才加 `--ack-open`；收尾自动覆盖 `/srv/ops/state/quizgo.json` 并追加 journal
-  - ⚠️ 构建失败时 `.env` 保持上一版（版本写入在 build 成功之后），不会出现「报新版本、跑旧代码」
+  - ⚠️ 构建失败时 `.env` 保持上一版（版本写入在 build 成功之后）；`up -d` 失败时
+    自动回写旧 `APP_VERSION`，两条路径都不会留下「报新版本、跑旧代码」
 - [x] **清理构建缓存** ✅ 2026-11-14
   - 已执行 `docker builder prune -f`，回收 911.7MB，`docker system df` 里 Build Cache 归零
   - 同时删除了 `/srv/quizgo` 下已停止更新的陈旧副本 `bin`/`dist`/`parent`/`tv`/`android`（141M）
   - `openquizgo:local` 镜像本身 63MB，与构建缓存是不同口径
-  - ⚠️ 缓存清空后**下次代码发布会全量编译，约 5 分钟**；发布窗口内不要并行做别的重活
+  - ⚠️ 缓存清空后**下次代码发布会全量编译**：实测 >13 分钟（swap 1.1G、load 到 8），
+    发布窗口**预留 20 分钟**；构建期间 Atlas 不发布、不跑备份、不压测（2C2G 并发会互相拖慢甚至 OOM）
 - [ ] **Tailscale 加固**（见上方「定时复核 2026-11-21」）
   - 已完成：UDP 41641 放行（A/B 抓包验证）、直连建立、延迟 18–24ms
   - 待办：一周后决定是否删掉 `TCP 22 → 223.73.119.15/32`

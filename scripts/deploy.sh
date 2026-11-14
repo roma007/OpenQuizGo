@@ -292,17 +292,39 @@ write_app_version() {
   run_ssh "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$VERSION|' $REMOTE_DIR/.env && sudo chown ecs-user:ecs-user $REMOTE_DIR/.env && sudo chmod 600 $REMOTE_DIR/.env && sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env"
 }
 
+# up -d 失败（migrate 报错 / 依赖起不来）时 .env 已是新版本、容器还是旧的，
+# set -e 退出又会跳过版本自检，于是没人发现。写版本前记下旧值，失败时回写。
+APP_VERSION_BEFORE=""
+capture_app_version() {
+  APP_VERSION_BEFORE="$(ssh "$SSH_HOST" "sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env | head -n1 | cut -d= -f2" 2>/dev/null || true)"
+}
+
+restore_app_version() {
+  [ -n "$APP_VERSION_BEFORE" ] || return 0
+  echo "回写 .env 版本：$VERSION → $APP_VERSION_BEFORE" >&2
+  ssh "$SSH_HOST" "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$APP_VERSION_BEFORE|' $REMOTE_DIR/.env && sudo chmod 600 $REMOTE_DIR/.env && sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env" \
+    || echo "警告：回写 .env 失败，请手工恢复 APP_VERSION=$APP_VERSION_BEFORE" >&2
+}
+
 # 6. 构建并重启：必须用 up -d（而不是只重建 api/worker），
 #    这样镜像变更会重建 migrate，迁移成功后才起 api/worker
 if [ "$SKIP_BUILD" = 1 ]; then
   echo "跳过镜像构建（--skip-build，基线以来服务端代码无变化）"
+  capture_app_version
   write_app_version
-  run_ssh "cd $REMOTE_DIR && docker compose up -d --force-recreate api worker"
+  if ! run_ssh "cd $REMOTE_DIR && docker compose up -d --force-recreate api worker"; then
+    restore_app_version
+    exit 1
+  fi
 else
   run_ssh "cd $REMOTE_DIR && docker compose build api"
   # 构建成功后才写版本；build 失败会因 set -e 立即退出，.env 保持上一版
+  capture_app_version
   write_app_version
-  run_ssh "cd $REMOTE_DIR && docker compose up -d"
+  if ! run_ssh "cd $REMOTE_DIR && docker compose up -d"; then
+    restore_app_version
+    exit 1
+  fi
 fi
 
 # 7. 自检：版本号 + 镜像 ID + 状态 + 日志

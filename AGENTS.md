@@ -348,6 +348,7 @@ ssh quizgo 'cd /srv/quizgo && docker compose up -d --no-build api worker'
 | 改了 `.env` 只 `up -d` | Compose 未必检测到 env_file 变化，用 `docker compose up -d --force-recreate api worker` |
 | 迁移失败 | `migrate` 非 0 退出，api/worker 不会启动；`docker compose ps` 会显示 `Exited (1)` |
 | 忘记改 `APP_VERSION` | `/v1/meta` 仍显示旧版本，排查时会被误导 |
+| `up -d` 失败（migrate/依赖） | 脚本会自动回写旧 `APP_VERSION` 并 `exit 1`；先看 migrate 日志再重试，不要手工改 `.env` |
 | 在服务器上构建 Atlas | 没必要，静态站本地构建秒级完成 |
 | 构建后磁盘涨 | 每次构建留一层缓存，定期 `docker builder prune -f` |
 
