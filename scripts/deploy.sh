@@ -46,7 +46,7 @@ for arg in "$@"; do
     -h|--help)
       awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "${BASH_SOURCE[0]}"
       exit 0 ;;
-    *) echo "未知参数：$arg（--help 查看用法）" >&2; exit 2 ;;
+    *) echo "未知参数：${arg}（--help 查看用法）" >&2; exit 2 ;;
   esac
 done
 
@@ -100,7 +100,7 @@ HAVE_MARKER=0
 if [ -n "$DEPLOYED_SHA" ]; then
   case "$DEPLOYED_SHA" in
     *+dirty)
-      echo "警告：上次发布来自脏工作区（$DEPLOYED_SHA），该基线不可信" >&2
+      echo "警告：上次发布来自脏工作区（${DEPLOYED_SHA}），该基线不可信" >&2
       if [ "$SKIP_FLAGS_USED" = 1 ]; then
         echo "请先做一次干净的完整发布，再用 --skip-build / --skip-backup" >&2
         exit 2
@@ -119,7 +119,7 @@ if [ "$HAVE_MARKER" = 1 ]; then
   else
     # 记录存在但本地没有这个 commit（换机器 / 未 fetch）：拒绝跳过类参数，
     # 不能退回 HEAD~1，否则只比较最近一次提交，可能放行旧镜像
-    echo "无法解析服务器记录的发布基线 $DEPLOYED_SHA（本机没有该 commit）" >&2
+    echo "无法解析服务器记录的发布基线 ${DEPLOYED_SHA}（本机没有该 commit）" >&2
     if [ "$SKIP_FLAGS_USED" = 1 ]; then
       echo "拒绝使用 --skip-build / --skip-backup：请先 git fetch 到该 commit，或做一次完整发布" >&2
       exit 2
