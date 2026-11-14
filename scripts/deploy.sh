@@ -2,7 +2,11 @@
 # OpenQuizGo 一键发布（对应设计/计划 078）
 #
 # 解决「提交即升版、服务器 .env 不自动同步」的版本真空期：
-# 把「备份 → 打回滚点 → 同步 → 版本对齐 → 构建 → 迁移+重启 → 自检」固化成一条命令。
+# 把「备份 → 打回滚点 → 同步 → nginx/units → 构建 → 写版本 → 迁移+重启 → 自检 → 登记」
+# 固化成一条命令。构建成功后才写 .env，构建失败不会污染版本号。
+#
+# 跨项目协作（AGENTS.md §9）：开头读 /srv/ops 的 inbox，有 open 请求就 exit 2，
+# 除非显式 --ack-open；收尾自动登记 /srv/ops/state/quizgo.json 与 journal。
 #
 # 用法：
 #   scripts/deploy.sh                    # 标准发布
@@ -11,6 +15,7 @@
 #   scripts/deploy.sh --with-units       # deploy/systemd 有改动时，重装 unit 并重启 timer
 #   scripts/deploy.sh --skip-backup      # 仅跳过备份（服务端代码/迁移没变时可用，有硬保护）
 #   scripts/deploy.sh --skip-build       # 不重建镜像，只对齐版本号（服务端代码/迁移没变时可用，有硬保护）
+#   scripts/deploy.sh --ack-open         # 跳过 inbox 闸门（已确认 open 请求与本次发布无关，或本次就是处理它）
 #   scripts/deploy.sh --dry-run          # 只打印将执行的命令
 #
 # --skip-build / --skip-backup 的硬保护：以服务器上的 /srv/quizgo/.deployed-image
@@ -33,6 +38,7 @@ WITH_NGINX=0
 WITH_UNITS=0
 SKIP_BACKUP=0
 SKIP_BUILD=0
+ACK_OPEN=0
 DRY_RUN=0
 
 for arg in "$@"; do
@@ -42,6 +48,7 @@ for arg in "$@"; do
     --with-units)     WITH_UNITS=1 ;;
     --skip-backup)    SKIP_BACKUP=1 ;;
     --skip-build)     SKIP_BUILD=1 ;;
+    --ack-open)       ACK_OPEN=1 ;;
     --dry-run)        DRY_RUN=1 ;;
     -h|--help)
       awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "${BASH_SOURCE[0]}"
@@ -75,6 +82,29 @@ echo "发布版本：$VERSION   目标：$SSH_HOST:$REMOTE_DIR"
 
 if [ -n "$(git status --porcelain)" ]; then
   echo "提示：工作区有未提交改动（发布仍会继续，建议先提交再发布）"
+fi
+
+# ---------------------------------------------------------------------------
+# 跨项目协作闸门（见 AGENTS.md §9）：发布改变线上，有发给 quizgo 的 open 请求时
+# 必须先处理或显式确认无关。共享面不可达只告警，避免它变成发布的单点。
+# ---------------------------------------------------------------------------
+OPS_DIR="/srv/ops"
+OPS_INBOX="$(ssh "$SSH_HOST" "$OPS_DIR/bin/inbox.sh quizgo" 2>/dev/null || true)"
+if [ "$ACK_OPEN" = 1 ]; then
+  echo "已按 --ack-open 跳过 inbox 闸门"
+elif [ -z "$OPS_INBOX" ]; then
+  echo "提示：读不到 $OPS_DIR/bin/inbox.sh（共享面未就绪？），本次跳过 inbox 闸门" >&2
+elif printf '%s\n' "$OPS_INBOX" | grep -q '⬜'; then
+  echo "有发给 quizgo 的未处理请求，发布已中止：" >&2
+  printf '%s\n' "$OPS_INBOX" | sed 's/^/  /' >&2
+  echo >&2
+  echo "处理完把请求 status 改成 done 并追加 ## 回复；" >&2
+  echo "确认与本次发布无关，可加 --ack-open 放行。" >&2
+  exit 2
+elif printf '%s\n' "$OPS_INBOX" | grep -q '没有发给 quizgo 的未处理请求'; then
+  echo "inbox：没有发给 quizgo 的未处理请求"
+else
+  echo "提示：inbox.sh 输出无法识别，本次放行" >&2
 fi
 
 # ---------------------------------------------------------------------------
@@ -254,23 +284,30 @@ if [ "$WITH_UNITS" = 1 ]; then
   run_ssh "sudo install -m 644 $REMOTE_DIR/deploy/systemd/quizgo-backup.service $REMOTE_DIR/deploy/systemd/quizgo-backup.timer $REMOTE_DIR/deploy/systemd/tailscale-aliyun-fix.service $REMOTE_DIR/deploy/systemd/tailscale-aliyun-fix.timer /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable quizgo-backup.timer tailscale-aliyun-fix.timer && sudo systemctl restart quizgo-backup.timer tailscale-aliyun-fix.timer"
 fi
 
-# 4. 版本写入 .env：容器只读 env_file，不同步就永远是旧版本。
-#    放在 nginx / unit 之后：这两步失败会 exit，必须保证 .env 没有被改成新版本，
-#    否则之后任何一次 docker compose up -d 都会「报新版本、跑旧代码」
-run_ssh "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$VERSION|' $REMOTE_DIR/.env && sudo chown ecs-user:ecs-user $REMOTE_DIR/.env && sudo chmod 600 $REMOTE_DIR/.env && sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env"
+# 5c. 版本写入 .env：容器只读 env_file，不同步就永远是旧版本。
+#     只在「构建成功之后」或「--skip-build 且即将重建 api」时调用：
+#     构建失败（OOM / 拉依赖）时必须让 .env 停在上一版，否则之后任一
+#     docker compose up -d 都会「报新版本、跑旧代码」。
+write_app_version() {
+  run_ssh "sudo sed -i 's|^APP_VERSION=.*|APP_VERSION=$VERSION|' $REMOTE_DIR/.env && sudo chown ecs-user:ecs-user $REMOTE_DIR/.env && sudo chmod 600 $REMOTE_DIR/.env && sudo grep -E '^APP_VERSION=' $REMOTE_DIR/.env"
+}
 
 # 6. 构建并重启：必须用 up -d（而不是只重建 api/worker），
 #    这样镜像变更会重建 migrate，迁移成功后才起 api/worker
 if [ "$SKIP_BUILD" = 1 ]; then
   echo "跳过镜像构建（--skip-build，基线以来服务端代码无变化）"
+  write_app_version
   run_ssh "cd $REMOTE_DIR && docker compose up -d --force-recreate api worker"
 else
-  run_ssh "cd $REMOTE_DIR && docker compose build api && docker compose up -d"
+  run_ssh "cd $REMOTE_DIR && docker compose build api"
+  # 构建成功后才写版本；build 失败会因 set -e 立即退出，.env 保持上一版
+  write_app_version
+  run_ssh "cd $REMOTE_DIR && docker compose up -d"
 fi
 
 # 7. 自检：版本号 + 镜像 ID + 状态 + 日志
 if [ "$DRY_RUN" = 1 ]; then
-  echo '[dry-run] 跳过自检'
+  echo '[dry-run] 跳过自检与 /srv/ops 登记'
   exit 0
 fi
 
@@ -309,6 +346,58 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 ssh "$SSH_HOST" "printf '%s\n%s\n' '$SHA' '$EXPECT_IMAGE' | sudo tee $REMOTE_DIR/$MARKER_NAME >/dev/null && sudo chmod 644 $REMOTE_DIR/$MARKER_NAME"
 echo "==> 已记录发布基线：$SHA"
+
+# 8. 跨项目协作登记：覆盖 state/quizgo.json + 追加 journal 一行。
+#    失败只告警，不影响发布结果——发布已经自检通过，共享面写失败不应诱发回滚。
+ops_register() {
+  local now sha image md5_lines json log_month
+  now="$(python3 -c 'import datetime; print(datetime.datetime.now().astimezone().isoformat(timespec="seconds"))')" || return 1
+  sha="$(git rev-parse HEAD)" || return 1
+  if [ -n "$(git status --porcelain)" ]; then
+    sha="${sha}+dirty"
+  fi
+  image="$EXPECT_IMAGE"
+  md5_lines="$(ssh "$SSH_HOST" "cd /srv/nginx && md5sum nginx.conf conf.d/atlas.conf conf.d/quiz.conf" 2>/dev/null)" || return 1
+  [ "$(printf '%s\n' "$md5_lines" | grep -c '  ' || true)" -eq 3 ] || return 1
+  json="$(printf '%s\n' "$md5_lines" | python3 -c '
+import json, sys
+md5 = {}
+for line in sys.stdin:
+    parts = line.split()
+    if len(parts) == 2:
+        md5[parts[1]] = parts[0]
+keys = ["nginx.conf", "conf.d/atlas.conf", "conf.d/quiz.conf"]
+missing = [k for k in keys if k not in md5]
+if missing:
+    raise SystemExit("缺少 nginx 配置：" + ", ".join(missing))
+doc = {
+    "project": "quizgo",
+    "updatedAt": sys.argv[1],
+    "updatedBy": "quizgo-ai",
+    "release": {"version": sys.argv[2], "commit": sys.argv[3], "image": sys.argv[4]},
+    "nginxMd5": {k: md5[k] for k in keys},
+}
+print(json.dumps(doc, ensure_ascii=False, indent=2))
+' "$now" "$VERSION" "$sha" "$image")" || return 1
+  printf '%s\n' "$json" | ssh "$SSH_HOST" "cat > /srv/ops/state/quizgo.json" || return 1
+  log_month="${now:0:7}"
+  ssh "$SSH_HOST" "printf '%s [quizgo] deploy | quizgo %s | image %s | ok\n' '$now' '$VERSION' '$image' >> /srv/ops/journal/${log_month}.log" || return 1
+}
+
+if ops_register; then
+  echo "==> 已登记 /srv/ops/state/quizgo.json 与 journal"
+else
+  echo "警告：/srv/ops 登记失败（不影响发布结果），请手工补登 state/quizgo.json 与 journal" >&2
+fi
+
+# 8b. 共享面自检：status.sh 的漂移检测，出现 ⚠️ 只告警
+ops_status="$(ssh "$SSH_HOST" "$OPS_DIR/bin/status.sh" 2>/dev/null || true)"
+if printf '%s\n' "$ops_status" | grep -q '⚠️'; then
+  echo "警告：/srv/ops/bin/status.sh 报告异常：" >&2
+  printf '%s\n' "$ops_status" | grep '⚠️' | sed 's/^/  /' >&2
+else
+  echo "==> 共享面自检：无漂移"
+fi
 
 ssh "$SSH_HOST" "cd $REMOTE_DIR && docker compose ps --format 'table {{.Service}}\t{{.Status}}'"
 ssh "$SSH_HOST" "cd $REMOTE_DIR && docker compose logs --tail=80 api 2>&1 | grep -iE 'error|panic' || echo '日志无 error/panic'"

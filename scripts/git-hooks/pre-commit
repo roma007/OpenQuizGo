@@ -16,3 +16,20 @@ fi
 node scripts/bump-version.mjs
 
 git add VERSION tv/app/build.gradle.kts parent/pubspec.yaml
+
+# 跨项目协作（/srv/ops）：列出发给 quizgo 的未处理请求。
+# 只提示不阻塞——请求可能在对方挂几天，不能因此堵住自己的提交。
+# 连接失败 / 超时 / 共享面不存在都静默跳过，绝不影响提交。
+if command -v ssh >/dev/null 2>&1; then
+  inbox=$(ssh -o BatchMode=yes -o ConnectTimeout=3 quizgo \
+    '/srv/ops/bin/inbox.sh quizgo' 2>/dev/null || true)
+  case "$inbox" in
+    *"⬜"*)
+      echo "[ops] 有发给 quizgo 的未处理请求（不阻塞提交）："
+      printf '%s\n' "$inbox" | sed 's/^/  /'
+      echo "[ops] 处理后把 status 改成 done；详见 /srv/ops/CONTRACT.md"
+      ;;
+  esac
+fi
+
+exit 0

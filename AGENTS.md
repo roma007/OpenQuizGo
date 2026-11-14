@@ -351,3 +351,77 @@ ssh quizgo 'cd /srv/quizgo && docker compose up -d --no-build api worker'
 | 在服务器上构建 Atlas | 没必要，静态站本地构建秒级完成 |
 | 构建后磁盘涨 | 每次构建留一层缓存，定期 `docker builder prune -f` |
 
+---
+
+## 九、跨项目协作（`/srv/ops` 共享面）
+
+同一台 ECS 上还有 OpenChronicleAtlas（静态站），两边共用一个 nginx 容器与一份磁盘。
+跨项目协调**不再经人转达**，统一走服务器上的 `/srv/ops/`。
+
+### 9.1 先读契约
+
+- 动共享面之前：`ssh quizgo 'cat /srv/ops/CONTRACT.md'`（归属表、动共享面四步、共同红线）。
+- 一屏看双方状态：`ssh quizgo '/srv/ops/bin/status.sh'`。
+- 看发给自己的未处理请求：`ssh quizgo '/srv/ops/bin/inbox.sh quizgo'`。
+
+### 9.2 改 `/srv/nginx/**` 或重启 `web` 前必须拿锁
+
+```bash
+ssh quizgo 'flock /srv/ops/locks/nginx.lock -c "<命令>"'
+```
+
+- 拿不到锁说明 Atlas 正在动，**等**，不要强抢。
+- 经 `scripts/deploy.sh --with-nginx` 的改动已包含备份、`nginx -t`、失败自动回滚与 reload，优先用它。
+
+### 9.3 每次发布后登记 `state/quizgo.json`
+
+`scripts/deploy.sh` 收尾自动覆盖，字段固定：
+
+```json
+{
+  "project": "quizgo",
+  "updatedAt": "2026-11-14T18:20:00+08:00",
+  "updatedBy": "quizgo-ai",
+  "release": { "version": "1.0.16", "commit": "<sha>", "image": "sha256:<id>" },
+  "nginxMd5": {
+    "nginx.conf": "<md5>",
+    "conf.d/atlas.conf": "<md5>",
+    "conf.d/quiz.conf": "<md5>"
+  }
+}
+```
+
+- `nginxMd5` **三个文件都要记**，少一个 `status.sh` 就查不出那部分漂移。
+- 只写 `state/quizgo.json`，**不得修改 `state/atlas.json`**（Atlas 写的）。
+- 登记失败不影响发布结果，但会打印告警，需要手工补登。
+
+### 9.4 发布完追加 journal
+
+`/srv/ops/journal/YYYY-MM.log`，一行一条，只追加：
+
+```
+2026-11-14T18:20:00+08:00 [quizgo] deploy | quizgo 1.0.16 | image sha256:… | ok
+```
+
+类别：`deploy` / `nginx` / `request` / `incident` / `ack` / `note`。`deploy.sh` 自动写 `deploy` 行。
+
+### 9.5 需要 Atlas 做事就写 requests
+
+- 在 `/srv/ops/requests/` 新建 `YYYY-MM-DD-quizgo-to-atlas-<主题>.md`，格式见该目录 `README.md`。
+- 不要等人转达；对方处理后会把 `status` 改成 `done` 并追加 `## 回复`。
+
+### 9.6 闸门挂在哪
+
+| 路径 | 行为 |
+| --- | --- |
+| `scripts/git-hooks/pre-commit` | 列出 inbox(quizgo) 的 open 请求，**只提示不阻塞**（3 秒超时，失败静默） |
+| `scripts/deploy.sh` 开头 | 有 open 请求 → `exit 2`；确认无关或本次就是处理它时加 `--ack-open` |
+| `scripts/deploy.sh` 收尾 | 运行一次 `status.sh`，出现 `⚠️` 只告警；随后自动登记 state + journal |
+
+### 9.7 红线
+
+- 备案通过前，任何一方不得把 nginx 切到 80/443，不得新增公网端口。
+- Tailscale / iptables / 阿里云安全组只能人工改，AI 不动。
+- `/srv/atlas`、`/srv/atlas.prev`、`state/atlas.json` 属 Atlas，QuizGo 只读。
+- `atlas.conf` 的**源文件在本仓库** `deploy/nginx/conf.d/`；Atlas 只能通过 requests 交付改动，由 QuizGo 提交并 `--with-nginx` 同步。
+

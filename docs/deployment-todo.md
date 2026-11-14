@@ -3,7 +3,7 @@
 > 服务器：`ecs-user@8.163.122.39`（华南3 广州 / ALinux 4 / 2C2G / 40G）
 > 登录：**`ssh quizgo`**（走 Tailscale，推荐）；`ssh quizgo-pub` 仅在安全组放行当前出口 IP 时可用
 > 域名：`openapp.asia`
-> 线上版本：`1.0.15`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
+> 线上版本：`1.0.16`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
 > 最后更新：2026-11-14
 
 ---
@@ -104,15 +104,19 @@
 - [ ] **短信通道接入**（当前 `SMS_MODE=disabled`，家长端短信登录不可用）
   - 接阿里云短信 → 改 `.env` → 重启 api
 - [x] **更新发布流程固化** ✅ 2026-11-14
-  - 已实现：`scripts/deploy.sh`（备份 → 打 `openquizgo:rollback` → rsync → `.env` 版本对齐 →
-    `docker compose build` → `up -d`（migrate 先跑）→ 自检）
-  - 参数：`--with-admin-web`、`--with-nginx`、`--with-units`、`--skip-backup`、`--skip-build`、`--dry-run`
+  - 已实现：`scripts/deploy.sh`（备份 → 打 `openquizgo:rollback` → rsync → nginx/units →
+    `docker compose build` → **构建成功后才写 `.env`** → `up -d`（migrate 先跑）→ 自检 → 共享面登记）
+  - 参数：`--with-admin-web`、`--with-nginx`、`--with-units`、`--skip-backup`、`--skip-build`、
+    `--ack-open`、`--dry-run`
   - 解决了版本真空期：提交 hook 升 `VERSION` 后，脚本自动写入 `.env APP_VERSION` 并重建容器
   - 仍待做：CI 构建镜像推 ACR，服务器只 pull（当前 2C2G 上构建约 4.5 分钟）
   - ⚠️ `--skip-build` / `--skip-backup` 有硬保护：以服务器 `/srv/quizgo/.deployed-image`
     为基线，服务端代码/迁移有变化、工作区脏、或本机解析不到基线 commit 时直接 `exit 2`
   - ⚠️ 改 `deploy/nginx` 必须加 `--with-nginx`（会 `nginx -t` 通过后再 reload）；
     改 `deploy/systemd` 必须加 `--with-units`，否则会「发布成功但配置没生效」
+  - 跨项目协作：发布前读 `/srv/ops/bin/inbox.sh quizgo`，有 open 请求直接 `exit 2`，
+    确认无关才加 `--ack-open`；收尾自动覆盖 `/srv/ops/state/quizgo.json` 并追加 journal
+  - ⚠️ 构建失败时 `.env` 保持上一版（版本写入在 build 成功之后），不会出现「报新版本、跑旧代码」
 - [x] **清理构建缓存** ✅ 2026-11-14
   - 已执行 `docker builder prune -f`，回收 911.7MB，`docker system df` 里 Build Cache 归零
   - 同时删除了 `/srv/quizgo` 下已停止更新的陈旧副本 `bin`/`dist`/`parent`/`tv`/`android`（141M）
