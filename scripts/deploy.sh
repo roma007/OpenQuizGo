@@ -8,9 +8,13 @@
 #   scripts/deploy.sh                    # 标准发布
 #   scripts/deploy.sh --with-admin-web   # 管理端前端有改动时，附带同步 admin-web/dist
 #   scripts/deploy.sh --with-units       # deploy/systemd 有改动时，重装 unit 并重启 timer
-#   scripts/deploy.sh --skip-backup      # 仅跳过备份（无迁移的纯前端改动才可用）
-#   scripts/deploy.sh --skip-build       # 不重建镜像，只同步配置与版本号（纯文档/注释提交用）
+#   scripts/deploy.sh --skip-backup      # 仅跳过备份（服务端代码/迁移没变时可用，有硬保护）
+#   scripts/deploy.sh --skip-build       # 不重建镜像，只对齐版本号（服务端代码/迁移没变时可用，有硬保护）
 #   scripts/deploy.sh --dry-run          # 只打印将执行的命令
+#
+# --skip-build / --skip-backup 的硬保护：以服务器上的 /srv/quizgo/.deployed-image
+# （记录上次构建的 commit 与镜像 ID）为基线，若服务端代码或迁移有变化就直接拒绝，
+# 避免出现「报新版本、实际跑旧代码」。
 #
 # 环境变量：SSH_HOST(默认 quizgo) REMOTE_DIR(默认 /srv/quizgo) BASE_URL(默认 http://127.0.0.1:8082)
 set -euo pipefail
@@ -21,6 +25,7 @@ cd "$ROOT"
 SSH_HOST="${SSH_HOST:-quizgo}"
 REMOTE_DIR="${REMOTE_DIR:-/srv/quizgo}"
 BASE_URL="${BASE_URL:-http://127.0.0.1:8082}"
+MARKER_NAME=".deployed-image"
 
 WITH_ADMIN_WEB=0
 WITH_UNITS=0
@@ -35,7 +40,9 @@ for arg in "$@"; do
     --skip-backup)    SKIP_BACKUP=1 ;;
     --skip-build)     SKIP_BUILD=1 ;;
     --dry-run)        DRY_RUN=1 ;;
-    -h|--help)        sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help)
+      awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "${BASH_SOURCE[0]}"
+      exit 0 ;;
     *) echo "未知参数：$arg（--help 查看用法）" >&2; exit 2 ;;
   esac
 done
@@ -52,7 +59,6 @@ run() {
   fi
 }
 
-# ssh 命令用字符串形式，方便在远端组合管道/&&
 run_ssh() {
   if [ "$DRY_RUN" = 1 ]; then
     printf '[dry-run] ssh %s %q\n' "$SSH_HOST" "$1"
@@ -68,12 +74,62 @@ if [ -n "$(git status --porcelain)" ]; then
   echo "提示：工作区有未提交改动（发布仍会继续，建议先提交再发布）"
 fi
 
+# ---------------------------------------------------------------------------
+# 发布前保护：--skip-build / --skip-backup 只允许用于「不改变二进制与表结构」的情况
+# ---------------------------------------------------------------------------
+# 服务端代码路径：这些路径有变化就必须重建镜像
+CODE_PATHS=(api internal cmd migrations go.mod go.sum Dockerfile docker-compose.yml)
+
+DEPLOYED_SHA=""
+if [ "$DRY_RUN" = 0 ]; then
+  DEPLOYED_SHA="$(ssh "$SSH_HOST" "cat $REMOTE_DIR/$MARKER_NAME 2>/dev/null | head -n1" 2>/dev/null || true)"
+fi
+
+BASELINE=""
+if [ -n "$DEPLOYED_SHA" ] && git rev-parse --verify -q "${DEPLOYED_SHA}^{commit}" >/dev/null 2>&1; then
+  BASELINE="$DEPLOYED_SHA"
+else
+  if [ -n "$DEPLOYED_SHA" ]; then
+    echo "提示：无法解析服务器记录的基线 $DEPLOYED_SHA（可能来自另一台机器）"
+  fi
+  # 没有可信基线时退回上一个提交；连它都没有就拒绝使用跳过类参数
+  if git rev-parse --verify -q 'HEAD~1^{commit}' >/dev/null 2>&1; then
+    BASELINE='HEAD~1'
+  elif [ "$SKIP_BUILD" = 1 ] || [ "$SKIP_BACKUP" = 1 ]; then
+    echo "无法确定发布基线，拒绝使用 --skip-build / --skip-backup" >&2
+    exit 2
+  fi
+fi
+
+changed_since_baseline() {
+  [ -n "$BASELINE" ] || return 0
+  git diff --name-only "$BASELINE" -- "$@" 2>/dev/null || true
+}
+
+if [ "$SKIP_BUILD" = 1 ]; then
+  changed="$(changed_since_baseline "${CODE_PATHS[@]}")"
+  if [ -n "$changed" ]; then
+    echo "--skip-build 不能用于服务端代码/迁移变更，检测到：" >&2
+    echo "$changed" | sed 's/^/  /' >&2
+    exit 2
+  fi
+fi
+
+if [ "$SKIP_BACKUP" = 1 ]; then
+  changed="$(changed_since_baseline migrations)"
+  if [ -n "$changed" ]; then
+    echo "--skip-backup 不能用于带迁移的发布，检测到：" >&2
+    echo "$changed" | sed 's/^/  /' >&2
+    exit 2
+  fi
+fi
+
 # 1. 打回滚点：旧镜像留作 openquizgo:rollback
 run_ssh 'docker tag openquizgo:local openquizgo:rollback 2>/dev/null || true'
 
 # 2. 备份数据库：迁移是单向的，带迁移的发布必须先备份
 if [ "$SKIP_BACKUP" = 1 ]; then
-  echo "跳过备份（--skip-backup）"
+  echo "跳过备份（--skip-backup，已确认无迁移变更）"
 else
   run_ssh 'sudo systemctl start quizgo-backup.service'
 fi
@@ -86,7 +142,7 @@ RSYNC_ARGS=(-az
             --exclude 'parent' --exclude 'tv' --exclude 'android'
             --exclude 'admin-web' --exclude 'bin' --exclude 'dist'
             --exclude 'docs/conversations'
-            --exclude 'data' --exclude '.opencode')
+            --exclude 'data' --exclude '.opencode' --exclude "$MARKER_NAME")
 run rsync "${RSYNC_ARGS[@]}" ./ "$SSH_HOST:$REMOTE_DIR/"
 
 if [ "$WITH_ADMIN_WEB" = 1 ]; then
@@ -104,13 +160,13 @@ fi
 # 6. 构建并重启：必须用 up -d（而不是只重建 api/worker），
 #    这样镜像变更会重建 migrate，迁移成功后才起 api/worker
 if [ "$SKIP_BUILD" = 1 ]; then
-  echo "跳过镜像构建（--skip-build），仅重建 api/worker 让新配置生效"
+  echo "跳过镜像构建（--skip-build，基线以来服务端代码无变化）"
   run_ssh "cd $REMOTE_DIR && docker compose up -d --force-recreate api worker"
 else
   run_ssh "cd $REMOTE_DIR && docker compose build api && docker compose up -d"
 fi
 
-# 7. 自检：版本、状态、日志
+# 7. 自检：版本号 + 镜像 ID + 状态 + 日志
 if [ "$DRY_RUN" = 1 ]; then
   echo '[dry-run] 跳过自检'
   exit 0
@@ -134,6 +190,23 @@ case "$meta" in
     exit 1
     ;;
 esac
+
+# 镜像 ID 核对：防止「版本号对了、容器还是旧镜像」
+EXPECT_IMAGE="$(ssh "$SSH_HOST" "docker image inspect openquizgo:local --format '{{.Id}}'")"
+RUN_IMAGE="$(ssh "$SSH_HOST" "cd $REMOTE_DIR && docker inspect --format '{{.Image}}' \$(docker compose ps -q api)")"
+echo "==> 镜像：期望 $EXPECT_IMAGE / 运行 $RUN_IMAGE"
+if [ "$EXPECT_IMAGE" != "$RUN_IMAGE" ]; then
+  echo "镜像不一致：运行中的 api 不是 openquizgo:local 最新构建" >&2
+  exit 1
+fi
+
+# 记录本次发布基线，供下次 --skip-build / --skip-backup 校验
+SHA="$(git rev-parse HEAD)"
+if [ -n "$(git status --porcelain)" ]; then
+  SHA="$SHA+dirty"
+fi
+ssh "$SSH_HOST" "printf '%s\n%s\n' '$SHA' '$EXPECT_IMAGE' | sudo tee $REMOTE_DIR/$MARKER_NAME >/dev/null && sudo chmod 644 $REMOTE_DIR/$MARKER_NAME"
+echo "==> 已记录发布基线：$SHA"
 
 ssh "$SSH_HOST" "cd $REMOTE_DIR && docker compose ps --format 'table {{.Service}}\t{{.Status}}'"
 ssh "$SSH_HOST" "cd $REMOTE_DIR && docker compose logs --tail=80 api 2>&1 | grep -iE 'error|panic' || echo '日志无 error/panic'"

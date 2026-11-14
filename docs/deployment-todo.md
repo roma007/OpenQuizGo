@@ -3,6 +3,7 @@
 > 服务器：`ecs-user@8.163.122.39`（华南3 广州 / ALinux 4 / 2C2G / 40G）
 > 登录：**`ssh quizgo`**（走 Tailscale，推荐）；`ssh quizgo-pub` 仅在安全组放行当前出口 IP 时可用
 > 域名：`openapp.asia`
+> 线上版本：`1.0.8`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
 > 最后更新：2026-11-14
 
 ---
@@ -102,11 +103,13 @@
     如果坚持要备份配置，先 `gpg`/`age` 加密再上传，或改存到 OSS 的独立加密 bucket
 - [ ] **短信通道接入**（当前 `SMS_MODE=disabled`，家长端短信登录不可用）
   - 接阿里云短信 → 改 `.env` → 重启 api
-- [ ] **更新发布流程固化**
-  - 当前：本地构建 → rsync → `docker compose build` → `up -d`
-  - 可加：CI 构建镜像推 ACR，服务器只 pull
-  - 待补：提交后自动把 `VERSION` 同步到 `.env APP_VERSION` 并 `--force-recreate`，
-    否则 `/v1/meta` 会一直报旧版本
+- [x] **更新发布流程固化** ✅ 2026-11-14
+  - 已实现：`scripts/deploy.sh`（备份 → 打 `openquizgo:rollback` → rsync → `.env` 版本对齐 →
+    `docker compose build` → `up -d`（migrate 先跑）→ 自检）
+  - 参数：`--with-admin-web`、`--with-units`、`--skip-backup`、`--skip-build`、`--dry-run`
+  - 解决了版本真空期：提交 hook 升 `VERSION` 后，脚本自动写入 `.env APP_VERSION` 并重建容器
+  - 仍待做：CI 构建镜像推 ACR，服务器只 pull（当前 2C2G 上构建约 4.5 分钟）
+  - ⚠️ `--skip-build` 仅用于纯文档/纯配置提交；有代码或迁移变更时不要用
 - [ ] **清理构建缓存**（不急）
   - 当前构建缓存约 566MB；`openquizgo:local` 镜像本身 63MB，两者是不同口径
   - `docker builder prune -f`
@@ -243,9 +246,10 @@ Tailscale 的防欺骗规则：
 
 持久化（仓库文件已同步）：
 
-- `scripts/tailscale-aliyun-fix.sh` → `/usr/local/bin/tailscale-aliyun-fix.sh`
-- `deploy/systemd/tailscale-aliyun-fix.service`
+- `deploy/systemd/tailscale-aliyun-fix.service` → `ExecStart=/srv/quizgo/scripts/tailscale-aliyun-fix.sh`
 - `deploy/systemd/tailscale-aliyun-fix.timer`（开机 30s 后 + 每 5 分钟检查，**tailscaled 重启后自动补回**，幂等）
+- 不再复制到 `/usr/local/bin`：unit 直接指向仓库脚本，避免两份文件漂移（旧副本已删除）
+- 安装/更新 unit：`scripts/deploy.sh --with-units`（内部 `daemon-reload` + `enable` + `restart`）
 - 脚本会自动清理旧版 `100.100.0.0/16` 窄规则
 
 **验证命令**
