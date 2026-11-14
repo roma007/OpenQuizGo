@@ -217,6 +217,20 @@ if [ "$WITH_NGINX" = 1 ]; then
     echo "       deploy.sh 只同步 nginx.conf 与 conf.d/，请扩展同步逻辑" >&2
   fi
 
+  # 漂移检查（仅告警，必须在同步前做）：/srv/nginx 是独立副本不是软链，
+  # 有人手工改过的话先暴露出来，再被仓库版本覆盖
+  local_sum="$(cd deploy/nginx && python3 - <<'PY'
+import glob, hashlib
+for f in ['nginx.conf'] + sorted(glob.glob('conf.d/*.conf')):
+    print(hashlib.md5(open(f, 'rb').read()).hexdigest() + '  ' + f)
+PY
+)"
+  remote_sum="$(ssh "$SSH_HOST" "cd /srv/nginx && md5sum nginx.conf conf.d/*.conf" 2>/dev/null | awk '{print $1"  "$2}')"
+  if [ -n "$remote_sum" ] && [ "$local_sum" != "$remote_sum" ]; then
+    echo "警告：/srv/nginx 与仓库 deploy/nginx 不一致（可能被手工改过），本次将用仓库版本覆盖：" >&2
+    diff <(printf '%s\n' "$local_sum") <(printf '%s\n' "$remote_sum") | sed 's/^/  /' >&2 || true
+  fi
+
   # 备份必须整体替换：cp -a 在目标已存在时会把源塞进目标目录，第二次就套娃，
   # 之后的「自动回滚」会恢复到更早一代。备份失败（磁盘满/权限）直接中止发布。
   run_ssh "sudo rm -rf /srv/nginx.prev && sudo cp -a /srv/nginx /srv/nginx.prev"
@@ -236,19 +250,6 @@ if [ "$WITH_NGINX" = 1 ]; then
   fi
   run_ssh "cd $REMOTE_DIR && docker compose exec -T web nginx -s reload"
   echo "nginx 配置已生效"
-
-  # 漂移检查（仅告警）：/srv/nginx 是独立副本，不是软链，可能被人手工改过
-  local_sum="$(cd deploy/nginx && python3 - <<'PY'
-import glob, hashlib
-for f in ['nginx.conf'] + sorted(glob.glob('conf.d/*.conf')):
-    print(hashlib.md5(open(f, 'rb').read()).hexdigest() + '  ' + f)
-PY
-)"
-  remote_sum="$(ssh "$SSH_HOST" "cd /srv/nginx && md5sum nginx.conf conf.d/*.conf" 2>/dev/null | awk '{print $1"  "$2}')"
-  if [ "$local_sum" != "$remote_sum" ]; then
-    echo "警告：/srv/nginx 与仓库 deploy/nginx 不一致（可能被手工改过）：" >&2
-    diff <(printf '%s\n' "$local_sum") <(printf '%s\n' "$remote_sum") | sed 's/^/  /' >&2 || true
-  fi
 fi
 
 # 5b. 可选：重装 systemd unit（deploy/systemd 有改动时）

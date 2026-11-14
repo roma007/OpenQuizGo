@@ -3,7 +3,7 @@
 > 服务器：`ecs-user@8.163.122.39`（华南3 广州 / ALinux 4 / 2C2G / 40G）
 > 登录：**`ssh quizgo`**（走 Tailscale，推荐）；`ssh quizgo-pub` 仅在安全组放行当前出口 IP 时可用
 > 域名：`openapp.asia`
-> 线上版本：`1.0.12`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
+> 线上版本：`1.0.14`（`VERSION` = tag = `.env APP_VERSION` = `/v1/meta`）
 > 最后更新：2026-11-14
 
 ---
