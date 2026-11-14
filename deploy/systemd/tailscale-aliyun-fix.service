@@ -1,0 +1,10 @@
+[Unit]
+Description=Allow Aliyun internal 100.64.0.0/10 through Tailscale netfilter
+Documentation=file:/srv/quizgo/scripts/tailscale-aliyun-fix.sh
+After=tailscaled.service
+Wants=tailscaled.service
+
+[Service]
+Type=oneshot
+# 直接指向仓库脚本，避免 /usr/local/bin 副本与仓库不一致
+ExecStart=/srv/quizgo/scripts/tailscale-aliyun-fix.sh

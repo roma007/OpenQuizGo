@@ -11,7 +11,7 @@
 | `worker` | 报告聚合定时任务 | 是（可与 api 合并部署） |
 | PostgreSQL | 唯一事实来源，建议 16 | 是 |
 | Redis | 验证码、限流、设备激活码 | 是 |
-| Prometheus | 指标抓取与告警 | 推荐 |
+| Prometheus | 指标抓取与告警 | 未启用（2C2G 精简模式已移除） |
 | 反向代理 | TLS 终止、限流、访问控制 | 生产必需 |
 
 ## 2. 环境变量
@@ -69,15 +69,26 @@ make build
 
 ## 4. Docker Compose
 
+生产用根目录 `docker-compose.yml`（2C2G 精简模式），共 6 个服务：
+
+| 服务 | 作用 | 端口 | 内存上限 |
+| --- | --- | --- | --- |
+| `migrate` | 一次性执行 goose 迁移，成功后才放行 api/worker | 无 | 256m |
+| `api` | HTTP 服务 | `127.0.0.1:8080` | 256m |
+| `worker` | 报告聚合等后台任务 | 无 | 128m |
+| `postgres` | 数据库 | 仅容器网络 | 512m |
+| `redis` | 验证码 / 限流 / 激活码 | 仅容器网络 | 128m |
+| `web` | nginx（Atlas 静态站 + 后台/API 反代） | host 网络 `8081` / `8082` | 64m |
+
 ```bash
-docker compose up --build
+docker compose up -d    # 先跑 migrate，失败则 api/worker 不启动
+docker compose ps       # migrate 应显示 Exited (0)
 ```
 
-包含：PostgreSQL、Redis、API（启动前自动迁移）、worker、Prometheus（:9090）。
+- 管理后台与 API：`http://<host>:8082`（经 nginx，仅本机 + Tailscale 网段）
+- 指标：`api` 的 `/metrics` 不对外；Prometheus 已移除，见第 7 节
+- 发布用 `scripts/deploy.sh`，不要只重建 api（会跳过迁移）
 
-- API：http://localhost:8080
-- Prometheus：http://localhost:9090
-- 指标：http://localhost:8080/metrics
 
 ## 5. 迁移
 
@@ -88,7 +99,9 @@ make migrate-down     # 回滚一个（仅开发/预发）
 ```
 
 - 迁移内嵌在 `migrate` 二进制，生产无需额外文件。
-- 发布顺序：备份 → 迁移 → 启动新版本 → 验证 `/readyz`。
+- 发布顺序：备份 → 迁移 → 启动新版本 → 验证（见下）。
+- 探针分工：`/healthz` 是存活探针（进程在跑即 200），`/readyz` 是依赖就绪探针（DB/Redis 异常会失败）。
+  发布自检看 **`/healthz` 与 `/v1/meta`**（能不能访问、版本对不对）；`/readyz` 用于排查依赖。
 - 回滚：镜像回退 + 按需执行 down；数据迁移默认只向前。
 
 ## 6. 反向代理（Nginx 示例）
@@ -124,9 +137,13 @@ server {
 
 ## 7. 监控与告警
 
-- 抓取配置：[`deploy/prometheus/prometheus.yml`](../deploy/prometheus/prometheus.yml)
-- 告警规则：[`deploy/prometheus/alerts.yml`](../deploy/prometheus/alerts.yml)
-- 关键指标：
+**当前未启用 Prometheus**：2C2G 单机常驻不划算，已从 `docker-compose.yml` 移除。
+
+- `deploy/prometheus/` 里的抓取与告警配置仅作扩容后的参考（目录内有 README 说明）。
+- `api` 仍暴露 `/metrics`，但 nginx `location /metrics` 显式 `deny all`，只在容器网络/本机可达。
+- 临时排查：`ssh quizgo 'cd /srv/quizgo && docker compose exec -T api wget -qO- 127.0.0.1:8080/metrics | head'`。
+- 日常观测改用：`docker compose logs`、`/healthz`、`/readyz`、阿里云云监控（CPU/内存/磁盘）。
+- 扩容后再抓这些指标：
   - `openquizgo_http_request_duration_seconds` p95
   - `openquizgo_http_requests_total{status=~"5.."}`
   - `openquizgo_http_in_flight_requests`
@@ -136,17 +153,31 @@ server {
 
 ## 8. 备份与恢复
 
-```bash
-# 每日全量
-pg_dump --format=custom --file=/backup/openquizgo-$(date +%F).dump "$DATABASE_URL"
+生产实现是 `scripts/backup-pg.sh`，由 systemd timer 调度（`deploy/systemd/quizgo-backup.*`）：
 
-# 恢复
-pg_restore --clean --if-exists --dbname="$DATABASE_URL" /backup/openquizgo-YYYY-MM-DD.dump
+- 时间：每天 03:20，随机延迟最多 5 分钟，`Persistent=true`（关机错过会补跑）
+- 产物：`/srv/backup/pg/openquizgo-YYYYmmdd-HHMMSS.sql.gz`
+  （`pg_dump --clean --if-exists` 的纯 SQL，gzip 压缩，非 custom format）
+- 保留 7 天；同目录另有 `.env` 快照 `env-*.bak`（600，**含密钥**，不参与异地备份）
+- 校验：文件 ≥4KB 且 ≥10 张 `CREATE TABLE`，否则判失败
+- 磁盘保护：可用空间 <1GB 时直接跳过，避免写满
+- 已做恢复演练：43 表 / 1 管理员 / goose 迁移记录全部恢复成功
+
+```bash
+# 手动备份一次
+ssh quizgo 'sudo systemctl start quizgo-backup.service'
+ssh quizgo 'ls -lh /srv/backup/pg/'
+
+# 恢复（先停 api/worker，避免写入干扰）
+ssh quizgo 'cd /srv/quizgo && docker compose stop api worker'
+ssh quizgo 'cd /srv/quizgo && gunzip -c /srv/backup/pg/openquizgo-XXXX.sql.gz | docker compose exec -T postgres psql -U openquizgo -d openquizgo'
+ssh quizgo 'cd /srv/quizgo && docker compose start api worker'
 ```
 
-- 建议开启 WAL 归档，RPO ≤15 分钟。
-- 对象存储（题干图/音）单独做跨区复制。
+- **没有 WAL 归档**，RPO = 最后一个备份点（最长约 24 小时）；要更低 RPO 再上 WAL/流复制。
+- 异地备份（OSS）是 P3 待办：只传 `*.sql.gz`，`env-*.bak` 必须排除或先加密。
 - 每季度演练一次恢复。
+
 
 ## 9. 扩容与高可用
 
@@ -158,10 +189,47 @@ pg_restore --clean --if-exists --dbname="$DATABASE_URL" /backup/openquizgo-YYYY-
 
 ## 10. 发布与回滚
 
-1. 预发执行迁移与全量集成测试。
-2. 灰度 5% 设备，观察 5xx、p95、授权拒绝率。
-3. 全量发布。
-4. 异常回滚镜像；数据库不做破坏性 down，必要时用前向修复迁移。
+> **可执行流程见仓库根目录 `AGENTS.md` 第八节。**
+> `AGENTS.md` 会被 AI 代理自动加载，本文件不会；两者冲突时以 `AGENTS.md` 为准。
+> 本节只保留取舍与背景，供人阅读和排查时参考。
+
+### 10.1 发布顺序（固定，不可调整）
+
+```
+备份 → 迁移 → 启动新版本 → 验证 /healthz 与 /v1/meta → 观察日志与资源
+```
+
+- 迁移失败（非 0 退出）时，`api` / `worker` 不会启动，这是 compose 的 `service_completed_successfully` 保护。
+- 验证不通过立即回滚镜像；不要在现场改配置试错。
+
+### 10.2 为什么迁移不可回滚
+
+goose 迁移是单向的，`down` 仅用于开发环境。生产回滚只回代码、不回库：
+
+- 迁移约定**只加不删**（加表、加列、加索引），旧代码面对新结构仍可运行。
+- 删除列/改类型这类破坏性变更，必须拆成「先加新字段 → 双写 → 切读 → 再删旧字段」多次发布。
+- 真要回库只能恢复备份，代价是全量数据回退，因此**带迁移的发布必须先备份**。
+
+### 10.3 回滚语义
+
+| 回滚对象 | 手段 | 影响 |
+| --- | --- | --- |
+| 应用代码 | `docker tag openquizgo:rollback openquizgo:local` + `up -d --no-build` | 秒级，不停库 |
+| 管理端前端 | 重新 rsync 上一版 `dist` | 秒级 |
+| Atlas 静态站 | `rsync -a --delete /srv/atlas.prev/ /srv/atlas/` | 秒级，无损 |
+| 数据库 | 用 `/srv/backup/pg/` 恢复 | 分钟级，丢失备份点之后的数据 |
+
+### 10.4 单机部署的现实约束
+
+- 服务器 2C2G + 4G swap，不适合在机器上跑 Atlas 构建，也不适合并行构建多个镜像。
+- 发布窗口内不要同时做备份、构建、压测，避免触发 OOM。
+- 单实例谈不上灰度：**发布即全量**，所以「先备份 + 快速回滚」比「灰度」更现实。
+- 镜像每次构建约 63MB，定期 `docker builder prune -f` 控制磁盘。
+
+### 10.5 未来扩容后的灰度
+
+多实例就绪后按以下顺序演进：预发跑迁移与集成测试 → 灰度 5% 设备观察 5xx / p95 / 授权拒绝率 →
+全量发布。当前单机阶段可跳过，但不要因此省略备份与验证。
 
 ## 11. 安全
 

@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenQuizGo PostgreSQL backup
+Documentation=file:/srv/quizgo/scripts/backup-pg.sh
+# 直接指向仓库脚本，避免 /usr/local/bin 副本与仓库不一致
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=ecs-user
+Group=ecs-user
+WorkingDirectory=/srv/quizgo
+ExecStart=/srv/quizgo/scripts/backup-pg.sh
+Nice=10
+IOSchedulingClass=idle

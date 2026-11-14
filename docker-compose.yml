@@ -1,71 +1,133 @@
+# 生产部署用（2C2G 精简模式）
+# - 去掉 Prometheus，指标改用阿里云云监控 / 按需临时启动
+# - 数据库与 Redis 不发布任何宿主机端口，仅容器网络内访问
+# - api 只绑定 127.0.0.1，由宿主机/前置 Nginx 反代对外
+# - 所有服务设置内存上限，避免单服务失控拖垮整机
+# - 迁移作为一次性任务先跑，成功后 api/worker 才启动
+
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: openquizgo
-      POSTGRES_PASSWORD: openquizgo
-      POSTGRES_DB: openquizgo
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - max_connections=20
+      - -c
+      - work_mem=2MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - effective_cache_size=256MB
     volumes:
       - pgdata:/var/lib/postgresql/data
+    mem_limit: 512m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U openquizgo -d openquizgo"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
       timeout: 3s
       retries: 10
+      start_period: 20s
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --maxmemory
+      - 32mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --save
+      - ""
+    mem_limit: 128m
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
       retries: 10
 
-  api:
-    build: .
-    command: ["sh", "-c", "/app/migrate up && /app/api"]
-    environment:
-      APP_ENV: dev
-      HTTP_ADDR: ":8080"
-      DATABASE_URL: postgres://openquizgo:openquizgo@postgres:5432/openquizgo?sslmode=disable
-      REDIS_URL: redis://redis:6379/0
-      LOG_LEVEL: info
-    ports:
-      - "8080:8080"
+  migrate:
+    image: openquizgo:local
+    restart: "no"
+    env_file: .env
+    # 镜像 ENTRYPOINT 是 /app/api，这里必须显式覆盖，否则跑的是 API
+    entrypoint: ["/app/migrate"]
+    command: ["up"]
+    mem_limit: 256m
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - quizdata:/app/data
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    volumes:
-      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./deploy/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+  api:
+    image: openquizgo:local
+    build:
+      context: .
+      args:
+        GOPROXY: https://goproxy.cn,direct
+    restart: unless-stopped
+    env_file: .env
+    mem_limit: 256m
+    security_opt:
+      - no-new-privileges:true
     ports:
-      - "9090:9090"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - quizdata:/app/data
     depends_on:
-      - api
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   worker:
-    build: .
-    command: ["sh", "-c", "/app/migrate up && /app/worker"]
-    environment:
-      APP_ENV: dev
-      DATABASE_URL: postgres://openquizgo:openquizgo@postgres:5432/openquizgo?sslmode=disable
-      REDIS_URL: redis://redis:6379/0
-      LOG_LEVEL: info
-      REPORT_INTERVAL: 1h
+    image: openquizgo:local
+    restart: unless-stopped
+    env_file: .env
+    entrypoint: ["/app/worker"]
+    mem_limit: 128m
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - quizdata:/app/data
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
+      migrate:
+        condition: service_completed_successfully
+
+  # Atlas 静态站 + QuizGo 管理后台/API 反代
+  # 一条 nginx 同时服务两个项目，比两个容器省 20–30MB
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    mem_limit: 64m
+    # host 网络：nginx 能看到真实客户端 IP，allow/deny 才生效；
+    # 也不经 docker-proxy，access log 里是真实来源
+    network_mode: host
+    volumes:
+      - /srv/atlas:/srv/atlas:ro
+      - /srv/quizgo/admin-web/dist:/srv/quizgo/admin-web/dist:ro
+      - /srv/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /srv/nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      api:
         condition: service_healthy
 
 volumes:
   pgdata:
+  quizdata:

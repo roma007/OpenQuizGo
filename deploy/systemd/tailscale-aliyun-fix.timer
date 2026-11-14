@@ -1,0 +1,14 @@
+[Unit]
+Description=Ensure Aliyun 100.64.0.0/10 stays allowed through Tailscale netfilter
+Documentation=file:/srv/quizgo/scripts/tailscale-aliyun-fix.sh
+
+[Timer]
+# 开机 30 秒后跑一次，之后每 5 分钟检查一次
+# tailscaled 重启会重建 ts-input 链，这里负责自动补回规则
+OnBootSec=30s
+OnUnitActiveSec=5min
+AccuracySec=30s
+Unit=tailscale-aliyun-fix.service
+
+[Install]
+WantedBy=timers.target

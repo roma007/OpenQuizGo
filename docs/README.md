@@ -113,5 +113,6 @@ node scripts/archive-conversation.mjs --all
 | 075 | GuardEngine 可测性重构 | [设计](design/075-GuardEngine可测性重构设计.md) | [计划](plans/075-GuardEngine可测性重构实施计划.md) | done（v0.65.3，TV 0.4.4） |
 | 076 | iOS 与 iPad 适配 | [设计](design/076-iOS与iPad适配设计.md) | [计划](plans/076-iOS与iPad适配实施计划.md) | done（v1.0.2，家长端 1.0.2） |
 | 077 | TV 本地题库与定时答题 | [设计](design/077-TV本地题库与定时答题设计.md) | [计划](plans/077-TV本地题库与定时答题实施计划.md) | done（v1.0.6，TV 1.0.6） |
+| 078 | 发布脚本与部署文档校正 | [设计](design/078-发布脚本与部署文档校正设计.md) | [计划](plans/078-发布脚本与部署文档校正实施计划.md) | in-progress（v1.0.7） |
 
 > 新增设计/计划后，请同步更新此表。
