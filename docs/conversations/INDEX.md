@@ -1,12 +1,13 @@
 # 对话归档索引
 
 > 本文件由 `scripts/archive-conversation.mjs` 自动生成，请勿手工编辑。
-> 最后更新：2026-11-14 19:46:30
+> 最后更新：2026-11-14 23:46:20
 
-共 4 条归档。
+共 5 条归档。
 
 | 日期 | 时间 | 标题 | 消息数 | 会话 ID |
 | --- | --- | --- | --- | --- |
+| 2026-11-14 | 19:51:10 | [服务器部署与ICP备案注意事项](2026-11-14-002-%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2%E4%B8%8EICP%E5%A4%87%E6%A1%88%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9.md) | 71 | `ses_e261a52b7fferI0pWF7EYmQ4pi` |
 | 2026-11-14 | 12:33:05 | [[redacted:session-title:ses_e27ab6801ffepweY4PqzIiAwRz]](2026-11-14-001-OpenQuizGo-%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2%E4%BA%A4%E6%8E%A5.md) | 195 | `ses_e27ab6801ffepweY4PqzIiAwRz` |
 | 2026-11-12 | 15:09:02 | [iOS 适配 iPad 自适应布局](2026-11-12-002-iOS-%E9%80%82%E9%85%8D-iPad-%E8%87%AA%E9%80%82%E5%BA%94%E5%B8%83%E5%B1%80.md) | 302 | `ses_e31695952ffeNpUr12z0aIdPFQ` |
 | 2026-11-12 | 14:20:21 | [OpenReel 项目 logo 设计](2026-11-12-001-OpenReel-%E9%A1%B9%E7%9B%AE-logo-%E8%AE%BE%E8%AE%A1.md) | 145 | `ses_e3195ebedffeqDpOfZvxXfTPFX` |
