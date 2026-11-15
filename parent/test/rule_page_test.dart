@@ -65,8 +65,10 @@ void main() {
     await tester.pump();
     expect(find.text('小明 的观看规则'), findsOneWidget);
     expect(find.text('规则版本 v3'), findsOneWidget);
-    expect(find.text('解锁时长（分钟）'), findsOneWidget);
-    expect(find.text('加权门槛'), findsOneWidget);
+    expect(find.text('答对一次能看多久'), findsOneWidget);
+    expect(find.text('答对多少分算通过'), findsOneWidget);
+    expect(find.text('每天最多看多久'), findsOneWidget);
+    expect(find.text('断网还能看多久'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('保存规则'),
       300,

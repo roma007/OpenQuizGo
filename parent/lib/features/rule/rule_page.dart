@@ -392,9 +392,21 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 12),
+        Card(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: const Padding(
+            padding: EdgeInsets.all(12),
+            child: Text(
+              '这里决定孩子能看多久、隔多久要做一次题。'
+              '不确定的项目保持默认即可。',
+              style: TextStyle(fontSize: 13),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           initialValue: _preset,
-          decoration: const InputDecoration(labelText: '权重预设'),
+          decoration: const InputDecoration(labelText: '出题偏好'),
           items: [
             for (final entry in presetLabels.entries)
               DropdownMenuItem(value: entry.key, child: Text(entry.value)),
@@ -404,17 +416,29 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
         const SizedBox(height: 16),
         Row(
           children: [
-            Expanded(child: _numberField(_unlock, '解锁时长（分钟）')),
+            Expanded(
+              child: _numberField(_unlock, '答对一次能看多久', helper: '答对后继续看的分钟数'),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _numberField(_daily, '每日上限（分钟）')),
+            Expanded(
+              child: _numberField(_daily, '每天最多看多久', helper: '用完后当天不能再看'),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _numberField(_threshold, '加权门槛')),
+            Expanded(
+              child: _numberField(
+                _threshold,
+                '答对多少分算通过',
+                helper: '越高越难，按各科权重累计',
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _numberField(_offline, '离线降级（分钟）')),
+            Expanded(
+              child: _numberField(_offline, '断网还能看多久', helper: '电视没网时的兜底分钟数'),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -425,11 +449,17 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
           value: _funEnabled,
           onChanged: (value) => setState(() => _funEnabled = value),
         ),
-        Row(children: [Expanded(child: _numberField(_funCap, '趣味题上限'))]),
+        Row(
+          children: [
+            Expanded(
+              child: _numberField(_funCap, '趣味题最多几道', helper: '0 表示不出趣味题'),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           initialValue: _scope,
-          decoration: const InputDecoration(labelText: '管控范围'),
+          decoration: const InputDecoration(labelText: '限制哪些应用'),
           items: [
             for (final entry in scopeLabels.entries)
               DropdownMenuItem(value: entry.key, child: Text(entry.value)),
@@ -441,8 +471,9 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
           TextField(
             controller: _allowedApps,
             decoration: const InputDecoration(
-              labelText: '允许的应用包名（逗号分隔）',
+              labelText: '指定应用（填应用包名，逗号分隔）',
               hintText: 'com.tianci.movieplatform, com.qiyi.video',
+              helperText: '这条属于进阶设置，不确定就保持“仅媒体应用”',
             ),
           ),
         ],
@@ -474,8 +505,15 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
         const SizedBox(height: 8),
         ExpansionTile(
           tilePadding: EdgeInsets.zero,
-          title: const Text('进阶：学科权重'),
+          title: const Text('进阶：各科题目占比（权重）'),
           children: [
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: Text(
+                '答对一道该科题目计多少分，数值越高出的题越多。',
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
             for (final entry in subjectLabels.entries)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -505,8 +543,9 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '预览：${_preview!.questionCount} 题，最高加权分 '
-                    '${_preview!.maxScore.toStringAsFixed(1)}',
+                    '试算结果：每次约 ${_preview!.questionCount} 道题，'
+                    '全部答对可得 ${_preview!.maxScore.toStringAsFixed(1)} 分'
+                    '（通过线 ${_double(_threshold, 3).toStringAsFixed(1)} 分）',
                   ),
                   if (_preview!.warnings.isNotEmpty)
                     Padding(
@@ -534,7 +573,7 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _busy ? null : _previewRule,
-                child: const Text('预览可达性'),
+                child: const Text('试算一下'),
               ),
             ),
             const SizedBox(width: 12),
@@ -556,11 +595,19 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
     );
   }
 
-  Widget _numberField(TextEditingController controller, String label) {
+  Widget _numberField(
+    TextEditingController controller,
+    String label, {
+    String? helper,
+  }) {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+        labelText: label,
+        helperText: helper,
+        helperMaxLines: 2,
+      ),
     );
   }
 
