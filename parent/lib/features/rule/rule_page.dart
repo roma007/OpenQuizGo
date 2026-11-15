@@ -453,7 +453,11 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
         Row(
           children: [
             Expanded(
-              child: _numberField(_funCap, '趣味题最多几道', helper: '0 表示不出趣味题'),
+              child: _numberField(
+                _funCap,
+                '每次最多几道趣味题',
+                helper: '只在一次答题里生效；0 表示不出趣味题',
+              ),
             ),
           ],
         ),
