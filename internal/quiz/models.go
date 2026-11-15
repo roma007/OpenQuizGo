@@ -10,6 +10,8 @@ type SelectRequest struct {
 	Rule         Rule   `json:"rule"`
 	Seed         int64  `json:"seed"`
 	MaxQuestions int    `json:"max_questions"`
+	// QuestionCount 是家长为这台电视配置的精确题量（082）；大于 0 时优先于推导题量。
+	QuestionCount int `json:"question_count,omitempty"`
 	// Random 为 true 时全库随机取题，不按学段/年级/难度过滤（081）。
 	Random   bool     `json:"random"`
 	Subjects []string `json:"subjects"`

@@ -18,6 +18,7 @@ class TvSettingsPage extends ConsumerStatefulWidget {
 class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
   static const _unlockOptions = [5, 10, 15, 20, 30, 45, 60, 90, 120];
   static const _limitOptions = [30, 45, 60, 90, 120, 150, 180, 240, 300, 360];
+  static const _questionCountOptions = [1, 2, 3, 4, 5];
 
   late TvConfig _config;
   late final TextEditingController _nickname;
@@ -59,7 +60,8 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
                 title: const Text('到点强制做题'),
                 subtitle: Text(
                   _config.quizEnabled
-                      ? '默认开启：每 ${_config.unlockMinutes} 分钟弹一次题，答对才能继续看'
+                      ? '默认开启：每 ${_config.unlockMinutes} 分钟弹一次题，'
+                            '每次 ${_config.questionCount} 题，答对才能继续看'
                       : '已关闭：不再弹题，但每日上限仍然生效',
                 ),
                 value: _config.quizEnabled,
@@ -75,6 +77,21 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
                 onChanged: (value) => setState(() {
                   _config = _config.copyWith(unlockMinutes: value);
                 }),
+              ),
+              const SizedBox(height: 12),
+              _intDropdown(
+                label: '每次答题题量',
+                value: _config.questionCount,
+                options: _questionCountOptions,
+                optionLabel: (value) => '$value 题',
+                onChanged: (value) => setState(() {
+                  _config = _config.copyWith(questionCount: value);
+                }),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '到点后需要答完这么多题，加权总分达到门槛才算通过',
+                style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
               Text('题目范围', style: theme.textTheme.bodySmall),

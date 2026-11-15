@@ -121,7 +121,7 @@ func (s *Service) Preview(ctx context.Context, accountID, childID string, in Rul
 	n, _ := SessionSize(in)
 	funSlots := 0
 	if in.FunEnabled && in.FunRatioCap > 0 && in.SubjectWeight["fun"] > 0 {
-		funSlots = min(in.FunRatioCap, max(1, n-1))
+		funSlots = min(in.FunRatioCap, max(0, n-1))
 	}
 	weights := make(map[string]float64)
 	for subject, weight := range in.SubjectWeight {

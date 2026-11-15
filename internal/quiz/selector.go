@@ -53,6 +53,25 @@ func New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, watchSvc 
 	}
 }
 
+// applyQuestionCount 应用精确题量：家长配置了题量时按配置出题，
+// 否则保留 MaxQuestions 的“上限”语义与非电视设备的推导题量（082）。
+func applyQuestionCount(req SelectRequest, derived int) int {
+	if req.QuestionCount > 0 {
+		n := req.QuestionCount
+		if n > rule.MaxSessionQuestions {
+			n = rule.MaxSessionQuestions
+		}
+		if n < 1 {
+			n = 1
+		}
+		return n
+	}
+	if req.MaxQuestions > 0 && req.MaxQuestions < derived {
+		return max(3, req.MaxQuestions)
+	}
+	return derived
+}
+
 // Select 按规则组卷。
 func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error) {
 	if req.Random {
@@ -90,9 +109,7 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 	if err != nil {
 		return Result{}, newError(422, "VALIDATION_ERROR", err.Error())
 	}
-	if req.MaxQuestions > 0 && req.MaxQuestions < n {
-		n = max(3, req.MaxQuestions)
-	}
+	n = applyQuestionCount(req, n)
 
 	subjectWeights := make(map[string]float64)
 	for subject, weight := range req.Rule.SubjectWeight {
@@ -139,7 +156,7 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 	} else {
 		funSlots := 0
 		if req.Rule.FunEnabled && req.Rule.FunRatioCap > 0 && req.Rule.SubjectWeight["fun"] > 0 {
-			funSlots = min(req.Rule.FunRatioCap, max(1, n-1))
+			funSlots = min(req.Rule.FunRatioCap, max(0, n-1))
 		}
 		subjectSlots := n - funSlots
 		quota := rule.Allocate(subjectWeights, subjectSlots)
@@ -213,7 +230,12 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 		result.TopicID = pack.ID
 		result.TopicName = pack.Name
 	}
-	if len(selected) < 3 || (!topicMode && score < req.Rule.PassThreshold) {
+	// 家长显式配置题量时（082）必须按配置出题，不再强制至少 3 题。
+	minQuestions := 3
+	if req.QuestionCount > 0 {
+		minQuestions = applyQuestionCount(req, minQuestions)
+	}
+	if len(selected) < minQuestions || (!topicMode && score < req.Rule.PassThreshold) {
 		message := fmt.Sprintf("题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f",
 			len(selected), score, req.Rule.PassThreshold)
 		if topicMode {
@@ -235,9 +257,7 @@ func (s *Service) selectRandom(ctx context.Context, req SelectRequest) (Result, 
 	if err != nil {
 		return Result{}, newError(422, "VALIDATION_ERROR", err.Error())
 	}
-	if req.MaxQuestions > 0 && req.MaxQuestions < n {
-		n = max(3, req.MaxQuestions)
-	}
+	n = applyQuestionCount(req, n)
 
 	seed := req.Seed
 	if seed == 0 {

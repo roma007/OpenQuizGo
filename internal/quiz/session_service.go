@@ -39,11 +39,12 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 	}
 
 	result, err := s.Select(ctx, SelectRequest{
-		ChildID:  principal.ChildID,
-		Rule:     ruleSnapshot.Rule,
-		Seed:     time.Now().UnixNano(),
-		Random:   ruleSnapshot.Random,
-		Subjects: ruleSnapshot.Subjects,
+		ChildID:       principal.ChildID,
+		Rule:          ruleSnapshot.Rule,
+		Seed:          time.Now().UnixNano(),
+		Random:        ruleSnapshot.Random,
+		Subjects:      ruleSnapshot.Subjects,
+		QuestionCount: ruleSnapshot.QuestionCount,
 	})
 	if err != nil {
 		return CreateSessionResponse{}, err
@@ -106,8 +107,14 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 		})
 	}
 
+	// 以实际选中的题为准再兜底一次：题池受限时（尤其 1–2 题或专题题包）
+	// 门槛不得超过本次实际可拿到的最高分，否则孩子永远答不过（082）。
+	passThreshold := ruleSnapshot.Rule.PassThreshold
+	if result.MaxScore > 0 && passThreshold > result.MaxScore {
+		passThreshold = result.MaxScore
+	}
 	sessionID, err := s.repo.createSession(ctx, principal.ChildID, principal.DeviceID,
-		ruleSnapshot, ruleSnapshot.Rule.PassThreshold, expiresAt, items)
+		ruleSnapshot, passThreshold, expiresAt, items)
 	if err != nil {
 		return CreateSessionResponse{}, err
 	}
@@ -115,7 +122,7 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 	return CreateSessionResponse{
 		SessionID:     sessionID,
 		ExpiresAt:     expiresAt,
-		PassThreshold: ruleSnapshot.Rule.PassThreshold,
+		PassThreshold: passThreshold,
 		RuleVersion:   ruleSnapshot.Version,
 		Questions:     questions,
 	}, nil
@@ -382,10 +389,11 @@ func (s *Service) loadRuleForDevice(ctx context.Context, principal identity.Devi
 		return ruleSnapshot{}, err
 	}
 	return ruleSnapshot{
-		Version:  plan.Version,
-		Rule:     plan.Rule,
-		Random:   plan.Random,
-		Subjects: plan.Subjects,
+		Version:       plan.Version,
+		Rule:          plan.Rule,
+		Random:        plan.Random,
+		Subjects:      plan.Subjects,
+		QuestionCount: plan.QuestionCount,
 	}, nil
 }
 

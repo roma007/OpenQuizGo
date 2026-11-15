@@ -259,6 +259,10 @@ func TestValidateTVConfig(t *testing.T) {
 		{"上限 721", func(c *identity.TVConfig) { c.DailyLimit = 721 }, true},
 		{"门槛 0", func(c *identity.TVConfig) { c.PassThreshold = 0 }, false}, // 归一化为 3
 		{"出题模式非法", func(c *identity.TVConfig) { c.QuizScope = "all" }, true},
+		{"题量 0", func(c *identity.TVConfig) { c.QuestionCount = 0 }, false}, // 归一化为 1
+		{"题量 1", func(c *identity.TVConfig) { c.QuestionCount = 1 }, false},
+		{"题量 5", func(c *identity.TVConfig) { c.QuestionCount = 5 }, false},
+		{"题量 6", func(c *identity.TVConfig) { c.QuestionCount = 6 }, true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -311,5 +315,41 @@ func TestApplyTVConfig(t *testing.T) {
 	cfg.Subjects = nil
 	if out := applyTVConfig(base, cfg); len(out.SubjectWeight) != len(base.SubjectWeight) {
 		t.Fatalf("weights should stay when no subjects selected: %+v", out.SubjectWeight)
+	}
+}
+
+func TestEffectivePassThreshold(t *testing.T) {
+	base := Normalize(Rule{
+		PassThreshold: 3,
+		SubjectWeight: map[string]float64{"math": 2, "chinese": 1, "fun": 0.5},
+		FunEnabled:    true,
+		FunRatioCap:   2,
+	})
+	// 5 题时原门槛可达，不下调。
+	if got := effectivePassThreshold(base, 5); got != 3 {
+		t.Fatalf("5 题门槛 = %.1f, want 3", got)
+	}
+	// 1 题时最高分只有 2（数学），门槛下调到 2，答对即可通过。
+	if got := MaxScore(base, 1); got != 2 {
+		t.Fatalf("1 题最高分 = %.1f, want 2", got)
+	}
+	if got := effectivePassThreshold(base, 1); got != 2 {
+		t.Fatalf("1 题门槛 = %.1f, want 2", got)
+	}
+	// 2 题时最高分 2.5（1 道数学 + 1 道趣味），原门槛 3 不可达，下调到 2.5。
+	if got := effectivePassThreshold(base, 2); got != 2.5 {
+		t.Fatalf("2 题门槛 = %.1f, want 2.5", got)
+	}
+	// 3 题时最高分 3（1 道数学 + 2 道趣味），原门槛 3 可达。
+	if got := effectivePassThreshold(base, 3); got != 3 {
+		t.Fatalf("3 题门槛 = %.1f, want 3", got)
+	}
+	// 没有可用权重时保持原门槛，交给后续校验报错。
+	if got := effectivePassThreshold(Normalize(Rule{PassThreshold: 3}), 1); got != 3 {
+		t.Fatalf("无权重门槛 = %.1f, want 3", got)
+	}
+	// 题量未配置（0）时保持原门槛。
+	if got := effectivePassThreshold(base, 0); got != 3 {
+		t.Fatalf("未配置门槛 = %.1f, want 3", got)
 	}
 }

@@ -177,7 +177,7 @@ func theoreticalMax(r Rule, n int) float64 {
 	}
 	funSlots := 0
 	if r.FunEnabled && r.FunRatioCap > 0 && r.SubjectWeight["fun"] > 0 {
-		funSlots = min(r.FunRatioCap, max(1, n-1))
+		funSlots = min(r.FunRatioCap, max(0, n-1))
 	}
 	quota := Allocate(weights, n-funSlots)
 	score := 0.0
@@ -186,6 +186,15 @@ func theoreticalMax(r Rule, n int) float64 {
 	}
 	score += float64(funSlots) * r.SubjectWeight["fun"]
 	return score
+}
+
+// MaxScore 返回规则在 n 题下可获得的最高加权分（含趣味题分配），
+// 用于题量由家长显式指定时判断通过门槛是否仍然可达（082）。
+func MaxScore(r Rule, n int) float64 {
+	if n <= 0 {
+		return 0
+	}
+	return theoreticalMax(r, n)
 }
 
 // Allocate 使用最大余数法分配题量。

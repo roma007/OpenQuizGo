@@ -10,10 +10,11 @@ import (
 const sessionTTL = 10 * time.Minute
 
 type ruleSnapshot struct {
-	Version  int      `json:"version"`
-	Rule     Rule     `json:"rule"`
-	Random   bool     `json:"random,omitempty"`
-	Subjects []string `json:"subjects,omitempty"`
+	Version       int      `json:"version"`
+	Rule          Rule     `json:"rule"`
+	Random        bool     `json:"random,omitempty"`
+	Subjects      []string `json:"subjects,omitempty"`
+	QuestionCount int      `json:"question_count,omitempty"`
 }
 
 type itemSnapshot struct {

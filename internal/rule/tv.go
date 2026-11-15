@@ -19,6 +19,7 @@ type TVContextResult struct {
 	UnlockMinutes    int        `json:"unlock_minutes"`
 	HardStopGrace    int        `json:"hard_stop_grace"`
 	PassThreshold    float64    `json:"pass_threshold"`
+	QuestionCount    int        `json:"question_count"`
 	Subjects         []string   `json:"subjects"`
 	DailyLimit       int        `json:"daily_limit"`
 	UsedMinutes      int        `json:"used_minutes"`
@@ -45,10 +46,6 @@ func (s *Service) GetTVConfig(ctx context.Context, accountID, devicePK string) (
 
 // UpdateTVConfig 更新某台电视的配置（需家长 PIN，version 乐观锁）。
 func (s *Service) UpdateTVConfig(ctx context.Context, accountID, devicePK, pin string, in identity.TVConfig) (identity.TVConfig, error) {
-	in = normalizeTVConfig(in)
-	if err := validateTVConfig(in); err != nil {
-		return identity.TVConfig{}, err
-	}
 	if err := s.verifyPIN(ctx, accountID, pin); err != nil {
 		return identity.TVConfig{}, err
 	}
@@ -57,6 +54,14 @@ func (s *Service) UpdateTVConfig(ctx context.Context, accountID, devicePK, pin s
 		return identity.TVConfig{}, newError(404, "TV_CONFIG_NOT_FOUND", "电视配置不存在")
 	}
 	if err != nil {
+		return identity.TVConfig{}, err
+	}
+	// 旧版家长端不发送 question_count（0），沿用库中原值而不是重置为默认 1。
+	if in.QuestionCount == 0 {
+		in.QuestionCount = before.QuestionCount
+	}
+	in = normalizeTVConfig(in)
+	if err := validateTVConfig(in); err != nil {
 		return identity.TVConfig{}, err
 	}
 	// 客户端带上版本号时做乐观锁校验，避免两个家长端互相覆盖。
@@ -115,7 +120,8 @@ func (s *Service) ContextForDevice(ctx context.Context, principal identity.Devic
 		QuizScope:        cfg.QuizScope,
 		UnlockMinutes:    cfg.UnlockMinutes,
 		HardStopGrace:    cfg.HardStopGrace,
-		PassThreshold:    cfg.PassThreshold,
+		PassThreshold:    effectivePassThreshold(applyTVConfig(base, cfg), cfg.QuestionCount),
+		QuestionCount:    cfg.QuestionCount,
 		Subjects:         cfg.Subjects,
 		DailyLimit:       cfg.DailyLimit,
 		UsedMinutes:      ceilMinutes(used),
@@ -180,10 +186,11 @@ func (s *Service) TVConfigForDeviceID(ctx context.Context, deviceID string) (ide
 
 // TVStartPlan 是电视发起答题前的配置快照（081）。
 type TVStartPlan struct {
-	Rule     Rule
-	Version  int
-	Random   bool
-	Subjects []string
+	Rule          Rule
+	Version       int
+	Random        bool
+	Subjects      []string
+	QuestionCount int
 }
 
 // CanStartDevice 在电视发起答题前做配置校验，并合成一份用于组卷的规则。
@@ -224,12 +231,28 @@ func (s *Service) CanStartDevice(ctx context.Context, principal identity.DeviceP
 		}
 	}
 
+	plan := applyTVConfig(base, cfg)
+	plan.PassThreshold = effectivePassThreshold(plan, cfg.QuestionCount)
 	return TVStartPlan{
-		Rule:     applyTVConfig(base, cfg),
-		Version:  cfg.Version,
-		Random:   cfg.QuizScope == "random",
-		Subjects: cfg.Subjects,
+		Rule:          plan,
+		Version:       cfg.Version,
+		Random:        cfg.QuizScope == "random",
+		Subjects:      cfg.Subjects,
+		QuestionCount: cfg.QuestionCount,
 	}, nil
+}
+
+// effectivePassThreshold 在题量较小时把不可达的门槛下调到该题量可拿到的最高分，
+// 避免孩子无论怎么答都无法解锁（082）。
+func effectivePassThreshold(r Rule, questionCount int) float64 {
+	if questionCount <= 0 {
+		return r.PassThreshold
+	}
+	maxScore := MaxScore(r, questionCount)
+	if maxScore > 0 && r.PassThreshold > maxScore {
+		return maxScore
+	}
+	return r.PassThreshold
 }
 
 // applyTVConfig 用电视配置覆盖孩子规则中的可配项，保留时段与学科权重。
@@ -272,6 +295,9 @@ func normalizeTVConfig(in identity.TVConfig) identity.TVConfig {
 	if in.HardStopGrace == 0 {
 		in.HardStopGrace = 10
 	}
+	if in.QuestionCount == 0 {
+		in.QuestionCount = 1
+	}
 	if in.PassThreshold == 0 {
 		in.PassThreshold = 3
 	}
@@ -300,6 +326,9 @@ func validateTVConfig(in identity.TVConfig) error {
 	if in.QuizScope != "random" && in.QuizScope != "grade" {
 		return newError(422, "VALIDATION_ERROR", "出题模式不合法")
 	}
+	if in.QuestionCount < 1 || in.QuestionCount > 5 {
+		return newError(422, "VALIDATION_ERROR", "每次答题题量需在 1–5 题")
+	}
 	return nil
 }
 
@@ -307,7 +336,7 @@ func validateTVConfig(in identity.TVConfig) error {
 
 const tvConfigColumns = `
 	quiz_enabled, limit_enabled, unlock_minutes, daily_limit, subjects::text,
-	pass_threshold::float8, quiz_scope, hard_stop_grace, version`
+	pass_threshold::float8, quiz_scope, hard_stop_grace, question_count, version`
 
 type tvConfigScanner interface {
 	Scan(dest ...any) error
@@ -317,7 +346,8 @@ func scanTVConfig(row tvConfigScanner) (identity.TVConfig, error) {
 	var cfg identity.TVConfig
 	var subjects string
 	err := row.Scan(&cfg.QuizEnabled, &cfg.LimitEnabled, &cfg.UnlockMinutes, &cfg.DailyLimit,
-		&subjects, &cfg.PassThreshold, &cfg.QuizScope, &cfg.HardStopGrace, &cfg.Version)
+		&subjects, &cfg.PassThreshold, &cfg.QuizScope, &cfg.HardStopGrace,
+		&cfg.QuestionCount, &cfg.Version)
 	if err != nil {
 		return identity.TVConfig{}, err
 	}
@@ -398,11 +428,12 @@ func (r *repository) updateTVConfig(ctx context.Context, accountID, devicePK str
 		    pass_threshold = $8,
 		    quiz_scope = $9,
 		    hard_stop_grace = $10,
+		    question_count = $11,
 		    version = version + 1,
 		    updated_by = $2,
 		    updated_at = now()
 		where cfg.device_pk = $1
-		  and cfg.version = $11
+		  and cfg.version = $12
 		  and exists (
 		      select 1 from tv_device t
 		      join family_member fm on fm.family_id = t.family_id
@@ -411,7 +442,7 @@ func (r *repository) updateTVConfig(ctx context.Context, accountID, devicePK str
 		returning version`,
 		devicePK, accountID, in.QuizEnabled, in.LimitEnabled, in.UnlockMinutes, in.DailyLimit,
 		string(subjects), in.PassThreshold, in.QuizScope, in.HardStopGrace,
-		expectedVersion).Scan(&version)
+		in.QuestionCount, expectedVersion).Scan(&version)
 	if err != nil {
 		if isNoRows(err) {
 			return 0, errVersionConflict

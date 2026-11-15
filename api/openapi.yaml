@@ -605,6 +605,8 @@ paths:
                   limit_enabled: { type: boolean }
                   quiz_scope: { type: string, enum: [random, grade] }
                   unlock_minutes: { type: integer }
+                  pass_threshold: { type: number, description: 本次实际生效门槛（题量过小时已下调到可达分） }
+                  question_count: { type: integer, minimum: 1, maximum: 5, description: 每次答题题量 }
                   hard_stop_grace: { type: integer }
                   daily_limit: { type: integer }
                   used_minutes: { type: integer }
@@ -2537,9 +2539,10 @@ components:
           type: array
           description: 出题学科；空数组表示使用孩子规则里的全部学科
           items: { type: string }
-        pass_threshold: { type: number, description: 答题通过门槛分，默认 3 }
+        pass_threshold: { type: number, description: 答题通过门槛分，默认 3；题量较小时服务端会下调到该题量可达到的最高分 }
         quiz_scope: { type: string, enum: [random, grade], description: random 表示不指定孩子、全库随机出题 }
         hard_stop_grace: { type: integer, minimum: 1, maximum: 120, description: 家长 PIN 放行时长（分钟），默认 10 }
+        question_count: { type: integer, minimum: 1, maximum: 5, description: 每次答题题量，新电视默认 1；缺省保存时沿用原值 }
         version: { type: integer, description: 乐观锁版本，更新时带上传入值 }
     TVDevice:
       type: object

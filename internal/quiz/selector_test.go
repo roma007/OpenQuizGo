@@ -126,6 +126,51 @@ func TestSelectWithRealPool(t *testing.T) {
 	}
 }
 
+func TestSelectExactQuestionCount(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareQuizDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	childID := seedChild(t, pool)
+	seedQuestions(t, pool, childID)
+
+	svc := New(pool, nil, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	baseRule := Rule{
+		UnlockMinutes: 20,
+		PassThreshold: 2, // 1 题时也至少有一道数学题（权重 2）可达
+		SubjectWeight: map[string]float64{"math": 2, "chinese": 1, "fun": 0.5},
+		FunRatioCap:   2,
+		FunEnabled:    true,
+	}
+
+	for n := 1; n <= 5; n++ {
+		result, err := svc.Select(ctx, SelectRequest{
+			ChildID:       childID,
+			Rule:          baseRule,
+			Seed:          int64(n),
+			QuestionCount: n,
+		})
+		if err != nil {
+			t.Fatalf("%d 题组卷失败: %v", n, err)
+		}
+		if result.Total != n || len(result.Selected) != n {
+			t.Fatalf("题量 = %d, want %d", result.Total, n)
+		}
+		if result.MaxScore < baseRule.PassThreshold {
+			t.Fatalf("%d 题最高分 %.1f 低于门槛", n, result.MaxScore)
+		}
+	}
+}
+
 func prepareQuizDB(t *testing.T, url string) {
 	t.Helper()
 	db, err := sql.Open("pgx", url)

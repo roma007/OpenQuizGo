@@ -30,6 +30,7 @@ TvDevice _tv({
       passThreshold: 3,
       quizScope: 'random',
       hardStopGrace: 10,
+      questionCount: 5,
       version: 1,
     ),
   );
