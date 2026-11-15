@@ -426,7 +426,7 @@ func TestIssueParentGrant(t *testing.T) {
 	start := now.Truncate(24 * time.Hour)
 	end := start.Add(24 * time.Hour)
 
-	grant, err := repo.issueParent(ctx, childID, "tv-parent", 15, 60, start, end, now, "parent-jti-1")
+	grant, err := repo.issueParent(ctx, childID, "tv-parent", 15, 60, false, start, end, now, "parent-jti-1")
 	if err != nil {
 		t.Fatalf("issue parent: %v", err)
 	}
@@ -444,7 +444,7 @@ func TestIssueParentGrant(t *testing.T) {
 	}
 
 	// 旧 15 分钟授权被替换并释放预留，请求 60 分钟应得到完整 60 分钟。
-	capped, err := repo.issueParent(ctx, childID, "tv-parent", 60, 60, start, end, now, "parent-jti-2")
+	capped, err := repo.issueParent(ctx, childID, "tv-parent", 60, 60, false, start, end, now, "parent-jti-2")
 	if err != nil {
 		t.Fatalf("issue capped: %v", err)
 	}
@@ -466,11 +466,11 @@ func TestIssueParentGrant(t *testing.T) {
 
 	// 不同设备的授权不受影响（使用另一个孩子避免额度已用尽）。
 	childID3 := seedWatchChild(t, pool, "hash-watch-3")
-	otherA, err := repo.issueParent(ctx, childID3, "tv-parent-a", 10, 60, start, end, now, "parent-jti-4")
+	otherA, err := repo.issueParent(ctx, childID3, "tv-parent-a", 10, 60, false, start, end, now, "parent-jti-4")
 	if err != nil {
 		t.Fatalf("issue other device a: %v", err)
 	}
-	otherB, err := repo.issueParent(ctx, childID3, "tv-parent-b", 20, 60, start, end, now, "parent-jti-5")
+	otherB, err := repo.issueParent(ctx, childID3, "tv-parent-b", 20, 60, false, start, end, now, "parent-jti-5")
 	if err != nil {
 		t.Fatalf("issue other device b: %v", err)
 	}
@@ -479,7 +479,7 @@ func TestIssueParentGrant(t *testing.T) {
 
 	// 每日额度 10 分钟时，请求 30 分钟应截断到 10（新孩子）。
 	childID2 := seedWatchChild(t, pool, "hash-watch-2")
-	limited, err := repo.issueParent(ctx, childID2, "tv-parent-2", 30, 10, start, end, now, "parent-jti-3")
+	limited, err := repo.issueParent(ctx, childID2, "tv-parent-2", 30, 10, false, start, end, now, "parent-jti-3")
 	if err != nil {
 		t.Fatalf("issue limited: %v", err)
 	}

@@ -77,6 +77,10 @@ type DevicePrincipal struct {
 	DeviceID  string
 	ChildID   string
 	ChildName string
+	// Kind 区分旧版 child 绑定与 081 起的 tv 登录设备。
+	Kind     string
+	DevicePK string
+	FamilyID string
 }
 
 // Error 是带错误码与 HTTP 状态的业务错误。

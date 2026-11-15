@@ -56,11 +56,19 @@ func (s *Service) DeviceAuth(next http.Handler) http.Handler {
 			writeError(w, r, ErrInvalidToken)
 			return
 		}
-		principal, err := s.repo.deviceByToken(r.Context(), hashToken(token))
+		hash := hashToken(token)
+		principal, err := s.repo.tvDeviceByToken(r.Context(), hash)
+		if err == nil {
+			s.repo.touchTVDevice(r.Context(), principal.DevicePK)
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), deviceKey, principal)))
+			return
+		}
+		principal, err = s.repo.deviceByToken(r.Context(), hash)
 		if err != nil {
 			writeError(w, r, newError("AUTH_DEVICE_UNBOUND", http.StatusForbidden, "设备未绑定或令牌已失效"))
 			return
 		}
+		principal.Kind = "child"
 		s.TouchDevice(r.Context(), principal.DeviceID)
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), deviceKey, principal)))
 	})
@@ -153,7 +161,14 @@ func (s *Service) Routes(r chi.Router) {
 		r.Get("/family/devices", s.handleListDevices)
 		r.Post("/family/devices/activate", s.handleConfirmActivation)
 		r.Delete("/family/devices/{deviceID}", s.handleUnbindDevice)
+
+		r.Get("/family/tvs", s.handleListTVs)
+		r.Get("/family/tvs/{deviceID}", s.handleGetTV)
+		r.Put("/family/tvs/{deviceID}/child", s.handleAssignTVChild)
+		r.Delete("/family/tvs/{deviceID}", s.handleDeleteTV)
 	})
+
+	r.Post("/tv/login", s.handleTVLogin)
 
 	r.Post("/device/activate/code", s.handleActivationCode)
 	r.Post("/device/token", s.handleDeviceToken)
@@ -162,6 +177,7 @@ func (s *Service) Routes(r chi.Router) {
 		r.Use(s.DeviceAuth)
 		r.Get("/device/me", s.handleDeviceMe)
 		r.Delete("/device/me", s.handleUnbindSelf)
+		r.Get("/tv/me", s.handleTVMe)
 	})
 }
 

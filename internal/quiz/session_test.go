@@ -170,7 +170,8 @@ func TestSessionIssuesGrant(t *testing.T) {
 	if summary.State != "passed" || summary.Grant == nil {
 		t.Fatalf("expected grant, got %+v", summary)
 	}
-	if summary.Grant.Minutes != 20 || summary.Grant.LeaseToken == "" {
+	// 080 起 watch_rule 默认解锁时长改为 15 分钟，孩子没有规则时走 defaultRule。
+	if summary.Grant.Minutes != 15 || summary.Grant.LeaseToken == "" {
 		t.Fatalf("unexpected grant: %+v", summary.Grant)
 	}
 

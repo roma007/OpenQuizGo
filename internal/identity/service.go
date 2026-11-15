@@ -132,10 +132,8 @@ func (s *Service) Login(ctx context.Context, phone, code, userAgent, ip string) 
 		return LoginResult{}, err
 	}
 	phoneHash := s.cipher.Hash(normalized)
-
-	stored, err := s.redis.GetDel(ctx, smsKey(phoneHash)).Result()
-	if err != nil || subtle.ConstantTimeCompare([]byte(stored), []byte(code)) != 1 {
-		return LoginResult{}, ErrInvalidCode
+	if err := s.verifyLoginCode(ctx, phoneHash, code); err != nil {
+		return LoginResult{}, err
 	}
 
 	rec, err := s.repo.accountByPhoneHash(ctx, phoneHash)
@@ -146,6 +144,15 @@ func (s *Service) Login(ctx context.Context, phone, code, userAgent, ip string) 
 		return LoginResult{}, err
 	}
 	return s.issueLogin(ctx, rec, userAgent, ip)
+}
+
+// verifyLoginCode 校验并消费一次性短信验证码。
+func (s *Service) verifyLoginCode(ctx context.Context, phoneHash, code string) error {
+	stored, err := s.redis.GetDel(ctx, smsKey(phoneHash)).Result()
+	if err != nil || subtle.ConstantTimeCompare([]byte(stored), []byte(code)) != 1 {
+		return ErrInvalidCode
+	}
+	return nil
 }
 
 func (s *Service) createAccount(ctx context.Context, phone, phoneHash string) (accountRecord, error) {

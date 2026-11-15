@@ -520,3 +520,94 @@ func TestPaidTopicRequiresEntitlement(t *testing.T) {
 		t.Fatalf("shared membership not used: %q", result.TopicID)
 	}
 }
+
+// TestSelectRandom 覆盖 081：不指定孩子的电视端全库随机出题，不按学段/年级过滤。
+func TestSelectRandom(t *testing.T) {
+	dbURL := os.Getenv("TEST_DATABASE_URL")
+	if dbURL == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	prepareQuizDB(t, dbURL)
+
+	pool, err := pgxpool.New(ctx, dbURL)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	// 只放 high 学段的英语题，用来证明随机模式不会按学段过滤。
+	// 题库表不在 prepareQuizDB 的清理范围内，用带前缀的题干隔离并收尾删除。
+	cleanRandomQuestions := func() {
+		_, _ = pool.Exec(context.Background(), `
+			delete from answer_log
+			where question_id in (select id from question where stem like 'random-%')`)
+		_, _ = pool.Exec(context.Background(), `
+			delete from quiz_session_item
+			where question_id in (select id from question where stem like 'random-%')`)
+		_, _ = pool.Exec(context.Background(), `delete from question where stem like 'random-%'`)
+	}
+	cleanRandomQuestions()
+	t.Cleanup(cleanRandomQuestions)
+	for i := 0; i < 12; i++ {
+		if _, err := pool.Exec(ctx, `
+			insert into question (
+				subject_code, category_code, stage_code, difficulty, type_code, stem,
+				options, answer, status, version, schema_ver)
+			values ('english', 'core', 'high', $1, 'choice', $2,
+			        '[{"id":"a","text":"1"},{"id":"b","text":"2"}]'::jsonb,
+			        '["a"]'::jsonb, 'online', 1, 1)`,
+			i%5+1, "random-english-"+string(rune('a'+i))); err != nil {
+			t.Fatalf("insert question: %v", err)
+		}
+	}
+
+	svc := New(pool, nil, nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	rul := Rule{
+		UnlockMinutes: 15,
+		PassThreshold: 3,
+		SubjectWeight: map[string]float64{"english": 1.5},
+		FunRatioCap:   2,
+		FunEnabled:    true,
+	}
+
+	result, err := svc.Select(ctx, SelectRequest{
+		Rule:     rul,
+		Seed:     7,
+		Random:   true,
+		Subjects: []string{"english"},
+	})
+	if err != nil {
+		t.Fatalf("random select: %v", err)
+	}
+	if result.Total != 5 {
+		t.Fatalf("total = %d, want 5", result.Total)
+	}
+	seen := map[string]bool{}
+	for _, item := range result.Selected {
+		if item.Subject != "english" || item.Stage != "high" {
+			t.Fatalf("random select filtered by stage/subject: %+v", item)
+		}
+		if seen[item.QuestionID] {
+			t.Fatalf("duplicate question: %s", item.QuestionID)
+		}
+		seen[item.QuestionID] = true
+	}
+
+	// 学科过滤为空时，池子里的其他学科也能进卷。
+	mixed, err := svc.Select(ctx, SelectRequest{
+		Rule:     rul,
+		Seed:     8,
+		Random:   true,
+		Subjects: nil,
+	})
+	if err != nil {
+		t.Fatalf("random select all subjects: %v", err)
+	}
+	if mixed.Total < 3 {
+		t.Fatalf("total = %d, want >= 3", mixed.Total)
+	}
+
+	// t.Cleanup 在 defer pool.Close() 之后执行，池已关闭会静默失败，这里显式清理。
+	cleanRandomQuestions()
+}

@@ -15,11 +15,67 @@ func (s *Service) ParentRoutes(r chi.Router) {
 	r.Get("/family/children/{childID}/rule", s.handleGet)
 	r.Put("/family/children/{childID}/rule", s.handleUpdate)
 	r.Post("/family/children/{childID}/rule/preview", s.handlePreview)
+
+	r.Get("/family/tvs/{deviceID}/config", s.handleGetTVConfig)
+	r.Put("/family/tvs/{deviceID}/config", s.handleUpdateTVConfig)
 }
 
 // DeviceRoutes 注册电视端上下文接口（需设备令牌）。
 func (s *Service) DeviceRoutes(r chi.Router) {
 	r.Get("/child/context", s.handleContext)
+	r.Get("/tv/context", s.handleTVContext)
+}
+
+func (s *Service) handleTVContext(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeRuleError(w, r, newError(401, "AUTH_INVALID_TOKEN", "设备未授权"))
+		return
+	}
+	// 旧版激活码设备仍走孩子规则，保持兼容。
+	if principal.Kind != "tv" {
+		result, err := s.Context(r.Context(), principal.ChildID)
+		if err != nil {
+			writeRuleError(w, r, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, result)
+		return
+	}
+	result, err := s.ContextForDevice(r.Context(), principal)
+	if err != nil {
+		writeRuleError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Service) handleGetTVConfig(w http.ResponseWriter, r *http.Request) {
+	cfg, err := s.GetTVConfig(r.Context(), identity.AccountIDFrom(r.Context()), chi.URLParam(r, "deviceID"))
+	if err != nil {
+		writeRuleError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, cfg)
+}
+
+func (s *Service) handleUpdateTVConfig(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		PIN    string            `json:"pin"`
+		Config identity.TVConfig `json:"config"`
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeRuleError(w, r, newError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	cfg, err := s.UpdateTVConfig(r.Context(), identity.AccountIDFrom(r.Context()),
+		chi.URLParam(r, "deviceID"), req.PIN, req.Config)
+	if err != nil {
+		writeRuleError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, cfg)
 }
 
 func (s *Service) handleGet(w http.ResponseWriter, r *http.Request) {

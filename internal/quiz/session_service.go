@@ -33,15 +33,17 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 		return CreateSessionResponse{}, conflict
 	}
 
-	ruleSnapshot, err := s.loadRule(ctx, principal.ChildID)
+	ruleSnapshot, err := s.loadRuleForDevice(ctx, principal)
 	if err != nil {
 		return CreateSessionResponse{}, err
 	}
 
 	result, err := s.Select(ctx, SelectRequest{
-		ChildID: principal.ChildID,
-		Rule:    ruleSnapshot.Rule,
-		Seed:    time.Now().UnixNano(),
+		ChildID:  principal.ChildID,
+		Rule:     ruleSnapshot.Rule,
+		Seed:     time.Now().UnixNano(),
+		Random:   ruleSnapshot.Random,
+		Subjects: ruleSnapshot.Subjects,
 	})
 	if err != nil {
 		return CreateSessionResponse{}, err
@@ -363,6 +365,28 @@ func (s *Service) allow(ctx context.Context, key string, limit int, window time.
 		_ = s.redis.Expire(ctx, key, window).Err()
 	}
 	return count <= int64(limit)
+}
+
+// loadRuleForDevice 按设备类型取规则：081 起的电视用按电视配置合成，
+// 旧版激活码设备仍按孩子规则，保持兼容。
+func (s *Service) loadRuleForDevice(ctx context.Context, principal identity.DevicePrincipal) (ruleSnapshot, error) {
+	if principal.Kind != "tv" || s.ruleSvc == nil {
+		return s.loadRule(ctx, principal.ChildID)
+	}
+	plan, err := s.ruleSvc.CanStartDevice(ctx, principal)
+	if err != nil {
+		var ruleErr *rule.Error
+		if errors.As(err, &ruleErr) {
+			return ruleSnapshot{}, newError(ruleErr.Status, ruleErr.Code, ruleErr.Message)
+		}
+		return ruleSnapshot{}, err
+	}
+	return ruleSnapshot{
+		Version:  plan.Version,
+		Rule:     plan.Rule,
+		Random:   plan.Random,
+		Subjects: plan.Subjects,
+	}, nil
 }
 
 func (s *Service) loadRule(ctx context.Context, childID string) (ruleSnapshot, error) {

@@ -16,6 +16,7 @@ import (
 // ParentRoutes 注册家长端设备操作接口。
 func (s *Service) ParentRoutes(r chi.Router) {
 	r.Post("/family/devices/{deviceID}/unlock", s.handleParentUnlock)
+	r.Post("/family/tvs/{deviceID}/unlock", s.handleParentTVUnlock)
 	r.Get("/family/alerts", s.handleListAlerts)
 	r.Post("/family/alerts/read", s.handleMarkAlertsRead)
 }
@@ -144,6 +145,30 @@ func (s *Service) handleParentUnlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	grant, err := s.ParentUnlock(r.Context(), accountID, chi.URLParam(r, "deviceID"),
+		req.PIN, req.Minutes, clientIP(r))
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, grant)
+}
+
+func (s *Service) handleParentTVUnlock(w http.ResponseWriter, r *http.Request) {
+	accountID := identity.AccountIDFrom(r.Context())
+	if accountID == "" {
+		writeWatchError(w, r, newError(401, "AUTH_REQUIRED", "家长未登录"))
+		return
+	}
+	var req struct {
+		PIN     string `json:"pin"`
+		Minutes int    `json:"minutes"`
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeWatchError(w, r, newError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	grant, err := s.ParentUnlockTV(r.Context(), accountID, chi.URLParam(r, "deviceID"),
 		req.PIN, req.Minutes, clientIP(r))
 	if err != nil {
 		writeWatchError(w, r, err)

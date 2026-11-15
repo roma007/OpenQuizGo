@@ -10,6 +10,9 @@ type SelectRequest struct {
 	Rule         Rule   `json:"rule"`
 	Seed         int64  `json:"seed"`
 	MaxQuestions int    `json:"max_questions"`
+	// Random 为 true 时全库随机取题，不按学段/年级/难度过滤（081）。
+	Random   bool     `json:"random"`
+	Subjects []string `json:"subjects"`
 }
 
 // Selected 是被选中的题目。

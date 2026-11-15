@@ -145,7 +145,7 @@ func availableSeconds(ctx context.Context, tx pgx.Tx, childID string, dailyLimit
 
 // issueParent 签发家长远程解锁授权（无答题会话）。
 func (r *repository) issueParent(ctx context.Context, childID, deviceID string,
-	minutes, dailyLimit int, start, end, now time.Time, jti string) (grantRecord, error) {
+	minutes, dailyLimit int, overLimit bool, start, end, now time.Time, jti string) (grantRecord, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return grantRecord{}, fmt.Errorf("begin: %w", err)
@@ -161,18 +161,21 @@ func (r *repository) issueParent(ctx context.Context, childID, deviceID string,
 		return grantRecord{}, fmt.Errorf("revoke active grants: %w", err)
 	}
 
-	available, err := availableSeconds(ctx, tx, childID, dailyLimit, start, end, now)
-	if err != nil {
-		return grantRecord{}, err
-	}
 	if minutes <= 0 {
 		minutes = 10
 	}
-	if availMinutes := available / 60; availMinutes < minutes {
-		minutes = availMinutes
-	}
-	if minutes < 1 {
-		return grantRecord{}, newError(403, "RULE_DAILY_LIMIT", "今日观看额度已用完")
+	// overLimit：硬停放行由家长显式授予，即使当日额度已用完也照常签发。
+	if !overLimit {
+		available, err := availableSeconds(ctx, tx, childID, dailyLimit, start, end, now)
+		if err != nil {
+			return grantRecord{}, err
+		}
+		if availMinutes := available / 60; availMinutes < minutes {
+			minutes = availMinutes
+		}
+		if minutes < 1 {
+			return grantRecord{}, newError(403, "RULE_DAILY_LIMIT", "今日观看额度已用完")
+		}
 	}
 
 	validUntil := now.Add(time.Duration(minutes) * time.Minute)

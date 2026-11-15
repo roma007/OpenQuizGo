@@ -386,6 +386,238 @@ paths:
         "404": { description: 设备不存在或不属于本家庭 }
         "429": { $ref: "#/components/responses/RateLimited" }
 
+  /v1/family/tvs:
+    get:
+      tags: [tv]
+      summary: 家庭下所有已登录电视（含按电视配置）
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 电视列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TVDevice" }
+  /v1/family/tvs/{deviceID}:
+    get:
+      tags: [tv]
+      summary: 单台电视详情
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          description: 电视主键（GET /family/tvs 返回的 id，不是 device_id）
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: 电视详情
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TVDevice" }
+        "404": { description: 电视不存在或不属于本家庭 }
+    delete:
+      tags: [tv]
+      summary: 解绑电视（设备令牌立即失效）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: OK }
+  /v1/family/tvs/{deviceID}/child:
+    put:
+      tags: [tv]
+      summary: 给电视指定孩子（昵称 + 年级）
+      description: |
+        年级每年 9 月 1 日自动升一级（读时计算，封顶 g9）。
+        grade_tag 留空表示只登记昵称、不分年级。
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nickname: { type: string, example: "小明" }
+                grade_tag: { type: string, example: "g3", description: "g1–g9，留空表示不分年级" }
+      responses:
+        "200":
+          description: 更新后的电视
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TVDevice" }
+        "404": { description: 电视不存在 }
+        "422": { description: 昵称或年级不合法 }
+  /v1/family/tvs/{deviceID}/config:
+    get:
+      tags: [tv]
+      summary: 读取某台电视的配置
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: 电视配置
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TVConfig" }
+        "404": { description: 电视不存在 }
+    put:
+      tags: [tv]
+      summary: 更新某台电视的配置（需家长 PIN）
+      description: |
+        做题开关与观看上限互相独立：关掉做题仍会到点硬停，关掉上限仍会弹题。
+        请求体带上 version 时做乐观锁校验，冲突返回 409 TV_CONFIG_CONFLICT。
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pin, config]
+              properties:
+                pin: { type: string, example: "1234" }
+                config: { $ref: "#/components/schemas/TVConfig" }
+      responses:
+        "200":
+          description: 更新后的配置（version 已 +1）
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TVConfig" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { description: 版本冲突或做题开关被依赖 }
+        "422": { description: 参数校验失败 }
+  /v1/family/tvs/{deviceID}/unlock:
+    post:
+      tags: [tv]
+      summary: 家长为电视放行一段观看时间（硬停解除）
+      description: 放行期间即使当日额度已用完也不硬停；minutes 缺省取该电视的 hard_stop_grace。
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: deviceID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pin]
+              properties:
+                pin: { type: string, example: "1234" }
+                minutes: { type: integer, minimum: 1, maximum: 120, description: "缺省取 hard_stop_grace" }
+      responses:
+        "200":
+          description: 已签发的授权
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Grant" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: 电视不存在 }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /v1/tv/login:
+    post:
+      tags: [tv]
+      summary: 电视端登录（手机号 + 短信验证码）
+      description: |
+        电视端不使用激活码：用家长手机号登录后登记到该家庭，签发 365 天设备令牌。
+        同一 device_id 重复登录会刷新令牌。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, code, device_id]
+              properties:
+                phone: { type: string, example: "13900000000" }
+                code: { type: string, example: "123456" }
+                device_id: { type: string, example: "tv-living-01" }
+                device_name: { type: string, example: "客厅电视" }
+      responses:
+        "200":
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_token: { type: string }
+                  expires_at: { type: string, format: date-time }
+                  family_name: { type: string }
+                  device: { $ref: "#/components/schemas/TVDevice" }
+        "401": { description: 验证码错误或已失效 }
+        "422": { description: 手机号或设备标识不合法 }
+  /v1/tv/me:
+    get:
+      tags: [tv]
+      summary: 电视自身信息与配置
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 电视信息
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TVDevice" }
+        "403": { description: 设备令牌已失效 }
+  /v1/tv/context:
+    get:
+      tags: [tv]
+      summary: 电视端可看状态（按电视配置判定硬停）
+      description: |
+        返回今日已看/剩余、下次强制答题时间与硬停判定。
+        grant_until 存在时表示家长已放行，期间 hard_stop 为 false。
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: 可看状态
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allowed: { type: boolean }
+                  hard_stop: { type: boolean }
+                  reason: { type: string, enum: [ok, daily_limit, time_window, grant] }
+                  quiz_enabled: { type: boolean }
+                  limit_enabled: { type: boolean }
+                  quiz_scope: { type: string, enum: [random, grade] }
+                  unlock_minutes: { type: integer }
+                  hard_stop_grace: { type: integer }
+                  daily_limit: { type: integer }
+                  used_minutes: { type: integer }
+                  reserved_minutes: { type: integer }
+                  remaining_minutes: { type: integer }
+                  grant_minutes: { type: integer }
+                  grant_until: { type: string, format: date-time }
+                  last_quiz_at: { type: string, format: date-time }
+                  next_quiz_at: { type: string, format: date-time }
+                  child_name: { type: string }
+                  now: { type: string, format: date-time }
+        "403": { description: 设备令牌已失效 }
+
   /v1/family/experiments/{key}:
     get:
       tags: [experiment]
@@ -2258,6 +2490,35 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    TVConfig:
+      type: object
+      description: 单台电视的观看配置，逐项独立生效。
+      properties:
+        quiz_enabled: { type: boolean, description: 做题开关，默认 true }
+        limit_enabled: { type: boolean, description: 每日时长上限开关，默认 true }
+        unlock_minutes: { type: integer, minimum: 1, maximum: 240, description: 强制答题间隔，默认 15 }
+        daily_limit: { type: integer, minimum: 1, maximum: 720, description: 每日观看上限（分钟），默认 60 }
+        subjects:
+          type: array
+          description: 出题学科；空数组表示使用孩子规则里的全部学科
+          items: { type: string }
+        pass_threshold: { type: number, description: 答题通过门槛分，默认 3 }
+        quiz_scope: { type: string, enum: [random, grade], description: random 表示不指定孩子、全库随机出题 }
+        hard_stop_grace: { type: integer, minimum: 1, maximum: 120, description: 家长 PIN 放行时长（分钟），默认 10 }
+        version: { type: integer, description: 乐观锁版本，更新时带上传入值 }
+    TVDevice:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, example: "客厅电视" }
+        device_id: { type: string, example: "tv-living-01" }
+        child_id: { type: string, format: uuid }
+        child_name: { type: string }
+        grade_tag: { type: string, description: 已按 9 月 1 日规则升过级的有效年级 }
+        online: { type: boolean, description: 3 分钟内有上报视为在线 }
+        last_seen_at: { type: string, format: date-time }
+        used_minutes: { type: integer, description: 今日已看分钟数 }
+        config: { $ref: "#/components/schemas/TVConfig" }
     Experiment:
       type: object
       properties:

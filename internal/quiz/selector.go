@@ -55,6 +55,9 @@ func New(pool *pgxpool.Pool, rdb *redis.Client, ruleSvc *rule.Service, watchSvc 
 
 // Select 按规则组卷。
 func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error) {
+	if req.Random {
+		return s.selectRandom(ctx, req)
+	}
 	stage, grade := req.Stage, req.GradeTag
 	if req.ChildID != "" {
 		childStage, childGrade, err := s.repo.childStage(ctx, req.ChildID)
@@ -218,6 +221,81 @@ func (s *Service) Select(ctx context.Context, req SelectRequest) (Result, error)
 		}
 		apiErr := newError(409, "INSUFFICIENT_POOL", message)
 		apiErr.Warnings = warnings
+		return result, apiErr
+	}
+	return result, nil
+}
+
+// selectRandom 全库随机取题，不按学段/年级/难度过滤（081：未指定孩子的电视）。
+func (s *Service) selectRandom(ctx context.Context, req SelectRequest) (Result, error) {
+	if err := rule.Validate(req.Rule); err != nil {
+		return Result{}, newError(422, "VALIDATION_ERROR", err.Error())
+	}
+	n, err := rule.SessionSize(req.Rule)
+	if err != nil {
+		return Result{}, newError(422, "VALIDATION_ERROR", err.Error())
+	}
+	if req.MaxQuestions > 0 && req.MaxQuestions < n {
+		n = max(3, req.MaxQuestions)
+	}
+
+	seed := req.Seed
+	if seed == 0 {
+		seed = time.Now().UnixNano()
+	}
+
+	candidates, err := s.repo.randomCandidates(ctx, req.ChildID, req.Subjects, n*3)
+	if err != nil {
+		return Result{}, err
+	}
+
+	selected := make([]Selected, 0, n)
+	chosen := map[string]bool{}
+	for _, c := range candidates {
+		if len(selected) >= n {
+			break
+		}
+		if chosen[c.ID] {
+			continue
+		}
+		selected = append(selected, toSelected(c, false))
+		chosen[c.ID] = true
+	}
+
+	if len(selected) > 1 {
+		rng := rand.New(rand.NewSource(seed))
+		rng.Shuffle(len(selected), func(i, j int) {
+			selected[i], selected[j] = selected[j], selected[i]
+		})
+	}
+
+	score := 0.0
+	actual := map[string]int{}
+	for _, item := range selected {
+		weight := req.Rule.SubjectWeight[item.Subject]
+		if weight <= 0 {
+			if item.Subject == "fun" {
+				weight = 0.5
+			} else {
+				weight = 1
+			}
+		}
+		score += weight
+		actual[item.Subject]++
+	}
+
+	result := Result{
+		Total:            len(selected),
+		Quota:            actual,
+		Selected:         selected,
+		MaxScore:         round2(score),
+		DifficultyTarget: 0,
+		Seed:             seed,
+	}
+	if len(selected) < 3 || score < req.Rule.PassThreshold {
+		apiErr := newError(409, "INSUFFICIENT_POOL",
+			fmt.Sprintf("题池不足：已选 %d 题，最高加权分 %.1f，低于门槛 %.1f",
+				len(selected), score, req.Rule.PassThreshold))
 		return result, apiErr
 	}
 	return result, nil

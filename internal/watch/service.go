@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 	"time"
@@ -123,43 +124,31 @@ func (s *Service) ParentUnlock(ctx context.Context, accountID, deviceID, pin str
 	if !s.identitySvc.AllowDeviceUnlock(ctx, device.DeviceID) {
 		return Grant{}, newError(429, "UNLOCK_LIMIT", "解锁过于频繁，请稍后再试")
 	}
-	if minutes == 0 {
-		minutes = 10
-	}
-	if minutes < 5 || minutes > 60 {
-		return Grant{}, newError(422, "VALIDATION_ERROR", "解锁时长需在 5–60 分钟")
-	}
-	rul, _, err := s.ruleSvc.GetForChild(ctx, device.ChildID)
-	if err != nil {
-		return Grant{}, mapRuleError(err)
-	}
-
-	now := time.Now()
-	location := time.UTC
-	if rul.Timezone != "" {
-		if loc, lerr := time.LoadLocation(rul.Timezone); lerr == nil {
-			location = loc
-		}
-	}
-	local := now.In(location)
-	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, location)
-	end := start.Add(24 * time.Hour)
-
-	rec, err := s.repo.issueParent(ctx, device.ChildID, device.DeviceID, minutes,
-		rul.DailyLimit, start, end, now, randomToken())
-	if err != nil {
-		return Grant{}, err
-	}
-	grant := s.toGrant(rec)
-	if auditErr := s.repo.insertAudit(ctx, accountID, device.DeviceID, grant.GrantID,
-		grant.Minutes, ip); auditErr != nil {
-		s.logger.Error("audit parent unlock", "error", auditErr, "grant_id", grant.GrantID)
-	}
-	metrics.IncGrantIssued()
-	return grant, nil
+	return s.issueParentGrant(ctx, accountID, device.ChildID, device.DeviceID,
+		minutes, 10, 0, false, ip, "parent unlock")
 }
 
-// DeviceUnlock 允许电视端使用家庭 owner 的家长 PIN 直接解锁。
+// ParentUnlockTV 由家长端为某台电视（081 登录设备）放行一段观看时间。
+func (s *Service) ParentUnlockTV(ctx context.Context, accountID, devicePK, pin string,
+	minutes int, ip string) (Grant, error) {
+	if s.identitySvc == nil {
+		return Grant{}, newError(500, "INTERNAL", "身份服务不可用")
+	}
+	device, err := s.identitySvc.TVByID(ctx, accountID, devicePK)
+	if err != nil {
+		return Grant{}, mapIdentityError(err)
+	}
+	if err := s.identitySvc.VerifyPIN(ctx, accountID, pin); err != nil {
+		return Grant{}, mapIdentityError(err)
+	}
+	if !s.identitySvc.AllowDeviceUnlock(ctx, device.DeviceID) {
+		return Grant{}, newError(429, "UNLOCK_LIMIT", "解锁过于频繁，请稍后再试")
+	}
+	return s.issueParentGrant(ctx, accountID, device.ChildID, device.DeviceID,
+		minutes, device.Config.HardStopGrace, device.Config.DailyLimit, true, ip, "parent tv unlock")
+}
+
+// DeviceUnlock 允许电视端使用家庭 owner 的家长 PIN 直接解锁（硬停放行）。
 func (s *Service) DeviceUnlock(ctx context.Context, principal identity.DevicePrincipal,
 	pin string, minutes int, ip string) (Grant, error) {
 	if s.identitySvc == nil {
@@ -175,15 +164,42 @@ func (s *Service) DeviceUnlock(ctx context.Context, principal identity.DevicePri
 	if !s.identitySvc.AllowDeviceUnlock(ctx, principal.DeviceID) {
 		return Grant{}, newError(429, "UNLOCK_LIMIT", "解锁过于频繁，请稍后再试")
 	}
+
+	grace, dailyLimit, overLimit, tag := 10, 0, false, "device unlock"
+	if principal.Kind == "tv" {
+		// 081：电视放行时长与当日上限都按这台电视的配置来算；
+		// 硬停时家长显式放行，允许越过已用完的当日上限。
+		overLimit, tag = true, "device tv unlock"
+		if cfg, ok, err := s.ruleSvc.TVConfigForDeviceID(ctx, principal.DeviceID); err != nil {
+			return Grant{}, mapRuleError(err)
+		} else if ok {
+			grace, dailyLimit = cfg.HardStopGrace, cfg.DailyLimit
+		}
+	}
+	return s.issueParentGrant(ctx, accountID, principal.ChildID, principal.DeviceID,
+		minutes, grace, dailyLimit, overLimit, ip, tag)
+}
+
+// issueParentGrant 签发家长放行授权；overLimit 为 true 时不占用当日额度（硬停放行）。
+func (s *Service) issueParentGrant(ctx context.Context, accountID, childID, deviceID string,
+	minutes, graceDefault, dailyLimit int, overLimit bool, ip, tag string) (Grant, error) {
 	if minutes == 0 {
-		minutes = 10
+		minutes = graceDefault
 	}
-	if minutes < 5 || minutes > 60 {
-		return Grant{}, newError(422, "VALIDATION_ERROR", "解锁时长需在 5–60 分钟")
+	lower, upper := 5, 60
+	if overLimit {
+		lower, upper = 1, 120
 	}
-	rul, _, err := s.ruleSvc.GetForChild(ctx, principal.ChildID)
+	if minutes < lower || minutes > upper {
+		return Grant{}, newError(422, "VALIDATION_ERROR",
+			fmt.Sprintf("放行时长需在 %d–%d 分钟", lower, upper))
+	}
+	rul, _, err := s.ruleSvc.GetForChild(ctx, childID)
 	if err != nil {
 		return Grant{}, mapRuleError(err)
+	}
+	if dailyLimit <= 0 {
+		dailyLimit = rul.DailyLimit
 	}
 
 	now := time.Now()
@@ -197,15 +213,15 @@ func (s *Service) DeviceUnlock(ctx context.Context, principal identity.DevicePri
 	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, location)
 	end := start.Add(24 * time.Hour)
 
-	rec, err := s.repo.issueParent(ctx, principal.ChildID, principal.DeviceID, minutes,
-		rul.DailyLimit, start, end, now, randomToken())
+	rec, err := s.repo.issueParent(ctx, childID, deviceID, minutes,
+		dailyLimit, overLimit, start, end, now, randomToken())
 	if err != nil {
 		return Grant{}, err
 	}
 	grant := s.toGrant(rec)
-	if auditErr := s.repo.insertAudit(ctx, accountID, principal.DeviceID, grant.GrantID,
+	if auditErr := s.repo.insertAudit(ctx, accountID, deviceID, grant.GrantID,
 		grant.Minutes, ip); auditErr != nil {
-		s.logger.Error("audit device unlock", "error", auditErr, "grant_id", grant.GrantID)
+		s.logger.Error("audit "+tag, "error", auditErr, "grant_id", grant.GrantID)
 	}
 	metrics.IncGrantIssued()
 	return grant, nil

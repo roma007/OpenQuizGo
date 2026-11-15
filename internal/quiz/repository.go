@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/roma007/OpenQuizGo/internal/profile"
 )
 
 type repository struct {
@@ -160,10 +163,57 @@ func (r *repository) childStage(ctx context.Context, childID string) (stage, gra
 	if childID == "" {
 		return "", "", nil
 	}
+	var gradeSetAt *time.Time
 	err = r.pool.QueryRow(ctx, `
-		select stage_code, coalesce(grade_tag, '')
-		from child_profile where id = $1`, childID).Scan(&stage, &grade)
-	return stage, grade, err
+		select stage_code, coalesce(grade_tag, ''), grade_set_at
+		from child_profile where id = $1`, childID).Scan(&stage, &grade, &gradeSetAt)
+	if err != nil {
+		return "", "", err
+	}
+	if grade != "" {
+		grade = profile.Effective(grade, gradeSetAt, time.Now())
+		stage = profile.Stage(grade)
+	}
+	return stage, grade, nil
+}
+
+// randomCandidates 返回全库在线题目（可按学科过滤），用于「不分难度」随机出题。
+// childID 非空时排除孩子近 30 天做过的题。
+func (r *repository) randomCandidates(ctx context.Context, childID string, subjects []string, limit int) ([]Candidate, error) {
+	var subjectArg any
+	if len(subjects) > 0 {
+		subjectArg = subjects
+	}
+	var childArg any
+	if childID != "" {
+		childArg = childID
+	}
+	rows, err := r.pool.Query(ctx, `
+		select q.id, q.subject_code, q.stage_code, q.type_code, q.difficulty
+		from question q
+		where q.status = 'online'
+		  and ($1::text[] is null or q.subject_code = any($1))
+		  and ($3::uuid is null or not exists (
+		      select 1 from answer_log a
+		      where a.child_id = $3::uuid
+		        and a.question_id = q.id
+		        and a.answered_at > now() - interval '30 days'))
+		order by random()
+		limit $2`, subjectArg, limit, childArg)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]Candidate, 0, limit)
+	for rows.Next() {
+		var c Candidate
+		if err := rows.Scan(&c.ID, &c.Subject, &c.Stage, &c.Type, &c.Difficulty); err != nil {
+			return nil, err
+		}
+		items = append(items, c)
+	}
+	return items, rows.Err()
 }
 
 // difficultyStats 返回孩子近 30 天各难度的正确率。
