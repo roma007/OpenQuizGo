@@ -111,13 +111,16 @@ final ruleProvider = FutureProvider.family<Cached<RuleWithVersion>, String>((
   final cache = ref.watch(cacheStoreProvider);
   final key = 'rule:$childId';
   try {
-    final result = await repository.getRule(childId);
+    // 兜底超时：即使底层请求卡住，规则页也不会一直转圈（可见错误 + 重试）。
+    final result = await repository
+        .getRule(childId)
+        .timeout(const Duration(seconds: 15));
     await cache.write(key, {
       'rule': result.rule.toJson(),
       'version': result.version,
     });
     return Cached.fresh(result);
-  } on ApiException {
+  } catch (error) {
     final entry = await cache.read(key);
     final raw = entry?.data;
     if (raw is Map) {
@@ -130,7 +133,8 @@ final ruleProvider = FutureProvider.family<Cached<RuleWithVersion>, String>((
         entry!.cachedAt,
       );
     }
-    rethrow;
+    if (error is ApiException) rethrow;
+    throw ApiException('加载规则失败，请重试');
   }
 });
 

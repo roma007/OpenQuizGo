@@ -26,19 +26,32 @@ class ApiClient {
               baseUrl: baseUrl ?? AppConfig.apiBaseUrl,
               connectTimeout: const Duration(seconds: 10),
               receiveTimeout: const Duration(seconds: 20),
+              sendTimeout: const Duration(seconds: 10),
               headers: {'Content-Type': 'application/json'},
             ),
           ) {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          if (options.extra['noAuth'] != true) {
-            final token = await _tokenStore.accessToken();
-            if (token != null && token.isNotEmpty) {
-              options.headers['Authorization'] = 'Bearer $token';
+          try {
+            if (options.extra['noAuth'] != true) {
+              final token = await _tokenStore.accessToken();
+              if (token != null && token.isNotEmpty) {
+                options.headers['Authorization'] = 'Bearer $token';
+              }
             }
+            handler.next(options);
+          } catch (error, stack) {
+            // 读令牌失败时也必须结束请求，否则调用方会永远等待（页面一直转圈）。
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                error: error,
+                stackTrace: stack,
+                type: DioExceptionType.unknown,
+              ),
+            );
           }
-          handler.next(options);
         },
         onError: (error, handler) async {
           final request = error.requestOptions;
@@ -46,17 +59,17 @@ class ApiClient {
           if (unauthorized &&
               request.extra['noAuth'] != true &&
               request.extra['retried'] != true) {
-            final refreshed = await _refreshTokens();
-            if (refreshed) {
-              try {
+            try {
+              final refreshed = await _refreshTokens();
+              if (refreshed) {
                 final response = await _dio.fetch<dynamic>(
                   request.copyWith(extra: {...request.extra, 'retried': true}),
                 );
                 handler.resolve(response);
                 return;
-              } catch (_) {
-                // 落到下方的原始错误。
               }
+            } catch (_) {
+              // 刷新失败时落到下方的原始错误，保证请求一定结束。
             }
           }
           handler.next(error);
@@ -85,9 +98,12 @@ class ApiClient {
   }
 
   Future<bool> _doRefresh() async {
-    final refresh = await _tokenStore.refreshToken();
-    if (refresh == null || refresh.isEmpty) return false;
     try {
+      final refresh = await _tokenStore.refreshToken().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => null,
+      );
+      if (refresh == null || refresh.isEmpty) return false;
       final response = await _refreshDio.post<Map<String, dynamic>>(
         'v1/auth/refresh',
         data: {'refresh_token': refresh},
@@ -197,9 +213,13 @@ class ApiClient {
       );
     }
     if (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
         error.type == DioExceptionType.receiveTimeout ||
         error.type == DioExceptionType.connectionError) {
       return ApiException('网络连接失败，请检查网络后重试');
+    }
+    if (error.type == DioExceptionType.unknown && error.response == null) {
+      return ApiException('请求未完成，请重试');
     }
     return ApiException(
       '请求失败（${error.response?.statusCode ?? '未知'}）',
