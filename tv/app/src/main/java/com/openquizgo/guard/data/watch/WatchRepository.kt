@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.openquizgo.guard.data.local.GuardPreferences
 import com.openquizgo.guard.data.remote.ApiErrorBody
 import com.openquizgo.guard.data.remote.CapabilityReport
-import com.openquizgo.guard.data.remote.ChildContextResponse
 import com.openquizgo.guard.data.remote.GuardApi
 import com.openquizgo.guard.data.remote.DeviceUnlockRequest
 import com.openquizgo.guard.data.remote.DiagnosticUploadRequest
@@ -15,6 +14,8 @@ import com.openquizgo.guard.data.remote.OfflineLease
 import com.openquizgo.guard.data.remote.OfflineReportRequest
 import com.openquizgo.guard.data.remote.OfflineReportResult
 import com.openquizgo.guard.data.remote.TamperReport
+import com.openquizgo.guard.data.remote.TvContextResponse
+import com.openquizgo.guard.data.remote.TvMeterRequest
 import com.openquizgo.guard.data.remote.WatchGrant
 import kotlinx.coroutines.flow.first
 import retrofit2.Response
@@ -39,9 +40,19 @@ class WatchRepository(
         return bodyOrThrow(response)
     }
 
-    /** 080：孩子上下文；规则不存在时返回 null（走服务端默认规则）。 */
-    override suspend fun childContext(): ChildContextResponse? {
-        val response = api.childContext(authorization())
+    /** 081：按电视配置的可看状态；配置不存在时返回 null（按默认配置放行）。 */
+    override suspend fun tvContext(): TvContextResponse? {
+        val response = api.tvContext(authorization())
+        if (response.code() == 404) return null
+        return bodyOrThrow(response)
+    }
+
+    /** 081：做题关闭时的观看时长上报；返回最新额度与硬停判定。 */
+    override suspend fun meterTV(seconds: Int, pausedSeconds: Int): TvContextResponse? {
+        val response = api.tvMeter(
+            authorization(),
+            TvMeterRequest(seconds = seconds, pausedSeconds = pausedSeconds),
+        )
         if (response.code() == 404) return null
         return bodyOrThrow(response)
     }

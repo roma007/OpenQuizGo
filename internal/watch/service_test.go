@@ -295,6 +295,7 @@ func prepareWatchDB(t *testing.T, url string) {
 	}
 	if _, err := db.Exec(`truncate table
 		device_diagnostic,
+		tv_config, tv_device,
 		watch_log, watch_grant, quiz_session_item, quiz_session,
 		watch_rule, child_profile, family_member, family, parent_account, audit_log
 		cascade`); err != nil {

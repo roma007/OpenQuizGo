@@ -618,6 +618,41 @@ paths:
                   now: { type: string, format: date-time }
         "403": { description: 设备令牌已失效 }
 
+  /v1/tv/meter:
+    post:
+      tags: [tv]
+      summary: 做题关闭时的观看时长计量
+      description: |
+        做题开关关闭后电视没有答题授权心跳，靠本接口上报观看秒数写入 watch_log；
+        返回最新上下文（额度与硬停判定）。做题开关开启时返回 409 QUIZ_ENABLED。
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [seconds]
+              properties:
+                seconds: { type: integer, minimum: 0, maximum: 300 }
+                paused_seconds: { type: integer, minimum: 0, maximum: 300 }
+      responses:
+        "200":
+          description: 最新可看状态
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allowed: { type: boolean }
+                  hard_stop: { type: boolean }
+                  reason: { type: string }
+                  daily_limit: { type: integer }
+                  used_minutes: { type: integer }
+                  remaining_minutes: { type: integer }
+        "403": { description: 设备令牌已失效 }
+        "409": { description: 做题开关已开启，应走答题心跳 }
+
   /v1/family/experiments/{key}:
     get:
       tags: [experiment]

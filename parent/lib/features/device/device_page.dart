@@ -3,19 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/api_client.dart';
-import '../../core/api/models.dart';
 import '../../core/layout/adaptive.dart';
 import '../../core/providers.dart';
 import '../../core/storage/pending_unlock_store.dart';
-import '../../data/device_repository.dart';
-import 'bind_device_page.dart';
+import '../../data/tv_repository.dart';
+import 'tv_settings_page.dart';
 
+/// 081：电视登录后自动出现在这里；激活码绑定已取消。
 class DevicePage extends ConsumerWidget {
   const DevicePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final devices = ref.watch(devicesProvider);
+    final tvs = ref.watch(tvsProvider);
     return Column(
       children: [
         Padding(
@@ -23,39 +23,45 @@ class DevicePage extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  '电视设备',
-                  style: Theme.of(context).textTheme.titleLarge,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('电视设备', style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 2),
+                    Text(
+                      '在电视上用家长手机号登录后，会自动出现在这里',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
-              FilledButton.icon(
-                onPressed: () => _bind(context, ref),
-                icon: const Icon(Icons.add_link),
-                label: const Text('绑定电视'),
+              IconButton(
+                tooltip: '刷新',
+                onPressed: () => ref.invalidate(tvsProvider),
+                icon: const Icon(Icons.refresh),
               ),
             ],
           ),
         ),
         Expanded(
-          child: devices.when(
+          child: tvs.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => _ErrorView(
               message: error.toString(),
-              onRetry: () => ref.invalidate(devicesProvider),
+              onRetry: () => ref.invalidate(tvsProvider),
             ),
             data: (items) {
               if (items.isEmpty) {
-                return _EmptyView(onBind: () => _bind(context, ref));
+                return _EmptyView(onRefresh: () => ref.invalidate(tvsProvider));
               }
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final columns = gridColumns(constraints.maxWidth);
                   final cards = [
-                    for (final device in items)
-                      _deviceCard(context, ref, device),
+                    for (final tv in items) _tvCard(context, ref, tv),
                   ];
                   return RefreshIndicator(
-                    onRefresh: () async => ref.invalidate(devicesProvider),
+                    onRefresh: () async => ref.invalidate(tvsProvider),
                     child: columns == 1
                         ? ListView.separated(
                             physics: const AlwaysScrollableScrollPhysics(),
@@ -65,14 +71,18 @@ class DevicePage extends ConsumerWidget {
                                 const SizedBox(height: 12),
                             itemBuilder: (_, index) => cards[index],
                           )
-                        : GridView.count(
+                        : GridView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
                             padding: const EdgeInsets.all(16),
-                            crossAxisCount: columns,
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 4.2,
-                            children: cards,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: columns,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  mainAxisExtent: 188,
+                                ),
+                            itemCount: cards.length,
+                            itemBuilder: (_, index) => cards[index],
                           ),
                   );
                 },
@@ -84,63 +94,65 @@ class DevicePage extends ConsumerWidget {
     );
   }
 
-  Widget _deviceCard(BuildContext context, WidgetRef ref, DeviceInfo device) {
-    final pending = ref.watch(pendingUnlockProvider(device.id)).when(
-      data: (value) => value,
-      loading: () => null,
-      error: (_, _) => null,
-    );
-    return _DeviceCard(
-      device: device,
+  Widget _tvCard(BuildContext context, WidgetRef ref, TvDevice tv) {
+    final pending = ref
+        .watch(pendingUnlockProvider(tv.id))
+        .when(
+          data: (value) => value,
+          loading: () => null,
+          error: (_, _) => null,
+        );
+    return _TvCard(
+      tv: tv,
       pending: pending,
-      onUnlock: () => _unlock(context, ref, device),
-      onSendPending: () => _sendPending(context, ref, device),
-      onUnbind: () => _confirmUnbind(context, ref, device),
+      onSettings: () => _openSettings(context, ref, tv),
+      onUnlock: () => _unlock(context, ref, tv),
+      onSendPending: () => _sendPending(context, ref, tv),
+      onUnbind: () => _confirmUnbind(context, ref, tv),
     );
   }
 
-  Future<void> _bind(BuildContext context, WidgetRef ref) async {
-    final bound = await Navigator.of(
+  Future<void> _openSettings(
+    BuildContext context,
+    WidgetRef ref,
+    TvDevice tv,
+  ) async {
+    final changed = await Navigator.of(
       context,
-    ).push<bool>(MaterialPageRoute(builder: (_) => const BindDevicePage()));
-    if (bound == true) {
-      ref.invalidate(devicesProvider);
+    ).push<bool>(MaterialPageRoute(builder: (_) => TvSettingsPage(device: tv)));
+    if (changed == true) {
+      ref.invalidate(tvsProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('设备绑定成功')));
+        ).showSnackBar(const SnackBar(content: Text('配置已保存，电视将在 60 秒内生效')));
       }
     }
   }
 
-  Future<void> _unlock(
-    BuildContext context,
-    WidgetRef ref,
-    DeviceInfo device,
-  ) async {
+  Future<void> _unlock(BuildContext context, WidgetRef ref, TvDevice tv) async {
     final input = await showDialog<_UnlockInput>(
       context: context,
-      builder: (_) => _UnlockDialog(childName: device.childName),
+      builder: (_) => _UnlockDialog(tv: tv),
     );
     if (input == null) return;
     try {
       final grant = await ref
-          .read(deviceRepositoryProvider)
-          .unlock(bindId: device.id, pin: input.pin, minutes: input.minutes);
+          .read(tvRepositoryProvider)
+          .unlock(deviceId: tv.id, pin: input.pin, minutes: input.minutes);
+      ref.invalidate(tvsProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已解锁 ${grant.minutes} 分钟，电视将在 10 秒内恢复')),
+          SnackBar(content: Text('已放行 ${grant.minutes} 分钟，电视将在 10 秒内恢复')),
         );
       }
     } on ApiException catch (error) {
       if (error.statusCode == null) {
-        await ref
-            .read(pendingUnlockStoreProvider)
-            .save(device.id, input.minutes);
-        ref.invalidate(pendingUnlockProvider(device.id));
+        await ref.read(pendingUnlockStoreProvider).save(tv.id, input.minutes);
+        ref.invalidate(pendingUnlockProvider(tv.id));
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('网络不可用，已暂存解锁请求，10 分钟内可在设备卡片补发')),
+            const SnackBar(content: Text('网络不可用，已暂存放行请求，10 分钟内可在卡片补发')),
           );
         }
       } else if (context.mounted) {
@@ -154,48 +166,43 @@ class DevicePage extends ConsumerWidget {
   Future<void> _sendPending(
     BuildContext context,
     WidgetRef ref,
-    DeviceInfo device,
+    TvDevice tv,
   ) async {
     final store = ref.read(pendingUnlockStoreProvider);
-    final pending = await store.read(device.id);
+    final pending = await store.read(tv.id);
     if (pending == null) {
-      ref.invalidate(pendingUnlockProvider(device.id));
+      ref.invalidate(pendingUnlockProvider(tv.id));
       if (context.mounted) {
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('待补发解锁已过期')));
+        ).showSnackBar(const SnackBar(content: Text('待补发放行已过期')));
       }
       return;
     }
     if (!context.mounted) return;
-    final pin = await _askPin(
-      context,
-      title: '补发临时解锁（${pending.minutes} 分钟）',
-    );
+    final pin = await _askPin(context, title: '补发放行（${pending.minutes} 分钟）');
     if (pin == null) return;
-    final latest = await store.read(device.id);
+    final latest = await store.read(tv.id);
     if (latest == null) {
-      ref.invalidate(pendingUnlockProvider(device.id));
+      ref.invalidate(pendingUnlockProvider(tv.id));
       if (context.mounted) {
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('待补发解锁已过期')));
+        ).showSnackBar(const SnackBar(content: Text('待补发放行已过期')));
       }
       return;
     }
     try {
       final grant = await ref
-          .read(deviceRepositoryProvider)
-          .unlock(bindId: device.id, pin: pin, minutes: latest.minutes);
-      await store.clear(device.id);
-      ref.invalidate(pendingUnlockProvider(device.id));
-      ref.invalidate(devicesProvider);
+          .read(tvRepositoryProvider)
+          .unlock(deviceId: tv.id, pin: pin, minutes: latest.minutes);
+      await store.clear(tv.id);
+      ref.invalidate(pendingUnlockProvider(tv.id));
+      ref.invalidate(tvsProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已补发解锁 ${grant.minutes} 分钟')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('已补发放行 ${grant.minutes} 分钟')));
       }
     } on ApiException catch (error) {
       if (context.mounted) {
@@ -242,13 +249,13 @@ class DevicePage extends ConsumerWidget {
   Future<void> _confirmUnbind(
     BuildContext context,
     WidgetRef ref,
-    DeviceInfo device,
+    TvDevice tv,
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('解绑设备'),
-        content: Text('解绑后「${device.childName}」将无法继续在该电视上使用答题解锁，确定解绑？'),
+        title: const Text('解绑电视'),
+        content: Text('解绑后「${tv.name}」将立即停止守护，需要在电视上重新登录才能继续使用，确定解绑？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -263,8 +270,8 @@ class DevicePage extends ConsumerWidget {
     );
     if (confirmed != true) return;
     try {
-      await ref.read(deviceRepositoryProvider).unbind(device.id);
-      ref.invalidate(devicesProvider);
+      await ref.read(tvRepositoryProvider).unbind(tv.id);
+      ref.invalidate(tvsProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
@@ -280,73 +287,151 @@ class DevicePage extends ConsumerWidget {
   }
 }
 
-class _DeviceCard extends StatelessWidget {
-  const _DeviceCard({
-    required this.device,
+class _TvCard extends StatelessWidget {
+  const _TvCard({
+    required this.tv,
     required this.pending,
+    required this.onSettings,
     required this.onUnlock,
     required this.onSendPending,
     required this.onUnbind,
   });
 
-  final DeviceInfo device;
+  final TvDevice tv;
   final PendingUnlock? pending;
+  final VoidCallback onSettings;
   final VoidCallback onUnlock;
   final VoidCallback onSendPending;
   final VoidCallback onUnbind;
 
   @override
   Widget build(BuildContext context) {
-    final boundAt = device.boundAt;
+    final theme = Theme.of(context);
+    final limit = tv.config.limitEnabled ? tv.config.dailyLimit : 0;
+    final ratio = limit <= 0 ? 0.0 : (tv.usedMinutes / limit).clamp(0.0, 1.0);
+    final lastSeen = tv.lastSeenAt;
     return Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
-        ),
-        leading: CircleAvatar(
-          radius: 26,
-          child: Icon(device.platform == 'tv' ? Icons.tv : Icons.devices_other),
-        ),
-        title: Text(
-          device.childName,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subtitle: Text(
-          '${platformLabel(device.platform)} · '
-          '${boundAt == null ? "绑定时间未知" : "绑定于 ${DateFormat("yyyy-MM-dd HH:mm").format(boundAt.toLocal())}"}'
-          '${pending == null ? "" : " · 待补发解锁 ${pending!.minutes} 分钟"}',
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (pending != null)
-              IconButton(
-                tooltip: '补发解锁',
-                onPressed: onSendPending,
-                icon: const Icon(Icons.schedule_send),
-              ),
-            IconButton(
-              tooltip: '远程解锁',
-              onPressed: onUnlock,
-              icon: const Icon(Icons.lock_open),
+            Row(
+              children: [
+                CircleAvatar(radius: 22, child: const Icon(Icons.tv)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tv.name, style: theme.textTheme.titleMedium),
+                      Text(
+                        tv.hasChild
+                            ? '${tv.childName} · ${gradeLabel(tv.gradeTag)}'
+                            : '未指定孩子 · ${scopeLabel(tv.config.quizScope)}',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                if (pending != null)
+                  IconButton(
+                    tooltip: '补发放行',
+                    onPressed: onSendPending,
+                    icon: const Icon(Icons.schedule_send),
+                  ),
+                IconButton(
+                  tooltip: '设置',
+                  onPressed: onSettings,
+                  icon: const Icon(Icons.tune),
+                ),
+                IconButton(
+                  tooltip: '临时放行',
+                  onPressed: onUnlock,
+                  icon: const Icon(Icons.lock_open),
+                ),
+                IconButton(
+                  tooltip: '解绑',
+                  onPressed: onUnbind,
+                  icon: const Icon(Icons.link_off),
+                ),
+              ],
             ),
-            IconButton(
-              tooltip: '解绑',
-              onPressed: onUnbind,
-              icon: const Icon(Icons.link_off),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _chip(
+                  context,
+                  tv.online ? '在线' : '离线',
+                  color: tv.online ? Colors.green : Colors.grey,
+                ),
+                Text(
+                  lastSeen == null
+                      ? '尚未上报状态'
+                      : '最后在线 ${DateFormat('MM-dd HH:mm').format(lastSeen.toLocal())}',
+                  style: theme.textTheme.bodySmall,
+                ),
+                _chip(
+                  context,
+                  tv.config.quizEnabled
+                      ? '每 ${tv.config.unlockMinutes} 分钟答题'
+                      : '做题已关闭',
+                  color: tv.config.quizEnabled ? Colors.blue : Colors.grey,
+                ),
+              ],
             ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    limit <= 0
+                        ? '今日已看 ${tv.usedMinutes} 分钟 · 不限制时长'
+                        : '今日已看 ${tv.usedMinutes} / $limit 分钟',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+                if (pending != null)
+                  Text(
+                    '待补发放行 ${pending!.minutes} 分钟',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.orange,
+                    ),
+                  ),
+              ],
+            ),
+            if (limit > 0) ...[
+              const SizedBox(height: 6),
+              LinearProgressIndicator(value: ratio),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _chip(BuildContext context, String text, {required Color color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
       ),
     );
   }
 }
 
 class _EmptyView extends StatelessWidget {
-  const _EmptyView({required this.onBind});
+  const _EmptyView({required this.onRefresh});
 
-  final VoidCallback onBind;
+  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -360,11 +445,11 @@ class _EmptyView extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 16),
-          const Text('还没有绑定电视'),
+          const Text('还没有电视登录'),
           const SizedBox(height: 8),
-          const Text('在电视上打开守护端，输入显示的 6 位激活码'),
+          const Text('在电视上打开守护端，用家长手机号收验证码登录后会自动出现'),
           const SizedBox(height: 20),
-          FilledButton(onPressed: onBind, child: const Text('绑定电视')),
+          OutlinedButton(onPressed: onRefresh, child: const Text('刷新')),
         ],
       ),
     );
@@ -402,9 +487,9 @@ class _UnlockInput {
 }
 
 class _UnlockDialog extends StatefulWidget {
-  const _UnlockDialog({required this.childName});
+  const _UnlockDialog({required this.tv});
 
-  final String childName;
+  final TvDevice tv;
 
   @override
   State<_UnlockDialog> createState() => _UnlockDialogState();
@@ -412,7 +497,7 @@ class _UnlockDialog extends StatefulWidget {
 
 class _UnlockDialogState extends State<_UnlockDialog> {
   final _pin = TextEditingController();
-  int _minutes = 10;
+  late int _minutes = widget.tv.config.hardStopGrace;
 
   @override
   void dispose() {
@@ -422,22 +507,23 @@ class _UnlockDialogState extends State<_UnlockDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final options = {5, 10, 15, 20, 30, 60, _minutes}.toList()..sort();
     return AlertDialog(
-      title: const Text('远程解锁'),
+      title: const Text('临时放行'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('为「${widget.childName}」签发一段观看时间，电视阻挡页会自动放行。'),
+          Text(
+            '为「${widget.tv.name}」放行一段观看时间；'
+            '放行期间即使今日额度已用完也不会硬停。',
+          ),
           const SizedBox(height: 16),
           DropdownButtonFormField<int>(
             initialValue: _minutes,
-            decoration: const InputDecoration(labelText: '解锁时长'),
-            items: const [
-              DropdownMenuItem(value: 5, child: Text('5 分钟')),
-              DropdownMenuItem(value: 10, child: Text('10 分钟')),
-              DropdownMenuItem(value: 20, child: Text('20 分钟')),
-              DropdownMenuItem(value: 30, child: Text('30 分钟')),
-              DropdownMenuItem(value: 60, child: Text('60 分钟')),
+            decoration: const InputDecoration(labelText: '放行时长'),
+            items: [
+              for (final value in options)
+                DropdownMenuItem(value: value, child: Text('$value 分钟')),
             ],
             onChanged: (value) => setState(() => _minutes = value ?? 10),
           ),
@@ -466,7 +552,7 @@ class _UnlockDialogState extends State<_UnlockDialog> {
             if (pin.isEmpty) return;
             Navigator.pop(context, _UnlockInput(pin: pin, minutes: _minutes));
           },
-          child: const Text('解锁'),
+          child: const Text('放行'),
         ),
       ],
     );

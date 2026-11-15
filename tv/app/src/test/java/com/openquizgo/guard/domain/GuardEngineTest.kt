@@ -298,15 +298,21 @@ class GuardEngineTest {
             return grant
         }
 
-        /** 080：默认返回“允许”，单测里按需覆盖。 */
-        override suspend fun childContext(): com.openquizgo.guard.data.remote.ChildContextResponse =
-            com.openquizgo.guard.data.remote.ChildContextResponse(
+        /** 081：默认返回“允许”，单测里按需覆盖。 */
+        override suspend fun tvContext(): com.openquizgo.guard.data.remote.TvContextResponse =
+            com.openquizgo.guard.data.remote.TvContextResponse(
                 allowed = true,
                 reason = "ok",
+                hardStop = false,
                 dailyLimit = 60,
                 usedMinutes = 0,
                 remainingMinutes = 60,
             )
+
+        override suspend fun meterTV(
+            seconds: Int,
+            pausedSeconds: Int,
+        ): com.openquizgo.guard.data.remote.TvContextResponse = tvContext()
 
         override suspend fun heartbeat(
             grantId: String,

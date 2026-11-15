@@ -46,8 +46,12 @@ interface ForegroundSource {
 interface WatchGateway {
     suspend fun activeGrant(): WatchGrant?
 
-    /** 080：孩子上下文（规则/额度/时段）；服务端为准。 */
-    suspend fun childContext(): com.openquizgo.guard.data.remote.ChildContextResponse?
+    /** 081：按电视配置的可看状态；服务端为准。 */
+    suspend fun tvContext(): com.openquizgo.guard.data.remote.TvContextResponse?
+
+    /** 081：做题关闭时的观看时长计量，返回最新上下文（额度/硬停）。 */
+    suspend fun meterTV(seconds: Int, pausedSeconds: Int = 0):
+        com.openquizgo.guard.data.remote.TvContextResponse?
 
     suspend fun heartbeat(
         grantId: String,

@@ -174,7 +174,7 @@ class MembersPage extends ConsumerWidget {
     try {
       await ref.read(familyRepositoryProvider).joinFamily(code);
       ref.invalidate(childrenProvider);
-      ref.invalidate(devicesProvider);
+      ref.invalidate(tvsProvider);
       ref.invalidate(membersProvider);
       ref.invalidate(ruleProvider);
       ref.invalidate(reportsProvider);

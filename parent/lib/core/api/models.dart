@@ -51,30 +51,3 @@ class Child {
     gradeTag: json['grade_tag'] as String?,
   );
 }
-
-class DeviceInfo {
-  DeviceInfo({
-    required this.id,
-    required this.deviceId,
-    required this.platform,
-    required this.childId,
-    required this.childName,
-    this.boundAt,
-  });
-
-  final String id;
-  final String deviceId;
-  final String platform;
-  final String childId;
-  final String childName;
-  final DateTime? boundAt;
-
-  factory DeviceInfo.fromJson(Map<String, dynamic> json) => DeviceInfo(
-    id: json['id'] as String,
-    deviceId: json['device_id'] as String? ?? '',
-    platform: json['platform'] as String? ?? 'tv',
-    childId: json['child_id'] as String? ?? '',
-    childName: json['child_name'] as String? ?? '',
-    boundAt: DateTime.tryParse(json['bound_at'] as String? ?? ''),
-  );
-}

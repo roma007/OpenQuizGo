@@ -180,6 +180,50 @@ func (s *Service) DeviceUnlock(ctx context.Context, principal identity.DevicePri
 		minutes, grace, dailyLimit, overLimit, ip, tag)
 }
 
+// MeterTVWatch 记录“做题开关关闭”时的观看时长（081）。
+//
+// 这类电视没有答题授权心跳，靠本接口把观看秒数写入 watch_log；
+// 额度与硬停仍由按电视配置的上下文统一判定。
+func (s *Service) MeterTVWatch(ctx context.Context, principal identity.DevicePrincipal,
+	seconds, paused int) (rule.TVContextResult, error) {
+	if principal.Kind != "tv" || s.ruleSvc == nil {
+		return rule.TVContextResult{}, newError(422, "VALIDATION_ERROR", "仅电视端可用")
+	}
+	cfg, ok, err := s.ruleSvc.TVConfigForDeviceID(ctx, principal.DeviceID)
+	if err != nil {
+		return rule.TVContextResult{}, mapRuleError(err)
+	}
+	if !ok {
+		return rule.TVContextResult{}, newError(404, "TV_CONFIG_NOT_FOUND", "电视配置不存在")
+	}
+	if cfg.QuizEnabled {
+		return rule.TVContextResult{}, newError(409, "QUIZ_ENABLED", "做题开关已开启，请走答题心跳")
+	}
+	seconds = clampMeterSeconds(seconds)
+	paused = clampMeterSeconds(paused)
+	if seconds > 0 || paused > 0 {
+		now := time.Now()
+		start := now.Add(-time.Duration(seconds+paused) * time.Second)
+		if err := s.repo.insertOfflineLog(ctx, principal.ChildID, principal.DeviceID, "",
+			start, now, seconds, paused); err != nil {
+			return rule.TVContextResult{}, err
+		}
+	}
+	return s.ruleSvc.ContextForDevice(ctx, principal)
+}
+
+func clampMeterSeconds(value int) int {
+	if value < 0 {
+		return 0
+	}
+	if value > maxMeterSeconds {
+		return maxMeterSeconds
+	}
+	return value
+}
+
+const maxMeterSeconds = 300
+
 // issueParentGrant 签发家长放行授权；overLimit 为 true 时不占用当日额度（硬停放行）。
 func (s *Service) issueParentGrant(ctx context.Context, accountID, childID, deviceID string,
 	minutes, graceDefault, dailyLimit int, overLimit bool, ip, tag string) (Grant, error) {

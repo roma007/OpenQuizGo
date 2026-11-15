@@ -16,6 +16,7 @@ import com.openquizgo.guard.GuardApplication
 import com.openquizgo.guard.data.foreground.ForegroundState
 import com.openquizgo.guard.domain.GuardState
 import com.openquizgo.guard.ui.BlockerActivity
+import com.openquizgo.guard.ui.HardStopActivity
 import com.openquizgo.guard.ui.MainActivity
 import com.openquizgo.guard.ui.QuizActivity
 import kotlinx.coroutines.CoroutineScope
@@ -60,7 +61,11 @@ class GuardService : Service() {
                         quizRequiredSince = 0L
                         promptJob?.cancel()
                         GuardAccessibilityService.disarmQuiz()
-                        launchBlocker()
+                        if (engine?.hardStop?.value == true) {
+                            launchHardStop()
+                        } else {
+                            launchBlocker()
+                        }
                     }
                     GuardState.GRANTED -> {
                         quizRequiredSince = 0L
@@ -89,6 +94,16 @@ class GuardService : Service() {
         val foreground = (application as GuardApplication).container.foregroundDetector.state.value
         when (current) {
             GuardState.BLOCKED -> {
+                // 081：硬停页要“被切走后 1 秒内重拉”，单独用更短的间隔与页面标记。
+                if (engine?.hardStop?.value == true) {
+                    if (!HardStopActivity.isShowing &&
+                        nowSinceLaunch() > HARDSTOP_RELAUNCH_GAP_MS
+                    ) {
+                        GuardLog.w("watchdog: hard stop missing pkg=${foreground.packageName}")
+                        launchHardStop()
+                    }
+                    return
+                }
                 if (blockerEscaped(foreground) && !BlockerActivity.isShowing &&
                     nowSinceLaunch() > GUARD_RELAUNCH_GAP_MS
                 ) {
@@ -145,6 +160,18 @@ class GuardService : Service() {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         runCatching { startActivity(intent) }
             .onFailure { GuardLog.e("service", "quiz launch failed", it) }
+    }
+
+    private fun launchHardStop() {
+        lastGuardLaunchAt = System.currentTimeMillis()
+        val intent = Intent(this, HardStopActivity::class.java)
+            .addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP,
+            )
+        runCatching { startActivity(intent) }
+            .onFailure { GuardLog.e("service", "hard stop launch failed", it) }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -226,7 +253,7 @@ class GuardService : Service() {
     }
 
     private fun label(state: GuardState): String = when (state) {
-        GuardState.UNBOUND -> "设备未激活"
+        GuardState.UNBOUND -> "电视未登录"
         GuardState.IDLE -> "空闲"
         GuardState.WATCHING -> "观看中"
         GuardState.QUIZ_REQUIRED -> "需要答题：按确认键开始（90 秒未按将自动答题）"
@@ -240,6 +267,7 @@ class GuardService : Service() {
         private const val NOTIFICATION_ID = 1001
         private const val WATCHDOG_INTERVAL_MS = 1_500L
         private const val GUARD_RELAUNCH_GAP_MS = 2_000L
+        private const val HARDSTOP_RELAUNCH_GAP_MS = 1_000L
         private const val QUIZ_FALLBACK_MS = 90_000L
 
         private val MEDIA_PACKAGES = setOf(

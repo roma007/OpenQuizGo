@@ -3,7 +3,6 @@ package com.openquizgo.guard.data.remote
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -20,17 +19,28 @@ interface GuardApi {
     @GET("v1/meta")
     suspend fun meta(): MetaResponse
 
-    @POST("v1/device/activate/code")
-    suspend fun requestActivationCode(@Body request: ActivationCodeRequest): ActivationCodeResponse
+    /** 081：电视端登录只发短信验证码，不再申请激活码。 */
+    @POST("v1/auth/sms/code")
+    suspend fun requestSmsCode(@Body request: SmsCodeRequest): Response<Unit>
 
-    @POST("v1/device/token")
-    suspend fun exchangeDeviceToken(@Body request: DeviceTokenRequest): Response<DeviceTokenResponse>
+    @POST("v1/tv/login")
+    suspend fun tvLogin(@Body request: TvLoginRequest): Response<TvLoginResponse>
 
-    @GET("v1/device/me")
-    suspend fun deviceMe(@Header("Authorization") authorization: String): DeviceMeResponse
+    @GET("v1/tv/me")
+    suspend fun tvMe(@Header("Authorization") authorization: String): Response<TvDeviceResponse>
 
-    @DELETE("v1/device/me")
-    suspend fun unbindDeviceMe(@Header("Authorization") authorization: String): Response<Unit>
+    /** 081：按电视配置的可看状态（今日已看/剩余/下次答题/硬停）。 */
+    @GET("v1/tv/context")
+    suspend fun tvContext(
+        @Header("Authorization") authorization: String,
+    ): Response<TvContextResponse>
+
+    /** 081：做题关闭时上报观看秒数（没有答题授权心跳）。 */
+    @POST("v1/tv/meter")
+    suspend fun tvMeter(
+        @Header("Authorization") authorization: String,
+        @Body request: TvMeterRequest,
+    ): Response<TvContextResponse>
 
     @POST("v1/quiz/sessions")
     suspend fun createQuizSession(
@@ -60,12 +70,6 @@ interface GuardApi {
     suspend fun activeGrant(
         @Header("Authorization") authorization: String,
     ): Response<WatchGrant>
-
-    /** 080：孩子上下文（规则、额度、时段），TV 端一切放行判定以此为准。 */
-    @GET("v1/child/context")
-    suspend fun childContext(
-        @Header("Authorization") authorization: String,
-    ): Response<ChildContextResponse>
 
     @POST("v1/watch/grants/{grantID}/heartbeat")
     suspend fun heartbeat(
@@ -177,61 +181,77 @@ data class DiagnosticUploadRequest(
     @SerializedName("note") val note: String = "",
 )
 
-data class ActivationCodeRequest(
-    @SerializedName("device_id") val deviceId: String,
-    @SerializedName("platform") val platform: String = "tv",
+data class SmsCodeRequest(
+    @SerializedName("phone") val phone: String,
 )
 
-data class ActivationCodeResponse(
-    @SerializedName("code") val code: String,
-    @SerializedName("expires_in") val expiresIn: Int,
-)
-
-data class DeviceTokenRequest(
+data class TvLoginRequest(
+    @SerializedName("phone") val phone: String,
     @SerializedName("code") val code: String,
     @SerializedName("device_id") val deviceId: String,
+    @SerializedName("device_name") val deviceName: String,
 )
 
-data class DeviceTokenResponse(
-    @SerializedName("device_id") val deviceId: String?,
-    @SerializedName("child_id") val childId: String?,
-    @SerializedName("child_name") val childName: String?,
+data class TvLoginResponse(
     @SerializedName("device_token") val deviceToken: String?,
     @SerializedName("expires_at") val expiresAt: String?,
+    @SerializedName("family_name") val familyName: String?,
+    @SerializedName("device") val device: TvDeviceResponse?,
 )
 
-data class DeviceMeResponse(
-    @SerializedName("device_id") val deviceId: String,
-    @SerializedName("child_id") val childId: String,
-    @SerializedName("child_name") val childName: String,
+/** 081：做题关闭时的计量请求。 */
+data class TvMeterRequest(
+    @SerializedName("seconds") val seconds: Int,
+    @SerializedName("paused_seconds") val pausedSeconds: Int = 0,
 )
 
-/** 080：`GET /v1/child/context` 响应。额度与时段由服务端计算，TV 只做展示与拦截。 */
-data class ChildContextResponse(
+data class TvConfigResponse(    @SerializedName("quiz_enabled") val quizEnabled: Boolean = true,
+    @SerializedName("limit_enabled") val limitEnabled: Boolean = true,
+    @SerializedName("unlock_minutes") val unlockMinutes: Int = 15,
+    @SerializedName("daily_limit") val dailyLimit: Int = 60,
+    @SerializedName("subjects") val subjects: List<String>? = null,
+    @SerializedName("pass_threshold") val passThreshold: Double = 3.0,
+    @SerializedName("quiz_scope") val quizScope: String = "random",
+    @SerializedName("hard_stop_grace") val hardStopGrace: Int = 10,
+    @SerializedName("version") val version: Int = 1,
+)
+
+data class TvDeviceResponse(
+    @SerializedName("id") val id: String = "",
+    @SerializedName("name") val name: String = "",
+    @SerializedName("device_id") val deviceId: String = "",
+    @SerializedName("child_id") val childId: String? = null,
+    @SerializedName("child_name") val childName: String? = null,
+    @SerializedName("grade_tag") val gradeTag: String? = null,
+    @SerializedName("online") val online: Boolean = false,
+    @SerializedName("used_minutes") val usedMinutes: Int = 0,
+    @SerializedName("config") val config: TvConfigResponse = TvConfigResponse(),
+)
+
+/** 081：`GET /v1/tv/context`，电视端一切判定以此为准。 */
+data class TvContextResponse(
     @SerializedName("allowed") val allowed: Boolean = false,
     @SerializedName("reason") val reason: String? = null,
-    @SerializedName("rule") val rule: ChildRule? = null,
-    @SerializedName("rule_version") val ruleVersion: Int = 0,
-    @SerializedName("daily_limit") val dailyLimit: Int = 0,
+    @SerializedName("hard_stop") val hardStop: Boolean = false,
+    @SerializedName("quiz_enabled") val quizEnabled: Boolean = true,
+    @SerializedName("limit_enabled") val limitEnabled: Boolean = true,
+    @SerializedName("quiz_scope") val quizScope: String = "random",
+    @SerializedName("unlock_minutes") val unlockMinutes: Int = 15,
+    @SerializedName("hard_stop_grace") val hardStopGrace: Int = 10,
+    @SerializedName("daily_limit") val dailyLimit: Int = 60,
     @SerializedName("used_minutes") val usedMinutes: Int = 0,
     @SerializedName("reserved_minutes") val reservedMinutes: Int = 0,
     @SerializedName("remaining_minutes") val remainingMinutes: Int = 0,
+    @SerializedName("grant_minutes") val grantMinutes: Int = 0,
+    @SerializedName("grant_until") val grantUntil: String? = null,
+    @SerializedName("last_quiz_at") val lastQuizAt: String? = null,
+    @SerializedName("next_quiz_at") val nextQuizAt: String? = null,
+    @SerializedName("child_name") val childName: String? = null,
     @SerializedName("now") val now: String? = null,
+    @SerializedName("config_version") val configVersion: Int = 0,
 )
 
-data class ChildRule(
-    @SerializedName("unlock_minutes") val unlockMinutes: Int = 15,
-    @SerializedName("pass_threshold") val passThreshold: Double = 3.0,
-    @SerializedName("daily_limit") val dailyLimit: Int = 60,
-    @SerializedName("fun_ratio_cap") val funRatioCap: Int = 2,
-    @SerializedName("fun_enabled") val funEnabled: Boolean = true,
-    @SerializedName("weight_preset") val weightPreset: String? = null,
-    @SerializedName("scope_mode") val scopeMode: String? = null,
-    @SerializedName("allowed_apps") val allowedApps: List<String>? = null,
-    @SerializedName("offline_fallback_min") val offlineFallbackMin: Int = 10,
-    @SerializedName("timezone") val timezone: String? = null,
-)
-
+/** 080：`GET /v1/child/context` 响应。额度与时段由服务端计算，TV 只做展示与拦截。 */
 data class QuizOption(
     @SerializedName("id") val id: String,
     @SerializedName("text") val text: String,

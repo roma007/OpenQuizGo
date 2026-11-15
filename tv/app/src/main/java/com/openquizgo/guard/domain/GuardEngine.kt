@@ -71,6 +71,28 @@ class GuardEngine(
     private val _contextReason = MutableStateFlow<String?>(null)
     val contextReason: StateFlow<String?> = _contextReason.asStateFlow()
 
+    /** 081：服务端判定需要硬停（每日上限到点）。 */
+    private val _hardStop = MutableStateFlow(false)
+    val hardStop: StateFlow<Boolean> = _hardStop.asStateFlow()
+
+    /** 081：家长 PIN 放行默认时长（分钟），由该电视配置下发。 */
+    private val _hardStopGrace = MutableStateFlow(10)
+    val hardStopGrace: StateFlow<Int> = _hardStopGrace.asStateFlow()
+
+    /** 081：下次强制答题时间（毫秒），用于状态页倒计时。 */
+    private val _nextQuizAtMillis = MutableStateFlow<Long?>(null)
+    val nextQuizAtMillis: StateFlow<Long?> = _nextQuizAtMillis.asStateFlow()
+
+    /** 081：做题开关。关闭时不弹题，只按每日上限计量并硬停。 */
+    private val _quizEnabled = MutableStateFlow(true)
+    val quizEnabled: StateFlow<Boolean> = _quizEnabled.asStateFlow()
+
+    /** 做题关闭时本地累计的待上报观看秒数（每 15 秒上报一次）。 */
+    private var meterPendingSeconds = 0
+
+    @Volatile
+    private var metering = false
+
     /** 服务端判定「当前不可观看」的原因（time_window / daily_limit）；null 表示允许。 */
     @Volatile
     private var serverBlockedReason: String? = null
@@ -113,7 +135,7 @@ class GuardEngine(
                 if (_state.value == GuardState.UNBOUND) return@collect
                 if (foreground.mediaActive && (current == GuardState.IDLE || current == GuardState.GRANTED)) {
                     transition(GuardState.WATCHING)
-                    if (!hasUsableGrant()) {
+                    if (_quizEnabled.value && !hasUsableGrant()) {
                         transition(GuardState.QUIZ_REQUIRED)
                     }
                 } else if (!foreground.mediaActive && current == GuardState.WATCHING) {
@@ -187,6 +209,7 @@ class GuardEngine(
     fun adoptGrant(grant: GrantInfo) {
         GuardLog.i("grant", "adopt id=${grant.grantId} minutes=${grant.minutes}")
         _watchSeconds.value = 0
+        _hardStop.value = false
         adoptGrantInternal(grant)
         _blockReason.value = null
         transition(GuardState.GRANTED)
@@ -302,6 +325,16 @@ class GuardEngine(
         }
 
         _watchSeconds.value += 1
+        if (!_quizEnabled.value) {
+            // 081：做题关闭时不弹题，只按电视的每日上限计量并硬停。
+            meterPendingSeconds += 1
+            if (meterPendingSeconds >= METER_BATCH_SECONDS) {
+                val batch = meterPendingSeconds
+                meterPendingSeconds = 0
+                scope.launch { flushMeter(batch) }
+            }
+            return
+        }
         if (!hasUsableGrant()) {
             GuardLog.w("watching without usable grant")
             transition(GuardState.QUIZ_REQUIRED)
@@ -319,6 +352,7 @@ class GuardEngine(
     }
 
     private suspend fun heartbeat() {
+        if (!_quizEnabled.value) return
         if (_state.value == GuardState.UNBOUND || _state.value == GuardState.QUIZZING) return
         val id = grantId
         if (id == null) {
@@ -457,66 +491,28 @@ class GuardEngine(
     }
 
     /**
-     * 080：拉取服务端上下文，作为「能不能看」的唯一判定。
+     * 081：拉取按电视配置的可看状态，作为「能不能看」的唯一判定。
      *
-     * 失败（断网）时不改变现有判定，交由离线租约兜底；401 直接回未绑定态。
+     * 失败（断网）时不改变现有判定，交由离线租约兜底；401/403 直接回未登录态。
      */
     private suspend fun refreshContext() {
         if (preferences.deviceToken.first().isNullOrBlank()) return
-        runCatching { watchRepository.childContext() }
+        runCatching { watchRepository.tvContext() }
             .onSuccess { ctx ->
                 if (ctx == null) {
-                    // 服务端无规则时按默认规则放行，不因缺规则把孩子锁死。
+                    // 服务端尚无电视配置时按默认放行，不因缺配置把孩子锁死。
                     serverBlockedReason = null
+                    _hardStop.value = false
                     _contextAllowed.value = true
                     _contextReason.value = null
                     _contextRemainingMinutes.value = null
                     return@onSuccess
                 }
-                _contextDailyLimit.value = ctx.dailyLimit
-                _contextUsedMinutes.value = ctx.usedMinutes
-                _contextRemainingMinutes.value = ctx.remainingMinutes
-                _contextAllowed.value = ctx.allowed
-                _contextReason.value = ctx.reason
-                // 已签发的授权在其有效期内优先于额度/时段判定（设计 001：授权即已扣减额度，
-                // 家长远程解锁也明确忽略时段限制）。否则会出现 BLOCKED/GRANTED 反复抖动。
-                serverBlockedReason = when {
-                    ctx.allowed -> null
-                    hasUsableGrant() -> null
-                    else -> ctx.reason ?: "blocked"
-                }
-                offline = false
-
-                val blocked = serverBlockedReason
-                when {
-                    blocked != null -> {
-                        // 重启后状态可能已经是 BLOCKED 但原因为空，这里一并补上，
-                        // 否则拦截页只能显示兜底文案。
-                        if (_blockReason.value != blocked) _blockReason.value = blocked
-                        if (_state.value !in setOf(
-                                GuardState.BLOCKED,
-                                GuardState.QUIZZING,
-                                GuardState.UNBOUND,
-                            )
-                        ) {
-                            transition(GuardState.BLOCKED)
-                        }
-                    }
-                    _state.value == GuardState.BLOCKED &&
-                        SERVER_BLOCK_REASONS.contains(_blockReason.value) -> {
-                        // 家长放开限制后自动恢复：还在播就直接回到观看中。
-                        _blockReason.value = null
-                        if (foregroundDetector.state.value.mediaActive) {
-                            transition(GuardState.WATCHING)
-                        } else {
-                            transition(GuardState.IDLE)
-                        }
-                    }
-                }
+                applyContext(ctx)
                 GuardLog.i(
                     "context",
-                    "allowed=${ctx.allowed} reason=${ctx.reason} " +
-                        "remaining=${ctx.remainingMinutes}/${ctx.dailyLimit} v=${ctx.ruleVersion}",
+                    "allowed=${ctx.allowed} hardStop=${ctx.hardStop} reason=${ctx.reason} " +
+                        "remaining=${ctx.remainingMinutes}/${ctx.dailyLimit} v=${ctx.configVersion}",
                 )
             }
             .onFailure { error ->
@@ -528,6 +524,88 @@ class GuardEngine(
                     transition(GuardState.UNBOUND)
                 }
             }
+    }
+
+    /** 把服务端上下文落到状态机上（轮询与计量接口共用）。 */
+    private fun applyContext(ctx: com.openquizgo.guard.data.remote.TvContextResponse) {
+        _contextDailyLimit.value = ctx.dailyLimit
+        _contextUsedMinutes.value = ctx.usedMinutes
+        _contextRemainingMinutes.value = ctx.remainingMinutes
+        _contextAllowed.value = ctx.allowed
+        _contextReason.value = ctx.reason
+        _hardStopGrace.value = ctx.hardStopGrace
+        _nextQuizAtMillis.value = parseMillis(ctx.nextQuizAt)
+        val quizWasEnabled = _quizEnabled.value
+        _quizEnabled.value = ctx.quizEnabled
+        // 已签发的授权在其有效期内优先于额度/时段判定（设计 001：授权即已扣减额度，
+        // 家长远程解锁也明确忽略时段限制）。否则会出现 BLOCKED/GRANTED 反复抖动。
+        val grantActive = hasUsableGrant() || ctx.grantMinutes > 0
+        _hardStop.value = ctx.hardStop && !grantActive
+        serverBlockedReason = when {
+            ctx.allowed -> null
+            grantActive -> null
+            else -> ctx.reason ?: "blocked"
+        }
+        offline = false
+
+        val blocked = serverBlockedReason
+        when {
+            blocked != null -> {
+                // 重启后状态可能已经是 BLOCKED 但原因为空，这里一并补上，
+                // 否则拦截页只能显示兜底文案。
+                if (_blockReason.value != blocked) _blockReason.value = blocked
+                if (_state.value !in setOf(
+                        GuardState.BLOCKED,
+                        GuardState.QUIZZING,
+                        GuardState.UNBOUND,
+                    )
+                ) {
+                    transition(GuardState.BLOCKED)
+                }
+            }
+            _state.value == GuardState.BLOCKED &&
+                SERVER_BLOCK_REASONS.contains(_blockReason.value) -> {
+                // 家长放开限制后自动恢复：还在播就直接回到观看中。
+                _blockReason.value = null
+                if (foregroundDetector.state.value.mediaActive) {
+                    transition(GuardState.WATCHING)
+                } else {
+                    transition(GuardState.IDLE)
+                }
+            }
+        }
+
+        // 做题开关切换后修正状态：关闭时不再要求答题；重新打开且无授权时回到待答题。
+        if (!ctx.quizEnabled) {
+            if (_state.value == GuardState.QUIZ_REQUIRED && blocked == null) {
+                transition(
+                    if (foregroundDetector.state.value.mediaActive) {
+                        GuardState.WATCHING
+                    } else {
+                        GuardState.IDLE
+                    },
+                )
+            }
+        } else if (!quizWasEnabled && !hasUsableGrant() && blocked == null &&
+            _state.value in setOf(GuardState.IDLE, GuardState.WATCHING, GuardState.GRANTED)
+        ) {
+            transition(GuardState.QUIZ_REQUIRED)
+        }
+    }
+
+    /** 做题关闭时按批上报观看秒数，返回值直接刷新额度与硬停判定。 */
+    private suspend fun flushMeter(seconds: Int) {
+        if (metering || seconds <= 0) return
+        metering = true
+        try {
+            runCatching { watchRepository.meterTV(seconds, 0) }
+                .onSuccess { ctx ->
+                    if (ctx != null) applyContext(ctx)
+                }
+                .onFailure { GuardLog.w("meter", "report failed: ${it.message}") }
+        } finally {
+            metering = false
+        }
     }
 
     private suspend fun refreshLease() {
@@ -671,6 +749,9 @@ class GuardEngine(
         private const val UNLOCK_POLL_INTERVAL_MS = 10_000L
         private const val LEASE_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000L
         private const val CONTEXT_REFRESH_INTERVAL_MS = 60_000L
+
+        /** 做题关闭时每积累 15 秒上报一次计量。 */
+        private const val METER_BATCH_SECONDS = 15
 
         /** 由服务端上下文触发的拦截原因，家长放开后可自动恢复。 */
         private val SERVER_BLOCK_REASONS = setOf("time_window", "daily_limit")

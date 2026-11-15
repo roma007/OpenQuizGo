@@ -6,7 +6,7 @@ import 'api/models.dart';
 import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
 import '../data/family_repository.dart';
-import '../data/device_repository.dart';
+import '../data/tv_repository.dart';
 import '../data/rule_repository.dart';
 import '../data/report_repository.dart';
 import '../data/daily_repository.dart';
@@ -86,12 +86,17 @@ final membersProvider = FutureProvider<List<FamilyMember>>((ref) {
   return ref.watch(familyRepositoryProvider).listMembers();
 });
 
-final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
-  return DeviceRepository(ref.watch(apiClientProvider));
+final tvRepositoryProvider = Provider<TvRepository>((ref) {
+  return TvRepository(ref.watch(apiClientProvider));
 });
 
-final devicesProvider = FutureProvider<List<DeviceInfo>>((ref) {
-  return ref.watch(deviceRepositoryProvider).listDevices();
+/// 081：登录过的电视自动出现在这里，配置按电视下发。
+final tvsProvider = FutureProvider<List<TvDevice>>((ref) {
+  return ref.watch(tvRepositoryProvider).listTVs();
+});
+
+final tvProvider = FutureProvider.family<TvDevice, String>((ref, deviceId) {
+  return ref.watch(tvRepositoryProvider).getTV(deviceId);
 });
 
 final ruleRepositoryProvider = Provider<RuleRepository>((ref) {

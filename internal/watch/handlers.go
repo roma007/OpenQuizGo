@@ -58,6 +58,7 @@ func (s *Service) DeviceRoutes(r chi.Router) {
 	r.Post("/device/tamper", s.handleTamper)
 	r.Post("/device/diagnostics", s.handleUploadDiagnostics)
 	r.Post("/device/unlock", s.handleDeviceUnlock)
+	r.Post("/tv/meter", s.handleTVMeter)
 	r.Get("/offline/lease", s.handleOfflineLease)
 	r.Post("/watch/logs", s.handleOfflineReport)
 }
@@ -175,6 +176,29 @@ func (s *Service) handleParentTVUnlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, grant)
+}
+
+func (s *Service) handleTVMeter(w http.ResponseWriter, r *http.Request) {
+	principal, ok := identity.DeviceFrom(r.Context())
+	if !ok {
+		writeWatchError(w, r, newError(401, "AUTH_REQUIRED", "设备未授权"))
+		return
+	}
+	var req struct {
+		Seconds       int `json:"seconds"`
+		PausedSeconds int `json:"paused_seconds"`
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeWatchError(w, r, newError(422, "VALIDATION_ERROR", "请求体不是合法 JSON"))
+		return
+	}
+	result, err := s.MeterTVWatch(r.Context(), principal, req.Seconds, req.PausedSeconds)
+	if err != nil {
+		writeWatchError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 func clientIP(r *http.Request) string {
