@@ -425,7 +425,7 @@ private fun ResultScreen(outcome: QuizOutcome, onClose: () -> Unit) {
         Spacer(Modifier.height(20.dp))
         Text(
             text = "答对 ${summary.correctCount} / ${summary.questionCount} 题 " +
-                "· 得分 ${formatScore(summary.score)} / ${formatScore(summary.passThreshold)}",
+                "· 通过需要 ${summary.passQuestions} 题",
             fontSize = 26.sp,
             color = Color(0xFFD0D0D0),
         )

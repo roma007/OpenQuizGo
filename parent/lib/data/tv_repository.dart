@@ -14,6 +14,7 @@ class TvConfig {
     required this.quizScope,
     required this.hardStopGrace,
     required this.questionCount,
+    required this.passQuestions,
     required this.version,
   });
 
@@ -28,6 +29,9 @@ class TvConfig {
 
   /// 082：每次答题题量（1–5），新电视默认 1。
   final int questionCount;
+
+  /// 083：答对几题算通过，上限等于每次题量。
+  final int passQuestions;
   final int version;
 
   factory TvConfig.fromJson(Map<String, dynamic> json) => TvConfig(
@@ -44,6 +48,7 @@ class TvConfig {
     quizScope: json['quiz_scope'] as String? ?? 'random',
     hardStopGrace: (json['hard_stop_grace'] as num?)?.toInt() ?? 10,
     questionCount: (json['question_count'] as num?)?.toInt() ?? 1,
+    passQuestions: (json['pass_questions'] as num?)?.toInt() ?? 2,
     version: (json['version'] as num?)?.toInt() ?? 0,
   );
 
@@ -57,6 +62,7 @@ class TvConfig {
     'quiz_scope': quizScope,
     'hard_stop_grace': hardStopGrace,
     'question_count': questionCount,
+    'pass_questions': passQuestions,
     'version': version,
   };
 
@@ -70,6 +76,7 @@ class TvConfig {
     String? quizScope,
     int? hardStopGrace,
     int? questionCount,
+    int? passQuestions,
   }) => TvConfig(
     quizEnabled: quizEnabled ?? this.quizEnabled,
     limitEnabled: limitEnabled ?? this.limitEnabled,
@@ -80,6 +87,7 @@ class TvConfig {
     quizScope: quizScope ?? this.quizScope,
     hardStopGrace: hardStopGrace ?? this.hardStopGrace,
     questionCount: questionCount ?? this.questionCount,
+    passQuestions: passQuestions ?? this.passQuestions,
     version: version,
   );
 }

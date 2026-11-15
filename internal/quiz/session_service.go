@@ -113,8 +113,22 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 	if result.MaxScore > 0 && passThreshold > result.MaxScore {
 		passThreshold = result.MaxScore
 	}
+	// 通过标准按答对题数：不超过实际下发的题量，至少 1 题。
+	passQuestions := ruleSnapshot.PassQuestions
+	if passQuestions <= 0 {
+		passQuestions = ruleSnapshot.Rule.PassQuestions
+	}
+	if passQuestions <= 0 {
+		passQuestions = 2
+	}
+	if passQuestions > len(result.Selected) {
+		passQuestions = len(result.Selected)
+	}
+	if passQuestions < 1 {
+		passQuestions = 1
+	}
 	sessionID, err := s.repo.createSession(ctx, principal.ChildID, principal.DeviceID,
-		ruleSnapshot, passThreshold, expiresAt, items)
+		ruleSnapshot, passThreshold, passQuestions, expiresAt, items)
 	if err != nil {
 		return CreateSessionResponse{}, err
 	}
@@ -123,6 +137,7 @@ func (s *Service) CreateSession(ctx context.Context, principal identity.DevicePr
 		SessionID:     sessionID,
 		ExpiresAt:     expiresAt,
 		PassThreshold: passThreshold,
+		PassQuestions: passQuestions,
 		RuleVersion:   ruleSnapshot.Version,
 		Questions:     questions,
 	}, nil
@@ -207,13 +222,14 @@ func (s *Service) SubmitAnswer(ctx context.Context, principal identity.DevicePri
 		Suspicious:    durationMS < suspiciousMS,
 		Score:         score,
 		Threshold:     session.PassThreshold,
+		PassQuestions: session.PassQuestions,
 		Answered:      answered,
 		Total:         session.QuestionCount,
 		Remaining:     session.QuestionCount - answered,
 	}, nil
 }
 
-// FinishSession 结算会话：加权分达到门槛即通过。
+// FinishSession 结算会话：答对题数达到要求即通过（083）。
 func (s *Service) FinishSession(ctx context.Context, principal identity.DevicePrincipal, sessionID string) (SessionSummary, error) {
 	session, err := s.loadSession(ctx, principal, sessionID)
 	if err != nil {
@@ -232,7 +248,7 @@ func (s *Service) FinishSession(ctx context.Context, principal identity.DevicePr
 		return s.summary(ctx, session, false)
 	}
 	state := "failed"
-	if session.Score >= session.PassThreshold {
+	if sessionPassed(session.CorrectCount, session.PassQuestions) {
 		state = "passed"
 	}
 	if err := s.repo.setSessionState(ctx, session.ID, state); err != nil {
@@ -249,6 +265,14 @@ func (s *Service) FinishSession(ctx context.Context, principal identity.DevicePr
 		s.issueGrant(ctx, session, &summary)
 	}
 	return summary, nil
+}
+
+// sessionPassed 是按答对题数判定的唯一入口，便于测试与后续调整。
+func sessionPassed(correctCount, passQuestions int) bool {
+	if passQuestions < 1 {
+		passQuestions = 1
+	}
+	return correctCount >= passQuestions
 }
 
 func (s *Service) issueGrant(ctx context.Context, session sessionRecord, summary *SessionSummary) {
@@ -324,6 +348,7 @@ func (s *Service) summary(ctx context.Context, session sessionRecord, withQuesti
 		State:         session.State,
 		Score:         session.Score,
 		Threshold:     session.PassThreshold,
+		PassQuestions: session.PassQuestions,
 		CorrectCount:  session.CorrectCount,
 		AnsweredCount: answered,
 		QuestionCount: session.QuestionCount,
@@ -394,6 +419,7 @@ func (s *Service) loadRuleForDevice(ctx context.Context, principal identity.Devi
 		Random:        plan.Random,
 		Subjects:      plan.Subjects,
 		QuestionCount: plan.QuestionCount,
+		PassQuestions: plan.PassQuestions,
 	}, nil
 }
 
@@ -428,6 +454,7 @@ func defaultRule() ruleSnapshot {
 		Rule: Rule{
 			UnlockMinutes: 15,
 			PassThreshold: 3,
+			PassQuestions: 2,
 			SubjectWeight: map[string]float64{
 				"math": 1.5, "chinese": 1.5, "english": 1.5,
 				"science": 1, "logic": 1, "safety": 1, "fun": 0.5,

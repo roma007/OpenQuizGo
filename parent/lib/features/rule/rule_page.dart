@@ -72,7 +72,7 @@ class _RuleForm extends ConsumerStatefulWidget {
 
 class _RuleFormState extends ConsumerState<_RuleForm> {
   late final TextEditingController _unlock;
-  late final TextEditingController _threshold;
+  late final TextEditingController _passQuestions;
   late final TextEditingController _daily;
   late final TextEditingController _offline;
   late final TextEditingController _funCap;
@@ -97,7 +97,7 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
     super.initState();
     final rule = widget.initial;
     _unlock = _numController(rule.unlockMinutes);
-    _threshold = _numController(rule.passThreshold);
+    _passQuestions = _numController(rule.passQuestions);
     _daily = _numController(rule.dailyLimit);
     _offline = _numController(rule.offlineFallbackMin);
     _funCap = _numController(rule.funRatioCap);
@@ -130,7 +130,7 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
   void _applyRuleValues(Rule rule) {
     setState(() {
       _unlock.text = _formatNum(rule.unlockMinutes);
-      _threshold.text = _formatNum(rule.passThreshold);
+      _passQuestions.text = _formatNum(rule.passQuestions);
       _daily.text = _formatNum(rule.dailyLimit);
       _offline.text = _formatNum(rule.offlineFallbackMin);
       _funCap.text = _formatNum(rule.funRatioCap);
@@ -164,7 +164,7 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
   void dispose() {
     for (final controller in [
       _unlock,
-      _threshold,
+      _passQuestions,
       _daily,
       _offline,
       _funCap,
@@ -188,7 +188,8 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
     };
     return Rule(
       unlockMinutes: _int(_unlock, 15),
-      passThreshold: _double(_threshold, 3),
+      passThreshold: widget.initial.passThreshold,
+      passQuestions: _int(_passQuestions, 2),
       subjectWeight: weights,
       funRatioCap: _int(_funCap, 2),
       funEnabled: _funEnabled,
@@ -430,7 +431,7 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
           children: [
             Expanded(
               child: _numberField(
-                _threshold,
+                _passQuestions,
                 '答对多少分算通过',
                 helper: '越高越难，按各科权重累计',
               ),
@@ -545,7 +546,7 @@ class _RuleFormState extends ConsumerState<_RuleForm> {
                   Text(
                     '试算结果：每次约 ${_preview!.questionCount} 道题，'
                     '全部答对可得 ${_preview!.maxScore.toStringAsFixed(1)} 分'
-                    '（通过线 ${_double(_threshold, 3).toStringAsFixed(1)} 分）',
+                    '（通过需答对 ${_int(_passQuestions, 2)} 题）',
                   ),
                   if (_preview!.warnings.isNotEmpty)
                     Padding(

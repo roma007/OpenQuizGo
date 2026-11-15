@@ -18,6 +18,7 @@ class Rule {
   Rule({
     required this.unlockMinutes,
     required this.passThreshold,
+    required this.passQuestions,
     required this.subjectWeight,
     required this.funRatioCap,
     required this.funEnabled,
@@ -32,6 +33,7 @@ class Rule {
 
   int unlockMinutes;
   double passThreshold;
+  int passQuestions;
   Map<String, double> subjectWeight;
   int funRatioCap;
   bool funEnabled;
@@ -63,6 +65,7 @@ class Rule {
     return Rule(
       unlockMinutes: (json['unlock_minutes'] as num?)?.toInt() ?? 15,
       passThreshold: (json['pass_threshold'] as num?)?.toDouble() ?? 3,
+      passQuestions: (json['pass_questions'] as num?)?.toInt() ?? 2,
       subjectWeight: weights,
       funRatioCap: (json['fun_ratio_cap'] as num?)?.toInt() ?? 2,
       funEnabled: json['fun_enabled'] as bool? ?? true,
@@ -83,6 +86,7 @@ class Rule {
   Map<String, dynamic> toJson() => {
     'unlock_minutes': unlockMinutes,
     'pass_threshold': passThreshold,
+    'pass_questions': passQuestions,
     'subject_weight': subjectWeight,
     'fun_ratio_cap': funRatioCap,
     'fun_enabled': funEnabled,

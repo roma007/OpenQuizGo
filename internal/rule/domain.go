@@ -28,6 +28,7 @@ type TimeWindow struct {
 type Rule struct {
 	UnlockMinutes      int                `json:"unlock_minutes"`
 	PassThreshold      float64            `json:"pass_threshold"`
+	PassQuestions      int                `json:"pass_questions"`
 	SubjectWeight      map[string]float64 `json:"subject_weight"`
 	FunRatioCap        int                `json:"fun_ratio_cap"`
 	FunEnabled         bool               `json:"fun_enabled"`
@@ -66,6 +67,11 @@ func Validate(r Rule) error {
 	if r.PassThreshold <= 0 {
 		return invalid("pass_threshold", "加权门槛必须大于 0")
 	}
+	// 0 表示未显式配置，按默认 2 题处理（兼容旧调用方）。
+	if r.PassQuestions != 0 &&
+		(r.PassQuestions < 1 || r.PassQuestions > MaxSessionQuestions) {
+		return invalid("pass_questions", "答对题数需在 1–12 之间")
+	}
 	if len(r.SubjectWeight) == 0 {
 		return invalid("subject_weight", "学科权重不能为空")
 	}
@@ -97,6 +103,9 @@ func Validate(r Rule) error {
 	}
 	if r.DailyLimit == 0 {
 		r.DailyLimit = 60
+	}
+	if r.PassQuestions == 0 {
+		r.PassQuestions = 2
 	}
 	if r.DailyLimit < 1 || r.DailyLimit > 720 {
 		return invalid("daily_limit", "每日上限需在 1–720 分钟")
@@ -136,6 +145,10 @@ func Validate(r Rule) error {
 	if r.PassThreshold > maxScore+1e-9 {
 		return invalid("pass_threshold",
 			fmt.Sprintf("门槛 %.1f 高于当前题量可达的加权分 %.1f", r.PassThreshold, maxScore))
+	}
+	if r.PassQuestions > n {
+		return invalid("pass_questions",
+			fmt.Sprintf("答对题数不能超过每次题量 %d", n))
 	}
 	return nil
 }
@@ -307,6 +320,9 @@ func Normalize(r Rule) Rule {
 	}
 	if r.DailyLimit == 0 {
 		r.DailyLimit = 60
+	}
+	if r.PassQuestions == 0 {
+		r.PassQuestions = 2
 	}
 	for subject, weight := range r.SubjectWeight {
 		if weight < 0 {

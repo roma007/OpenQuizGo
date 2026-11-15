@@ -2539,7 +2539,8 @@ components:
           type: array
           description: 出题学科；空数组表示使用孩子规则里的全部学科
           items: { type: string }
-        pass_threshold: { type: number, description: 答题通过门槛分，默认 3；题量较小时服务端会下调到该题量可达到的最高分 }
+        pass_threshold: { type: number, description: 内部加权分，仅用于组卷与历史兼容，不再作为通过依据 }
+        pass_questions: { type: integer, minimum: 1, maximum: 12, description: 答对几题算通过，默认 1（单题场次）/ 2（多题场次），不得超过每次答题题量 }
         quiz_scope: { type: string, enum: [random, grade], description: random 表示不指定孩子、全库随机出题 }
         hard_stop_grace: { type: integer, minimum: 1, maximum: 120, description: 家长 PIN 放行时长（分钟），默认 10 }
         question_count: { type: integer, minimum: 1, maximum: 5, description: 每次答题题量，新电视默认 1；缺省保存时沿用原值 }
@@ -2706,10 +2707,11 @@ components:
             created_at: { type: string, format: date-time }
     Rule:
       type: object
-      required: [unlock_minutes, pass_threshold, subject_weight, daily_limit]
+      required: [unlock_minutes, pass_threshold, pass_questions, subject_weight, daily_limit]
       properties:
         unlock_minutes: { type: integer, example: 15 }
-        pass_threshold: { type: number, format: double, example: 3 }
+        pass_threshold: { type: number, format: double, example: 3, description: 内部加权分，仅用于组卷与历史兼容，不再作为通过依据 }
+        pass_questions: { type: integer, minimum: 1, maximum: 12, example: 2, description: 答对几题算通过 }
         subject_weight:
           type: object
           additionalProperties: { type: number }
@@ -2766,7 +2768,8 @@ components:
       properties:
         session_id: { type: string, format: uuid }
         expires_at: { type: string, format: date-time }
-        pass_threshold: { type: number }
+        pass_threshold: { type: number, description: 内部加权分，仅保留兼容 }
+        pass_questions: { type: integer, description: 本次答对几题算通过 }
         rule_version: { type: integer }
         questions:
           type: array
@@ -2790,7 +2793,8 @@ components:
         duration_ms: { type: integer }
         suspicious: { type: boolean }
         score: { type: number }
-        threshold: { type: number }
+        threshold: { type: number, description: 内部加权分，仅保留兼容 }
+        pass_questions: { type: integer, description: 本次答对几题算通过 }
         answered: { type: integer }
         total: { type: integer }
         remaining: { type: integer }
@@ -2812,7 +2816,8 @@ components:
         session_id: { type: string, format: uuid }
         state: { type: string, enum: [active, passed, failed, expired, cancelled] }
         score: { type: number }
-        pass_threshold: { type: number }
+        pass_threshold: { type: number, description: 内部加权分，仅保留兼容 }
+        pass_questions: { type: integer, description: 答对几题算通过 }
         correct_count: { type: integer }
         answered_count: { type: integer }
         question_count: { type: integer }

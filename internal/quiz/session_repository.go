@@ -17,6 +17,7 @@ type sessionRecord struct {
 	State         string
 	RuleVersion   int
 	PassThreshold float64
+	PassQuestions int
 	Score         float64
 	CorrectCount  int
 	QuestionCount int
@@ -89,7 +90,7 @@ func (r *repository) activeSessionForDevice(ctx context.Context, deviceID string
 }
 
 func (r *repository) createSession(ctx context.Context, childID, deviceID string, rule ruleSnapshot,
-	threshold float64, expiresAt time.Time, items []itemRecord) (string, error) {
+	threshold float64, passQuestions int, expiresAt time.Time, items []itemRecord) (string, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("begin: %w", err)
@@ -101,10 +102,11 @@ func (r *repository) createSession(ctx context.Context, childID, deviceID string
 	if err := tx.QueryRow(ctx, `
 		insert into quiz_session (
 			child_id, device_id, rule_version, state, question_count, pass_threshold,
-			rule_snapshot, expires_at)
-		values ($1, $2, $3, 'active', $4, $5, $6::jsonb, $7)
+			pass_questions, rule_snapshot, expires_at)
+		values ($1, $2, $3, 'active', $4, $5, $6, $7::jsonb, $8)
 		returning id`,
-		childID, deviceID, rule.Version, len(items), threshold, string(ruleJSON), expiresAt).
+		childID, deviceID, rule.Version, len(items), threshold, passQuestions,
+		string(ruleJSON), expiresAt).
 		Scan(&sessionID); err != nil {
 		return "", fmt.Errorf("insert session: %w", err)
 	}
@@ -177,13 +179,13 @@ func (r *repository) sessionByID(ctx context.Context, sessionID string) (session
 	var rec sessionRecord
 	var ruleJSON string
 	err := r.pool.QueryRow(ctx, `
-		select id, child_id, device_id, state, rule_version, pass_threshold, score,
+		select id, child_id, device_id, state, rule_version, pass_threshold, pass_questions, score,
 		       correct_count, question_count, rule_snapshot::text,
 		       started_at, expires_at, finished_at
 		from quiz_session where id = $1`, sessionID).Scan(
 		&rec.ID, &rec.ChildID, &rec.DeviceID, &rec.State, &rec.RuleVersion,
-		&rec.PassThreshold, &rec.Score, &rec.CorrectCount, &rec.QuestionCount,
-		&ruleJSON, &rec.StartedAt, &rec.ExpiresAt, &rec.FinishedAt)
+		&rec.PassThreshold, &rec.PassQuestions, &rec.Score, &rec.CorrectCount,
+		&rec.QuestionCount, &ruleJSON, &rec.StartedAt, &rec.ExpiresAt, &rec.FinishedAt)
 	if err != nil {
 		return sessionRecord{}, err
 	}

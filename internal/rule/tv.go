@@ -20,6 +20,7 @@ type TVContextResult struct {
 	HardStopGrace    int        `json:"hard_stop_grace"`
 	PassThreshold    float64    `json:"pass_threshold"`
 	QuestionCount    int        `json:"question_count"`
+	PassQuestions    int        `json:"pass_questions"`
 	Subjects         []string   `json:"subjects"`
 	DailyLimit       int        `json:"daily_limit"`
 	UsedMinutes      int        `json:"used_minutes"`
@@ -59,6 +60,9 @@ func (s *Service) UpdateTVConfig(ctx context.Context, accountID, devicePK, pin s
 	// 旧版家长端不发送 question_count（0），沿用库中原值而不是重置为默认 1。
 	if in.QuestionCount == 0 {
 		in.QuestionCount = before.QuestionCount
+	}
+	if in.PassQuestions == 0 {
+		in.PassQuestions = before.PassQuestions
 	}
 	in = normalizeTVConfig(in)
 	if err := validateTVConfig(in); err != nil {
@@ -122,6 +126,7 @@ func (s *Service) ContextForDevice(ctx context.Context, principal identity.Devic
 		HardStopGrace:    cfg.HardStopGrace,
 		PassThreshold:    effectivePassThreshold(applyTVConfig(base, cfg), cfg.QuestionCount),
 		QuestionCount:    cfg.QuestionCount,
+		PassQuestions:    min(cfg.PassQuestions, cfg.QuestionCount),
 		Subjects:         cfg.Subjects,
 		DailyLimit:       cfg.DailyLimit,
 		UsedMinutes:      ceilMinutes(used),
@@ -191,6 +196,7 @@ type TVStartPlan struct {
 	Random        bool
 	Subjects      []string
 	QuestionCount int
+	PassQuestions int
 }
 
 // CanStartDevice 在电视发起答题前做配置校验，并合成一份用于组卷的规则。
@@ -239,6 +245,7 @@ func (s *Service) CanStartDevice(ctx context.Context, principal identity.DeviceP
 		Random:        cfg.QuizScope == "random",
 		Subjects:      cfg.Subjects,
 		QuestionCount: cfg.QuestionCount,
+		PassQuestions: min(cfg.PassQuestions, cfg.QuestionCount),
 	}, nil
 }
 
@@ -298,6 +305,9 @@ func normalizeTVConfig(in identity.TVConfig) identity.TVConfig {
 	if in.QuestionCount == 0 {
 		in.QuestionCount = 1
 	}
+	if in.PassQuestions == 0 {
+		in.PassQuestions = min(2, in.QuestionCount)
+	}
 	if in.PassThreshold == 0 {
 		in.PassThreshold = 3
 	}
@@ -329,6 +339,9 @@ func validateTVConfig(in identity.TVConfig) error {
 	if in.QuestionCount < 1 || in.QuestionCount > 5 {
 		return newError(422, "VALIDATION_ERROR", "每次答题题量需在 1–5 题")
 	}
+	if in.PassQuestions < 1 || in.PassQuestions > in.QuestionCount {
+		return newError(422, "VALIDATION_ERROR", "答对题数需在 1 到每次题量之间")
+	}
 	return nil
 }
 
@@ -336,7 +349,8 @@ func validateTVConfig(in identity.TVConfig) error {
 
 const tvConfigColumns = `
 	quiz_enabled, limit_enabled, unlock_minutes, daily_limit, subjects::text,
-	pass_threshold::float8, quiz_scope, hard_stop_grace, question_count, version`
+	pass_threshold::float8, quiz_scope, hard_stop_grace, question_count,
+	pass_questions, version`
 
 type tvConfigScanner interface {
 	Scan(dest ...any) error
@@ -347,7 +361,7 @@ func scanTVConfig(row tvConfigScanner) (identity.TVConfig, error) {
 	var subjects string
 	err := row.Scan(&cfg.QuizEnabled, &cfg.LimitEnabled, &cfg.UnlockMinutes, &cfg.DailyLimit,
 		&subjects, &cfg.PassThreshold, &cfg.QuizScope, &cfg.HardStopGrace,
-		&cfg.QuestionCount, &cfg.Version)
+		&cfg.QuestionCount, &cfg.PassQuestions, &cfg.Version)
 	if err != nil {
 		return identity.TVConfig{}, err
 	}
@@ -429,11 +443,12 @@ func (r *repository) updateTVConfig(ctx context.Context, accountID, devicePK str
 		    quiz_scope = $9,
 		    hard_stop_grace = $10,
 		    question_count = $11,
+		    pass_questions = $12,
 		    version = version + 1,
 		    updated_by = $2,
 		    updated_at = now()
 		where cfg.device_pk = $1
-		  and cfg.version = $12
+		  and cfg.version = $13
 		  and exists (
 		      select 1 from tv_device t
 		      join family_member fm on fm.family_id = t.family_id
@@ -442,7 +457,7 @@ func (r *repository) updateTVConfig(ctx context.Context, accountID, devicePK str
 		returning version`,
 		devicePK, accountID, in.QuizEnabled, in.LimitEnabled, in.UnlockMinutes, in.DailyLimit,
 		string(subjects), in.PassThreshold, in.QuizScope, in.HardStopGrace,
-		in.QuestionCount, expectedVersion).Scan(&version)
+		in.QuestionCount, in.PassQuestions, expectedVersion).Scan(&version)
 	if err != nil {
 		if isNoRows(err) {
 			return 0, errVersionConflict

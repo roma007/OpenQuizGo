@@ -280,6 +280,7 @@ data class CreateSessionResponse(
     @SerializedName("session_id") val sessionId: String,
     @SerializedName("expires_at") val expiresAt: String?,
     @SerializedName("pass_threshold") val passThreshold: Double,
+    @SerializedName("pass_questions") val passQuestions: Int = 2,
     @SerializedName("rule_version") val ruleVersion: Int,
     @SerializedName("questions") val questions: List<SessionQuestion>?,
 )
@@ -297,6 +298,7 @@ data class AnswerResult(
     @SerializedName("suspicious") val suspicious: Boolean,
     @SerializedName("score") val score: Double,
     @SerializedName("threshold") val threshold: Double,
+    @SerializedName("pass_questions") val passQuestions: Int = 2,
     @SerializedName("answered") val answered: Int,
     @SerializedName("total") val total: Int,
     @SerializedName("remaining") val remaining: Int,
@@ -315,6 +317,7 @@ data class SessionSummary(
     @SerializedName("state") val state: String,
     @SerializedName("score") val score: Double,
     @SerializedName("pass_threshold") val passThreshold: Double,
+    @SerializedName("pass_questions") val passQuestions: Int = 2,
     @SerializedName("correct_count") val correctCount: Int,
     @SerializedName("answered_count") val answeredCount: Int,
     @SerializedName("question_count") val questionCount: Int,

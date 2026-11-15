@@ -61,7 +61,8 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
                 subtitle: Text(
                   _config.quizEnabled
                       ? '默认开启：每 ${_config.unlockMinutes} 分钟弹一次题，'
-                            '每次 ${_config.questionCount} 题，答对才能继续看'
+                            '每次 ${_config.questionCount} 题，'
+                            '答对 ${_config.passQuestions} 题可继续看'
                       : '已关闭：不再弹题，但每日上限仍然生效',
                 ),
                 value: _config.quizEnabled,
@@ -85,14 +86,30 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
                 options: _questionCountOptions,
                 optionLabel: (value) => '$value 题',
                 onChanged: (value) => setState(() {
-                  _config = _config.copyWith(questionCount: value);
+                  var pass = _config.passQuestions;
+                  if (pass > value) pass = value;
+                  // 多题场次默认要求答对 2 题，避免题量调大后仍然 1 题就通过。
+                  if (pass < 2 && value >= 2) pass = 2;
+                  _config = _config.copyWith(
+                    questionCount: value,
+                    passQuestions: pass,
+                  );
                 }),
               ),
               const SizedBox(height: 4),
-              Text(
-                '到点后需要答完这么多题，加权总分达到门槛才算通过',
-                style: theme.textTheme.bodySmall,
+              Text('到点后需要答完这么多题', style: theme.textTheme.bodySmall),
+              const SizedBox(height: 12),
+              _intDropdown(
+                label: '答对几题算通过',
+                value: _config.passQuestions,
+                options: [for (var i = 1; i <= _config.questionCount; i++) i],
+                optionLabel: (value) => '$value 题',
+                onChanged: (value) => setState(() {
+                  _config = _config.copyWith(passQuestions: value);
+                }),
               ),
+              const SizedBox(height: 4),
+              Text('答对这么多题后，电视继续播放', style: theme.textTheme.bodySmall),
               const SizedBox(height: 12),
               Text('题目范围', style: theme.textTheme.bodySmall),
               const SizedBox(height: 8),

@@ -135,8 +135,9 @@ func (s *Service) Preview(ctx context.Context, accountID, childID string, in Rul
 		maxScore += float64(count) * in.SubjectWeight[subject]
 	}
 	result := PreviewResult{N: n, Quota: quota, FunSlots: funSlots, MaxScore: maxScore}
-	if in.PassThreshold > maxScore*0.9 {
-		result.Warnings = append(result.Warnings, "门槛接近可达上限，孩子可能需要全部答对")
+	if in.PassQuestions > n {
+		result.Warnings = append(result.Warnings,
+			fmt.Sprintf("答对 %d 题超过每次题量 %d 题，请调低通过题数或增加题量", in.PassQuestions, n))
 	}
 	return result, nil
 }

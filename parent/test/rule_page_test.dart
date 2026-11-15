@@ -10,6 +10,7 @@ import 'package:openquizgo_parent/features/rule/rule_page.dart';
 Rule _rule() => Rule(
   unlockMinutes: 20,
   passThreshold: 3,
+  passQuestions: 2,
   subjectWeight: const {'math': 1.5, 'chinese': 1.5, 'fun': 0.5},
   funRatioCap: 2,
   funEnabled: true,

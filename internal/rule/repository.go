@@ -12,7 +12,7 @@ import (
 )
 
 const ruleColumns = `
-	unlock_minutes, pass_threshold, subject_weight::text, fun_ratio_cap, fun_enabled,
+	unlock_minutes, pass_threshold, pass_questions, subject_weight::text, fun_ratio_cap, fun_enabled,
 	weight_preset, time_window::text, daily_limit, offline_fallback_min, scope_mode,
 	allowed_apps::text, timezone, version`
 
@@ -29,7 +29,7 @@ func scanRule(row pgx.Row) (Rule, int, error) {
 	var version int
 	var weights, timeWindow, apps string
 	if err := row.Scan(
-		&r.UnlockMinutes, &r.PassThreshold, &weights, &r.FunRatioCap, &r.FunEnabled,
+		&r.UnlockMinutes, &r.PassThreshold, &r.PassQuestions, &weights, &r.FunRatioCap, &r.FunEnabled,
 		&r.WeightPreset, &timeWindow, &r.DailyLimit, &r.OfflineFallbackMin, &r.ScopeMode,
 		&apps, &r.Timezone, &version); err != nil {
 		return Rule{}, 0, err
@@ -74,16 +74,17 @@ func (r *repository) update(ctx context.Context, accountID, childID string, in R
 		update watch_rule wr
 		set unlock_minutes = $3,
 		    pass_threshold = $4,
-		    subject_weight = $5::jsonb,
-		    fun_ratio_cap = $6,
-		    fun_enabled = $7,
-		    weight_preset = $8,
-		    time_window = $9::jsonb,
-		    daily_limit = $10,
-		    offline_fallback_min = $11,
-		    scope_mode = $12,
-		    allowed_apps = $13::jsonb,
-		    timezone = $14,
+		    pass_questions = $5,
+		    subject_weight = $6::jsonb,
+		    fun_ratio_cap = $7,
+		    fun_enabled = $8,
+		    weight_preset = $9,
+		    time_window = $10::jsonb,
+		    daily_limit = $11,
+		    offline_fallback_min = $12,
+		    scope_mode = $13,
+		    allowed_apps = $14::jsonb,
+		    timezone = $15,
 		    version = version + 1,
 		    updated_by = $2,
 		    updated_at = now()
@@ -95,7 +96,7 @@ func (r *repository) update(ctx context.Context, accountID, childID string, in R
 		  )
 		returning version`,
 		childID, accountID,
-		in.UnlockMinutes, in.PassThreshold, string(weights), in.FunRatioCap, in.FunEnabled,
+		in.UnlockMinutes, in.PassThreshold, in.PassQuestions, string(weights), in.FunRatioCap, in.FunEnabled,
 		in.WeightPreset, string(timeWindow), in.DailyLimit, in.OfflineFallbackMin,
 		in.ScopeMode, string(apps), in.Timezone).Scan(&version)
 	return version, err

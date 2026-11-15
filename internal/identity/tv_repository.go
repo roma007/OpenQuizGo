@@ -20,6 +20,7 @@ type TVConfig struct {
 	QuizScope     string   `json:"quiz_scope"`
 	HardStopGrace int      `json:"hard_stop_grace"`
 	QuestionCount int      `json:"question_count"`
+	PassQuestions int      `json:"pass_questions"`
 	Version       int      `json:"version"`
 }
 
@@ -328,7 +329,7 @@ const tvColumns = `
 	coalesce(c.grade_tag, ''), t.last_seen_at,
 	cfg.quiz_enabled, cfg.limit_enabled, cfg.unlock_minutes, cfg.daily_limit,
 	cfg.subjects, cfg.pass_threshold::float8, cfg.quiz_scope, cfg.hard_stop_grace,
-	cfg.question_count, cfg.version`
+	cfg.question_count, cfg.pass_questions, cfg.version`
 
 func (r *repository) scanTVDevice(row interface {
 	Scan(dest ...any) error
@@ -338,7 +339,8 @@ func (r *repository) scanTVDevice(row interface {
 	err := row.Scan(&d.ID, &d.Name, &d.DeviceID, &d.ChildID, &d.ChildName, &d.GradeTag,
 		&d.LastSeenAt, &d.Config.QuizEnabled, &d.Config.LimitEnabled, &d.Config.UnlockMinutes,
 		&d.Config.DailyLimit, &subjects, &d.Config.PassThreshold, &d.Config.QuizScope,
-		&d.Config.HardStopGrace, &d.Config.QuestionCount, &d.Config.Version)
+		&d.Config.HardStopGrace, &d.Config.QuestionCount, &d.Config.PassQuestions,
+		&d.Config.Version)
 	if err != nil {
 		return TVDevice{}, err
 	}

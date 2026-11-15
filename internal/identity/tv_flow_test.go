@@ -117,6 +117,13 @@ func TestTVLoginFlow(t *testing.T) {
 	}
 
 	// 电视自己看上下文：未指定孩子时按全库随机出题。
+	// 测试不依赖运行时刻，清空默认时段（07:00–21:00），避免夜间跑测失败。
+	if _, err := pool.Exec(ctx, `
+		update watch_rule set time_window = '{"allow":[]}'::jsonb
+		where child_id = (select child_id from tv_device where id = $1)`,
+		tvLogin.Device.ID); err != nil {
+		t.Fatalf("clear time window: %v", err)
+	}
 	var tvCtx rule.TVContextResult
 	c.expect(http.MethodGet, "/tv/context", nil, tvLogin.DeviceToken, http.StatusOK, &tvCtx)
 	if !tvCtx.Allowed || tvCtx.HardStop || tvCtx.Reason != "ok" {

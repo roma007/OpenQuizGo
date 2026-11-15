@@ -31,6 +31,7 @@ TvDevice _tv({
       quizScope: 'random',
       hardStopGrace: 10,
       questionCount: 5,
+      passQuestions: 2,
       version: 1,
     ),
   );

@@ -15,6 +15,7 @@ type ruleSnapshot struct {
 	Random        bool     `json:"random,omitempty"`
 	Subjects      []string `json:"subjects,omitempty"`
 	QuestionCount int      `json:"question_count,omitempty"`
+	PassQuestions int      `json:"pass_questions,omitempty"`
 }
 
 type itemSnapshot struct {
@@ -48,6 +49,7 @@ type CreateSessionResponse struct {
 	SessionID     string            `json:"session_id"`
 	ExpiresAt     time.Time         `json:"expires_at"`
 	PassThreshold float64           `json:"pass_threshold"`
+	PassQuestions int               `json:"pass_questions"`
 	RuleVersion   int               `json:"rule_version"`
 	Questions     []SessionQuestion `json:"questions"`
 }
@@ -61,6 +63,7 @@ type AnswerResult struct {
 	Suspicious    bool            `json:"suspicious"`
 	Score         float64         `json:"score"`
 	Threshold     float64         `json:"threshold"`
+	PassQuestions int             `json:"pass_questions"`
 	Answered      int             `json:"answered"`
 	Total         int             `json:"total"`
 	Remaining     int             `json:"remaining"`
@@ -72,6 +75,7 @@ type SessionSummary struct {
 	State         string            `json:"state"`
 	Score         float64           `json:"score"`
 	Threshold     float64           `json:"pass_threshold"`
+	PassQuestions int               `json:"pass_questions"`
 	CorrectCount  int               `json:"correct_count"`
 	AnsweredCount int               `json:"answered_count"`
 	QuestionCount int               `json:"question_count"`
