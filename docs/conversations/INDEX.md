@@ -1,13 +1,13 @@
 # 对话归档索引
 
 > 本文件由 `scripts/archive-conversation.mjs` 自动生成，请勿手工编辑。
-> 最后更新：2026-11-16 00:26:26
+> 最后更新：2026-11-16 12:22:05
 
 共 7 条归档。
 
 | 日期 | 时间 | 标题 | 消息数 | 会话 ID |
 | --- | --- | --- | --- | --- |
-| 2026-11-15 | 18:34:33 | [家长端每次答题题量配置](2026-11-15-002-%E5%AE%B6%E9%95%BF%E7%AB%AF%E6%AF%8F%E6%AC%A1%E7%AD%94%E9%A2%98%E9%A2%98%E9%87%8F%E9%85%8D%E7%BD%AE.md) | 339 | `ses_e213a1b51ffe846gOOmdSNyiWW` |
+| 2026-11-15 | 18:34:33 | [家长端每次答题题量配置](2026-11-15-002-%E5%AE%B6%E9%95%BF%E7%AB%AF%E6%AF%8F%E6%AC%A1%E7%AD%94%E9%A2%98%E9%A2%98%E9%87%8F%E9%85%8D%E7%BD%AE.md) | 382 | `ses_e213a1b51ffe846gOOmdSNyiWW` |
 | 2026-11-15 | 00:15:41 | [[redacted:session-title:ses_e252827c0ffeXHCu92FbKaPOJ7]](2026-11-15-001-%E7%94%B5%E8%A7%86%E7%AB%AF%E6%9C%AC%E5%9C%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%95%B0%E6%8D%AE.md) | 781 | `ses_e252827c0ffeXHCu92FbKaPOJ7` |
 | 2026-11-14 | 19:51:10 | [服务器部署与ICP备案注意事项](2026-11-14-002-%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2%E4%B8%8EICP%E5%A4%87%E6%A1%88%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9.md) | 80 | `ses_e261a52b7fferI0pWF7EYmQ4pi` |
 | 2026-11-14 | 12:33:05 | [OpenQuizGo 服务器部署交接](2026-11-14-001-OpenQuizGo-%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2%E4%BA%A4%E6%8E%A5.md) | 202 | `ses_e27ab6801ffepweY4PqzIiAwRz` |
