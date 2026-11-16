@@ -190,6 +190,8 @@ data class TvLoginRequest(
     @SerializedName("code") val code: String,
     @SerializedName("device_id") val deviceId: String,
     @SerializedName("device_name") val deviceName: String,
+    /** 084：`tv` 电视 / `pad` 安卓平板；服务端缺省按 tv 处理。 */
+    @SerializedName("platform") val platform: String = "tv",
 )
 
 data class TvLoginResponse(
@@ -220,6 +222,7 @@ data class TvDeviceResponse(
     @SerializedName("id") val id: String = "",
     @SerializedName("name") val name: String = "",
     @SerializedName("device_id") val deviceId: String = "",
+    @SerializedName("platform") val platform: String = "tv",
     @SerializedName("child_id") val childId: String? = null,
     @SerializedName("child_name") val childName: String? = null,
     @SerializedName("grade_tag") val gradeTag: String? = null,

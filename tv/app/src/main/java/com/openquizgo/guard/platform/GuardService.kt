@@ -38,6 +38,9 @@ class GuardService : Service() {
     private var quizRequiredSince = 0L
     private var lastGuardLaunchAt = 0L
 
+    /** 084：平板没有遥控器，提示与自动拉起方式不同。 */
+    private val isTelevision: Boolean by lazy { FormFactors.isTelevision(this) }
+
     override fun onCreate() {
         super.onCreate()
         GuardLog.i("service", "guard service created")
@@ -71,7 +74,7 @@ class GuardService : Service() {
                         quizRequiredSince = 0L
                         promptJob?.cancel()
                         GuardAccessibilityService.disarmQuiz()
-                        toast("按确认键继续观看")
+                        if (isTelevision) toast("按确认键继续观看")
                     }
                     else -> {
                         quizRequiredSince = 0L
@@ -189,6 +192,14 @@ class GuardService : Service() {
     private fun startPromptLoop() {
         promptJob?.cancel()
         promptJob = scope.launch {
+            // 平板没有「确认键」这一步，直接拉起答题页。
+            if (!isTelevision) {
+                toast("需要先答题才能继续看")
+                delay(1_200)
+                GuardLog.i("quiz required, launching on tablet")
+                launchQuiz()
+                return@launch
+            }
             var warned = false
             while (isActive) {
                 if (Permissions.accessibilityEnabled(this@GuardService) &&
@@ -253,10 +264,14 @@ class GuardService : Service() {
     }
 
     private fun label(state: GuardState): String = when (state) {
-        GuardState.UNBOUND -> "电视未登录"
+        GuardState.UNBOUND -> "未登录"
         GuardState.IDLE -> "空闲"
         GuardState.WATCHING -> "观看中"
-        GuardState.QUIZ_REQUIRED -> "需要答题：按确认键开始（90 秒未按将自动答题）"
+        GuardState.QUIZ_REQUIRED -> if (isTelevision) {
+            "需要答题：按确认键开始（90 秒未按将自动答题）"
+        } else {
+            "需要答题：打开答题页即可"
+        }
         GuardState.QUIZZING -> "答题中"
         GuardState.GRANTED -> "已授权"
         GuardState.BLOCKED -> "已锁定"
@@ -278,6 +293,14 @@ class GuardService : Service() {
             "com.tencent.qqlive",
             "com.youku.tv",
             "tv.danmaku.bili",
+            // 084：平板常见的手机/平板版视频 App（电视版包名与之不同）。
+            "com.youku.phone",
+            "com.hunantv.imgo.activity",
+            "com.ss.android.ugc.aweme",
+            "com.ss.android.article.video",
+            "com.smile.gifmaker",
+            "com.google.android.youtube",
+            "com.netflix.mediaclient",
         )
 
         private val IGNORED_PACKAGES = setOf(

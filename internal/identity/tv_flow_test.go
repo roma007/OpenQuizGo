@@ -92,6 +92,10 @@ func TestTVLoginFlow(t *testing.T) {
 	if !tvLogin.ExpiresAt.After(time.Now().Add(300 * 24 * time.Hour)) {
 		t.Fatalf("device token ttl too short: %v", tvLogin.ExpiresAt)
 	}
+	// 084：不传 platform 的老客户端按电视登记。
+	if tvLogin.Device.Platform != "tv" {
+		t.Fatalf("default platform = %q, want tv", tvLogin.Device.Platform)
+	}
 
 	// 作用域隔离：设备令牌不能进家长接口，家长令牌不能当设备令牌用。
 	c.expect(http.MethodGet, "/family/tvs", nil, tvLogin.DeviceToken, http.StatusUnauthorized, nil)
@@ -106,6 +110,9 @@ func TestTVLoginFlow(t *testing.T) {
 	tv := tvs[0]
 	if tv.ID != tvLogin.Device.ID || tv.Name != "客厅电视" {
 		t.Fatalf("unexpected tv: %+v", tv)
+	}
+	if tv.Platform != "tv" {
+		t.Fatalf("listed platform = %q, want tv", tv.Platform)
 	}
 	if !tv.Config.QuizEnabled || !tv.Config.LimitEnabled ||
 		tv.Config.UnlockMinutes != 15 || tv.Config.DailyLimit != 60 ||
@@ -186,6 +193,31 @@ func TestTVLoginFlow(t *testing.T) {
 	if me.ID != tv.ID || me.ChildName != "小明" {
 		t.Fatalf("tv me mismatch: %+v", me)
 	}
+
+	// 084：安卓平板登录登记为 pad，非法 platform 直接拒绝。
+	if err := rdb.Set(ctx, "sms:login:"+phoneHash, "123456", 5*time.Minute).Err(); err != nil {
+		t.Fatalf("seed sms code: %v", err)
+	}
+	var padLogin identity.TVLoginResult
+	c.expect(http.MethodPost, "/tv/login", map[string]any{
+		"phone":       parentPhone,
+		"code":        "123456",
+		"device_id":   "pad-flow-study",
+		"device_name": "小米平板",
+		"platform":    "pad",
+	}, "", http.StatusOK, &padLogin)
+	if padLogin.Device.Platform != "pad" {
+		t.Fatalf("pad platform = %q, want pad", padLogin.Device.Platform)
+	}
+	if err := rdb.Set(ctx, "sms:login:"+phoneHash, "123456", 5*time.Minute).Err(); err != nil {
+		t.Fatalf("seed sms code: %v", err)
+	}
+	c.expect(http.MethodPost, "/tv/login", map[string]any{
+		"phone":     parentPhone,
+		"code":      "123456",
+		"device_id": "pad-flow-bad",
+		"platform":  "phone",
+	}, "", http.StatusUnprocessableEntity, nil)
 
 	// 解绑后设备令牌立刻失效。
 	c.expect(http.MethodDelete, "/family/tvs/"+tv.ID, nil, parent.AccessToken, http.StatusOK, nil)

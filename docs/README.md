@@ -14,6 +14,7 @@
 | `api/openapi.yaml` | OpenAPI 3.0.3 接口契约 | [openapi.yaml](../api/openapi.yaml) |
 | `docs/data-model.md` | 数据模型与迁移说明 | [data-model.md](data-model.md) |
 | `docs/deployment.md` | 部署与运维手册 | [deployment.md](deployment.md) |
+| `docs/pad-install-guide.md` | 安卓平板安装与权限引导（家长向） | [pad-install-guide.md](pad-install-guide.md) |
 | `docs/security-checklist.md` | 上线安全自查 | [security-checklist.md](security-checklist.md) |
 | `docs/acceptance/phase1.md` | 第一期验收报告 | [phase1.md](acceptance/phase1.md) |
 | `docs/conversations/` | 对话留档（Markdown + 原始 JSON） | [INDEX.md](conversations/INDEX.md) |
@@ -119,6 +120,6 @@ node scripts/archive-conversation.mjs --all
 | 081 | 电视端登录与按电视配置 | [设计](design/081-电视端登录与按电视配置.md) | [计划](plans/081-电视端登录与按电视配置实施计划.md) | done |
 | 082 | 家长端配置每次答题题量 | [设计](design/082-家长端配置每次答题题量.md) | [计划](plans/082-家长端配置每次答题题量实施计划.md) | done |
 | 083 | 答题通过标准改为答对题数 | [设计](design/083-答题通过标准改为答对题数.md) | [计划](plans/083-答题通过标准改为答对题数实施计划.md) | done（1.0.38 已发布） |
-| 084 | 安卓平板守护端 | [设计](design/084-安卓平板守护端.md) | [计划](plans/084-安卓平板守护端实施计划.md) | review（待确认后实施；iPad 不支持） |
+| 084 | 安卓平板守护端 | [设计](design/084-安卓平板守护端.md) | [计划](plans/084-安卓平板守护端实施计划.md) | done（出包完成，平板真机待验） |
 
 > 新增设计/计划后，请同步更新此表。

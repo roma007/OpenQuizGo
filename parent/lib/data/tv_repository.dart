@@ -105,6 +105,7 @@ class TvDevice {
     required this.lastSeenAt,
     required this.usedMinutes,
     required this.config,
+    this.platform = 'tv',
   });
 
   final String id;
@@ -118,7 +119,14 @@ class TvDevice {
   final int usedMinutes;
   final TvConfig config;
 
+  /// 084：`tv` 电视 / `pad` 安卓平板。
+  final String platform;
+
   bool get hasChild => childName.trim().isNotEmpty;
+
+  bool get isPad => platform == 'pad';
+
+  String get typeLabel => isPad ? '平板' : '电视';
 
   factory TvDevice.fromJson(Map<String, dynamic> json) => TvDevice(
     id: json['id'] as String,
@@ -130,6 +138,7 @@ class TvDevice {
     online: json['online'] as bool? ?? false,
     lastSeenAt: DateTime.tryParse(json['last_seen_at'] as String? ?? ''),
     usedMinutes: (json['used_minutes'] as num?)?.toInt() ?? 0,
+    platform: json['platform'] as String? ?? 'tv',
     config: TvConfig.fromJson(
       (json['config'] as Map?)?.cast<String, dynamic>() ?? const {},
     ),

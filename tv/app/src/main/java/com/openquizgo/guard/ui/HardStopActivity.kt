@@ -37,7 +37,10 @@ import androidx.tv.material3.darkColorScheme
 import com.openquizgo.guard.GuardApplication
 import com.openquizgo.guard.data.watch.WatchRepository
 import com.openquizgo.guard.domain.GuardEngine
+import com.openquizgo.guard.platform.FormFactors
 import com.openquizgo.guard.platform.GuardLog
+import com.openquizgo.guard.ui.pad.PadHardStopScreen
+import com.openquizgo.guard.ui.pad.PadTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -99,70 +102,87 @@ class HardStopActivity : ComponentActivity() {
             }
         }
 
+        val television = FormFactors.isTelevision(this)
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    val hardStop by engine.hardStop.collectAsState()
-                    val grace by engine.hardStopGrace.collectAsState()
-                    val remaining by engine.contextRemainingMinutes.collectAsState()
-                    val limit by engine.contextDailyLimit.collectAsState()
+            val hardStop by engine.hardStop.collectAsState()
+            val grace by engine.hardStopGrace.collectAsState()
+            val remaining by engine.contextRemainingMinutes.collectAsState()
+            val limit by engine.contextDailyLimit.collectAsState()
 
-                    LaunchedEffect(hardStop) {
-                        // 家长端放行或跨天重置后，硬停解除，页面必须自动退出。
-                        if (!hardStop) {
-                            GuardLog.i("hardstop", "hard stop lifted, dismiss")
-                            finish()
-                        }
+            LaunchedEffect(hardStop) {
+                // 家长端放行或跨天重置后，硬停解除，页面必须自动退出。
+                if (!hardStop) {
+                    GuardLog.i("hardstop", "hard stop lifted, dismiss")
+                    finish()
+                }
+            }
+
+            if (television) {
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        HardStopScreen(
+                            graceMinutes = grace,
+                            remainingMinutes = remaining,
+                            dailyLimit = limit,
+                            status = status,
+                            failed = failed,
+                            busy = busy,
+                            pin = pin,
+                            onPinChange = { pin = it },
+                            onUnlock = { value -> unlockWithPin(value, grace) },
+                        )
                     }
-
-                    HardStopScreen(
+                }
+            } else {
+                PadTheme {
+                    PadHardStopScreen(
                         graceMinutes = grace,
                         remainingMinutes = remaining,
                         dailyLimit = limit,
+                        pin = pin,
+                        onPinChange = { pin = it },
                         status = status,
                         failed = failed,
                         busy = busy,
-                        pin = pin,
-                        onPinChange = { pin = it },
-                        onUnlock = { value ->
-                            if (busy) return@HardStopScreen
-                            busy = true
-                            failed = false
-                            status = "正在解锁…"
-                            scope.launch {
-                                val minutes = grace.coerceIn(1, 120)
-                                runCatching { watchRepository.deviceUnlock(value, minutes) }
-                                    .onSuccess { grant ->
-                                        GuardLog.i(
-                                            "hardstop",
-                                            "pin unlock grant=${grant.grantId} minutes=${grant.minutes}",
-                                        )
-                                        engine.adoptGrant(
-                                            com.openquizgo.guard.domain.GrantInfo(
-                                                grantId = grant.grantId,
-                                                minutes = grant.minutes,
-                                                remainingSeconds = grant.remainingSeconds,
-                                                validUntilMillis = GuardEngine.parseMillis(grant.validUntil)
-                                                    ?: (System.currentTimeMillis() + minutes * 60_000L),
-                                            ),
-                                        )
-                                        finish()
-                                    }
-                                    .onFailure { error ->
-                                        failed = true
-                                        status = "解锁失败：${error.message ?: "请重试"}"
-                                    }
-                                busy = false
-                            }
-                        },
+                        onUnlock = { unlockWithPin(pin, grace) },
                     )
                 }
             }
         }
     }
 
-    /** 遥控器数字键直接输入 PIN，避免只能靠方向键逐个选数字。 */
+    private fun unlockWithPin(value: String, grace: Int) {
+        if (busy) return
+        busy = true
+        failed = false
+        status = "正在解锁…"
+        scope.launch {
+            val minutes = grace.coerceIn(1, 120)
+            runCatching { watchRepository.deviceUnlock(value, minutes) }
+                .onSuccess { grant ->
+                    GuardLog.i("hardstop", "pin unlock grant=${grant.grantId} minutes=${grant.minutes}")
+                    engine.adoptGrant(
+                        com.openquizgo.guard.domain.GrantInfo(
+                            grantId = grant.grantId,
+                            minutes = grant.minutes,
+                            remainingSeconds = grant.remainingSeconds,
+                            validUntilMillis = GuardEngine.parseMillis(grant.validUntil)
+                                ?: (System.currentTimeMillis() + minutes * 60_000L),
+                        ),
+                    )
+                    finish()
+                }
+                .onFailure { error ->
+                    failed = true
+                    status = "解锁失败：${error.message ?: "请重试"}"
+                }
+            busy = false
+        }
+    }
+
+    /** 遥控器数字键直接输入 PIN，避免只能靠方向键逐个选数字；平板放行给输入框。 */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (!FormFactors.isTelevision(this)) return super.dispatchKeyEvent(event)
         if (event.action == KeyEvent.ACTION_DOWN) {
             val digit = digitOf(event.keyCode)
             if (digit != null) {

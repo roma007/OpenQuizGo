@@ -49,7 +49,12 @@ import com.openquizgo.guard.data.remote.AnswerResult
 import com.openquizgo.guard.data.remote.SessionQuestion
 import com.openquizgo.guard.domain.GuardEngine
 import com.openquizgo.guard.domain.GrantInfo
+import com.openquizgo.guard.platform.FormFactors
 import com.openquizgo.guard.platform.GuardLog
+import com.openquizgo.guard.ui.pad.PadMessageScreen
+import com.openquizgo.guard.ui.pad.PadQuestionScreen
+import com.openquizgo.guard.ui.pad.PadQuizResultScreen
+import com.openquizgo.guard.ui.pad.PadTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -93,18 +98,57 @@ class QuizActivity : ComponentActivity() {
         engine = (application as GuardApplication).container.guardEngine
         engine.onQuizStarted()
 
+        val television = FormFactors.isTelevision(this)
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    val currentOutcome = outcome
-                    val currentError = errorMessage
-                    val currentQuestion = question
+            val currentOutcome = outcome
+            val currentError = errorMessage
+            val currentQuestion = question
+            val index = answeredBefore + questionIndex + 1
+            val total = session?.questions?.size ?: (questionIndex + 1)
+            if (television) {
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        when {
+                            currentOutcome != null -> ResultScreen(
+                                outcome = currentOutcome,
+                                onClose = { finish() },
+                            )
+                            currentError != null -> MessageScreen(
+                                title = "网络异常",
+                                detail = currentError,
+                                primary = "重试" to {
+                                    errorMessage = null
+                                    loadSession()
+                                },
+                                secondary = "退出" to { finish() },
+                            )
+                            loading -> MessageScreen(
+                                title = "正在获取题目…",
+                                detail = "请稍候",
+                                primary = null,
+                                secondary = null,
+                            )
+                            currentQuestion != null -> QuestionScreen(
+                                question = currentQuestion,
+                                index = index,
+                                total = total,
+                                result = answerResult,
+                                submitting = submitting,
+                                onSelect = { optionId -> submitAnswer(listOf(optionId)) },
+                                onNext = { advance() },
+                            )
+                            else -> EmptyScreen("暂无题目")
+                        }
+                    }
+                }
+            } else {
+                PadTheme {
                     when {
-                        currentOutcome != null -> ResultScreen(
+                        currentOutcome != null -> PadQuizResultScreen(
                             outcome = currentOutcome,
                             onClose = { finish() },
                         )
-                        currentError != null -> MessageScreen(
+                        currentError != null -> PadMessageScreen(
                             title = "网络异常",
                             detail = currentError,
                             primary = "重试" to {
@@ -113,22 +157,26 @@ class QuizActivity : ComponentActivity() {
                             },
                             secondary = "退出" to { finish() },
                         )
-                        loading -> MessageScreen(
+                        loading -> PadMessageScreen(
                             title = "正在获取题目…",
                             detail = "请稍候",
-                            primary = null,
-                            secondary = null,
                         )
-                        currentQuestion != null -> QuestionScreen(
+                        currentQuestion != null -> PadQuestionScreen(
                             question = currentQuestion,
-                            index = answeredBefore + questionIndex + 1,
-                            total = session?.questions?.size ?: (questionIndex + 1),
+                            index = index,
+                            total = total,
                             result = answerResult,
                             submitting = submitting,
-                            onSelect = { optionId -> submitAnswer(optionId) },
+                            onAnswer = { answer -> submitAnswer(answer) },
                             onNext = { advance() },
+                            onCancel = { finish() },
                         )
-                        else -> EmptyScreen("暂无题目")
+                        else -> PadMessageScreen(
+                            title = "暂无题目",
+                            detail = "稍后再试，或让家长新增题目",
+                            primary = "重试" to { loadSession() },
+                            secondary = "退出" to { finish() },
+                        )
                     }
                 }
             }
@@ -173,14 +221,14 @@ class QuizActivity : ComponentActivity() {
         question = pending.getOrNull(questionIndex)
     }
 
-    private fun submitAnswer(optionId: String) {
+    private fun submitAnswer(answer: List<String>) {
         val current = session ?: return
         val currentQuestion = pending.getOrNull(questionIndex) ?: return
         if (submitting || answerResult != null) return
         submitting = true
         scope.launch {
             runCatching {
-                repository.submitAnswer(current.sessionId, currentQuestion.token, listOf(optionId))
+                repository.submitAnswer(current.sessionId, currentQuestion.token, answer)
             }
                 .onSuccess { result ->
                     submitting = false

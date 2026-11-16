@@ -1,5 +1,6 @@
 package com.openquizgo.guard.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -39,9 +40,12 @@ import androidx.tv.material3.darkColorScheme
 import com.openquizgo.guard.BuildConfig
 import com.openquizgo.guard.GuardApplication
 import com.openquizgo.guard.domain.GuardState
+import com.openquizgo.guard.platform.FormFactors
 import com.openquizgo.guard.platform.GuardAccessibilityService
 import com.openquizgo.guard.platform.GuardService
 import com.openquizgo.guard.platform.LogExporter
+import com.openquizgo.guard.ui.pad.PadGuardScreen
+import com.openquizgo.guard.ui.pad.PadTheme
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -52,6 +56,9 @@ class MainActivity : ComponentActivity() {
     private val diagnosticsRequested = mutableStateOf(false)
     private val loginField = mutableStateOf(LoginField.PHONE)
     private var viewModel: GuardViewModel? = null
+
+    /** 084：电视走遥控器界面，平板/手机走触摸界面。 */
+    private val isTelevision: Boolean by lazy { FormFactors.isTelevision(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,23 +72,45 @@ class MainActivity : ComponentActivity() {
         GuardService.start(this)
 
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    GuardScreen(
+            if (isTelevision) {
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        GuardScreen(
+                            viewModel = vm,
+                            diagnosticsRequested = diagnosticsRequested.value,
+                            onDiagnosticsClosed = { diagnosticsRequested.value = false },
+                            loginField = loginField.value,
+                            onLoginFieldChange = { loginField.value = it },
+                        )
+                    }
+                }
+            } else {
+                PadTheme {
+                    PadGuardScreen(
                         viewModel = vm,
                         diagnosticsRequested = diagnosticsRequested.value,
                         onDiagnosticsClosed = { diagnosticsRequested.value = false },
-                        loginField = loginField.value,
-                        onLoginFieldChange = { loginField.value = it },
+                        onRequestDiagnostics = { diagnosticsRequested.value = true },
+                        onStartQuiz = ::startQuiz,
                     )
                 }
             }
         }
     }
 
+    /** 平板主页主动去答题：先置为需要答题，再拉起全屏答题页。 */
+    private fun startQuiz() {
+        val container = (application as GuardApplication).container
+        container.guardEngine.forceQuizRequired()
+        val intent = Intent(this, QuizActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        runCatching { startActivity(intent) }
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         // 电视遥控器通常带数字键：登录页直接用它输入手机号/验证码。
-        if (event.action == KeyEvent.ACTION_DOWN &&
+        // 084：平板上必须放行，否则会抢走软键盘输入的字符。
+        if (isTelevision && event.action == KeyEvent.ACTION_DOWN &&
             viewModel?.state?.value is GuardUiState.NeedsLogin
         ) {
             val digit = digitOf(event.keyCode)

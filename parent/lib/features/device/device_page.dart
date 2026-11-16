@@ -26,10 +26,13 @@ class DevicePage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('电视设备', style: Theme.of(context).textTheme.titleLarge),
+                    Text(
+                      '已登录设备',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                     const SizedBox(height: 2),
                     Text(
-                      '在电视上用家长手机号登录后，会自动出现在这里',
+                      '在电视或平板上用家长手机号登录后，会自动出现在这里',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -125,7 +128,7 @@ class DevicePage extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('配置已保存，电视将在 60 秒内生效')));
+        ).showSnackBar(const SnackBar(content: Text('配置已保存，设备将在 60 秒内生效')));
       }
     }
   }
@@ -143,7 +146,7 @@ class DevicePage extends ConsumerWidget {
       ref.invalidate(tvsProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已放行 ${grant.minutes} 分钟，电视将在 10 秒内恢复')),
+          SnackBar(content: Text('已放行 ${grant.minutes} 分钟，设备将在 10 秒内恢复')),
         );
       }
     } on ApiException catch (error) {
@@ -254,8 +257,8 @@ class DevicePage extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('解绑电视'),
-        content: Text('解绑后「${tv.name}」将立即停止守护，需要在电视上重新登录才能继续使用，确定解绑？'),
+        title: const Text('解绑设备'),
+        content: Text('解绑后「${tv.name}」将立即停止守护，需要在设备上重新登录才能继续使用，确定解绑？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -318,13 +321,33 @@ class _TvCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(radius: 22, child: const Icon(Icons.tv)),
+                CircleAvatar(
+                  radius: 22,
+                  child: Icon(tv.isPad ? Icons.tablet_android : Icons.tv),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tv.name, style: theme.textTheme.titleMedium),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              tv.name,
+                              style: theme.textTheme.titleMedium,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            tv.typeLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
                       Text(
                         tv.hasChild
                             ? '${tv.childName} · ${gradeLabel(tv.gradeTag)}'
@@ -445,9 +468,9 @@ class _EmptyView extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 16),
-          const Text('还没有电视登录'),
+          const Text('还没有设备登录'),
           const SizedBox(height: 8),
-          const Text('在电视上打开守护端，用家长手机号收验证码登录后会自动出现'),
+          const Text('在电视或平板上打开守护端，用家长手机号收验证码登录后会自动出现'),
           const SizedBox(height: 20),
           OutlinedButton(onPressed: onRefresh, child: const Text('刷新')),
         ],

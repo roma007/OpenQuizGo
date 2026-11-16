@@ -556,6 +556,11 @@ paths:
                 code: { type: string, example: "123456" }
                 device_id: { type: string, example: "tv-living-01" }
                 device_name: { type: string, example: "客厅电视" }
+                platform:
+                  type: string
+                  enum: [tv, pad]
+                  default: tv
+                  description: 084：电视传 tv，安卓平板传 pad；缺省按 tv 处理
       responses:
         "200":
           description: 登录成功
@@ -2551,6 +2556,7 @@ components:
         id: { type: string, format: uuid }
         name: { type: string, example: "客厅电视" }
         device_id: { type: string, example: "tv-living-01" }
+        platform: { type: string, enum: [tv, pad], description: 084：tv 电视 / pad 安卓平板 }
         child_id: { type: string, format: uuid }
         child_name: { type: string }
         grade_tag: { type: string, description: 已按 9 月 1 日规则升过级的有效年级 }

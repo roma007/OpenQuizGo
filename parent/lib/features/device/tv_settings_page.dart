@@ -50,7 +50,10 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
         children: [
-          Text('所有设置只对这台电视生效，保存后 60 秒内下发。', style: theme.textTheme.bodySmall),
+          Text(
+            '所有设置只对这台${widget.device.typeLabel}生效，保存后 60 秒内下发。',
+            style: theme.textTheme.bodySmall,
+          ),
           const SizedBox(height: 12),
           _card(
             title: '做题',
@@ -109,7 +112,7 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
                 }),
               ),
               const SizedBox(height: 4),
-              Text('答对这么多题后，电视继续播放', style: theme.textTheme.bodySmall),
+              Text('答对这么多题后，设备继续播放', style: theme.textTheme.bodySmall),
               const SizedBox(height: 12),
               Text('题目范围', style: theme.textTheme.bodySmall),
               const SizedBox(height: 8),
@@ -198,7 +201,7 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                '硬停后在电视上输入家长 PIN，可临时放行这么久',
+                '硬停后在设备上输入家长 PIN，可临时放行这么久',
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -257,7 +260,7 @@ class _TvSettingsPageState extends ConsumerState<TvSettingsPage> {
           child: FilledButton.icon(
             onPressed: _savingConfig ? null : _saveConfig,
             icon: const Icon(Icons.save),
-            label: Text(_savingConfig ? '保存中…' : '保存并下发到电视'),
+            label: Text(_savingConfig ? '保存中…' : '保存并下发到设备'),
           ),
         ),
       ),

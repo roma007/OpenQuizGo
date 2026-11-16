@@ -13,8 +13,8 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 140
-        versionName = "1.0.40"
+        versionCode = 141
+        versionName = "1.0.41"
         // 080：TV 回归服务端模式。默认走 Tailscale 内网（备案前 8082 只放行 tailnet）。
         // 覆盖方式：./gradlew assembleRelease -PapiBaseUrl=https://quiz.openapp.asia/
         val apiBaseUrl = providers.gradleProperty("apiBaseUrl")
@@ -85,6 +85,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.tv:tv-material:1.0.0")
+    // 084：平板触摸界面用普通 Material3
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")

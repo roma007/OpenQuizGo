@@ -61,6 +61,8 @@ class GuardViewModel(
     foregroundDetector: ForegroundDetector,
     guardEngine: GuardEngine,
     private val diagnostics: DiagnosticsReporter,
+    /** 084：`tv` / `pad`，登录时上报给服务端。 */
+    private val platform: String = "tv",
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<GuardUiState>(GuardUiState.Loading)
@@ -154,7 +156,8 @@ class GuardViewModel(
         viewModelScope.launch {
             _login.update { it.copy(loggingIn = true, message = "正在登录…", error = false) }
             val deviceId = preferences.deviceId()
-            val deviceName = Build.MODEL?.takeIf { it.isNotBlank() } ?: "电视"
+            val fallbackName = if (platform == "pad") "平板" else "电视"
+            val deviceName = Build.MODEL?.takeIf { it.isNotBlank() } ?: fallbackName
             runCatching {
                 api.tvLogin(
                     TvLoginRequest(
@@ -162,6 +165,7 @@ class GuardViewModel(
                         code = form.code,
                         deviceId = deviceId,
                         deviceName = deviceName,
+                        platform = platform,
                     ),
                 )
             }.onSuccess { response ->
@@ -210,6 +214,13 @@ class GuardViewModel(
         }
     }
 
+    /** 平板「重新连接」按钮：重新走一次登录态检查。 */
+    fun retryBootstrap() {
+        if (_state.value == GuardUiState.Loading) return
+        _state.value = GuardUiState.Loading
+        bootstrap()
+    }
+
     private fun bootstrap() {
         viewModelScope.launch {
             val token = preferences.deviceToken.first()
@@ -241,7 +252,11 @@ class GuardViewModel(
                     GuardLog.w("auth", "tv/me failed: ${error.message}")
                     val cachedName = preferences.childName.first()
                     _state.value = GuardUiState.Ready(
-                        TvDeviceResponse(name = "电视", childName = cachedName),
+                        TvDeviceResponse(
+                            name = if (platform == "pad") "平板" else "电视",
+                            childName = cachedName,
+                            platform = platform,
+                        ),
                     )
                 }
         }
@@ -312,6 +327,7 @@ class GuardViewModel(
                 container.foregroundDetector,
                 container.guardEngine,
                 container.diagnosticsReporter,
+                container.platform,
             ) as T
         }
     }

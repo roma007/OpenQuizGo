@@ -38,7 +38,11 @@ import com.openquizgo.guard.data.watch.WatchRepository
 import com.openquizgo.guard.domain.GrantInfo
 import com.openquizgo.guard.domain.GuardEngine
 import com.openquizgo.guard.domain.GuardState
+import com.openquizgo.guard.platform.FormFactors
 import com.openquizgo.guard.platform.GuardLog
+import com.openquizgo.guard.ui.pad.PadBlockerScreen
+import com.openquizgo.guard.ui.pad.PadParentUnlockScreen
+import com.openquizgo.guard.ui.pad.PadTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -62,6 +66,8 @@ class BlockerActivity : ComponentActivity() {
     private var parentStatus by mutableStateOf("输入家庭 PIN 直接解锁，或等待家长端放行")
     private var networkError by mutableStateOf(false)
     private var unlockBusy by mutableStateOf(false)
+    /** 084：平板用输入框输 PIN，状态提到 Activity 方便复用解锁逻辑。 */
+    private var padPin by mutableStateOf("")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,98 +83,128 @@ class BlockerActivity : ComponentActivity() {
 
         GuardLog.i("blocker shown reason=${engine.blockReason.value}")
 
+        val television = FormFactors.isTelevision(this)
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    val guardState by engine.state.collectAsState()
-                    // 080：拦截原因可能比界面晚到（重启后先 BLOCKED 再刷新 context），
-                    // 必须按状态收集，否则文案会一直停在「当前不能继续观看」。
-                    val blockReason by engine.blockReason.collectAsState()
+            val guardState by engine.state.collectAsState()
+            // 080：拦截原因可能比界面晚到（重启后先 BLOCKED 再刷新 context），
+            // 必须按状态收集，否则文案会一直停在「当前不能继续观看」。
+            val blockReason by engine.blockReason.collectAsState()
 
-                    LaunchedEffect(screen, guardState) {
-                        // 080：服务端放开限制（额度/时段）后引擎会自己恢复，
-                        // 拦截页必须跟着退出，否则孩子会一直卡在「休息一下吧」。
-                        if (screen == Screen.MAIN &&
-                            (guardState == GuardState.IDLE ||
-                                guardState == GuardState.WATCHING ||
-                                guardState == GuardState.GRANTED)
-                        ) {
-                            GuardLog.i("blocker auto dismissed, state=$guardState")
+            LaunchedEffect(screen, guardState) {
+                // 080：服务端放开限制（额度/时段）后引擎会自己恢复，
+                // 拦截页必须跟着退出，否则孩子会一直卡在「休息一下吧」。
+                if (screen == Screen.MAIN &&
+                    (guardState == GuardState.IDLE ||
+                        guardState == GuardState.WATCHING ||
+                        guardState == GuardState.GRANTED)
+                ) {
+                    GuardLog.i("blocker auto dismissed, state=$guardState")
+                    finish()
+                    return@LaunchedEffect
+                }
+                if (screen != Screen.PARENT) return@LaunchedEffect
+                if (guardState == GuardState.GRANTED ||
+                    guardState == GuardState.WATCHING ||
+                    guardState == GuardState.IDLE
+                ) {
+                    GuardLog.i("parent unlock accepted, state=$guardState")
+                    finish()
+                    return@LaunchedEffect
+                }
+                while (isActive) {
+                    val grant = runCatching { watchRepository.activeGrant() }
+                    grant.onSuccess { active ->
+                        networkError = false
+                        if (active != null) {
+                            GuardLog.i(
+                                "parent unlock grant=${active.grantId} " +
+                                    "minutes=${active.minutes}",
+                            )
+                            engine.adoptGrant(active.toGrantInfo())
                             finish()
                             return@LaunchedEffect
                         }
-                        if (screen != Screen.PARENT) return@LaunchedEffect
-                        if (guardState == GuardState.GRANTED ||
-                            guardState == GuardState.WATCHING ||
-                            guardState == GuardState.IDLE
-                        ) {
-                            GuardLog.i("parent unlock accepted, state=$guardState")
-                            finish()
-                            return@LaunchedEffect
-                        }
-                        while (isActive) {
-                            val grant = runCatching { watchRepository.activeGrant() }
-                            grant.onSuccess { active ->
-                                networkError = false
-                                if (active != null) {
-                                    GuardLog.i(
-                                        "parent unlock grant=${active.grantId} " +
-                                            "minutes=${active.minutes}",
-                                    )
-                                    engine.adoptGrant(active.toGrantInfo())
-                                    finish()
-                                    return@LaunchedEffect
-                                }
-                                parentStatus = "家长端尚未放行，请稍候…"
-                            }.onFailure { error ->
-                                networkError = true
-                                parentStatus = "网络不可用：${error.message ?: "请检查网络"}"
-                            }
-                            delay(5_000)
+                        parentStatus = "家长端尚未放行，请稍候…"
+                    }.onFailure { error ->
+                        networkError = true
+                        parentStatus = "网络不可用：${error.message ?: "请检查网络"}"
+                    }
+                    delay(5_000)
+                }
+            }
+
+            if (television) {
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        when (screen) {
+                            Screen.MAIN -> BlockerScreen(
+                                reason = blockReason,
+                                onRetryQuiz = { startQuiz() },
+                                onParentUnlock = {
+                                    screen = Screen.PARENT
+                                    networkError = false
+                                    parentStatus = "输入家庭 PIN 直接解锁，或等待家长端放行"
+                                },
+                            )
+                            Screen.PARENT -> ParentUnlockScreen(
+                                status = parentStatus,
+                                networkError = networkError,
+                                busy = unlockBusy,
+                                onUnlock = { pin -> unlockWithPin(pin) },
+                                onBack = { screen = Screen.MAIN },
+                            )
                         }
                     }
-
+                }
+            } else {
+                PadTheme {
                     when (screen) {
-                        Screen.MAIN -> BlockerScreen(
+                        Screen.MAIN -> PadBlockerScreen(
                             reason = blockReason,
                             onRetryQuiz = { startQuiz() },
                             onParentUnlock = {
                                 screen = Screen.PARENT
+                                padPin = ""
                                 networkError = false
-                                parentStatus = "输入家庭 PIN 直接解锁，或等待家长端放行"
+                                parentStatus = "输入家长 PIN 直接解锁，或等待家长端放行"
                             },
                         )
-                        Screen.PARENT -> ParentUnlockScreen(
+                        Screen.PARENT -> PadParentUnlockScreen(
+                            pin = padPin,
+                            onPinChange = { padPin = it },
                             status = parentStatus,
                             networkError = networkError,
                             busy = unlockBusy,
-                            onUnlock = { pin ->
-                                if (unlockBusy) return@ParentUnlockScreen
-                                unlockBusy = true
-                                parentStatus = "正在解锁…"
-                                scope.launch {
-                                    runCatching { watchRepository.deviceUnlock(pin, 10) }
-                                        .onSuccess { grant ->
-                                            networkError = false
-                                            GuardLog.i(
-                                                "device pin unlock grant=${grant.grantId} " +
-                                                    "minutes=${grant.minutes}",
-                                            )
-                                            engine.adoptGrant(grant.toGrantInfo())
-                                            finish()
-                                        }
-                                        .onFailure { error ->
-                                            networkError = true
-                                            parentStatus = "解锁失败：${error.message ?: "请重试"}"
-                                        }
-                                    unlockBusy = false
-                                }
-                            },
+                            onUnlock = { unlockWithPin(padPin) },
                             onBack = { screen = Screen.MAIN },
                         )
                     }
                 }
             }
+        }
+    }
+
+    /** 家庭 PIN 解锁：电视与平板共用同一段逻辑。 */
+    private fun unlockWithPin(pin: String) {
+        if (unlockBusy) return
+        unlockBusy = true
+        parentStatus = "正在解锁…"
+        scope.launch {
+            runCatching { watchRepository.deviceUnlock(pin, 10) }
+                .onSuccess { grant ->
+                    networkError = false
+                    GuardLog.i(
+                        "device pin unlock grant=${grant.grantId} " +
+                            "minutes=${grant.minutes}",
+                    )
+                    engine.adoptGrant(grant.toGrantInfo())
+                    finish()
+                }
+                .onFailure { error ->
+                    networkError = true
+                    parentStatus = "解锁失败：${error.message ?: "请重试"}"
+                }
+            unlockBusy = false
         }
     }
 

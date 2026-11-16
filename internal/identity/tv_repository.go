@@ -29,6 +29,7 @@ type TVDevice struct {
 	ID          string     `json:"id"`
 	Name        string     `json:"name"`
 	DeviceID    string     `json:"device_id"`
+	Platform    string     `json:"platform"`
 	ChildID     string     `json:"child_id,omitempty"`
 	ChildName   string     `json:"child_name,omitempty"`
 	GradeTag    string     `json:"grade_tag,omitempty"`
@@ -44,6 +45,20 @@ type TVLoginInput struct {
 	Code       string `json:"code"`
 	DeviceID   string `json:"device_id"`
 	DeviceName string `json:"device_name"`
+	// Platform 区分电视与安卓平板（084）；缺省按 tv 处理，兼容旧客户端。
+	Platform string `json:"platform"`
+}
+
+// normalizeTVPlatform 归一设备类型：缺省 tv，仅允许 tv/pad（084）。
+func normalizeTVPlatform(raw string) (string, error) {
+	switch raw {
+	case "":
+		return "tv", nil
+	case "tv", "pad":
+		return raw, nil
+	default:
+		return "", newError("VALIDATION_ERROR", 422, "platform 只能是 tv 或 pad")
+	}
 }
 
 // TVLoginResult 是电视端登录结果。
@@ -78,13 +93,22 @@ func (s *Service) TVLogin(ctx context.Context, in TVLoginInput) (TVLoginResult, 
 		}
 	}
 
+	platform, err := normalizeTVPlatform(in.Platform)
+	if err != nil {
+		return TVLoginResult{}, err
+	}
 	name := in.DeviceName
 	if name == "" {
-		name = "电视"
+		if platform == "pad" {
+			name = "平板"
+		} else {
+			name = "电视"
+		}
 	}
 	token := randomString(32)
 	expiresAt := time.Now().Add(deviceTokenTTL)
-	devicePK, err := s.repo.upsertTVDevice(ctx, rec.FamilyID, in.DeviceID, name, hashToken(token), expiresAt)
+	devicePK, err := s.repo.upsertTVDevice(ctx, rec.FamilyID, in.DeviceID, name, platform,
+		hashToken(token), expiresAt)
 	if err != nil {
 		return TVLoginResult{}, err
 	}
@@ -167,20 +191,22 @@ func (s *Service) TVMe(ctx context.Context, principal DevicePrincipal) (TVDevice
 
 /* ------------------------------ 仓储 ------------------------------ */
 
-func (r *repository) upsertTVDevice(ctx context.Context, familyID, deviceID, name, tokenHash string, expiresAt time.Time) (string, error) {
+func (r *repository) upsertTVDevice(ctx context.Context, familyID, deviceID, name, platform,
+	tokenHash string, expiresAt time.Time) (string, error) {
 	const query = `
 		insert into tv_device (family_id, device_id, name, platform, token_hash, token_expires_at, last_seen_at, status)
-		values ($1, $2, $3, 'tv', $4, $5, now(), 'active')
+		values ($1, $2, $3, $4, $5, $6, now(), 'active')
 		on conflict (device_id) where status = 'active'
 		do update set
 		    family_id = excluded.family_id,
 		    name = excluded.name,
+		    platform = excluded.platform,
 		    token_hash = excluded.token_hash,
 		    token_expires_at = excluded.token_expires_at,
 		    last_seen_at = now()
 		returning id`
 	var id string
-	err := r.pool.QueryRow(ctx, query, familyID, deviceID, name, tokenHash, expiresAt).Scan(&id)
+	err := r.pool.QueryRow(ctx, query, familyID, deviceID, name, platform, tokenHash, expiresAt).Scan(&id)
 	if err != nil {
 		return "", fmt.Errorf("upsert tv device: %w", err)
 	}
@@ -325,7 +351,7 @@ func (r *repository) familyName(ctx context.Context, familyID string) (string, e
 }
 
 const tvColumns = `
-	t.id, t.name, t.device_id, coalesce(t.child_id::text, ''), coalesce(c.nickname, ''),
+	t.id, t.name, t.device_id, t.platform, coalesce(t.child_id::text, ''), coalesce(c.nickname, ''),
 	coalesce(c.grade_tag, ''), t.last_seen_at,
 	cfg.quiz_enabled, cfg.limit_enabled, cfg.unlock_minutes, cfg.daily_limit,
 	cfg.subjects, cfg.pass_threshold::float8, cfg.quiz_scope, cfg.hard_stop_grace,
@@ -336,7 +362,7 @@ func (r *repository) scanTVDevice(row interface {
 }) (TVDevice, error) {
 	var d TVDevice
 	var subjects []byte
-	err := row.Scan(&d.ID, &d.Name, &d.DeviceID, &d.ChildID, &d.ChildName, &d.GradeTag,
+	err := row.Scan(&d.ID, &d.Name, &d.DeviceID, &d.Platform, &d.ChildID, &d.ChildName, &d.GradeTag,
 		&d.LastSeenAt, &d.Config.QuizEnabled, &d.Config.LimitEnabled, &d.Config.UnlockMinutes,
 		&d.Config.DailyLimit, &subjects, &d.Config.PassThreshold, &d.Config.QuizScope,
 		&d.Config.HardStopGrace, &d.Config.QuestionCount, &d.Config.PassQuestions,

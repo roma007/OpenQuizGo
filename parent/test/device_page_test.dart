@@ -10,6 +10,7 @@ TvDevice _tv({
   String name = '客厅电视',
   String childName = '小明',
   bool quizEnabled = true,
+  String platform = 'tv',
 }) {
   return TvDevice(
     id: id,
@@ -21,6 +22,7 @@ TvDevice _tv({
     online: true,
     lastSeenAt: DateTime.utc(2026, 11, 15, 8),
     usedMinutes: 20,
+    platform: platform,
     config: TvConfig(
       quizEnabled: quizEnabled,
       limitEnabled: true,
@@ -49,7 +51,7 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('电视设备'), findsOneWidget);
+    expect(find.text('已登录设备'), findsOneWidget);
     expect(find.text('客厅电视'), findsOneWidget);
     expect(find.text('小明 · 四年级'), findsOneWidget);
     expect(find.text('每 15 分钟答题'), findsOneWidget);
@@ -65,8 +67,25 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('还没有电视登录'), findsOneWidget);
+    expect(find.text('还没有设备登录'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, '刷新'), findsOneWidget);
+  });
+
+  testWidgets('安卓平板显示平板标识', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tvsProvider.overrideWith(
+            (ref) async => [_tv(name: '小米平板', platform: 'pad')],
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: DevicePage())),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('小米平板'), findsOneWidget);
+    expect(find.text('平板'), findsOneWidget);
   });
 
   testWidgets('未指定孩子时展示随机出题', (tester) async {

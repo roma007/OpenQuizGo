@@ -11,12 +11,18 @@ import com.openquizgo.guard.data.quiz.QuizRepository
 import com.openquizgo.guard.data.watch.WatchRepository
 import com.openquizgo.guard.domain.GuardEngine
 import com.openquizgo.guard.platform.DiagnosticsReporter
+import com.openquizgo.guard.platform.FormFactor
+import com.openquizgo.guard.platform.FormFactors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 class AppContainer(context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** 084：电视遥控器界面还是平板触摸界面，启动时判定一次。 */
+    val formFactor: FormFactor = FormFactors.current(context)
+    val platform: String = if (formFactor == FormFactor.Television) "tv" else "pad"
     val preferences: GuardPreferences = GuardPreferences(context)
     val api: GuardApi = ApiFactory.create(BuildConfig.API_BASE_URL)
     val quizRepository: QuizRepository = QuizRepository(api, preferences)
