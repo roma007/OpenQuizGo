@@ -38,9 +38,12 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import androidx.tv.material3.darkColorScheme
 import com.openquizgo.guard.GuardApplication
+import com.openquizgo.guard.platform.FormFactors
 import com.openquizgo.guard.platform.GuardService
 import com.openquizgo.guard.platform.GuardLog
 import com.openquizgo.guard.platform.Permissions
+import com.openquizgo.guard.ui.pad.PadSelfCheckScreen
+import com.openquizgo.guard.ui.pad.PadTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -65,10 +68,20 @@ class SelfCheckActivity : ComponentActivity() {
             return
         }
         GuardLog.i("selfcheck", "some checks failed, show guide")
+        val television = FormFactors.isTelevision(this)
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    SelfCheckScreen(
+            if (television) {
+                MaterialTheme(colorScheme = darkColorScheme()) {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        SelfCheckScreen(
+                            onAllPassed = { finish() },
+                            onSkip = { finish() },
+                        )
+                    }
+                }
+            } else {
+                PadTheme {
+                    PadSelfCheckScreen(
                         onAllPassed = { finish() },
                         onSkip = { finish() },
                     )
@@ -121,7 +134,7 @@ class SelfCheckActivity : ComponentActivity() {
     }
 }
 
-private data class CheckItem(
+internal data class CheckItem(
     val label: String,
     val ok: Boolean,
     val action: String,
@@ -140,46 +153,7 @@ private fun SelfCheckScreen(onAllPassed: () -> Unit, onSkip: () -> Unit) {
         GuardService.start(context)
         while (true) {
             loggedIn = prefs.deviceToken.first()?.isNotBlank() == true
-            items = listOf(
-                CheckItem(
-                    label = "登录电视",
-                    ok = loggedIn,
-                    action = if (loggedIn) "" else "去登录",
-                    run = { ctx ->
-                        ctx.startActivity(
-                            Intent(ctx, MainActivity::class.java)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                        )
-                        // 自检页在最上层，去登录前必须先退出，否则登录页被盖住。
-                        (ctx as? Activity)?.finish()
-                    },
-                ),
-                CheckItem(
-                    label = "无障碍服务",
-                    ok = Permissions.accessibilityEnabled(context),
-                    action = "去开启",
-                    run = { ctx -> ctx.startActivity(Permissions.accessibilitySettingsIntent()) },
-                ),
-                CheckItem(
-                    label = "使用情况访问",
-                    ok = Permissions.usageAccessEnabled(context),
-                    action = "去开启",
-                    run = { ctx -> ctx.startActivity(Permissions.usageSettingsIntent()) },
-                ),
-                CheckItem(
-                    label = "通知权限",
-                    ok = Permissions.notificationsEnabled(context) ||
-                        context.packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK),
-                    action = "去开启",
-                    run = { ctx -> ctx.startActivity(notificationSettingsIntent(ctx)) },
-                ),
-                CheckItem(
-                    label = "守护服务",
-                    ok = Permissions.foregroundServiceRunning(context),
-                    action = "重新启动",
-                    run = { ctx -> GuardService.start(ctx) },
-                ),
-            )
+            items = buildSelfCheckItems(context, loggedIn)
             if (items.all { it.ok }) {
                 GuardLog.i("selfcheck", "all passed, dismiss")
                 onAllPassed()
@@ -232,6 +206,50 @@ private fun SelfCheckScreen(onAllPassed: () -> Unit, onSkip: () -> Unit) {
         }
     }
 }
+
+/**
+ * 084：电视与平板共用一份自检项，界面各自实现。
+ */
+internal fun buildSelfCheckItems(context: Context, loggedIn: Boolean): List<CheckItem> = listOf(
+    CheckItem(
+        label = "登录设备",
+        ok = loggedIn,
+        action = if (loggedIn) "" else "去登录",
+        run = { ctx ->
+            ctx.startActivity(
+                Intent(ctx, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+            // 自检页在最上层，去登录前必须先退出，否则登录页被盖住。
+            (ctx as? Activity)?.finish()
+        },
+    ),
+    CheckItem(
+        label = "无障碍服务",
+        ok = Permissions.accessibilityEnabled(context),
+        action = "去开启",
+        run = { ctx -> ctx.startActivity(Permissions.accessibilitySettingsIntent()) },
+    ),
+    CheckItem(
+        label = "使用情况访问",
+        ok = Permissions.usageAccessEnabled(context),
+        action = "去开启",
+        run = { ctx -> ctx.startActivity(Permissions.usageSettingsIntent()) },
+    ),
+    CheckItem(
+        label = "通知权限",
+        ok = Permissions.notificationsEnabled(context) ||
+            context.packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK),
+        action = "去开启",
+        run = { ctx -> ctx.startActivity(notificationSettingsIntent(ctx)) },
+    ),
+    CheckItem(
+        label = "守护服务",
+        ok = Permissions.foregroundServiceRunning(context),
+        action = "重新启动",
+        run = { ctx -> GuardService.start(ctx) },
+    ),
+)
 
 private fun notificationSettingsIntent(context: Context): Intent =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
