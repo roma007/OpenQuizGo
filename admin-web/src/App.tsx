@@ -33,6 +33,7 @@ import DashboardPage from './pages/DashboardPage'
 import FamiliesPage from './pages/FamiliesPage'
 import ImportPage from './pages/ImportPage'
 import Login from './pages/Login'
+import Beian from './components/Beian'
 import MembershipOrdersPage from './pages/MembershipOrdersPage'
 import MembershipCouponsPage from './pages/MembershipCouponsPage'
 import MembershipInvoicesPage from './pages/MembershipInvoicesPage'
@@ -277,6 +278,7 @@ export default function App() {
               <Route path="/calibration" element={<CalibrationPage />} />
             </Routes>
           </Content>
+          <Beian style={{ paddingBottom: 12 }} />
         </Layout>
         <Modal
           title="修改密码"

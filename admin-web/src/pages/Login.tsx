@@ -1,6 +1,7 @@
 import { Button, Card, Form, Input, Typography, message } from 'antd'
 import { useState } from 'react'
 import { api, ApiError } from '../api'
+import Beian from '../components/Beian'
 import type { AdminPrincipal } from '../types'
 
 interface Props {
@@ -50,6 +51,7 @@ export default function Login({ onLogin }: Props) {
           </Button>
         </Form>
       </Card>
+      <Beian style={{ marginTop: 16 }} />
     </div>
   )
 }
