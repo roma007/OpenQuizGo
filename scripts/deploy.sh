@@ -261,14 +261,27 @@ PY
   # 备份必须整体替换：cp -a 在目标已存在时会把源塞进目标目录，第二次就套娃，
   # 之后的「自动回滚」会恢复到更早一代。备份失败（磁盘满/权限）直接中止发布。
   run_ssh "sudo rm -rf /srv/nginx.prev && sudo cp -a /srv/nginx /srv/nginx.prev"
-  run rsync -az deploy/nginx/nginx.conf "$SSH_HOST:/srv/nginx/nginx.conf"
+  # nginx.conf 是**单文件 bind 挂载**，必须 --inplace：默认的「写临时文件 + rename」会换 inode，
+  # 容器里仍指向旧 inode，出现「conf.d 生效、nginx.conf 不生效」的半更新状态
+  # （2026-11-24 实测：qz_auth 限流区定义了却没被容器看到 → nginx -t 报 zero size shared memory zone）。
+  # conf.d 是目录挂载，rename 可见，不需要 --inplace。
+  run rsync -az --inplace deploy/nginx/nginx.conf "$SSH_HOST:/srv/nginx/nginx.conf"
   run rsync -az --delete deploy/nginx/conf.d/ "$SSH_HOST:/srv/nginx/conf.d/"
+
+  # 前置断言：容器里读到的 nginx.conf 必须与宿主刚刚写入的一致。
+  # 单文件 bind 挂载会「钉住 inode」，一旦同步方式出错，就会在 conf.d 已更新、
+  # nginx.conf 未更新时给出误导性的报错（如 zero size shared memory zone），
+  # 所以在这里显式失败并说明原因，而不是让 nginx -t 去猜。
+  if ! run_ssh 'h=$(md5sum /srv/nginx/nginx.conf | cut -d" " -f1); c=$(docker exec quizgo-web-1 md5sum /etc/nginx/nginx.conf | cut -d" " -f1); if [ "$h" != "$c" ]; then echo "nginx.conf 未同步到容器：宿主=$h 容器=$c（单文件挂载 inode 不一致）" >&2; exit 1; fi'; then
+    echo "中止：nginx.conf 没有进入容器，多半是挂载 inode 问题（rsync 需 --inplace）" >&2
+    exit 1
+  fi
 
   # 先 nginx -t 再 reload；失败自动回滚——否则磁盘上留着坏配置，
   # 只要 web 容器因 OOM / 重启 / 下次 up -d 重建，两个站会一起起不来
   if ! run_ssh "cd $REMOTE_DIR && docker compose exec -T web nginx -t"; then
     echo "nginx 配置校验失败，回滚 /srv/nginx ← /srv/nginx.prev" >&2
-    if run_ssh "sudo rsync -a --delete /srv/nginx.prev/ /srv/nginx/ && cd $REMOTE_DIR && docker compose exec -T web nginx -t"; then
+    if run_ssh "sudo rsync -a --inplace --delete /srv/nginx.prev/ /srv/nginx/ && cd $REMOTE_DIR && docker compose exec -T web nginx -t"; then
       echo "已回滚，运行中的 nginx 未受影响；请修正 deploy/nginx 后重跑" >&2
     else
       echo "自动回滚也失败，请人工处理：/srv/nginx.prev 是上一代可用配置" >&2
