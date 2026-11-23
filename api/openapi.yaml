@@ -1564,6 +1564,26 @@ paths:
       security: []
       responses:
         "200": { description: OK }
+  /v1/admin/auth/password:
+    post:
+      tags: [admin]
+      summary: 管理员修改本人密码（成功后全部旧令牌立即失效）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, new_password]
+              properties:
+                current_password: { type: string }
+                new_password: { type: string, minLength: 12, maxLength: 72 }
+      responses:
+        "200":
+          description: 已修改，需重新登录（同时清除 Cookie）
+        "401": { description: 未登录，或当前密码错误 }
+        "422": { description: 新密码不合规 }
+        "429": { description: 尝试次数过多 }
   /v1/admin/me:
     get:
       tags: [admin]

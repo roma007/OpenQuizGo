@@ -17,7 +17,7 @@ func newTestService(ttl time.Duration) *Service {
 func testToken(t *testing.T, s *Service, id, username string) string {
 	t.Helper()
 	token, err := s.sign(adminRecord{ID: id, Username: username, DisplayName: username},
-		[]string{"admin"}, []string{"*"}, time.Now().Add(time.Hour))
+		[]string{"admin"}, []string{"*"}, time.Now().Add(time.Hour), 0)
 	if err != nil {
 		t.Fatalf("sign token: %v", err)
 	}

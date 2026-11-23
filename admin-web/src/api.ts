@@ -97,6 +97,14 @@ export const api = {
     })
   },
   logout: () => request<{ status: string }>('/admin/auth/logout', { method: 'POST' }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ status: string; re_login_required: boolean }>('/admin/auth/password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    }),
   me: () => request<AdminPrincipal>('/admin/me'),
   questions: (params: Record<string, string | number | undefined>) => {
     const query = new URLSearchParams()

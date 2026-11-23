@@ -14,7 +14,7 @@ import {
   PlayCircleOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import { Button, Layout, Menu, Spin, Typography } from 'antd'
+import { Button, Form, Input, Layout, Menu, Modal, Spin, Typography, message } from 'antd'
 import { useEffect, useState } from 'react'
 import {
   Navigate,
@@ -50,6 +50,13 @@ const { Header, Sider, Content } = Layout
 export default function App() {
   const [principal, setPrincipal] = useState<AdminPrincipal | null>(null)
   const [loading, setLoading] = useState(true)
+  const [passwordOpen, setPasswordOpen] = useState(false)
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false)
+  const [passwordForm] = Form.useForm<{
+    current: string
+    next: string
+    confirm: string
+  }>()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -83,6 +90,30 @@ export default function App() {
       principal.permissions?.includes('*') ||
         principal.permissions?.includes(permission),
     )
+
+  const submitPassword = async (values: {
+    current: string
+    next: string
+    confirm: string
+  }) => {
+    setPasswordSubmitting(true)
+    try {
+      await api.changePassword(values.current, values.next)
+      setPasswordOpen(false)
+      passwordForm.resetFields()
+      message.success('密码已修改，请重新登录')
+      try {
+        await api.logout()
+      } catch {
+        // 服务端已使令牌失效，登出网络错误可忽略。
+      }
+      setPrincipal(null)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '修改密码失败')
+    } finally {
+      setPasswordSubmitting(false)
+    }
+  }
 
   const selected = location.pathname.startsWith('/questions')
     ? '/questions'
@@ -197,6 +228,15 @@ export default function App() {
                 {principal.display_name || principal.username}
               </Typography.Text>
               <Button
+                style={{ marginRight: 8 }}
+                onClick={() => {
+                  passwordForm.resetFields()
+                  setPasswordOpen(true)
+                }}
+              >
+                修改密码
+              </Button>
+              <Button
                 icon={<LogoutOutlined />}
                 onClick={() => {
                   void (async () => {
@@ -238,6 +278,62 @@ export default function App() {
             </Routes>
           </Content>
         </Layout>
+        <Modal
+          title="修改密码"
+          open={passwordOpen}
+          okText="确认修改"
+          cancelText="取消"
+          confirmLoading={passwordSubmitting}
+          onOk={() => passwordForm.submit()}
+          onCancel={() => {
+            setPasswordOpen(false)
+            passwordForm.resetFields()
+          }}
+          destroyOnClose
+        >
+          <Form
+            form={passwordForm}
+            layout="vertical"
+            onFinish={submitPassword}
+            preserve={false}
+          >
+            <Form.Item
+              name="current"
+              label="当前密码"
+              rules={[{ required: true, message: '请输入当前密码' }]}
+            >
+              <Input.Password autoComplete="current-password" />
+            </Form.Item>
+            <Form.Item
+              name="next"
+              label="新密码（至少 12 个字符）"
+              rules={[
+                { required: true, message: '请输入新密码' },
+                { min: 12, message: '新密码至少 12 个字符' },
+              ]}
+            >
+              <Input.Password autoComplete="new-password" />
+            </Form.Item>
+            <Form.Item
+              name="confirm"
+              label="确认新密码"
+              dependencies={['next']}
+              rules={[
+                { required: true, message: '请再次输入新密码' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('next') === value) {
+                      return Promise.resolve()
+                    }
+                    return Promise.reject(new Error('两次输入的新密码不一致'))
+                  },
+                }),
+              ]}
+            >
+              <Input.Password autoComplete="new-password" />
+            </Form.Item>
+          </Form>
+        </Modal>
       </Layout>
     </AuthContext.Provider>
   )

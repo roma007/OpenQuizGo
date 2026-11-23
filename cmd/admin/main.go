@@ -7,8 +7,10 @@ import (
 	"os"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -93,25 +95,45 @@ func create(ctx context.Context, pool *pgxpool.Pool, args []string) {
 func passwd(ctx context.Context, pool *pgxpool.Pool, args []string) {
 	fs := flag.NewFlagSet("passwd", flag.ExitOnError)
 	username := fs.String("username", "", "登录名")
-	password := fs.String("password", "", "新密码（至少 8 位）")
+	password := fs.String("password", "", "新密码（至少 12 位）")
 	_ = fs.Parse(args)
 
-	if *username == "" || len(*password) < 8 {
-		fatal("username 必填，password 至少 8 位")
+	if *username == "" || utf8.RuneCountInString(*password) < 12 {
+		fatal("username 必填，password 至少 12 位")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
 	if err != nil {
 		fatal("hash password: %v", err)
 	}
-	tag, err := pool.Exec(ctx,
-		`update admin_user set password_hash = $2 where username = $1`, *username, string(hash))
+	var id string
+	err = pool.QueryRow(ctx,
+		`update admin_user set password_hash = $2 where username = $1 returning id`,
+		*username, string(hash)).Scan(&id)
 	if err != nil {
 		fatal("update password: %v", err)
 	}
-	if tag.RowsAffected() == 0 {
-		fatal("管理员不存在：%s", *username)
+	bumpTokenEpoch(ctx, id)
+	fmt.Printf("✔ 密码已更新：%s（旧会话已失效）\n", *username)
+}
+
+// bumpTokenEpoch 递增令牌版本，使改密前签发的 JWT 立即失效。
+// 没有 REDIS_URL 时只能依赖令牌自然过期，明确提示而不是静默跳过。
+func bumpTokenEpoch(ctx context.Context, adminID string) {
+	url := os.Getenv("REDIS_URL")
+	if url == "" {
+		fmt.Fprintln(os.Stderr, "提示：未设置 REDIS_URL，旧会话会保持有效直到 8 小时后过期")
+		return
 	}
-	fmt.Printf("✔ 密码已更新：%s\n", *username)
+	opt, err := redis.ParseURL(url)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "提示：REDIS_URL 不合法（%v），旧会话仍有效\n", err)
+		return
+	}
+	client := redis.NewClient(opt)
+	defer client.Close()
+	if err := client.Incr(ctx, "admin:epoch:"+adminID).Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "警告：令牌版本递增失败（%v），旧会话仍有效\n", err)
+	}
 }
 
 func list(ctx context.Context, pool *pgxpool.Pool) {
