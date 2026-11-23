@@ -91,20 +91,31 @@
 - [ ] **公安联网备案**（你，ICP 通过后 30 日内）
   - `beian.mps.gov.cn`，通过后把公安备案号加到页面底部
 
-### 🟢 P2 — 等备案通过后我做
+### 🟢 P2 — 备案通过后（086，进行中）
 
-- [ ] **Nginx 切到 80/443 + HTTPS**
-  - `deploy/nginx/conf.d/atlas.conf`：`listen 8081` → `80` + `443 ssl`
-  - `deploy/nginx/conf.d/quiz.conf`：`listen 8082` → `80` + `443 ssl`
-  - `server_name atlas.openapp.asia` / `quiz.openapp.asia`
-  - 证书：Let's Encrypt（certbot）或阿里云免费证书
-  - 80 → 301 跳 443
-- [ ] **页面底部挂备案号**（两个项目）
-  - ICP：链接 `https://beian.miit.gov.cn`
-  - 公安：链接 `https://beian.mps.gov.cn`
-- [ ] **上线后全链路验证**
-  - `curl -I https://atlas.openapp.asia`、`https://quiz.openapp.asia/v1/meta`
-  - 证书有效期、HSTS、gzip、缓存头
+- [x] **证书就位**（Atlas 采购，2026-11-23）
+  - `/srv/nginx/certs/{atlas,quiz}.openapp.asia.{pem,key}`，DigiCert DV，`600`、属主 `ecs-user`（目录 700）
+  - **到期 2027-02-21 07:59 CST**（90 天）：到期前一个月在阿里云控制台重新申请并覆盖同名文件，
+    然后 `docker exec quizgo-web-1 nginx -t && docker exec quizgo-web-1 nginx -s reload`
+  - `status.sh` 的「TLS 证书」段会显示剩余天数（<14 天 ⏳）
+- [x] **容器挂载证书**（`1.0.49`）：`/srv/nginx/certs:/etc/nginx/certs:ro`
+- [x] **Nginx 切 80/443 + HTTPS**（`1.0.51` 已生效）
+  - `atlas.conf`/`quiz.conf`：80 → 301 到 443；443 提供服务；`8081/8082` 原样保留
+  - `00-default.conf`：裸域/未知 Host 的 80 兜底跳 Atlas；443 未知 SNI `ssl_reject_handshake`
+  - 管理面按用户决策 **公网可达**，靠「12 位口令 + `qz_auth` 10r/m + Go 侧 5 次锁定」三层防护
+- [x] **后台页脚备案号**（`1.0.52`）：`粤ICP备2026058093号-2`，链 `https://beian.miit.gov.cn`
+  - Atlas 静态站页脚由 Atlas 自己上线（已确认）
+- [ ] **安全组放开 TCP 80/443**（用户，人工）
+  - 现状（2026-11-24 自探）：80/443/8081/8082 全部 `exit 28`（filtered）
+  - 放开后：写 `/srv/ops/state/exposure.json`（80/443 allowed，8080-8082 blocked）→ 否则 `status.sh` 会误报
+- [ ] **公安联网备案**（用户，2026-12-23 前）：`beian.mps.gov.cn`
+- [ ] **上线后全链路验证**（086 T8）：公网侧 `curl -I https://…`、证书链、301、限流 429、`/metrics` 403
+- [ ] **24 小时后开 HSTS**（086 T9）
+- [ ] **客户端切 `API_BASE_URL=https://quiz.openapp.asia/`**（随下次家长端/电视端发版）
+
+> 踩坑记录：`/srv/nginx/nginx.conf` 是单文件 bind 挂载，`rsync` 默认 rename 会换 inode，
+> 容器仍读旧文件（表现为 `zero size shared memory zone`）。`deploy.sh` 已改 `--inplace`
+> 并在同步后断言宿主/容器 md5 一致；历史上已错过一次的需要 `up -d --force-recreate web` 重绑。
 
 ### ⚪ P3 — 可选增强
 

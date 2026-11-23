@@ -26,12 +26,12 @@
 
 | 序号 | 任务 | 依赖 | 产出物 | 验收标准 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| T1 | 回执 Atlas 两条请求（改密、443） | — | `/srv/ops/requests/*.md` 的 `## 回复` | 两条 `status: done`，分工与证书归属写清 | todo |
-| T2 | 安全组加回 80/443 | 用户 | 控制台规则 | 公网 80/443 由超时变 RST；`status.sh` 自探变化 | todo |
-| T3 | compose 加只读证书挂载并部署（不动 conf） | — | `docker-compose.yml` | web 重建后 `docker inspect` 能看到 `/etc/nginx/certs` 挂载；线上行为无变化 | todo |
-| T4 | 三份 conf + `nginx.conf` 限流区 | T3 | `deploy/nginx/**` | `nginx -t` 通过（`deploy.sh` 失败自动回滚 `/srv/nginx.prev`） | todo |
-| T5 | `--with-nginx` 部署启用 80/443 | T2/T4 | 生效配置 | 两域名 200；80 301；未知 Host 兜底；裸 IP 443 握手失败 | todo |
-| T6 | 管理端页脚备案号 | T5 | `admin-web/src/App.tsx` + `dist` | 页脚可见 `粤ICP备2026058093号-2` 且可点击（后台公网可见，必需） | todo |
+| T1 | 回执 Atlas 两条请求（改密、443） | — | `/srv/ops/requests/*.md` 的 `## 回复` | 两条 `status: done`，分工与证书归属写清 | done |
+| T2 | 安全组加回 80/443 | 用户 | 控制台规则 | 公网 80/443 由超时变 RST；`status.sh` 自探变化 | 等用户 |
+| T3 | compose 加只读证书挂载并部署（不动 conf） | — | `docker-compose.yml` | web 重建后 `docker inspect` 能看到 `/etc/nginx/certs` 挂载；线上行为无变化 | done |
+| T4 | 三份 conf + `nginx.conf` 限流区 | T3 | `deploy/nginx/**` | `nginx -t` 通过（`deploy.sh` 失败自动回滚 `/srv/nginx.prev`） | done |
+| T5 | `--with-nginx` 部署启用 80/443 | T2/T4 | 生效配置 | 本机 `--resolve` 全部通过（2026-11-24）；公网开放后复验 | done |
+| T6 | 管理端页脚备案号 | T5 | `admin-web/src/App.tsx` + `dist` | 页脚可见 `粤ICP备2026058093号-2` 且可点击（后台公网可见，必需） | done |
 | T7 | 写 `exposure.json` + 同步 `status.sh` 判据 | T5 | `/srv/ops/state/exposure.json` | 自探 5 行符合期望，无 ⚠️ | todo |
 | T8 | 全链路验收（含限流与管理面 403） | T5–T7 | 验收记录 | 第 4 节清单全绿 | todo |
 | T9 | 24 小时后开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | todo |
@@ -93,3 +93,27 @@
 | 2026-11-23 | 裸域 `openapp.asia`/`www` 80 兜底 301 到 `https://atlas.openapp.asia` | apex 无证书；备案巡检直接访问裸域名，需给出可读页面 |
 | 2026-11-23 | HSTS 延后 24 小时 | 避免配置错时把自己锁死；先观察无混内容 |
 | 2026-11-23 | 分两次部署（先挂载、后配置） | 新配置引用 `/etc/nginx/certs`，挂载不存在则 `nginx -t` 必失败 |
+
+## 7. 实际进展（2026-11-24）
+
+| 任务 | 结果 |
+| --- | --- |
+| T1 | 已回执：改密请求置 `done`；443 请求留 `open`（等安全组 + 方案确认），并写明「采纳你的配置，但证书用已到位的、不用 ACME」 |
+| T3 | ✅ `docker-compose.yml` 加 `/srv/nginx/certs:/etc/nginx/certs:ro`；容器能看到 4 个证书文件；`nginx -t` 通过 |
+| T4 | ✅ 三份 conf + `nginx.conf` 限流区；用 `nginx:1.27-alpine` 在临时目录试装通过（`ssl_reject_handshake` 不需要证书，已实测） |
+| T5 | ✅ 已启用（`1.0.51`）：`0.0.0.0:80/443` 在监听，本机 `--resolve` 全绿（见第 4 节前 13 项） |
+| T6 | ✅ 后台页脚（登录页 + 内页）展示 `粤ICP备2026058093号-2`，链 `beian.miit.gov.cn`，`1.0.52` 部署 |
+| T2 | ⏳ **卡在安全组**：2026-11-24 服务器自探 80/443 仍 `exit 28`（filtered） |
+| T7–T10 | 待安全组放开后执行（`exposure.json` 现在写会立刻误报，等端口真的通了再写） |
+
+### 踩到的坑（已修，记在 `scripts/deploy.sh` 注释里）
+
+`/srv/nginx/nginx.conf` 是**单文件 bind 挂载**，`rsync` 默认「写临时文件 + rename」会换 inode，
+容器仍指向旧 inode → 出现「`conf.d` 已更新、`nginx.conf` 未更新」的半更新状态。
+第一次 `--with-nginx` 就撞上了：`limit_req` 引用的 `qz_auth` 在容器里不存在，
+报 `zero size shared memory zone "qz_auth"`，`deploy.sh` 按预期自动回滚，线上没受影响。
+
+修正：
+1. 同步改用 `rsync --inplace`（保留 inode），回滚路径同样加 `--inplace`；
+2. 同步后**断言宿主与容器内 `nginx.conf` 的 md5 一致**，不一致立即中止并说明原因；
+3. 已经错过一次的文件需要 `docker compose up -d --force-recreate web` 重新绑定挂载，之后 `--inplace` 就稳了（本次已做）。
