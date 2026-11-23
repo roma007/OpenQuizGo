@@ -6,79 +6,90 @@
 | 状态 | review |
 | 负责人 | AI |
 | 创建日期 | 2026-11-23 |
-| 最后更新 | 2026-11-23 |
+| 最后更新 | 2026-11-23（v2：改用 Atlas 已到位证书，取消 acme.sh） |
 | 对应设计 | [086-备案后HTTPS切换设计](../design/086-备案后HTTPS切换设计.md) |
 
 ## 1. 目标与范围
 
-- 交付目标：`https://atlas.openapp.asia` / `https://quiz.openapp.asia` 公网可用，80 跳 443，证书自动续期，备案号上页面。
-- 范围边界：只改共享 nginx 配置、证书链路、web 容器挂载、systemd 续期单元、管理端页脚与文档；不改业务代码逻辑、不动 `8081/8082`。
+- 交付目标：`https://atlas.openapp.asia` / `https://quiz.openapp.asia` 公网可用；80 跳 443；
+  管理面（后台 SPA 与 `/v1/admin/`）收进 tailnet；家长端 API 公网可用并有限流；备案号上页脚。
+- 范围边界：`docker-compose.yml`（web 挂载）、`deploy/nginx/**`、`admin-web/src/App.tsx`（页脚）、
+  `scripts/deploy.sh` 自检地址（如需）、`/srv/ops/state/exposure.json`、文档；**不改业务代码逻辑**，不动 `8081/8082`。
 - 前置条件：
   1. 用户确认设计与本计划（状态改 `approved`）。
-  2. 用户提供 **ICP 备案号** 与证书通知邮箱。
-  3. 用户在控制台把安全组 `TCP 80`、`TCP 443` 加回（`0.0.0.0/0`）。
-  4. 与 Atlas 就「80/443 启用、证书路径、页脚备案号」通过 `/srv/ops/requests/` 达成一致。
+  2. 用户确认「管理面只对 tailnet 开放」（设计 3.3 方案 B）——若需公网登录，改 A 并另加告警。
+  3. 用户在控制台把安全组 `TCP 80`、`TCP 443` 加回（`0.0.0.0/0`，人工，AI 不动）。
+  4. 证书已到位：`/srv/nginx/certs/{atlas,quiz}.openapp.asia.{pem,key}`（已满足，2026-11-23）。
+  5. 与 Atlas 通过 `/srv/ops/requests/` 对齐分工（Atlas 已发请求，QuizGo 回执即可）。
 
 ## 2. 任务拆分
 
 | 序号 | 任务 | 依赖 | 产出物 | 验收标准 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| T1 | 安全组加回 80/443 | 用户 | 控制台规则 | 公网 80/443 由超时变 RST（`nc` 验证） | todo |
-| T2 | 写 Atlas 请求并达成一致 | — | `/srv/ops/requests/…` | Atlas 回 `done`，确认证书/SAN/页脚分工 | todo |
-| T3 | 安装 acme.sh、建目录与权限 | T1 | `/srv/certs`、`/srv/acme`、acme.sh | `acme.sh --version` 正常；目录权限 700/644/600 | todo |
-| T4 | compose 加只读挂载 + 「仅 80」配置，部署 | T3 | `docker-compose.yml`、`deploy/nginx/conf.d/*` | `nginx -t` 通过；`/ .well-known/acme-challenge/x` 返回 404；80 上其它路径 301/444 | todo |
-| T5 | 签发证书并安装 | T4 | `/srv/certs/fullchain.pem`、`privkey.pem` | 4 个 SAN 齐全；`openssl x509 -noout -dates` 有效 | todo |
-| T6 | 启用 443 配置，`--with-nginx` 部署 | T5 | 最终 `conf.d/*` | 两域名 200；80 301；未知 Host 444；HSTS 存在 | todo |
-| T7 | 管理端页脚加备案号并构建部署 | T6 | `admin-web/src/App.tsx`、`dist` | 登录页与内页底部可见备案号并可点击 | todo |
-| T8 | 续期 timer 落地 | T5 | `scripts/renew-cert.sh`、`deploy/systemd/quizgo-cert-renew.*` | timer `enabled+active`；`--cron` 空跑成功 | todo |
-| T9 | 全链路验收 | T6/T7/T8 | 验收记录 | 见第 4 节清单全绿 | todo |
-| T10 | 文档、journal、共享面登记收尾 | T9 | `deployment-todo`、ROADMAP、`state/quizgo.json` | 无漂移；journal 有 deploy/note | todo |
-| T11 | 22 规则处置（独立） | 用户 VNC 验证 | 控制台 | 删后 `ssh quizgo-pub` 超时、`ssh quizgo` 正常 | todo |
+| T1 | 回执 Atlas 两条请求（改密、443） | — | `/srv/ops/requests/*.md` 的 `## 回复` | 两条 `status: done`，分工与证书归属写清 | todo |
+| T2 | 安全组加回 80/443 | 用户 | 控制台规则 | 公网 80/443 由超时变 RST；`status.sh` 自探变化 | todo |
+| T3 | compose 加只读证书挂载并部署（不动 conf） | — | `docker-compose.yml` | web 重建后 `docker inspect` 能看到 `/etc/nginx/certs` 挂载；线上行为无变化 | todo |
+| T4 | 三份 conf + `nginx.conf` 限流区 | T3 | `deploy/nginx/**` | `nginx -t` 通过（在服务器上试装前先本地审；失败自动回滚） | todo |
+| T5 | `--with-nginx` 部署启用 80/443 | T2/T4 | 生效配置 | 两域名 200；80 301；未知 Host 兜底；裸 IP 443 握手失败 | todo |
+| T6 | 管理端页脚备案号 | T5 | `admin-web/src/App.tsx` + `dist` | 页脚可见 `粤ICP备2026058093号-2` 且可点击 | todo |
+| T7 | 写 `exposure.json` + 同步 `status.sh` 判据 | T5 | `/srv/ops/state/exposure.json` | 自探 5 行符合期望，无 ⚠️ | todo |
+| T8 | 全链路验收（含限流与管理面 403） | T5–T7 | 验收记录 | 第 4 节清单全绿 | todo |
+| T9 | 24 小时后开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | todo |
+| T10 | 文档 / journal / 共享面登记收尾 | T8 | `deployment-todo`、ROADMAP、`state/quizgo.json` | 无漂移；journal 有 deploy/nginx 行；证书到期日入待办 | todo |
+| T11 | 22 规则处置（独立事项） | 用户 VNC 验证 | 控制台 | 删后 `ssh quizgo-pub` 超时、`ssh quizgo` 正常 | todo |
 
 ## 3. 里程碑
 
 | 里程碑 | 包含任务 | 完成标准 | 计划日期 | 实际日期 |
 | --- | --- | --- | --- | --- |
-| M1 证书就绪 | T1–T5 | 证书文件存在且 SAN 正确 | 2026-11-24 | |
-| M2 公网 HTTPS | T6–T7 | 两站点 https 200，备案号可见 | 2026-11-24 | |
-| M3 自动化与收尾 | T8–T10 | 续期 timer 生效，文档/登记闭环 | 2026-11-25 | |
-| M4 公网 22 退役 | T11 | 仅 Tailscale 可 SSH | 2026-11-26 | |
+| M1 前置就绪 | T1–T3 | 挂载就位、安全组已开、Atlas 已回执 | 2026-11-24 | |
+| M2 公网 HTTPS | T4–T6 | 两站点 https 200，管理面公网 403，备案号可见 | 2026-11-24 | |
+| M3 观测与收尾 | T7–T10 | 自探全绿、HSTS 开启、文档闭环 | 2026-11-25 | |
+| M4 公网 22 退役 | T11 | 仅 Tailscale 可 SSH | 待 VNC 验证 | |
 
 ## 4. 验证方式
 
-- 单元/集成：`make test`（业务代码未改，作为回归基线）；`nginx -t`。
-- 手工验收（逐条打勾）：
-  1. `curl -I https://atlas.openapp.asia/` → `200`，`Strict-Transport-Security` 存在。
-  2. `curl -I https://quiz.openapp.asia/` → `200`，CSP/X-Frame-Options 仍在。
-  3. `curl -s https://quiz.openapp.asia/v1/meta` → 版本号与 `VERSION` 一致。
-  4. `curl -I http://quiz.openapp.asia/v1/meta` → `301` 到 https。
-  5. `curl -sI -H 'Host: evil.example' http://8.163.122.39/` → `444`（或直接断开）。
-  6. `openssl s_client -connect quiz.openapp.asia:443 -servername quiz.openapp.asia` → 链完整、`TLSv1.3`。
-  7. `openssl s_client -tls1_1 …` → 握手失败。
-  8. SPA：直接访问 `https://quiz.openapp.asia/families` 刷新 → 200（回退 index.html）。
-  9. `curl -sI https://quiz.openapp.asia/assets/<hash>.js` → `Cache-Control: immutable`。
-  10. `curl -o /dev/null -w '%{http_code}' https://quiz.openapp.asia/metrics` → `403`。
-  11. 页脚备案号可见、链接正确（两个站点）。
-  12. `systemctl list-timers | grep cert`；`renew-cert.sh --dry-run` 成功。
-  13. `status.sh` 无漂移；自探规则已按新语义更新。
-- 端到端：家长端/TV 以 `--dart-define=API_BASE_URL=https://quiz.openapp.asia/` 构建并登录一次。
+- 回归：`make test`（业务代码未改，作基线）；`nginx -t`；`docker compose ps` 全 healthy。
+- 手工验收（逐条打勾，公网侧由 Mac 执行，管理面侧在 tailnet 内执行）：
+  1. `curl -I https://atlas.openapp.asia/` → `200`。
+  2. `curl -I http://atlas.openapp.asia/` → `301` → https。
+  3. `curl -sI -H 'Host: x' http://8.163.122.39/` → `301` 到 `https://atlas.openapp.asia`。
+  4. `curl -k -I https://8.163.122.39/` → 握手失败（`ssl_reject_handshake`）。
+  5. `curl -s https://quiz.openapp.asia/v1/meta` → 版本号与 `VERSION` 一致。
+  6. `curl -o /dev/null -w '%{http_code}' -X POST https://quiz.openapp.asia/v1/admin/auth/login -d '{}'` → `403`。
+  7. `curl -o /dev/null -w '%{http_code}' https://quiz.openapp.asia/` → `403`（公网）；tailnet 内 `200`。
+  8. `curl -s -o /dev/null -w '%{http_code}' -X POST https://quiz.openapp.asia/v1/auth/login -d '{}'` → `401/422`（可达）。
+  9. 连打 8 次 `/v1/admin/auth/login`（tailnet 内）→ 出现 `429`。
+  10. `openssl s_client -connect quiz.openapp.asia:443 -servername quiz.openapp.asia -verify_return_error` → 链到 DigiCert 根。
+  11. `openssl s_client -tls1_1 …` → 握手失败。
+  12. SPA 深层路由刷新 `https://quiz.openapp.asia/questions`（tailnet）→ 200。
+  13. `/assets/<hash>.js` → `Cache-Control: immutable`；`/metrics` → 403。
+  14. 页脚备案号可见、链接 `https://beian.miit.gov.cn`。
+  15. `ssh quizgo '/srv/ops/bin/status.sh'` → 共享面无漂移、公网自探全符合 `exposure.json`。
+  16. `8081/8082` 从 tailnet 仍可访问（兜底通道未断）。
+- 客户端：家长端 / TV 以 `--dart-define=API_BASE_URL=https://quiz.openapp.asia/` 构建并登录一次（随下次客户端发版验证）。
 
 ## 5. 回滚方案
 
 | 场景 | 动作 | 预计耗时 |
 | --- | --- | --- |
 | 443 配置有误 | `deploy.sh` 的 `nginx -t` 失败自动回滚 `/srv/nginx.prev`；或手工 `rsync -a --delete /srv/nginx.prev/ /srv/nginx/` + reload | < 1 分钟 |
-| 证书不可用 | 保持 80 配置 + `8081/8082`，公网退回不可用（与备案前一致） | < 2 分钟 |
+| 证书不可用/过期 | 保持 80 兜底配置 + `8081/8082`；公网回到不可用（与备案前一致） | < 2 分钟 |
+| 限流误伤 | 去掉对应 `limit_req` 行并 `--with-nginx` | < 3 分钟 |
+| 管理面 403 影响运维 | 临时改用 `http://quizgo-ecs:8082`（tailnet） | 即时 |
 | 安全组设置错误 | 控制台删 80/443，回到当前状态 | < 1 分钟 |
-| 备案号写错 | 只改前端文案并重新构建，不影响服务端 | < 5 分钟 |
 
 - 数据影响：无迁移、无表结构变化，不需要回库。
-- 证书私钥：`/srv/certs` 不进仓库；备份时与数据库分开加密存放。
+- 证书私钥：仅存在 `/srv/nginx/certs`（700/600）；不进仓库、不进备份包、不写进对话归档。
 
 ## 6. 决策记录
 
 | 时间 | 决策 | 理由 |
 | --- | --- | --- |
-| 2026-11-23 | 选 `acme.sh` + webroot，单证书 4 SAN | ALinux 4 无 certbot 包；单证书减少续期点 |
-| 2026-11-23 | 保留 `8081/8082` | `deploy.sh` 自检与 Atlas 自动化仍依赖；退役另立事项 |
-| 2026-11-23 | 首页裸域 `openapp.asia` 301 到 `atlas` | 备案主体是「开放应用记录」，静态站是唯一内容站 |
+| 2026-11-23 | v1 选 `acme.sh` + webroot，单证书 4 SAN | ALinux 4 无 certbot 包；单证书减少续期点 |
+| 2026-11-23 | **v2 取消 acme.sh，改用 Atlas 已采购的 2 张 DigiCert DV 证书** | 证书已到位（¥0、SAN 含 www、私钥不出机器）；避免为 90 天引入额外链路。代价是手动换证，用 `status.sh` 剩余天数 + 待办兜底 |
+| 2026-11-23 | 管理面（SPA + `/v1/admin/`）默认收进 tailnet | 公网连管理端登录请求都进不来；家长端 API 仍公网可达。用户当前本来就走 tailnet |
+| 2026-11-23 | 保留 `8081/8082` | `deploy.sh` 自检与排障仍依赖；退役另立事项 |
+| 2026-11-23 | 裸域 `openapp.asia`/`www` 80 兜底 301 到 `https://atlas.openapp.asia` | apex 无证书；备案巡检直接访问裸域名，需给出可读页面 |
+| 2026-11-23 | HSTS 延后 24 小时 | 避免配置错时把自己锁死；先观察无混内容 |
+| 2026-11-23 | 分两次部署（先挂载、后配置） | 新配置引用 `/etc/nginx/certs`，挂载不存在则 `nginx -t` 必失败 |
