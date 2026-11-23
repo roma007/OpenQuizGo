@@ -124,6 +124,8 @@ services:
       - /srv/quizgo/admin-web/dist:/srv/quizgo/admin-web/dist:ro
       - /srv/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - /srv/nginx/conf.d:/etc/nginx/conf.d:ro
+      # 证书目录独立于 conf.d：`--with-nginx` 对 conf.d 用 rsync --delete，放里面会被删掉
+      - /srv/nginx/certs:/etc/nginx/certs:ro
     depends_on:
       api:
         condition: service_healthy

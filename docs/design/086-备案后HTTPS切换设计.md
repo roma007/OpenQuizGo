@@ -3,10 +3,10 @@
 | 项目 | 内容 |
 | --- | --- |
 | 编号 | 086 |
-| 状态 | review |
+| 状态 | approved |
 | 作者 | AI |
 | 创建日期 | 2026-11-23 |
-| 最后更新 | 2026-11-23（v2：证书来源改为 Atlas 已采购的 DV 证书，方案随之调整） |
+| 最后更新 | 2026-11-24（v3：用户确认管理面公网可达，限流与口令为唯一防线） |
 | 对应计划 | [086-备案后HTTPS切换实施计划](../plans/086-备案后HTTPS切换实施计划.md) |
 
 ## 0. 修订说明（v1 → v2）
@@ -22,7 +22,16 @@ v1 假设「服务器无证书、需自建 ACME」，选型 `acme.sh` + Let's En
 - 因此 **v2 取消 acme.sh / webroot / 续期 timer**，改用已到位证书；代价是 90 天一次的人工换证，
   用「到期提醒 + `status.sh` 剩余天数」兜底，换证自动化另立 088 评估。
 - 同时吸收 Atlas 请求 `2026-11-23-atlas-to-quizgo-enable-443-tls.md`（含其「修订」「修订 2」）的
-  安全加固要求：`limit_req`、`/v1/admin/` 与后台 SPA 收进 tailnet。
+  安全加固要求：`limit_req`、`/v1/admin/` 的 IP 限流。
+
+### v3 变更（2026-11-24 用户决策）
+
+- 用户选择「管理后台公网可达 + 强口令 + 限流」，**否决** Atlas 建议的「收进 tailnet」。
+  因此 `/v1/admin/**` 与后台 SPA 均公网开放，防线改为三层：
+  1. 12 位以上口令（087 已强制，禁弱口令与旧口令复用）；
+  2. nginx `qz_auth` 按 IP 10r/m、burst 5 → 越界 429；
+  3. Go 侧按用户名 5 次/15 分钟锁 15 分钟（已有）。
+- 后台 SPA 对公网可见 ⇒ **页脚备案号从「可选」变为必需**（备案巡检会看）。
 
 ## 1. 背景与目标
 
@@ -35,7 +44,7 @@ v1 假设「服务器无证书、需自建 ACME」，选型 `acme.sh` + Let's En
 - 目标（可验证）：
   1. `https://atlas.openapp.asia`、`https://quiz.openapp.asia` 公网可用，证书链完整。
   2. 80 全量 301 → 443；未知 Host / 裸 IP 不泄露默认站（444 或 TLS 握手拒绝）。
-  3. 管理面（后台 SPA 与 `/v1/admin/`）只对 tailnet 与本机开放，公网 403。
+  3. 管理面公网可达，但受「强口令 + nginx IP 限流 + 应用层按用户名锁定」三层约束。
   4. 家长端 API 公网可用，且有 IP 维度限流兜底。
   5. 安全基线不回退：`server_tokens off`、TLS1.2+、`/metrics` 403、备份权限 600/700。
   6. 备案号在 Atlas 页脚（已有）与 QuizGo 后台页脚可见。
@@ -53,9 +62,9 @@ v1 假设「服务器无证书、需自建 ACME」，选型 `acme.sh` + Let's En
 | R1 | 公网 HTTPS | 两域名 `curl -I https://…` → 200；`openssl s_client -verify_return_error` 链到 DigiCert 根 | P0 |
 | R2 | 80 跳 443 | `curl -I http://…` → 301，Location 为 https；`openapp.asia`/`www` → `https://atlas.openapp.asia` | P0 |
 | R3 | 未知 Host 不泄露 | `curl -H 'Host: x' http://8.163.122.39/` → 301（兜底跳 Atlas）；`curl -k https://8.163.122.39/` 握手失败（`ssl_reject_handshake`） | P0 |
-| R4 | 管理面收口 | 公网 `POST https://quiz.openapp.asia/v1/admin/auth/login` → 403；公网 `GET /` → 403；tailnet 内全部正常 | P0 |
-| R5 | 家长端 API | 公网 `/v1/meta` 200；`/v1/auth/login` 可达（错口令 401）；`/v1/admin/` 403 | P0 |
-| R6 | 限流 | 连打 8 次 `/v1/admin/auth/login`（tailnet 内）出现 429；公网 `/v1/auth/` 超 10r/m 出现 429 | P1 |
+| R4 | 管理面可登录但抗爆破 | 公网 `POST /v1/admin/auth/login` 错口令 → 401；同一 IP 连打 8 次 → 429；后台页面公网 200 | P0 |
+| R5 | 家长端 API | 公网 `/v1/meta` 200；`/v1/auth/login` 可达（错口令 401/422） | P0 |
+| R6 | 限流 | 连打 8 次 `/v1/admin/auth/login` 出现 429；`/v1/auth/` 超 10r/m 出现 429 | P1 |
 | R7 | 备案号 | QuizGo 后台页脚可见 `粤ICP备2026058093号-2`，链接 `https://beian.miit.gov.cn` | P1 |
 | R8 | 不回归 | `/v1/meta`、登录、SPA 深层路由刷新、`/assets` 长缓存、`/healthz`、8081/8082 均正常 | P0 |
 | R9 | 可回滚 | `/srv/nginx.prev` 1 分钟内恢复；证书故障可退回 8081/8082 | P1 |
@@ -80,15 +89,19 @@ v1 假设「服务器无证书、需自建 ACME」，选型 `acme.sh` + Let's En
 以**只读**方式挂进 `quizgo-web-1`；`atlas.conf` / `quiz.conf` 的源文件都在本仓库，由 `--with-nginx` 同步。
 证书目录**不得**放在 `conf.d/` 下——`--with-nginx` 用 `rsync --delete`，会把它删掉。
 
-### 3.3 管理面暴露程度（需用户确认）
+### 3.3 管理面暴露程度（v3 已定：方案 A）
 
 | 方案 | 做法 | 优点 | 缺点 | 结论 |
 | --- | --- | --- | --- | --- |
-| A 公网可达 + 强口令 + 应用层限流 | 后台与 `/v1/admin/` 公网开放 | 任意设备都能登录 | 后台是撞库目标，仅靠应用层限流 | 备选 |
-| B 收进 tailnet | 后台 SPA 与 `/v1/admin/` 均 `allow 127.0.0.1 + 100.64.0.0/10; deny all` | 公网连登录请求都进不来 | 管理员所在设备必须装 Tailscale | ✅ 默认选用 |
+| A 公网可达 + 强口令 + 限流 | 后台与 `/v1/admin/` 公网开放，`qz_auth` 限流 | 任意设备都能登录，无客户端依赖 | 后台是撞库目标 | ✅ 用户 2026-11-24 选定 |
+| B 收进 tailnet | 后台与 `/v1/admin/` 仅 tailnet | 公网连登录请求都进不来 | 管理员设备必须装 Tailscale | 用户否决 |
 
-默认 B（与 Atlas 建议一致，符合「安全第一」）。若用户需要在无 Tailscale 的电脑登录，改回 A，
-并同时要求：12 位以上随机口令（087 已强制）+ nginx `qz_auth` 限流 + 失败告警。
+配套硬性条件（缺一不可）：
+- 口令 ≥12 字符且不得与旧口令/用户名相同（087 实现，`422` 拒绝）；
+- `qz_auth` 10r/m + burst 5（同一 IP 撞库在 nginx 层就被挡）；
+- Go 侧 `rl:admin:login:<username>` 5 次/15 分钟（已有，改密用独立键）；
+- 后台页脚展示备案号（公网可见，备案巡检会看）；
+- 观察 access log 中的 401/429 突增，异常时再考虑加 Cloudflare 或收回 tailnet。
 
 ## 4. 总体架构
 
@@ -101,8 +114,8 @@ v1 假设「服务器无证书、需自建 ACME」，选型 `acme.sh` + Let's En
   - `conf.d/00-default.conf`（新增）：80 `default_server` → 301 `https://atlas.openapp.asia`；443 `default_server` + `ssl_reject_handshake on`。
   - `conf.d/atlas.conf`：80 → 301；443 静态站，`server_name atlas.openapp.asia www.atlas.openapp.asia`；`8081` 原样保留。
   - `conf.d/quiz.conf`：80 → 301；443 后台 + `/v1/`，`server_name quiz.openapp.asia www.quiz.openapp.asia`；
-    `location /v1/admin/`（tailnet + `qz_auth`）、`location /v1/auth/`（`qz_auth`）、`location /v1/`（`qz_api`）、
-    `location /`（tailnet，SPA）；`8082` 原样保留。
+    `location /v1/admin/`（`qz_auth` 限流，公网可达）、`location /v1/auth/`（`qz_auth`）、
+    `location /v1/`（`qz_api`）、`location /`（公网 SPA + 页脚备案号）；`8082` 原样保留。
   - `conf.d/apex` 不需要：apex/www 无证书，统一走 `00-default.conf` 的 80 兜底跳 Atlas。
 - 执行顺序（关键，不能颠倒）：
   1. 仓库：先只改 `docker-compose.yml`（加挂载）并部署 → web 带挂载重建，配置仍旧，线上无变化。
@@ -139,7 +152,7 @@ v1 假设「服务器无证书、需自建 ACME」，选型 `acme.sh` + Let's En
 | 90 天证书到期忘换 | 全站 TLS 失效，家长端不可用 | `status.sh` 剩余天数（<14 天 ⏳）；2027-01 下旬登记待办；到期前 30 天在 ROADMAP 挂条目 |
 | 证书文件被 `--with-nginx` 的 `--delete` 删掉 | 443 全挂 | 证书放 `/srv/nginx/certs`（不在 `conf.d/` 内）；`deploy.sh` 同步范围只含 `nginx.conf` 与 `conf.d/` |
 | 挂载未就位就上 443 配置 | `nginx -t` 失败 / 容器起不来 | 严格分两次部署：先挂载、后配置；`deploy.sh` 有 `nginx -t` 失败回滚 |
-| 管理后台收进 tailnet 后用户无法登录 | 运维中断 | 先确认用户设备已装 Tailscale；`8082` 通道保留作兜底 |
+| 后台公网暴露被撞库 | 口令泄露、后台被登录 | 12 位口令 + `qz_auth` 10r/m + Go 侧 5 次锁定；观察 401/429 突增；必要时收回 tailnet（改一行 allow/deny） |
 | 限流误伤家长端正常使用 | 401/429 增多、体验差 | `qz_api` 600r/m + burst 120（单设备远低于此）；先观察 access log 再收紧 |
 | `status.sh` 自探语义反转 | 误报「端口被放开」 | 同批写 `exposure.json`，并同步脚本判断（80/443 期望 allowed，8080-8082 期望 blocked） |
 | 共享面改动影响 Atlas | 静态站 502/证书错 | `flock /srv/ops/locks/nginx.lock`；`deploy.sh --with-nginx` 自带备份与回滚；改完请 Atlas 跑自检 |
@@ -147,8 +160,8 @@ v1 假设「服务器无证书、需自建 ACME」，选型 `acme.sh` + Let's En
 
 ## 9. 未决问题
 
-1. 管理面暴露程度：默认 **B（tailnet）**，需用户确认是否会从无 Tailscale 的设备登录。
-2. 安全组 `TCP 80/443` 由用户加回（AI 不动安全组）。
+1. ~~管理面暴露程度~~ → 2026-11-24 用户选定 **A（公网可达 + 强口令 + 限流）**。
+2. 安全组 `TCP 80/443` 由用户加回（AI 不动安全组）——**当前仍未放开**（2026-11-24 自探 `exit 28`）。
 3. HSTS 是否在观察 24 小时后开启（默认开，`max-age=31536000`，不含 `preload`）。
 4. 证书到期前（2027-02-21）的换证方式：继续阿里云免费 DV（手动）还是切 `acme.sh` 自动化 → 088 评估。
 5. 公安联网备案：用户须在 2026-12-23 前提交。

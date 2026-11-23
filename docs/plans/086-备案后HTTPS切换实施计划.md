@@ -3,10 +3,10 @@
 | 项目 | 内容 |
 | --- | --- |
 | 编号 | 086 |
-| 状态 | review |
+| 状态 | in-progress |
 | 负责人 | AI |
 | 创建日期 | 2026-11-23 |
-| 最后更新 | 2026-11-23（v2：改用 Atlas 已到位证书，取消 acme.sh） |
+| 最后更新 | 2026-11-24（v3：管理面公网可达，T3 已开工） |
 | 对应设计 | [086-备案后HTTPS切换设计](../design/086-备案后HTTPS切换设计.md) |
 
 ## 1. 目标与范围
@@ -17,7 +17,7 @@
   `scripts/deploy.sh` 自检地址（如需）、`/srv/ops/state/exposure.json`、文档；**不改业务代码逻辑**，不动 `8081/8082`。
 - 前置条件：
   1. 用户确认设计与本计划（状态改 `approved`）。
-  2. 用户确认「管理面只对 tailnet 开放」（设计 3.3 方案 B）——若需公网登录，改 A 并另加告警。
+  2. ~~用户确认管理面暴露程度~~ → 已定 **方案 A（公网可达 + 强口令 + 限流）**（2026-11-24）。
   3. 用户在控制台把安全组 `TCP 80`、`TCP 443` 加回（`0.0.0.0/0`，人工，AI 不动）。
   4. 证书已到位：`/srv/nginx/certs/{atlas,quiz}.openapp.asia.{pem,key}`（已满足，2026-11-23）。
   5. 与 Atlas 通过 `/srv/ops/requests/` 对齐分工（Atlas 已发请求，QuizGo 回执即可）。
@@ -29,9 +29,9 @@
 | T1 | 回执 Atlas 两条请求（改密、443） | — | `/srv/ops/requests/*.md` 的 `## 回复` | 两条 `status: done`，分工与证书归属写清 | todo |
 | T2 | 安全组加回 80/443 | 用户 | 控制台规则 | 公网 80/443 由超时变 RST；`status.sh` 自探变化 | todo |
 | T3 | compose 加只读证书挂载并部署（不动 conf） | — | `docker-compose.yml` | web 重建后 `docker inspect` 能看到 `/etc/nginx/certs` 挂载；线上行为无变化 | todo |
-| T4 | 三份 conf + `nginx.conf` 限流区 | T3 | `deploy/nginx/**` | `nginx -t` 通过（在服务器上试装前先本地审；失败自动回滚） | todo |
+| T4 | 三份 conf + `nginx.conf` 限流区 | T3 | `deploy/nginx/**` | `nginx -t` 通过（`deploy.sh` 失败自动回滚 `/srv/nginx.prev`） | todo |
 | T5 | `--with-nginx` 部署启用 80/443 | T2/T4 | 生效配置 | 两域名 200；80 301；未知 Host 兜底；裸 IP 443 握手失败 | todo |
-| T6 | 管理端页脚备案号 | T5 | `admin-web/src/App.tsx` + `dist` | 页脚可见 `粤ICP备2026058093号-2` 且可点击 | todo |
+| T6 | 管理端页脚备案号 | T5 | `admin-web/src/App.tsx` + `dist` | 页脚可见 `粤ICP备2026058093号-2` 且可点击（后台公网可见，必需） | todo |
 | T7 | 写 `exposure.json` + 同步 `status.sh` 判据 | T5 | `/srv/ops/state/exposure.json` | 自探 5 行符合期望，无 ⚠️ | todo |
 | T8 | 全链路验收（含限流与管理面 403） | T5–T7 | 验收记录 | 第 4 节清单全绿 | todo |
 | T9 | 24 小时后开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | todo |
@@ -56,13 +56,13 @@
   3. `curl -sI -H 'Host: x' http://8.163.122.39/` → `301` 到 `https://atlas.openapp.asia`。
   4. `curl -k -I https://8.163.122.39/` → 握手失败（`ssl_reject_handshake`）。
   5. `curl -s https://quiz.openapp.asia/v1/meta` → 版本号与 `VERSION` 一致。
-  6. `curl -o /dev/null -w '%{http_code}' -X POST https://quiz.openapp.asia/v1/admin/auth/login -d '{}'` → `403`。
-  7. `curl -o /dev/null -w '%{http_code}' https://quiz.openapp.asia/` → `403`（公网）；tailnet 内 `200`。
+  6. `curl -o /dev/null -w '%{http_code}' -X POST https://quiz.openapp.asia/v1/admin/auth/login -d '{}'` → `401/422`（可达，不是 403）。
+  7. `curl -o /dev/null -w '%{http_code}' https://quiz.openapp.asia/` → `200`（公网，后台公开但鉴权在 API）。
   8. `curl -s -o /dev/null -w '%{http_code}' -X POST https://quiz.openapp.asia/v1/auth/login -d '{}'` → `401/422`（可达）。
-  9. 连打 8 次 `/v1/admin/auth/login`（tailnet 内）→ 出现 `429`。
+  9. 连打 8 次 `/v1/admin/auth/login`（公网）→ 出现 `429`（nginx `qz_auth` 生效）。
   10. `openssl s_client -connect quiz.openapp.asia:443 -servername quiz.openapp.asia -verify_return_error` → 链到 DigiCert 根。
   11. `openssl s_client -tls1_1 …` → 握手失败。
-  12. SPA 深层路由刷新 `https://quiz.openapp.asia/questions`（tailnet）→ 200。
+  12. SPA 深层路由刷新 `https://quiz.openapp.asia/questions` → 200；页脚备案号可见。
   13. `/assets/<hash>.js` → `Cache-Control: immutable`；`/metrics` → 403。
   14. 页脚备案号可见、链接 `https://beian.miit.gov.cn`。
   15. `ssh quizgo '/srv/ops/bin/status.sh'` → 共享面无漂移、公网自探全符合 `exposure.json`。
@@ -76,7 +76,7 @@
 | 443 配置有误 | `deploy.sh` 的 `nginx -t` 失败自动回滚 `/srv/nginx.prev`；或手工 `rsync -a --delete /srv/nginx.prev/ /srv/nginx/` + reload | < 1 分钟 |
 | 证书不可用/过期 | 保持 80 兜底配置 + `8081/8082`；公网回到不可用（与备案前一致） | < 2 分钟 |
 | 限流误伤 | 去掉对应 `limit_req` 行并 `--with-nginx` | < 3 分钟 |
-| 管理面 403 影响运维 | 临时改用 `http://quizgo-ecs:8082`（tailnet） | 即时 |
+| 公网撞库告警 | 临时把 `location /v1/admin/` 加 `allow 127.0.0.1; allow 100.64.0.0/10; deny all;` 收回 tailnet | < 3 分钟 |
 | 安全组设置错误 | 控制台删 80/443，回到当前状态 | < 1 分钟 |
 
 - 数据影响：无迁移、无表结构变化，不需要回库。
@@ -88,7 +88,7 @@
 | --- | --- | --- |
 | 2026-11-23 | v1 选 `acme.sh` + webroot，单证书 4 SAN | ALinux 4 无 certbot 包；单证书减少续期点 |
 | 2026-11-23 | **v2 取消 acme.sh，改用 Atlas 已采购的 2 张 DigiCert DV 证书** | 证书已到位（¥0、SAN 含 www、私钥不出机器）；避免为 90 天引入额外链路。代价是手动换证，用 `status.sh` 剩余天数 + 待办兜底 |
-| 2026-11-23 | 管理面（SPA + `/v1/admin/`）默认收进 tailnet | 公网连管理端登录请求都进不来；家长端 API 仍公网可达。用户当前本来就走 tailnet |
+| 2026-11-24 | **管理面改回公网可达（方案 A）**，靠 12 位口令 + `qz_auth` 10r/m + 应用层锁定 | 用户 2026-11-24 明确要求任意设备可登录；收回 tailnet 的代价（必须装 Tailscale）他不能接受。已把「必要时一行改回 tailnet」写进回滚 |
 | 2026-11-23 | 保留 `8081/8082` | `deploy.sh` 自检与排障仍依赖；退役另立事项 |
 | 2026-11-23 | 裸域 `openapp.asia`/`www` 80 兜底 301 到 `https://atlas.openapp.asia` | apex 无证书；备案巡检直接访问裸域名，需给出可读页面 |
 | 2026-11-23 | HSTS 延后 24 小时 | 避免配置错时把自己锁死；先观察无混内容 |
