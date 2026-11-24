@@ -4,7 +4,9 @@
 
 ```bash
 flutter pub get
-flutter run --dart-define=API_BASE_URL=http://<服务端地址>:8080/
+# 默认连生产 https://quiz.openapp.asia/，本地联调才需要覆盖：
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8089/   # 模拟器 → 宿主机
+flutter run --dart-define=API_BASE_URL=http://192.168.1.10:8080/  # 真机 → 局域网
 ```
 
 - Android 调试：`flutter run -d <device>`

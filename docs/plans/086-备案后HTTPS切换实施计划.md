@@ -35,8 +35,9 @@
 | T7 | 写 `exposure.json` + 同步 `status.sh` 判据 | T5 | `/srv/ops/state/exposure.json` | 自探 5 行符合期望，无 ⚠️ | done |
 | T8 | 全链路验收（含限流与管理面 403） | T5–T7 | 验收记录 | 第 4 节清单全绿 | done |
 | T9 | 开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | done（2026-11-24，用户决定立即开） |
-| T10 | 文档 / journal / 共享面登记收尾 | T8 | `deployment-todo`、ROADMAP、`state/quizgo.json` | 无漂移；journal 有 deploy/nginx 行；证书到期日入待办 | todo |
+| T10 | 文档 / journal / 共享面登记收尾 | T8 | `deployment-todo`、ROADMAP、`state/quizgo.json` | 无漂移；journal 有 deploy/nginx 行；证书到期日入待办 | done（2026-11-24，`1.0.57`/`1.0.66`） |
 | T11 | 22 规则处置（独立事项） | 用户 VNC 验证 | 控制台 | 删后 `ssh quizgo-pub` 超时、`ssh quizgo` 正常 | todo |
+| T12 | 证书续期排期（DigiCert DV，2027-02-21 到期） | T8 | 本节第 10 节 + Atlas 请求 | 到期前 30 天完成换证复验，或改成 acme.sh 自动续期 | todo（排期已定，见第 10 节） |
 
 ## 3. 里程碑
 
@@ -159,3 +160,42 @@
 - `status.sh`：公网自探 5/5 ✅、证书剩 88 天、共享面 md5 无漂移、无待处理请求。
 - 留给运维的两条：**2027-02-21 前换证**（阿里云重新申请，同名覆盖 + `nginx -t && nginx -s reload`）；
   **公安联网备案 2026-12-23 前**（用户，`beian.mps.gov.cn`）。
+
+## 10. 证书续期排期（T12）
+
+现状：`/srv/nginx/certs/{atlas,quiz}.openapp.asia.{pem,key}`，DigiCert DV，
+**notAfter 2027-02-21 07:59 CST**，`600`、属主 `ecs-user`、目录 `700`。
+90 天有效期的 DV 一年要换 4 次，属于必漏项，所以按日期钉死。
+
+| 时间 | 动作 | 负责 | 判定 |
+| --- | --- | --- | --- |
+| 2026-12-31 前 | 回复续期归属与方式（同名覆盖 / 改 acme.sh） | Atlas（`2026-11-24-quizgo-to-atlas-gongan-and-cert.md`） | 请求里有明确的「谁执行 + 走哪条路」 |
+| 2027-01-22（到期前 30 天） | 阿里云重新申请 DV，下载 pem/key | 证书持有人（当前为 Atlas） | 新证书 `notAfter` ≥ 2027-05 |
+| 2027-01-25 起 | 覆盖同名文件（`600`/`ecs-user`）→ `nginx -t` → `nginx -s reload` | 我方执行 `--with-nginx` 或手工 | 见下方复验清单 |
+| 2027-02-14（到期前 7 天） | 兜底复查 | 我方 | `status.sh` 剩余天数 ≥ 60 天 |
+| 2027-02-21 07:59 | **绝对截止** | — | 逾期全站 TLS 失败（HSTS 已开，浏览器不可绕过） |
+
+复验清单（换证后必做）：
+
+```bash
+# 1. 服务端视角
+ssh quizgo 'docker exec quizgo-web-1 nginx -t && docker exec quizgo-web-1 nginx -s reload'
+ssh quizgo '/srv/ops/bin/status.sh | sed -n "/TLS 证书/,+3p"'
+# 2. 公网视角（本机）
+for h in atlas.openapp.asia quiz.openapp.asia; do
+  echo | openssl s_client -connect "$h:443" -servername "$h" 2>/dev/null | openssl x509 -noout -subject -enddate
+  curl -s -o /dev/null -w "$h %{http_code}\n" "https://$h/"
+done
+# 3. 客户端视角：家长端/电视端各登录一次（证书链变化会影响固定 pinning，我们未启用 pinning）
+```
+
+日常信号：`status.sh` 每天显示证书剩余天数，**< 14 天变 ⏳**；那已经太晚，所以以 01-22 为准。
+
+已挂两个定时提醒（OpenCode automation，到点自动回到会话执行）：
+
+| 时间 | 提醒 | ID |
+| --- | --- | --- |
+| 2026-12-31 09:00 | 查 Atlas 是否回复续期归属 + 088 备案状态 + 证书剩余天数 | `aut_20b7befac001FrYOPybN6t5er0` |
+| 2027-01-22 09:00 | 进入换证窗口：申请/覆盖/reload/复验 | `aut_20b7befba001vecIXAG6pQo1ly` |
+若最终改走 acme.sh，需要同步修改 `deploy/nginx/conf.d/{atlas,quiz}.conf` 的 `ssl_certificate` 路径，
+并挂 reload 钩子（取 `/srv/ops/locks/nginx.lock`），本表替换为「自动续期 + 每月抽查一次」。

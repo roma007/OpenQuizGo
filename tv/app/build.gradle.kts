@@ -13,12 +13,13 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 166
-        versionName = "1.0.66"
-        // 080：TV 回归服务端模式。默认走 Tailscale 内网（备案前 8082 只放行 tailnet）。
-        // 覆盖方式：./gradlew assembleRelease -PapiBaseUrl=https://quiz.openapp.asia/
+        versionCode = 167
+        versionName = "1.0.67"
+        // 089：默认连生产 HTTPS（086 起 443 公网可用）。
+        // 本地/内网排障覆盖：-PapiBaseUrl=http://100.65.110.80:8082/
+        // 注意：targetSdk 33 下 release 包禁止明文，http 覆盖只有 debug 包可用。
         val apiBaseUrl = providers.gradleProperty("apiBaseUrl")
-            .orElse("http://100.65.110.80:8082/")
+            .orElse("https://quiz.openapp.asia/")
             .get()
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
         val expectedSignature = providers.gradleProperty("expectedSignature")

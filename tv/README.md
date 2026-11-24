@@ -40,11 +40,12 @@ cd tv
 默认 `http://100.65.110.80:8082/`（服务器 Tailscale 地址）。覆盖方式：
 
 ```bash
-./gradlew :app:assembleRelease -PapiBaseUrl=https://quiz.openapp.asia/
+./gradlew :app:assembleRelease                      # 默认 https://quiz.openapp.asia/
+./gradlew :app:assembleRelease -PapiBaseUrl=http://100.65.110.80:8082/   # 仅 debug 签名/内网排障
 ```
 
 - 备案通过前，nginx 只放行 `127.0.0.1` 与 `100.64.0.0/10`，**家庭电视必须接入同一 tailnet 才能连上**。
-- 备案通过、80/443 放开后，用 `-PapiBaseUrl=https://quiz.openapp.asia/` 重新构建即可对外。
+- 089 起**默认就是** `https://quiz.openapp.asia/`，不再需要传参；本地联调才用 `-PapiBaseUrl` 覆盖。
 - debug 构建通过 `app/src/debug/AndroidManifest.xml` 允许明文 HTTP；release 请用 HTTPS。
 
 ## 测试

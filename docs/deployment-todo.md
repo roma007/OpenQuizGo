@@ -99,6 +99,9 @@
   - `/srv/nginx/certs/{atlas,quiz}.openapp.asia.{pem,key}`，DigiCert DV，`600`、属主 `ecs-user`（目录 700）
   - **到期 2027-02-21 07:59 CST**（90 天）：到期前一个月在阿里云控制台重新申请并覆盖同名文件，
     然后 `docker exec quizgo-web-1 nginx -t && docker exec quizgo-web-1 nginx -s reload`
+  - **排期（086 T12，别漏）**：`2026-12-31` 前 Atlas 回复续期归属 → `2027-01-22` 申请新证 →
+    `01-25` 起覆盖 + reload + 复验 → `02-14` 兜底复查；HSTS 已开，证书过期等于全站打不开
+  - 复验清单见 `docs/plans/086-备案后HTTPS切换实施计划.md` 第 10 节
   - `status.sh` 的「TLS 证书」段会显示剩余天数（<14 天 ⏳）
 - [x] **容器挂载证书**（`1.0.49`）：`/srv/nginx/certs:/etc/nginx/certs:ro`
 - [x] **Nginx 切 80/443 + HTTPS**（`1.0.51` 已生效）
