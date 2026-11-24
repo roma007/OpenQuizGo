@@ -105,12 +105,14 @@
   - 管理面按用户决策 **公网可达**，靠「12 位口令 + `qz_auth` 10r/m + Go 侧 5 次锁定」三层防护
 - [x] **后台页脚备案号**（`1.0.52`）：`粤ICP备2026058093号-2`，链 `https://beian.miit.gov.cn`
   - Atlas 静态站页脚由 Atlas 自己上线（已确认）
-- [ ] **安全组放开 TCP 80/443**（用户，人工）
-  - 现状（2026-11-24 自探）：80/443/8081/8082 全部 `exit 28`（filtered）
-  - 放开后：写 `/srv/ops/state/exposure.json`（80/443 allowed，8080-8082 blocked）→ 否则 `status.sh` 会误报
+- [x] **安全组放开 TCP 80/443**（用户，2026-11-24 已开）
+  - 已写 `/srv/ops/state/exposure.json`（80/443 allowed，8080-8082 blocked）
+  - `status.sh` 公网自探 5/5 ✅；8080/8081/8082 公网仍全部超时
 - [ ] **公安联网备案**（用户，2026-12-23 前）：`beian.mps.gov.cn`
-- [ ] **上线后全链路验证**（086 T8）：公网侧 `curl -I https://…`、证书链、301、限流 429、`/metrics` 403
-- [ ] **24 小时后开 HSTS**（086 T9）
+- [ ] **`www.atlas` / `www.quiz` DNS**：证书 SAN 与 `server_name` 已含 www，但解析不存在；
+      要么加两条 A 记录到 `8.163.122.39`，要么标注「www 未启用」
+- [x] **上线后全链路验证**（086 T8，2026-11-24）：公网侧全绿，详见 `docs/plans/086-…` 第 8 节
+- [ ] **24 小时后开 HSTS**（086 T9，2026-11-25 之后）
 - [ ] **客户端切 `API_BASE_URL=https://quiz.openapp.asia/`**（随下次家长端/电视端发版）
 
 > 踩坑记录：`/srv/nginx/nginx.conf` 是单文件 bind 挂载，`rsync` 默认 rename 会换 inode，

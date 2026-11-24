@@ -27,14 +27,14 @@
 | 序号 | 任务 | 依赖 | 产出物 | 验收标准 | 状态 |
 | --- | --- | --- | --- | --- | --- |
 | T1 | 回执 Atlas 两条请求（改密、443） | — | `/srv/ops/requests/*.md` 的 `## 回复` | 两条 `status: done`，分工与证书归属写清 | done |
-| T2 | 安全组加回 80/443 | 用户 | 控制台规则 | 公网 80/443 由超时变 RST；`status.sh` 自探变化 | 等用户 |
+| T2 | 安全组加回 80/443 | 用户 | 控制台规则 | 公网 80/443 由超时变 RST；`status.sh` 自探变化 | done |
 | T3 | compose 加只读证书挂载并部署（不动 conf） | — | `docker-compose.yml` | web 重建后 `docker inspect` 能看到 `/etc/nginx/certs` 挂载；线上行为无变化 | done |
 | T4 | 三份 conf + `nginx.conf` 限流区 | T3 | `deploy/nginx/**` | `nginx -t` 通过（`deploy.sh` 失败自动回滚 `/srv/nginx.prev`） | done |
 | T5 | `--with-nginx` 部署启用 80/443 | T2/T4 | 生效配置 | 本机 `--resolve` 全部通过（2026-11-24）；公网开放后复验 | done |
 | T6 | 管理端页脚备案号 | T5 | `admin-web/src/App.tsx` + `dist` | 页脚可见 `粤ICP备2026058093号-2` 且可点击（后台公网可见，必需） | done |
-| T7 | 写 `exposure.json` + 同步 `status.sh` 判据 | T5 | `/srv/ops/state/exposure.json` | 自探 5 行符合期望，无 ⚠️ | todo |
-| T8 | 全链路验收（含限流与管理面 403） | T5–T7 | 验收记录 | 第 4 节清单全绿 | todo |
-| T9 | 24 小时后开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | todo |
+| T7 | 写 `exposure.json` + 同步 `status.sh` 判据 | T5 | `/srv/ops/state/exposure.json` | 自探 5 行符合期望，无 ⚠️ | done |
+| T8 | 全链路验收（含限流与管理面 403） | T5–T7 | 验收记录 | 第 4 节清单全绿 | done |
+| T9 | 24 小时后开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | 待执行（2026-11-25 之后） |
 | T10 | 文档 / journal / 共享面登记收尾 | T8 | `deployment-todo`、ROADMAP、`state/quizgo.json` | 无漂移；journal 有 deploy/nginx 行；证书到期日入待办 | todo |
 | T11 | 22 规则处置（独立事项） | 用户 VNC 验证 | 控制台 | 删后 `ssh quizgo-pub` 超时、`ssh quizgo` 正常 | todo |
 
@@ -42,9 +42,9 @@
 
 | 里程碑 | 包含任务 | 完成标准 | 计划日期 | 实际日期 |
 | --- | --- | --- | --- | --- |
-| M1 前置就绪 | T1–T3 | 挂载就位、安全组已开、Atlas 已回执 | 2026-11-24 | |
-| M2 公网 HTTPS | T4–T6 | 两站点 https 200，管理面公网 403，备案号可见 | 2026-11-24 | |
-| M3 观测与收尾 | T7–T10 | 自探全绿、HSTS 开启、文档闭环 | 2026-11-25 | |
+| M1 前置就绪 | T1–T3 | 挂载就位、安全组已开、Atlas 已回执 | 2026-11-24 | 2026-11-24 |
+| M2 公网 HTTPS | T4–T6 | 两站点 https 200，管理面可达且限流生效，备案号可见 | 2026-11-24 | 2026-11-24 |
+| M3 观测与收尾 | T7–T10 | 自探全绿、HSTS 开启、文档闭环 | 2026-11-25 | 进行中（HSTS 待 24h 观察） |
 | M4 公网 22 退役 | T11 | 仅 Tailscale 可 SSH | 待 VNC 验证 | |
 
 ## 4. 验证方式
@@ -103,8 +103,10 @@
 | T4 | ✅ 三份 conf + `nginx.conf` 限流区；用 `nginx:1.27-alpine` 在临时目录试装通过（`ssl_reject_handshake` 不需要证书，已实测） |
 | T5 | ✅ 已启用（`1.0.51`）：`0.0.0.0:80/443` 在监听，本机 `--resolve` 全绿（见第 4 节前 13 项） |
 | T6 | ✅ 后台页脚（登录页 + 内页）展示 `粤ICP备2026058093号-2`，链 `beian.miit.gov.cn`，`1.0.52` 部署 |
-| T2 | ⏳ **卡在安全组**：2026-11-24 服务器自探 80/443 仍 `exit 28`（filtered） |
-| T7–T10 | 待安全组放开后执行（`exposure.json` 现在写会立刻误报，等端口真的通了再写） |
+| T2 | ✅ 用户 2026-11-24 08:1x 放开安全组；公网 80/443 由 `exit 28` 变可访问，8080-8082 仍 blocked |
+| T7 | ✅ 已写 `/srv/ops/state/exposure.json`（80/443 allowed、8080-8082 blocked），`status.sh` 5/5 ✅ |
+| T8 | ✅ 公网侧全绿（见第 8 节） |
+| T9–T10 | 待办：24h 后开 HSTS；ROADMAP/README 与 085 文档同批提交 |
 
 ### 踩到的坑（已修，记在 `scripts/deploy.sh` 注释里）
 
@@ -117,3 +119,31 @@
 1. 同步改用 `rsync --inplace`（保留 inode），回滚路径同样加 `--inplace`；
 2. 同步后**断言宿主与容器内 `nginx.conf` 的 md5 一致**，不一致立即中止并说明原因；
 3. 已经错过一次的文件需要 `docker compose up -d --force-recreate web` 重新绑定挂载，之后 `--inplace` 就稳了（本次已做）。
+
+## 8. 公网验收结果（2026-11-24 08:2x，安全组放开后）
+
+从开发机走真实公网执行，全部通过：
+
+| 项 | 结果 |
+| --- | --- |
+| `https://atlas.openapp.asia/` | 200，页脚 `粤ICP备2026058093号-2`，gzip 生效 |
+| `http://atlas/`、`http://quiz/`、`http://openapp.asia/`、`http://8.163.122.39/` | 均 301，Location 正确 |
+| `Host: evil.example`（80） | 301 → `https://atlas.openapp.asia` |
+| `https://8.163.122.39/` | 握手被拒，无证书下发 |
+| `https://quiz.openapp.asia/v1/meta` | 200，`version=1.0.52` |
+| `/`、`/questions`、`/healthz` | 200 / 200 / 200 |
+| `/metrics` | 403 |
+| `POST /v1/admin/auth/login`（错口令） | 401（可达，鉴权在应用层） |
+| `POST /v1/auth/login`（空参数） | 422 |
+| 静态资源 / `sw.js` | `immutable` / `no-cache` |
+| 证书链（不加 `-k`） | 200，`CN=quiz.openapp.asia`，`notAfter 2027-02-20` |
+| TLS1.1 | alert 70 拒绝（服务器侧 OpenSSL 3 权威验证；macOS 客户端输出格式不同，早期误报过一次） |
+| 8080/8081/8082 公网 | 全部超时（安全组未放行） |
+| 限流 | 连打 8 次 → `401×5 + 429×3` |
+| `status.sh` | 公网自探 5/5 ✅、证书剩 88 天、共享面 md5 无漂移 |
+
+### 已知小缺口：`www.atlas` / `www.quiz` 无 DNS 记录
+
+证书 SAN 与 `server_name` 都写入了 www，但阿里云 DNS 只有 `www.openapp.asia`，没有两个子域的 www 记录，
+所以 `https://www.atlas.openapp.asia` / `https://www.quiz.openapp.asia` 解析失败（`000`）。
+已告知 Atlas：要么加两条 A 记录，要么在文档里标注「SAN 含 www、DNS 未启用」。主域名不受影响。
