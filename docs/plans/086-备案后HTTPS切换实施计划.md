@@ -34,7 +34,7 @@
 | T6 | 管理端页脚备案号 | T5 | `admin-web/src/App.tsx` + `dist` | 页脚可见 `粤ICP备2026058093号-2` 且可点击（后台公网可见，必需） | done |
 | T7 | 写 `exposure.json` + 同步 `status.sh` 判据 | T5 | `/srv/ops/state/exposure.json` | 自探 5 行符合期望，无 ⚠️ | done |
 | T8 | 全链路验收（含限流与管理面 403） | T5–T7 | 验收记录 | 第 4 节清单全绿 | done |
-| T9 | 24 小时后开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | 待执行（2026-11-25 之后） |
+| T9 | 开 HSTS | T8 | `deploy/nginx/conf.d/*` | 两站点响应头含 `Strict-Transport-Security` | done（2026-11-24，用户决定立即开） |
 | T10 | 文档 / journal / 共享面登记收尾 | T8 | `deployment-todo`、ROADMAP、`state/quizgo.json` | 无漂移；journal 有 deploy/nginx 行；证书到期日入待办 | todo |
 | T11 | 22 规则处置（独立事项） | 用户 VNC 验证 | 控制台 | 删后 `ssh quizgo-pub` 超时、`ssh quizgo` 正常 | todo |
 
@@ -91,7 +91,8 @@
 | 2026-11-24 | **管理面改回公网可达（方案 A）**，靠 12 位口令 + `qz_auth` 10r/m + 应用层锁定 | 用户 2026-11-24 明确要求任意设备可登录；收回 tailnet 的代价（必须装 Tailscale）他不能接受。已把「必要时一行改回 tailnet」写进回滚 |
 | 2026-11-23 | 保留 `8081/8082` | `deploy.sh` 自检与排障仍依赖；退役另立事项 |
 | 2026-11-23 | 裸域 `openapp.asia`/`www` 80 兜底 301 到 `https://atlas.openapp.asia` | apex 无证书；备案巡检直接访问裸域名，需给出可读页面 |
-| 2026-11-23 | HSTS 延后 24 小时 | 避免配置错时把自己锁死；先观察无混内容 |
+| 2026-11-24 | HSTS 改为立即开启（`max-age=31536000`，不含 preload/includeSubDomains） | 公网验收全绿、无混合内容；用户选择立即开。不加 includeSubDomains 是为避免误伤 http 子域 |
+| 2026-11-24 | `www.atlas` / `www.quiz` 不加 DNS，标注未启用 | 用户决定；证书 SAN 与 `server_name` 保留，将来加解析即可 |
 | 2026-11-23 | 分两次部署（先挂载、后配置） | 新配置引用 `/etc/nginx/certs`，挂载不存在则 `nginx -t` 必失败 |
 
 ## 7. 实际进展（2026-11-24）
@@ -106,7 +107,8 @@
 | T2 | ✅ 用户 2026-11-24 08:1x 放开安全组；公网 80/443 由 `exit 28` 变可访问，8080-8082 仍 blocked |
 | T7 | ✅ 已写 `/srv/ops/state/exposure.json`（80/443 allowed、8080-8082 blocked），`status.sh` 5/5 ✅ |
 | T8 | ✅ 公网侧全绿（见第 8 节） |
-| T9–T10 | 待办：24h 后开 HSTS；ROADMAP/README 与 085 文档同批提交 |
+| T9 | ✅ HSTS 已开（atlas + quiz 443），实测响应头存在 |
+| T10 | 进行中：ROADMAP/README 与 085 文档同批提交；会话归档收尾 |
 
 ### 踩到的坑（已修，记在 `scripts/deploy.sh` 注释里）
 
