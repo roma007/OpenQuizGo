@@ -123,7 +123,8 @@
 - [x] **HSTS**（086 T9，`1.0.56`）：2026-11-24 开启，`max-age=31536000`，不含 preload / includeSubDomains；
       实测 Atlas 首页/`sw.js`/`/assets/` 与 Quiz 首页/`/questions`/`/v1/meta` 六处均带
   - 坑：nginx 的 location 里一旦有 `add_header`，server 级的就不再继承，所以 `= /index.html`、`/assets/` 等都要单独写 HSTS
-- [ ] **客户端切 `API_BASE_URL=https://quiz.openapp.asia/`**（随下次家长端/电视端发版）
+- [x] **客户端默认服务端切 `https://quiz.openapp.asia/`**（089，`1.0.67`）：家长端/TV 默认值已改，
+      `dart analyze` 通过，TV debug/release 均出包（release 不再被 targetSdk 33 明文策略拦截）；**待装机验证**
 - [ ] **APP 备案**（工信部 APP 备案 + 公安 APP 备案）：家长端/电视端上架应用商店前必须做，建议排 089
 
 > 踩坑记录：`/srv/nginx/nginx.conf` 是单文件 bind 挂载，`rsync` 默认 rename 会换 inode，

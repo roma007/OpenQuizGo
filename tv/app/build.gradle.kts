@@ -13,8 +13,8 @@ android {
         applicationId = "com.openquizgo.quiz"
         minSdk = 26
         targetSdk = 33
-        versionCode = 168
-        versionName = "1.0.68"
+        versionCode = 169
+        versionName = "1.0.69"
         // 089：默认连生产 HTTPS（086 起 443 公网可用）。
         // 本地/内网排障覆盖：-PapiBaseUrl=http://100.65.110.80:8082/
         // 注意：targetSdk 33 下 release 包禁止明文，http 覆盖只有 debug 包可用。
