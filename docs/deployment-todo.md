@@ -109,10 +109,12 @@
   - 已写 `/srv/ops/state/exposure.json`（80/443 allowed，8080-8082 blocked）
   - `status.sh` 公网自探 5/5 ✅；8080/8081/8082 公网仍全部超时
 - [ ] **公安联网备案**（用户，2026-12-23 前）：`beian.mps.gov.cn`
-- [ ] **`www.atlas` / `www.quiz` DNS**：证书 SAN 与 `server_name` 已含 www，但解析不存在；
-      要么加两条 A 记录到 `8.163.122.39`，要么标注「www 未启用」
+- [x] **`www.atlas` / `www.quiz` DNS**：用户 2026-11-24 决定**不加**（只有 `www.openapp.asia` 有记录）。
+      证书 SAN 与 `server_name` 保留 www，将来加解析即可用；当前 `https://www.<子域>` 解析失败属预期，不要当故障排查
 - [x] **上线后全链路验证**（086 T8，2026-11-24）：公网侧全绿，详见 `docs/plans/086-…` 第 8 节
-- [ ] **24 小时后开 HSTS**（086 T9，2026-11-25 之后）
+- [x] **HSTS**（086 T9，`1.0.56`）：2026-11-24 开启，`max-age=31536000`，不含 preload / includeSubDomains；
+      实测 Atlas 首页/`sw.js`/`/assets/` 与 Quiz 首页/`/questions`/`/v1/meta` 六处均带
+  - 坑：nginx 的 location 里一旦有 `add_header`，server 级的就不再继承，所以 `= /index.html`、`/assets/` 等都要单独写 HSTS
 - [ ] **客户端切 `API_BASE_URL=https://quiz.openapp.asia/`**（随下次家长端/电视端发版）
 
 > 踩坑记录：`/srv/nginx/nginx.conf` 是单文件 bind 挂载，`rsync` 默认 rename 会换 inode，

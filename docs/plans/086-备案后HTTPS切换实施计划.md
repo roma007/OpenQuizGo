@@ -107,8 +107,11 @@
 | T2 | ✅ 用户 2026-11-24 08:1x 放开安全组；公网 80/443 由 `exit 28` 变可访问，8080-8082 仍 blocked |
 | T7 | ✅ 已写 `/srv/ops/state/exposure.json`（80/443 allowed、8080-8082 blocked），`status.sh` 5/5 ✅ |
 | T8 | ✅ 公网侧全绿（见第 8 节） |
-| T9 | ✅ HSTS 已开（atlas + quiz 443），实测响应头存在 |
-| T10 | 进行中：ROADMAP/README 与 085 文档同批提交；会话归档收尾 |
+| T9 | ✅ HSTS 已开（`1.0.56`）：Atlas 首页 / `sw.js` / `/assets/`、Quiz 首页 / `/questions` / `/v1/meta` 六个入口全部带
+  `Strict-Transport-Security: max-age=31536000`。**踩坑**：nginx 的 location 一旦自己写了 `add_header`，
+  server 级的 `add_header` 就不再继承，导致首页（`= /index.html`）与静态资源一度没有 HSTS；已把 HSTS 复制进每个带
+  `add_header` 的 location（`8082` 明文调试口不加） |
+| T10 | 进行中：会话归档已做；`docs/README.md` / `docs/ROADMAP.md` 的 086/087 条目与工作区未提交的 085 文档同批提交（避免把用户的未完成改动单独拆出） |
 
 ### 踩到的坑（已修，记在 `scripts/deploy.sh` 注释里）
 
@@ -149,3 +152,10 @@
 证书 SAN 与 `server_name` 都写入了 www，但阿里云 DNS 只有 `www.openapp.asia`，没有两个子域的 www 记录，
 所以 `https://www.atlas.openapp.asia` / `https://www.quiz.openapp.asia` 解析失败（`000`）。
 已告知 Atlas：要么加两条 A 记录，要么在文档里标注「SAN 含 www、DNS 未启用」。主域名不受影响。
+
+## 9. 收尾状态（2026-11-24 10:0x）
+
+- 线上版本 `1.0.56`，`/v1/meta` 一致；镜像与运行镜像 hash 一致；日志无 error/panic。
+- `status.sh`：公网自探 5/5 ✅、证书剩 88 天、共享面 md5 无漂移、无待处理请求。
+- 留给运维的两条：**2027-02-21 前换证**（阿里云重新申请，同名覆盖 + `nginx -t && nginx -s reload`）；
+  **公安联网备案 2026-12-23 前**（用户，`beian.mps.gov.cn`）。
