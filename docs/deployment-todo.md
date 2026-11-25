@@ -106,7 +106,7 @@
 - [x] **容器挂载证书**（`1.0.49`）：`/srv/nginx/certs:/etc/nginx/certs:ro`
 - [x] **Nginx 切 80/443 + HTTPS**（`1.0.51` 已生效）
   - `atlas.conf`/`quiz.conf`：80 → 301 到 443；443 提供服务；`8081/8082` 原样保留
-  - `00-default.conf`：裸域/未知 Host 的 80 兜底跳 Atlas；443 未知 SNI `ssl_reject_handshake`
+  - `00-default.conf`：裸域/未知 Host 的 80 兜底跳 `https://www.openapp.asia`（090 起）；443 未知 SNI `ssl_reject_handshake`
   - 管理面按用户决策 **公网可达**，靠「12 位口令 + `qz_auth` 10r/m + Go 侧 5 次锁定」三层防护
 - [x] **后台页脚备案号**（`1.0.52`）：`粤ICP备2026058093号-2`，链 `https://beian.miit.gov.cn`
   - Atlas 静态站页脚由 Atlas 自己上线（已确认）
@@ -125,6 +125,11 @@
   - 坑：nginx 的 location 里一旦有 `add_header`，server 级的就不再继承，所以 `= /index.html`、`/assets/` 等都要单独写 HSTS
 - [x] **客户端默认服务端切 `https://quiz.openapp.asia/`**（089，`1.0.67`）：家长端/TV 默认值已改，
       `dart analyze` 通过，TV debug/release 均出包（release 不再被 targetSdk 33 明文策略拦截）；**待装机验证**
+- [x] **OpenApp 官网接入共享 nginx**（090，`1.0.71`）：`www.openapp.asia` 占位页上线，裸域 301 到 www，
+      `http://<裸 IP>` 兜底也改跳官网；证书 `openapp.asia` 双 SAN（到期 2027-02-23）
+  - 配置：`conf.d/www.conf` + `00-default.conf` 同步改；compose 挂 `/srv/www:ro`；`deploy.sh` 的 `nginxMd5` 扩到 4 项
+  - 仍未做：`status.sh` 官网探测（T10）、正式站产物与 `/downloads/` 限速（T11）、HSTS 评估（T12）
+  - 注意：公安备案审核期内只新增了 `server_name`，未改 DNS / 公网 IP / 端口
 - [ ] **APP 备案**（工信部 APP 备案 + 公安 APP 备案）：家长端/电视端上架应用商店前必须做，建议排 089
 
 > 踩坑记录：`/srv/nginx/nginx.conf` 是单文件 bind 挂载，`rsync` 默认 rename 会换 inode，

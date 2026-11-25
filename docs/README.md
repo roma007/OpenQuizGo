@@ -125,5 +125,6 @@ node scripts/archive-conversation.mjs --all
 | 086 | 备案后 HTTPS 切换 | [设计](design/086-备案后HTTPS切换设计.md) | [计划](plans/086-备案后HTTPS切换实施计划.md) | done（1.0.56，公网 80/443 生效） |
 | 087 | 管理员自助修改密码 | [设计](design/087-管理员自助修改密码设计.md) | [计划](plans/087-管理员自助修改密码实施计划.md) | done（1.0.46，线上验收通过） |
 | 089 | 客户端切换生产域名 | [设计](design/089-客户端切换生产域名设计.md) | [计划](plans/089-客户端切换生产域名实施计划.md) | in-progress（代码 + debug/release 构建通过，待装机验证） |
+| 090 | OpenApp 官网接入共享 nginx | [设计](design/090-OpenApp官网接入共享nginx设计.md) | [计划](plans/090-OpenApp官网接入共享nginx实施计划.md) | in-progress（占位页已上线；待正式站、下载限速、status.sh 探测） |
 
 > 新增设计/计划后，请同步更新此表。

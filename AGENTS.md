@@ -387,12 +387,13 @@ ssh quizgo 'flock /srv/ops/locks/nginx.lock -c "<命令>"'
   "nginxMd5": {
     "nginx.conf": "<md5>",
     "conf.d/atlas.conf": "<md5>",
-    "conf.d/quiz.conf": "<md5>"
+    "conf.d/quiz.conf": "<md5>",
+    "conf.d/www.conf": "<md5>"
   }
 }
 ```
 
-- `nginxMd5` **三个文件都要记**，少一个 `status.sh` 就查不出那部分漂移。
+- `nginxMd5` **四个文件都要记**（`www.conf` 为 OpenApp 官网，2026-11-25 起），少一个 `status.sh` 就查不出那部分漂移。
 - 只写 `state/quizgo.json`，**不得修改 `state/atlas.json`**（Atlas 写的）。
 - 登记失败不影响发布结果，但会打印告警，需要手工补登。
 

@@ -392,8 +392,8 @@ ops_register() {
     sha="${sha}+dirty"
   fi
   image="$EXPECT_IMAGE"
-  md5_lines="$(ssh "$SSH_HOST" "cd /srv/nginx && md5sum nginx.conf conf.d/atlas.conf conf.d/quiz.conf" 2>/dev/null)" || return 1
-  [ "$(printf '%s\n' "$md5_lines" | grep -c '  ' || true)" -eq 3 ] || return 1
+  md5_lines="$(ssh "$SSH_HOST" "cd /srv/nginx && md5sum nginx.conf conf.d/atlas.conf conf.d/quiz.conf conf.d/www.conf" 2>/dev/null)" || return 1
+  [ "$(printf '%s\n' "$md5_lines" | grep -c '  ' || true)" -eq 4 ] || return 1
   json="$(printf '%s\n' "$md5_lines" | python3 -c '
 import json, sys
 md5 = {}
@@ -401,7 +401,7 @@ for line in sys.stdin:
     parts = line.split()
     if len(parts) == 2:
         md5[parts[1]] = parts[0]
-keys = ["nginx.conf", "conf.d/atlas.conf", "conf.d/quiz.conf"]
+keys = ["nginx.conf", "conf.d/atlas.conf", "conf.d/quiz.conf", "conf.d/www.conf"]
 missing = [k for k in keys if k not in md5]
 if missing:
     raise SystemExit("缺少 nginx 配置：" + ", ".join(missing))
