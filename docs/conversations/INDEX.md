@@ -1,13 +1,13 @@
 # 对话归档索引
 
 > 本文件由 `scripts/archive-conversation.mjs` 自动生成，请勿手工编辑。
-> 最后更新：2026-11-25 21:06:11
+> 最后更新：2026-11-25 22:14:01
 
 共 9 条归档。
 
 | 日期 | 时间 | 标题 | 消息数 | 会话 ID |
 | --- | --- | --- | --- | --- |
-| 2026-11-25 | 21:00:31 | [提交](2026-11-25-001-%E6%8F%90%E4%BA%A4.md) | 38 | `ses_ded34dee2ffeTsASvrOuAH5zZG` |
+| 2026-11-25 | 21:00:31 | [提交](2026-11-25-001-%E6%8F%90%E4%BA%A4.md) | 43 | `ses_ded34dee2ffeTsASvrOuAH5zZG` |
 | 2026-11-16 | 13:10:23 | [[redacted:session-title:ses_e1d3c87f2ffeuzLHTxHrlVAVF2]](2026-11-16-001-%5Bredacted-session-title-ses_e1d3c87f2ffe.md) | 186 | `ses_e1d3c87f2ffeuzLHTxHrlVAVF2` |
 | 2026-11-15 | 18:34:33 | [家长端每次答题题量配置](2026-11-15-002-%E5%AE%B6%E9%95%BF%E7%AB%AF%E6%AF%8F%E6%AC%A1%E7%AD%94%E9%A2%98%E9%A2%98%E9%87%8F%E9%85%8D%E7%BD%AE.md) | 473 | `ses_e213a1b51ffe846gOOmdSNyiWW` |
 | 2026-11-15 | 00:15:41 | [[redacted:session-title:ses_e252827c0ffeXHCu92FbKaPOJ7]](2026-11-15-001-%E7%94%B5%E8%A7%86%E7%AB%AF%E6%9C%AC%E5%9C%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%95%B0%E6%8D%AE.md) | 781 | `ses_e252827c0ffeXHCu92FbKaPOJ7` |
