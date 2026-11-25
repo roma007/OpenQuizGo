@@ -22,5 +22,7 @@
 | 2026-11-15 | 孩子规则页文案改为大白话（解锁时长→答对一次能看多久、加权门槛→答对多少分算通过等），新增顶部说明 | UI/文案 | 原术语只有研发看得懂，家长不知道每一项是什么意思 | AI |
 | 2026-11-16 | 「趣味题最多几道」改为「每次最多几道趣味题」 | UI/文案 | 原文案没说明是每次答题还是每天，容易误解 | AI |
 | 2026-11-16 | 家长端 debug manifest 允许明文 HTTP，用于平板模拟器连本机 mock 服务 | 开发环境 | 本机联调服务为 `http://10.0.2.2:8089`，targetSdk 34 默认禁止明文；仅 debug 生效 | AI |
+| 2026-11-25 | `deploy/nginx/nginx.conf` 的 http 块新增 `limit_conn_zone $binary_remote_addr zone=www_dl:10m` | 配置/跨项目 | OpenApp 官网需按 IP 并发 2 限流（`/srv/ops/requests/2026-11-25-openapp-to-quizgo-download-zone.md`），zone 必须先于 `www.conf` 的 `limit_conn` 存在；仅新增未被本仓库引用的 zone，不改 quiz/atlas 行为 | AI |
+| 2026-11-25 | `deploy/nginx/conf.d/www.conf` 对齐 OpenApp 线上改动：`/downloads/` 大文件 `limit_rate_after 512k` + `limit_rate 200k`，`/brand/` `/media/` `expires 7d` | 配置/跨项目 | 该文件源在 OpenQuizGo 仓库，服务器上已由 OpenApp 修改并 reload；仓库不对齐会在下次 `--with-nginx` 回退成旧版本 | AI |
 
 类型：错别字 / 注释 / 文档 / 无行为变化修改

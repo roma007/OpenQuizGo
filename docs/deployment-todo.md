@@ -288,6 +288,17 @@ docker compose start api worker
 或直接以控制台规则列表为准。删除前必须先实测一次控制台 VNC 能登录，
 并在 journal 记「备案前应急入口 = 阿里云控制台 VNC」。
 
+### 共享面收口：OpenApp 官网接入（2026-11-25）
+
+| 项 | 结论 | 归属 | 状态 |
+|---|---|---|---|
+| `nginx.conf` 加 `limit_conn_zone www_dl:10m` | OpenApp 请求，供 `/downloads/` 按 IP 并发 2 | QuizGo | ✅ 已加 + reload（md5 `5d35d74c`） |
+| `conf.d/www.conf` 下载限速、`/brand/` `/media/` 缓存 | OpenApp 线上已生效，仓库已对齐 | OpenApp 内容 / QuizGo 同步 | ✅ 已同步 |
+| `CONTRACT.md` 纳入 OpenApp | 归属表、§2.2、§4、§8 已补 | 共同 | ✅ 已更新 |
+
+请求文件：`/srv/ops/requests/2026-11-25-openapp-to-quizgo-download-zone.md`、
+`/srv/ops/requests/2026-11-25-openapp-to-quizgo-contract-openapp.md`（均 `status: done`）。
+
 ---
 
 ## 五、已知问题（环境坑，别再重复排查）
