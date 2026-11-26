@@ -1,0 +1,17 @@
+# nginx 访问日志留存（公安联网备案要求 ≥6 个月）
+# 安装：sudo install -m 644 deploy/nginx/logrotate-quizgo-nginx /etc/logrotate.d/quizgo-nginx
+# 日志由 rsyslog 从 127.0.0.1:514 (facility local6) 落到 /var/log/nginx/access.log
+/var/log/nginx/access.log {
+    daily
+    rotate 200
+    missingok
+    notifempty
+    compress
+    delaycompress
+    create 0640 root adm
+    sharedscripts
+    postrotate
+        # rsyslog 收到 HUP 会重新打开 omfile 目标，轮转后继续写新文件
+        /usr/bin/systemctl kill -s HUP rsyslog.service >/dev/null 2>&1 || true
+    endscript
+}

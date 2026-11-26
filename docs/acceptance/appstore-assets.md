@@ -1,7 +1,7 @@
 # App Store 截图与 App 预览
 
 > 2026-11-12：应用展示名统一为「电视时间管家」，副标题建议「答题换时长 · 家长远程管控」。
-> 现有 iPad 13 英寸截图为 076 之前的底部导航布局，上传前需按新版侧边导航重新截图；iPhone 截图中的应用名标题也需同步替换。
+> 2026-11-25：三套截图已按 076 之后的新布局重截（iPhone 底部导航、iPad 侧边导航），旧图归档在 `appstore-screenshots/archive-2026-11-11/`。
 
 | 项目 | 内容 |
 | --- | --- |
@@ -20,7 +20,7 @@
 | --- | --- | --- | --- |
 | 1 | [`iphone-dynamic-island-medium/01.png`](appstore-screenshots/iphone-dynamic-island-medium/01.png) | 管好电视时间，一个 App 就够 | 孩子档案、设备状态、观看报告 |
 | 2 | [`iphone-dynamic-island-medium/02.png`](appstore-screenshots/iphone-dynamic-island-medium/02.png) | 答题换时长，规则由你定 | 解锁时长、每日上限、允许时段 |
-| 3 | [`iphone-dynamic-island-medium/03.png`](appstore-screenshots/iphone-dynamic-island-medium/03.png) | 不在家，也能临时放行 | 家长 PIN 远程解锁 |
+| 3 | [`iphone-dynamic-island-medium/03.png`](appstore-screenshots/iphone-dynamic-island-medium/03.png) | 不在家，也能临时放行 | 临时放行弹窗：15 分钟、家长 PIN 确认 |
 | 4 | [`iphone-dynamic-island-medium/04.png`](appstore-screenshots/iphone-dynamic-island-medium/04.png) | 亲子对战，让学习更有趣 | 家庭排行榜、对战记录 |
 
 ### iPhone：大屏（可选）
@@ -31,12 +31,12 @@
 
 尺寸：2064×2752，共 4 张。
 
-| 顺序 | 文件 |
-| --- | --- |
-| 1 | [`ipad-13/01.png`](appstore-screenshots/ipad-13/01.png) |
-| 2 | [`ipad-13/02.png`](appstore-screenshots/ipad-13/02.png) |
-| 3 | [`ipad-13/03.png`](appstore-screenshots/ipad-13/03.png) |
-| 4 | [`ipad-13/04.png`](appstore-screenshots/ipad-13/04.png) |
+| 顺序 | 文件 | 标题 | 展示内容 |
+| --- | --- | --- | --- |
+| 1 | [`ipad-13/01.png`](appstore-screenshots/ipad-13/01.png) | 管好电视时间，一个 App 就够 | 孩子档案双列布局、侧边导航 |
+| 2 | [`ipad-13/02.png`](appstore-screenshots/ipad-13/02.png) | 答题换时长，规则由你定 | 观看规则表单 |
+| 3 | [`ipad-13/03.png`](appstore-screenshots/ipad-13/03.png) | 不在家，也能临时放行 | 临时放行弹窗：15 分钟、家长 PIN 确认 |
+| 4 | [`ipad-13/04.png`](appstore-screenshots/ipad-13/04.png) | 亲子对战，让学习更有趣 | 家庭排行榜、对战记录 |
 
 说明：
 
@@ -81,7 +81,7 @@ App 预览是**可选**的，不上传也可以提交；上传后会显示在产
 
 ## 4. 注意
 
-- 截图中孩子昵称为测试数据「T2孩子」，上线前可替换为更中性的示例昵称；
-- 第 3 张截图中的家长 PIN 为空，未展示真实 PIN；
+- 截图中孩子昵称为演示数据「小宇」「小满」，家庭为本地测试环境，无真实手机号或儿童信息；
+- 第 3 张截图展示临时放行弹窗（15 分钟），PIN 输入框留空，未展示真实 PIN；
 - App 预览无音频，审核员静音观看也能理解；
 - 截图和预览均未展示会员购买入口。
